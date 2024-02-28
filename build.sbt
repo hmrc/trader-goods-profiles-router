@@ -13,9 +13,6 @@ lazy val microservice = Project("trader-goods-profiles-router", file("."))
   )
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(CodeCoverageSettings.settings: _*)
-  .settings(
-    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
-  )
 
 lazy val it = project
   .enablePlugins(PlayScala)
