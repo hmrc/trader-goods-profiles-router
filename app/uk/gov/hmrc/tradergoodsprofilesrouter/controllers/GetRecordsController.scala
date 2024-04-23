@@ -27,12 +27,41 @@ import play.api.mvc.{
 case class GetRecordsController(cc: ControllerComponents)
     extends AbstractController(cc) {
 
-  def getRecords(eori: String, recordId: Option[String]): Action[AnyContent] = Action {
-    implicit request =>
-      val responseData = Json.obj(
-        "recordID" -> recordId,
-        "eori" -> eori
+  def getTGPRecords(
+      eori: String,
+      lastUpdatedDate: Option[String] = None,
+      page: Option[Int] = None,
+      size: Option[Int] = None
+  ): Action[AnyContent] = Action { implicit request =>
+    Ok(
+      Json.obj(
+        "status" -> "success",
+        "message" -> "EIS record retrieved successfully",
+        "eori" -> eori,
+        "lastUpdatedDate" -> lastUpdatedDate,
+        "page" -> page,
+        "size" -> size
       )
-      Ok(responseData)
+    )
+  }
+
+  def getSingleTGPRecord(
+      eori: String,
+      recordId: String,
+      lastUpdatedDate: Option[String] = None,
+      page: Option[Int] = None,
+      size: Option[Int] = None
+  ): Action[AnyContent] = Action { implicit request =>
+    Ok(
+      Json.obj(
+        "status" -> "success",
+        "message" -> "EIS record retrieved successfully",
+        "eori" -> eori,
+        "recordId" -> recordId,
+        "lastUpdatedDate" -> lastUpdatedDate,
+        "page" -> page,
+        "size" -> size
+      )
+    )
   }
 }
