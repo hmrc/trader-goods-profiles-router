@@ -36,7 +36,7 @@ case class GetRecordsController(cc: ControllerComponents)
     Ok(
       Json.obj(
         "status" -> "success",
-        "message" -> "EIS record retrieved successfully",
+        "message" -> "EIS list of records retrieved successfully",
         "eori" -> eori,
         "lastUpdatedDate" -> lastUpdatedDate,
         "page" -> page,
