@@ -27,9 +27,10 @@ import play.api.mvc.{
 case class GetRecordsController(cc: ControllerComponents)
     extends AbstractController(cc) {
 
-  def getRecords(eori: String): Action[AnyContent] = Action {
+  def getRecords(eori: String, recordId: Option[String]): Action[AnyContent] = Action {
     implicit request =>
       val responseData = Json.obj(
+        "recordID" -> recordId,
         "eori" -> eori
       )
       Ok(responseData)
