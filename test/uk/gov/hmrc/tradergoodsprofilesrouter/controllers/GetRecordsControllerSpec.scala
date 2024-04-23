@@ -37,14 +37,33 @@ class GetRecordsControllerSpec extends PlaySpec {
 
   "GetRecordsController" should {
 
-    "return the correct JSON response for a given EORI number" in {
+    "return the correct JSON response for a given EORI number and recordId" in {
       val controller = new GetRecordsController(stubControllerComponents())
       val eori = "GB123456789011"
+      val recordId = "b2fa315b-2d31-4629-90fc-a7b1a5119873"
+
       val result =
-        controller.getRecords(eori)(FakeRequest(GET, s"/get-records/$eori"))
+        controller.getRecords(eori, Some(recordId))(FakeRequest(GET, s"/get-records/$eori/$recordId/"))
 
       status(result) mustBe OK
-      contentAsJson(result) mustBe Json.obj("eori" -> eori)
+      contentAsJson(result) mustBe Json.obj(
+        "recordID" -> recordId,
+        "eori" -> eori
+      )
+    }
+
+    "return the correct Json response for a given EORI number" in {
+      val controller = new GetRecordsController(stubControllerComponents())
+      val eori = "GB123456789011"
+
+      val result =
+        controller.getRecords(eori, None)(FakeRequest(GET, s"/get-records/$eori/"))
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.obj(
+        "recordID" -> null,
+        "eori" -> eori
+      )
     }
   }
 }
