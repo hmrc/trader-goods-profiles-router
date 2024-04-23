@@ -39,7 +39,7 @@ class GetRecordsControllerSpec extends PlaySpec {
 
     "return the correct JSON response for a given EORI number" in {
       val controller = new GetRecordsController(stubControllerComponents())
-      val eori = "GB123456789012"
+      val eori = "GB123456789011"
       val result =
         controller.getRecords(eori)(FakeRequest(GET, s"/get-records/$eori"))
 
