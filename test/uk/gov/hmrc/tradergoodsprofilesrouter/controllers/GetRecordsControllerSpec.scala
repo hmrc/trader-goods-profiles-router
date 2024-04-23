@@ -30,39 +30,63 @@ import play.api.test.Helpers.{
 }
 import play.api.test.{FakeRequest, Helpers}
 
-import scala.concurrent.Future
 import scala.language.postfixOps
 
 class GetRecordsControllerSpec extends PlaySpec {
 
-  "GetRecordsController" should {
+  "GetRecordsController GET /tgp/get-record/:eori/:recordId" should {
 
-    "return the correct JSON response for a given EORI number and recordId" in {
-      val controller = new GetRecordsController(stubControllerComponents())
+    "return a successful JSON response for multiple records with all parameters" in {
+      val controller =
+        new GetRecordsController(Helpers.stubControllerComponents())
       val eori = "GB123456789011"
-      val recordId = "b2fa315b-2d31-4629-90fc-a7b1a5119873"
-
-      val result =
-        controller.getRecords(eori, Some(recordId))(FakeRequest(GET, s"/get-records/$eori/$recordId/"))
+      val lastUpdatedDate = Some("2024-03-26T16:14:52Z")
+      val page = Some(1)
+      val size = Some(10)
+      val result = controller
+        .getTGPRecords(eori, lastUpdatedDate, page, size)
+        .apply(FakeRequest(GET, s"/tgp/get-record/$eori/"))
 
       status(result) mustBe OK
+      status(result) mustBe OK
+      contentType(result) mustBe Some("application/json")
+
+      // TODO: Change the response
       contentAsJson(result) mustBe Json.obj(
-        "recordID" -> recordId,
-        "eori" -> eori
+        "status" -> "success",
+        "message" -> "EIS list of records retrieved successfully",
+        "eori" -> eori,
+        "lastUpdatedDate" -> lastUpdatedDate,
+        "page" -> page,
+        "size" -> size
       )
     }
 
-    "return the correct Json response for a given EORI number" in {
-      val controller = new GetRecordsController(stubControllerComponents())
+    "return a successful JSON response for a single record with all parameters" in {
+      val controller =
+        new GetRecordsController(Helpers.stubControllerComponents())
       val eori = "GB123456789011"
-
-      val result =
-        controller.getRecords(eori, None)(FakeRequest(GET, s"/get-records/$eori/"))
+      val recordId = "rec123"
+      val lastUpdatedDate = Some("2024-03-26T16:14:52Z")
+      val page = Some(1)
+      val size = Some(10)
+      val result = controller
+        .getSingleTGPRecord(eori, recordId, lastUpdatedDate, page, size)
+        .apply(FakeRequest(GET, s"/tgp/get-record/$eori/$recordId"))
 
       status(result) mustBe OK
+      status(result) mustBe OK
+      contentType(result) mustBe Some("application/json")
+
+      // TODO: Change the response
       contentAsJson(result) mustBe Json.obj(
-        "recordID" -> null,
-        "eori" -> eori
+        "status" -> "success",
+        "message" -> "EIS record retrieved successfully",
+        "eori" -> eori,
+        "recordId" -> recordId,
+        "lastUpdatedDate" -> lastUpdatedDate,
+        "page" -> page,
+        "size" -> size
       )
     }
   }
