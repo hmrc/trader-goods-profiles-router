@@ -24,11 +24,12 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.{
   GET,
   contentAsJson,
-  contentType,
   defaultAwaitTimeout,
   status
 }
 import play.api.test.{FakeRequest, Helpers}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 
 import scala.concurrent.Future
@@ -44,14 +45,13 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
       val controller = new GetRecordsController(
         Helpers.stubControllerComponents(),
         mockEisConnector
-      )(scala.concurrent.ExecutionContext.Implicits.global)
+      )
 
       val eori = "GB123456789011"
       val lastUpdatedDate = Some("2024-03-26T16:14:52Z")
       val page = Some(1)
       val size = Some(10)
       val expectedJson = Json.obj(
-        // TODO: Change the response
         "status" -> "success",
         "message" -> "EIS list of records retrieved successfully",
         "eori" -> eori,
@@ -60,42 +60,19 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
         "size" -> size
       )
 
-      when(
-        mockEisConnector.fetchRecords(eori, None, lastUpdatedDate, page, size)
-      ).thenReturn(Future.successful(expectedJson))
+      val fakeRequest = FakeRequest(GET, s"/tgp/get-record/$eori/")
+        .withHeaders("X-Correlation-ID" -> "123-456-789")
+        .withSession("sessionKey" -> "sessionValue")
+
+      implicit val hc: HeaderCarrier =
+        HeaderCarrierConverter.fromRequestAndSession(fakeRequest, fakeRequest.session)
+
+      when(mockEisConnector.fetchRecords(eori, lastUpdatedDate, page, size, hc))
+        .thenReturn(Future.successful(expectedJson))
 
       val result = controller
         .getTGPRecords(eori, lastUpdatedDate, page, size)
-        .apply(FakeRequest(GET, s"/tgp/get-record/$eori/"))
-
-      status(result) mustBe OK
-      contentAsJson(result) mustBe expectedJson
-    }
-
-    "return a successful JSON response for a single record" in {
-      val mockEisConnector = mock[EISConnector]
-      val controller = new GetRecordsController(
-        Helpers.stubControllerComponents(),
-        mockEisConnector
-      )(scala.concurrent.ExecutionContext.Implicits.global)
-
-      val eori = "GB123456789011"
-      val recordId = "rec123"
-      val expectedJson = Json.obj(
-        // TODO: Change the response
-        "status" -> "success",
-        "message" -> "EIS record retrieved successfully",
-        "eori" -> eori,
-        "recordId" -> recordId
-      )
-
-      when(
-        mockEisConnector.fetchRecords(eori, Some(recordId), None, None, None)
-      ).thenReturn(Future.successful(expectedJson))
-
-      val result = controller
-        .getSingleTGPRecord(eori, recordId)
-        .apply(FakeRequest(GET, s"/tgp/get-record/$eori/$recordId"))
+        .apply(fakeRequest)
 
       status(result) mustBe OK
       contentAsJson(result) mustBe expectedJson

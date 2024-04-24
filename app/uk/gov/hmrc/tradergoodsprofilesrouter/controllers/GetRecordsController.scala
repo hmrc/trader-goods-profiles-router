@@ -23,6 +23,8 @@ import play.api.mvc.{
   AnyContent,
   ControllerComponents
 }
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 
 import scala.concurrent.ExecutionContext
@@ -39,19 +41,21 @@ case class GetRecordsController(
       page: Option[Int] = None,
       size: Option[Int] = None
   ): Action[AnyContent] = Action.async { implicit request =>
-    eisConnector.fetchRecords(eori, None, lastUpdatedDate, page, size).map {
+    implicit val hc: HeaderCarrier =
+      HeaderCarrierConverter.fromRequestAndSession(request, request.session)
+    eisConnector.fetchRecords(eori, lastUpdatedDate, page, size, hc).map {
       jsonResponse =>
         Ok(jsonResponse)
     }
   }
 
-  def getSingleTGPRecord(
-      eori: String,
-      recordId: String
-  ): Action[AnyContent] = Action.async { implicit request =>
-    eisConnector.fetchRecords(eori, Some(recordId), None, None, None).map {
-      jsonResponse =>
-        Ok(jsonResponse)
-    }
-  }
+//  def getSingleTGPRecord(
+//      eori: String,
+//      recordId: String
+//  ): Action[AnyContent] = Action.async { implicit request =>
+//    eisConnector.fetchRecord(eori, Some(recordId), None, None, None).map {
+//      jsonResponse =>
+//        Ok(jsonResponse)
+//    }
+//  }
 }
