@@ -15,55 +15,52 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
-import play.api.http.MimeTypes
-import play.api.http.Status.OK
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.EISInstanceConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import java.util.UUID
+import play.api.libs.json.{JsValue, Json}
+
 import scala.concurrent.{ExecutionContext, Future}
 
 trait EISConnector {
-  def fetchRecord(
-    eori: String,
-    recordId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse]
+  def fetchRecords(
+      eori: String,
+      recordId: Option[String],
+      lastUpdatedDate: Option[String],
+      page: Option[Int],
+      size: Option[Int]
+  )(implicit ec: ExecutionContext): Future[JsValue]
 }
 
-class EISConnectorImpl(
-  eisInstanceConfig: EISInstanceConfig,
-  httpClientV2: HttpClientV2,
-  dateTimeService: DateTimeService
-) extends EISConnector {
+class EISConnectorImpl extends EISConnector {
 
-  override def fetchRecord(
-    eori: String,
-    recordId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
-    val url           = s"${eisInstanceConfig.url}/$eori/$recordId"
-    val correlationId = UUID.randomUUID().toString
-    val headers       = Seq(
-      HeaderNames.CORRELATION_ID -> correlationId,
-      HeaderNames.FORWARDED_HOST -> "localhost",
-      HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
-      HeaderNames.ACCEPT         -> MimeTypes.JSON,
-      HeaderNames.DATE           -> dateTimeService.timestamp.toString,
-      HeaderNames.CLIENT_ID      -> "clientId",
-      HeaderNames.AUTHORIZATION  -> eisInstanceConfig.headers.authorization
-    )
-
-    httpClientV2
-      .get(url"$url")(hc)
-      .setHeader(headers: _*)
-      .execute[HttpResponse]
-      .flatMap { response =>
-        response.status match {
-          case OK => Future.successful(response)
-          case _       => Future.successful(HttpResponse(400, "Something went wrong"))
-        }
-      }
+  override def fetchRecords(
+      eori: String,
+      recordId: Option[String],
+      lastUpdatedDate: Option[String],
+      page: Option[Int],
+      size: Option[Int]
+  )(implicit ec: ExecutionContext): Future[JsValue] = {
+    recordId match {
+      case Some(id) =>
+        Future.successful(
+          Json.obj(
+            "status" -> "success",
+            "message" -> "EIS record retrieved successfully",
+            "eori" -> eori,
+            "recordId" -> recordId
+          )
+        )
+      case None =>
+        Future.successful(
+          Json.obj(
+            "status" -> "success",
+            "message" -> "EIS list of records retrieved successfully",
+            "eori" -> eori,
+            "lastUpdatedDate" -> lastUpdatedDate,
+            "page" -> page,
+            "size" -> size
+          )
+        )
+    }
   }
+
 }
