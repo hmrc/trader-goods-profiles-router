@@ -71,7 +71,7 @@ class GetRecordsControllerSpec extends PlaySpec {
       val page = Some(1)
       val size = Some(10)
       val result = controller
-        .getSingleTGPRecord(eori, recordId, lastUpdatedDate, page, size)
+        .getSingleTGPRecord(eori, recordId)
         .apply(FakeRequest(GET, s"/tgp/get-record/$eori/$recordId"))
 
       status(result) mustBe OK
@@ -83,10 +83,7 @@ class GetRecordsControllerSpec extends PlaySpec {
         "status" -> "success",
         "message" -> "EIS record retrieved successfully",
         "eori" -> eori,
-        "recordId" -> recordId,
-        "lastUpdatedDate" -> lastUpdatedDate,
-        "page" -> page,
-        "size" -> size
+        "recordId" -> recordId
       )
     }
   }
