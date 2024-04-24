@@ -15,52 +15,56 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
-
-import play.api.libs.json.{JsValue, Json}
+import play.api.http.Status.OK
+import play.api.libs.json.JsValue
 
 import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
+import play.api.libs.json.Json
 
 trait EISConnector {
   def fetchRecords(
       eori: String,
-      recordId: Option[String],
       lastUpdatedDate: Option[String],
       page: Option[Int],
-      size: Option[Int]
+      size: Option[Int],
+      hc: HeaderCarrier
   )(implicit ec: ExecutionContext): Future[JsValue]
 }
 
-class EISConnectorImpl extends EISConnector {
+class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
+
+  private val baseUrl = "https://stub.eis.service"
 
   override def fetchRecords(
       eori: String,
-      recordId: Option[String],
       lastUpdatedDate: Option[String],
       page: Option[Int],
-      size: Option[Int]
+      size: Option[Int],
+      hc: HeaderCarrier
   )(implicit ec: ExecutionContext): Future[JsValue] = {
-    recordId match {
-      case Some(id) =>
-        Future.successful(
-          Json.obj(
-            "status" -> "success",
-            "message" -> "EIS record retrieved successfully",
-            "eori" -> eori,
-            "recordId" -> recordId
-          )
-        )
-      case None =>
-        Future.successful(
-          Json.obj(
-            "status" -> "success",
-            "message" -> "EIS list of records retrieved successfully",
-            "eori" -> eori,
-            "lastUpdatedDate" -> lastUpdatedDate,
-            "page" -> page,
-            "size" -> size
-          )
-        )
+    val url = s"$baseUrl/$eori"
+
+    httpClientV2.get(url"url")(hc).execute[HttpResponse].flatMap {
+      httpResponse =>
+        httpResponse.status match {
+          case OK =>
+            Future.successful(
+              httpResponse.json
+            )
+          case _ =>
+            Future.successful(
+              Json.obj(
+                "status" -> "error",
+                "message" -> "Failed to fetch data from EIS due to error response.",
+                "eori" -> eori,
+                "lastUpdatedDate" -> lastUpdatedDate,
+                "page" -> page,
+                "size" -> size
+              )
+            )
+        }
     }
   }
-
 }
