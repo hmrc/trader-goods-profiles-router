@@ -19,15 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.OK
 import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.test.Helpers.{
-  GET,
-  contentAsJson,
-  contentType,
-  defaultAwaitTimeout,
-  status,
-  stubControllerComponents
-}
+import play.api.test.Helpers.{GET, contentAsJson, contentType, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
 
 import scala.language.postfixOps
@@ -67,9 +59,6 @@ class GetRecordsControllerSpec extends PlaySpec {
         new GetRecordsController(Helpers.stubControllerComponents())
       val eori = "GB123456789011"
       val recordId = "rec123"
-      val lastUpdatedDate = Some("2024-03-26T16:14:52Z")
-      val page = Some(1)
-      val size = Some(10)
       val result = controller
         .getSingleTGPRecord(eori, recordId)
         .apply(FakeRequest(GET, s"/tgp/get-record/$eori/$recordId"))
