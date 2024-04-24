@@ -47,10 +47,7 @@ case class GetRecordsController(cc: ControllerComponents)
 
   def getSingleTGPRecord(
       eori: String,
-      recordId: String,
-      lastUpdatedDate: Option[String] = None,
-      page: Option[Int] = None,
-      size: Option[Int] = None
+      recordId: String
   ): Action[AnyContent] = Action { implicit request =>
     Ok(
       Json.obj(
@@ -58,9 +55,6 @@ case class GetRecordsController(cc: ControllerComponents)
         "message" -> "EIS record retrieved successfully",
         "eori" -> eori,
         "recordId" -> recordId,
-        "lastUpdatedDate" -> lastUpdatedDate,
-        "page" -> page,
-        "size" -> size
       )
     )
   }

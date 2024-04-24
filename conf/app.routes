@@ -2,4 +2,4 @@
 
 GET        /hello-world             uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MicroserviceHelloWorldController.hello
 GET     /tgp/get-records/:eori/         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecords(eori: String, lastUpdatedDate: Option[String] ?= None, page: Option[Int] ?= None, size: Option[Int] ?= None)
-GET     /tgp/get-records/:eori/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getSingleTGPRecord(eori: String, recordId: String, lastUpdatedDate: Option[String] ?= None, page: Option[Int] ?= None, size: Option[Int] ?= None)
+GET     /tgp/get-records/:eori/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getSingleTGPRecord(eori: String, recordId: String)
