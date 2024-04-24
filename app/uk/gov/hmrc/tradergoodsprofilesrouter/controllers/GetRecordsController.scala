@@ -23,8 +23,14 @@ import play.api.mvc.{
   AnyContent,
   ControllerComponents
 }
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 
-case class GetRecordsController(cc: ControllerComponents)
+import scala.concurrent.ExecutionContext
+
+case class GetRecordsController(
+    cc: ControllerComponents,
+    eisConnector: EISConnector
+)(implicit ec: ExecutionContext)
     extends AbstractController(cc) {
 
   def getTGPRecords(
@@ -32,30 +38,20 @@ case class GetRecordsController(cc: ControllerComponents)
       lastUpdatedDate: Option[String] = None,
       page: Option[Int] = None,
       size: Option[Int] = None
-  ): Action[AnyContent] = Action { implicit request =>
-    Ok(
-      Json.obj(
-        "status" -> "success",
-        "message" -> "EIS list of records retrieved successfully",
-        "eori" -> eori,
-        "lastUpdatedDate" -> lastUpdatedDate,
-        "page" -> page,
-        "size" -> size
-      )
-    )
+  ): Action[AnyContent] = Action.async { implicit request =>
+    eisConnector.fetchRecords(eori, None, lastUpdatedDate, page, size).map {
+      jsonResponse =>
+        Ok(jsonResponse)
+    }
   }
 
   def getSingleTGPRecord(
       eori: String,
       recordId: String
-  ): Action[AnyContent] = Action { implicit request =>
-    Ok(
-      Json.obj(
-        "status" -> "success",
-        "message" -> "EIS record retrieved successfully",
-        "eori" -> eori,
-        "recordId" -> recordId,
-      )
-    )
+  ): Action[AnyContent] = Action.async { implicit request =>
+    eisConnector.fetchRecords(eori, Some(recordId), None, None, None).map {
+      jsonResponse =>
+        Ok(jsonResponse)
+    }
   }
 }
