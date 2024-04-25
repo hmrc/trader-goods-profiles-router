@@ -28,9 +28,8 @@ trait EISConnector {
       eori: String,
       lastUpdatedDate: Option[String],
       page: Option[Int],
-      size: Option[Int],
-      hc: HeaderCarrier
-  )(implicit ec: ExecutionContext): Future[JsValue]
+      size: Option[Int]
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[JsValue]
 }
 
 class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
@@ -41,13 +40,17 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
       eori: String,
       lastUpdatedDate: Option[String],
       page: Option[Int],
-      size: Option[Int],
-      hc: HeaderCarrier
-  )(implicit ec: ExecutionContext): Future[JsValue] = {
+      size: Option[Int]
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[JsValue] = {
     val url = s"$baseUrl/$eori"
 
-    httpClientV2.get(url"url")(hc).execute[HttpResponse].flatMap {
-      httpResponse =>
+    httpClientV2
+      .get(url"url")(hc)
+      .setHeader(
+        "X-Correlation-Id" -> "3e8dae97-b586-4cef-8511-68ac12da9028"
+      )
+      .execute[HttpResponse]
+      .flatMap { httpResponse =>
         httpResponse.status match {
           case OK =>
             Future.successful(
@@ -65,6 +68,6 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
               )
             )
         }
-    }
+      }
   }
 }
