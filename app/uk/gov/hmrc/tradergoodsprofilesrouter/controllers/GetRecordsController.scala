@@ -16,24 +16,16 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import play.api.libs.json.Json
-import play.api.mvc.{
-  AbstractController,
-  Action,
-  AnyContent,
-  ControllerComponents
-}
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-
 import scala.concurrent.ExecutionContext
 
 case class GetRecordsController(
     cc: ControllerComponents,
     eisConnector: EISConnector
 )(implicit ec: ExecutionContext)
-    extends AbstractController(cc) {
+    extends BackendController(cc) {
 
   def getTGPRecords(
       eori: String,
@@ -41,21 +33,9 @@ case class GetRecordsController(
       page: Option[Int] = None,
       size: Option[Int] = None
   ): Action[AnyContent] = Action.async { implicit request =>
-    implicit val hc: HeaderCarrier =
-      HeaderCarrierConverter.fromRequestAndSession(request, request.session)
-    eisConnector.fetchRecords(eori, lastUpdatedDate, page, size, hc).map {
+    eisConnector.fetchRecords(eori, lastUpdatedDate, page, size).map {
       jsonResponse =>
         Ok(jsonResponse)
     }
   }
-
-//  def getSingleTGPRecord(
-//      eori: String,
-//      recordId: String
-//  ): Action[AnyContent] = Action.async { implicit request =>
-//    eisConnector.fetchRecord(eori, Some(recordId), None, None, None).map {
-//      jsonResponse =>
-//        Ok(jsonResponse)
-//    }
-//  }
 }
