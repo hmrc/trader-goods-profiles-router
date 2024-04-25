@@ -38,22 +38,22 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
     "return a successful JSON response for multiple records with all parameters" in {
       val mockEisConnector = mock[EISConnector]
-      val controller = new GetRecordsController(
+      val controller       = new GetRecordsController(
         Helpers.stubControllerComponents(),
         mockEisConnector
       )
 
-      val eori = "GB123456789011"
+      val eori            = "GB123456789011"
       val lastUpdatedDate = Some("2024-03-26T16:14:52Z")
-      val page = Some(1)
-      val size = Some(10)
-      val expectedJson = Json.obj(
-        "status" -> "success",
-        "message" -> "EIS list of records retrieved successfully",
-        "eori" -> eori,
+      val page            = Some(1)
+      val size            = Some(10)
+      val expectedJson    = Json.obj(
+        "status"          -> "success",
+        "message"         -> "EIS list of records retrieved successfully",
+        "eori"            -> eori,
         "lastUpdatedDate" -> lastUpdatedDate,
-        "page" -> page,
-        "size" -> size
+        "page"            -> page,
+        "size"            -> size
       )
 
       def validHeaders: Seq[(String, String)] = Seq(

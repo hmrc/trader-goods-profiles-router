@@ -25,10 +25,10 @@ import play.api.libs.json.Json
 
 trait EISConnector {
   def fetchRecords(
-      eori: String,
-      lastUpdatedDate: Option[String],
-      page: Option[Int],
-      size: Option[Int]
+    eori: String,
+    lastUpdatedDate: Option[String],
+    page: Option[Int],
+    size: Option[Int]
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[JsValue]
 }
 
@@ -37,10 +37,10 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
   private val baseUrl = "https://stub.eis.service"
 
   override def fetchRecords(
-      eori: String,
-      lastUpdatedDate: Option[String],
-      page: Option[Int],
-      size: Option[Int]
+    eori: String,
+    lastUpdatedDate: Option[String],
+    page: Option[Int],
+    size: Option[Int]
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[JsValue] = {
     val url = s"$baseUrl/$eori"
 
@@ -56,15 +56,15 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
             Future.successful(
               httpResponse.json
             )
-          case _ =>
+          case _  =>
             Future.successful(
               Json.obj(
-                "status" -> "error",
-                "message" -> "Failed to fetch data from EIS due to error response.",
-                "eori" -> eori,
+                "status"          -> "error",
+                "message"         -> "Failed to fetch data from EIS due to error response.",
+                "eori"            -> eori,
                 "lastUpdatedDate" -> lastUpdatedDate,
-                "page" -> page,
-                "size" -> size
+                "page"            -> page,
+                "size"            -> size
               )
             )
         }
