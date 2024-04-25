@@ -22,20 +22,19 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import scala.concurrent.ExecutionContext
 
 case class GetRecordsController(
-    cc: ControllerComponents,
-    eisConnector: EISConnector
+  cc: ControllerComponents,
+  eisConnector: EISConnector
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
   def getTGPRecords(
-      eori: String,
-      lastUpdatedDate: Option[String] = None,
-      page: Option[Int] = None,
-      size: Option[Int] = None
+    eori: String,
+    lastUpdatedDate: Option[String] = None,
+    page: Option[Int] = None,
+    size: Option[Int] = None
   ): Action[AnyContent] = Action.async { implicit request =>
-    eisConnector.fetchRecords(eori, lastUpdatedDate, page, size).map {
-      jsonResponse =>
-        Ok(jsonResponse)
+    eisConnector.fetchRecords(eori, lastUpdatedDate, page, size).map { jsonResponse =>
+      Ok(jsonResponse)
     }
   }
 }
