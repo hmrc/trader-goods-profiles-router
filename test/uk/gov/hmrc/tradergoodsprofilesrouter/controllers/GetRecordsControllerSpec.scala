@@ -16,21 +16,17 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.OK
 import play.api.libs.json.Json
-import play.api.test.Helpers.{
-  GET,
-  contentAsJson,
-  defaultAwaitTimeout,
-  status
-}
+import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import org.mockito.ArgumentMatchersSugar.eqTo
 
 import scala.concurrent.Future
 import scala.language.postfixOps
@@ -60,14 +56,23 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
         "size" -> size
       )
 
+      def validHeaders: Seq[(String, String)] = Seq(
+        "X-Correlation-ID" -> "3e8dae97-b586-4cef-8511-68ac12da9028"
+      )
+
       val fakeRequest = FakeRequest(GET, s"/tgp/get-record/$eori/")
-        .withHeaders("X-Correlation-ID" -> "123-456-789")
-        .withSession("sessionKey" -> "sessionValue")
+        .withHeaders(validHeaders: _*)
 
-      implicit val hc: HeaderCarrier =
-        HeaderCarrierConverter.fromRequestAndSession(fakeRequest, fakeRequest.session)
+      implicit val hc: HeaderCarrier = HeaderCarrier()
 
-      when(mockEisConnector.fetchRecords(eori, lastUpdatedDate, page, size, hc))
+      when(
+        mockEisConnector.fetchRecords(
+          eqTo(eori),
+          eqTo(lastUpdatedDate),
+          eqTo(page),
+          eqTo(size)
+        )(any, any)
+      )
         .thenReturn(Future.successful(expectedJson))
 
       val result = controller
