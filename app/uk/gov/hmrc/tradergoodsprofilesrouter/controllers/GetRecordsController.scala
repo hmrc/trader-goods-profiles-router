@@ -27,13 +27,11 @@ case class GetRecordsController(
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def getTGPRecords(
+  def getTGPRecord(
     eori: String,
-    lastUpdatedDate: Option[String] = None,
-    page: Option[Int] = None,
-    size: Option[Int] = None
+    recordId: String
   ): Action[AnyContent] = Action.async { implicit request =>
-    eisConnector.fetchRecords(eori, lastUpdatedDate, page, size).map { jsonResponse =>
+    eisConnector.fetchRecord(eori, recordId).map { jsonResponse =>
       Ok(jsonResponse)
     }
   }
