@@ -54,7 +54,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
         DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneOffset.UTC)
       val expectedJson        = Json.obj(
         "status"   -> "success",
-        "message"  -> "EIS list of records retrieved successfully",
+        "message"  -> "EIS record retrieved successfully",
         "eori"     -> eori,
         "recordId" -> recordId
       )
