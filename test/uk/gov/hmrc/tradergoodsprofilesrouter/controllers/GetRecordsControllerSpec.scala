@@ -24,7 +24,7 @@ import play.api.http.Status.OK
 import play.api.libs.json.Json
 import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, status}
 import play.api.test.{FakeRequest, Helpers}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import org.mockito.ArgumentMatchersSugar.eqTo
 import play.api.http.MimeTypes
@@ -50,10 +50,11 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
       val eori                = "GB123456789011"
       val recordId            = "12345"
+
       val HTTP_DATE_FORMATTER =
         DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneOffset.UTC)
+
       val expectedJson        = Json.obj(
-        "status"   -> "success",
         "message"  -> "EIS record retrieved successfully",
         "eori"     -> eori,
         "recordId" -> recordId
@@ -69,8 +70,12 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
         HeaderNames.AUTHORIZATION  -> "bearerToken"
       )
 
+      val mockHttpResponse = HttpResponse(200, expectedJson.toString())
+
+
       val fakeRequest                = FakeRequest(GET, s"/$eori/record/$recordId")
         .withHeaders(headers: _*)
+
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
       when(
@@ -79,7 +84,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
           eqTo(recordId)
         )(any, any)
       )
-        .thenReturn(Future.successful(expectedJson))
+        .thenReturn(Future.successful(mockHttpResponse))
 
       val result = controller
         .getTGPRecord(eori, recordId)
