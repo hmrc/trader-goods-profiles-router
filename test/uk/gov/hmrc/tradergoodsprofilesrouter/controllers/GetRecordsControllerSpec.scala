@@ -27,56 +27,63 @@ import play.api.test.{FakeRequest, Helpers}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import org.mockito.ArgumentMatchersSugar.eqTo
+import play.api.http.MimeTypes
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
+import java.time.{OffsetDateTime, ZoneOffset}
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import scala.concurrent.Future
 import scala.language.postfixOps
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
-  "GetRecordsController GET /tgp/get-record/:eori/:recordId" should {
+  "GetRecordsController GET /:eori/record/:recordId" should {
 
-    "return a successful JSON response for multiple records with all parameters" in {
+    "return a successful JSON response for a single record" in {
       val mockEisConnector = mock[EISConnector]
-      val controller       = new GetRecordsController(
+      val controller       = GetRecordsController(
         Helpers.stubControllerComponents(),
         mockEisConnector
       )
 
-      val eori            = "GB123456789011"
-      val lastUpdatedDate = Some("2024-03-26T16:14:52Z")
-      val page            = Some(1)
-      val size            = Some(10)
-      val expectedJson    = Json.obj(
-        "status"          -> "success",
-        "message"         -> "EIS list of records retrieved successfully",
-        "eori"            -> eori,
-        "lastUpdatedDate" -> lastUpdatedDate,
-        "page"            -> page,
-        "size"            -> size
+      val eori                = "GB123456789011"
+      val recordId            = "12345"
+      val HTTP_DATE_FORMATTER =
+        DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneOffset.UTC)
+      val expectedJson        = Json.obj(
+        "status"   -> "success",
+        "message"  -> "EIS list of records retrieved successfully",
+        "eori"     -> eori,
+        "recordId" -> recordId
       )
 
-      def validHeaders: Seq[(String, String)] = Seq(
-        "X-Correlation-ID" -> "3e8dae97-b586-4cef-8511-68ac12da9028"
+      val headers = Seq(
+        HeaderNames.CORRELATION_ID -> "3e8dae97-b586-4cef-8511-68ac12da9028",
+        HeaderNames.FORWARDED_HOST -> "0.0.0.0",
+        HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
+        HeaderNames.ACCEPT         -> MimeTypes.JSON,
+        HeaderNames.DATE           -> HTTP_DATE_FORMATTER.format(OffsetDateTime.now()),
+        HeaderNames.CLIENT_ID      -> "clientId",
+        HeaderNames.AUTHORIZATION  -> "bearerToken"
       )
 
-      val fakeRequest = FakeRequest(GET, s"/tgp/get-record/$eori/")
-        .withHeaders(validHeaders: _*)
+      val fakeRequest = FakeRequest(GET, s"/$eori/record/$recordId")
+        .withHeaders(headers: _*)
 
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
       when(
-        mockEisConnector.fetchRecords(
+        mockEisConnector.fetchRecord(
           eqTo(eori),
-          eqTo(lastUpdatedDate),
-          eqTo(page),
-          eqTo(size)
+          eqTo(recordId)
         )(any, any)
       )
         .thenReturn(Future.successful(expectedJson))
 
       val result = controller
-        .getTGPRecords(eori, lastUpdatedDate, page, size)
+        .getTGPRecord(eori, recordId)
         .apply(fakeRequest)
 
       status(result) mustBe OK
