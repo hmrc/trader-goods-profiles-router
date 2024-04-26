@@ -19,6 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+
 import scala.concurrent.ExecutionContext
 
 case class GetRecordsController(
@@ -31,8 +32,6 @@ case class GetRecordsController(
     eori: String,
     recordId: String
   ): Action[AnyContent] = Action.async { implicit request =>
-    eisConnector.fetchRecord(eori, recordId).map { jsonResponse =>
-      Ok(jsonResponse)
-    }
+    eisConnector.fetchRecord(eori, recordId).map(response => Ok(response.body))
   }
 }

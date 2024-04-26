@@ -69,9 +69,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
         HeaderNames.AUTHORIZATION  -> "bearerToken"
       )
 
-      val fakeRequest = FakeRequest(GET, s"/$eori/record/$recordId")
+      val fakeRequest                = FakeRequest(GET, s"/$eori/record/$recordId")
         .withHeaders(headers: _*)
-
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
       when(
