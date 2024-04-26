@@ -1,4 +1,4 @@
 # microservice specific routes
 
 GET        /hello-world             uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MicroserviceHelloWorldController.hello
-GET     /tgp/get-records/:eori/         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecords(eori: String, lastUpdatedDate: Option[String] ?= None, page: Option[Int] ?= None, size: Option[Int] ?= None)
+GET     /:eori/records/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecord(eori: String, recordId: String)
