@@ -26,6 +26,7 @@ import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.time.Instant
@@ -35,20 +36,33 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier()
+  val appConfig                     = mock[AppConfig]
+
+  when(appConfig.eisConfig).thenReturn(
+    new EISInstanceConfig(
+      "http",
+      "localhost",
+      1234,
+      "/tgp/getrecords/v1",
+      Headers("bearerToken")
+    )
+  )
+
   "fetchRecord " should {
     "return a single record" in {
       val mockHttpClientV2 = mock[HttpClientV2](RETURNS_DEEP_STUBS)
       val eori             = "GB123456789011"
       val recordId         = "12345"
-      val eisConnector     = new EISConnectorImpl(mockHttpClientV2)
-      val headers          = Seq(
+      val eisConnector     = new EISConnectorImpl(appConfig.eisConfig, mockHttpClientV2)
+
+      val headers = Seq(
         HeaderNames.CORRELATION_ID -> "3e8dae97-b586-4cef-8511-68ac12da9028",
-        HeaderNames.FORWARDED_HOST -> "localhost",
+        HeaderNames.FORWARDED_HOST -> appConfig.eisConfig.host,
         HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
         HeaderNames.ACCEPT         -> MimeTypes.JSON,
         HeaderNames.DATE           -> Instant.now().toString,
         HeaderNames.CLIENT_ID      -> "clientId",
-        HeaderNames.AUTHORIZATION  -> "bearerToken"
+        HeaderNames.AUTHORIZATION  -> appConfig.eisConfig.headers.authorization
       )
 
       val requestHeaderCaptor: ArgumentCaptor[Seq[(String, String)]] =

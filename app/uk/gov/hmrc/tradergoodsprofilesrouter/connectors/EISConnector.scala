@@ -18,6 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import play.api.http.MimeTypes
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.EISInstanceConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.time.Instant
@@ -31,15 +32,13 @@ trait EISConnector {
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse]
 }
 
-class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
-
-  private val baseUrl = "http://localhost:10903/tgp/getrecord/v1"
+class EISConnectorImpl(eisInstanceConfig: EISInstanceConfig, httpClientV2: HttpClientV2) extends EISConnector {
 
   override def fetchRecord(
     eori: String,
     recordId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
-    val url           = s"$baseUrl/$eori/$recordId"
+    val url           = s"${eisInstanceConfig.url}/$eori/$recordId"
     val correlationId = UUID.randomUUID().toString
     val headers       = Seq(
       HeaderNames.CORRELATION_ID -> correlationId,
@@ -48,7 +47,7 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
       HeaderNames.ACCEPT         -> MimeTypes.JSON,
       HeaderNames.DATE           -> Instant.now().toString,
       HeaderNames.CLIENT_ID      -> "clientId",
-      HeaderNames.AUTHORIZATION  -> "bearerToken"
+      HeaderNames.AUTHORIZATION  -> eisInstanceConfig.headers.authorization
     )
 
     httpClientV2
