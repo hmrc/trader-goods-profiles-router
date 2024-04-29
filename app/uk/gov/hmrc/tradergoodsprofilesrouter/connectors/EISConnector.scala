@@ -50,11 +50,11 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
     val url           = s"$baseUrl/$eori/$recordId"
     val correlationId = UUID.randomUUID().toString
     val headers       = Seq(
-      HeaderNames.CORRELATION_ID -> correlationId,
+      HeaderNames.CORRELATION_ID -> "3e8dae97-b586-4cef-8511-68ac12da9028",
       HeaderNames.FORWARDED_HOST -> "localhost",
       HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
       HeaderNames.ACCEPT         -> MimeTypes.JSON,
-      HeaderNames.DATE           -> Instant.now().toString,
+      HeaderNames.DATE           -> "2023-01-01T00:00:00Z",
       HeaderNames.CLIENT_ID      -> "clientId",
       HeaderNames.AUTHORIZATION  -> "bearerToken"
     )
