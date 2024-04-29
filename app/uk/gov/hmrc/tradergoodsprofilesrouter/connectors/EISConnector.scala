@@ -37,12 +37,6 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
 
   private val baseUrl = "http://localhost:10903/tgp/getrecord/v1"
 
-  // private val HTTP_DATE_FORMATTER =
-//DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneOffset.UTC)
-
-  // private def nowFormatted(): String =
-  //   s"${HTTP_DATE_FORMATTER.format(OffsetDateTime.now(clock.withZone(ZoneOffset.UTC)))} UTC"
-
   override def fetchRecord(
     eori: String,
     recordId: String
@@ -63,18 +57,5 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
       .get(url"$url")(hc)
       .setHeader(headers: _*)
       .execute[HttpResponse]
-    /*.flatMap { httpResponse =>
-        httpResponse.status match {
-          case OK =>
-            Future.successful(
-              httpResponse
-            )
-          case _  =>
-            Future.successful(
-              httpResponse
-            )
-        }
-      }*/
-
   }
 }
