@@ -16,16 +16,19 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
 import org.mockito.MockitoSugar.when
+import org.mockito.{ArgumentCaptor, Mockito}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import uk.gov.hmrc.http.client.HttpClientV2
-import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 class EISConnectorSpec extends PlaySpec with MockitoSugar {
@@ -43,22 +46,43 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
         HeaderNames.FORWARDED_HOST -> "localhost",
         HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
         HeaderNames.ACCEPT         -> MimeTypes.JSON,
-        HeaderNames.DATE           -> "2023-01-01T00:00:00Z",
+        HeaderNames.DATE           -> Instant.now().toString,
         HeaderNames.CLIENT_ID      -> "clientId",
         HeaderNames.AUTHORIZATION  -> "bearerToken"
       )
-      val url              = "http://localhost:10903/tgp/getrecord/v1/GB123456789011/12345"
+
+      val requestHeaderCaptor: ArgumentCaptor[Seq[(String, String)]] =
+        ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
 
       when(
         mockHttpClientV2
-          .get(url"$url")(hc)
-          .setHeader(headers: _*)
+          .get(any)(any)
+          .setHeader(any)
           .execute
       )
         .thenReturn(Future.successful(HttpResponse(200, "Ok")))
-      val response = eisConnector.fetchRecord(eori, recordId).value.value.get
+
+      val response       = eisConnector.fetchRecord(eori, recordId).value.value.get
+      verify(mockHttpClientV2.get(any)(any), Mockito.atLeast(1)).setHeader(requestHeaderCaptor.capture(): _*)
+      val requestHeaders = requestHeaderCaptor.getValue
       assertResult(response.status)(OK)
       assertResult(response.body)("Ok")
+      assertResult(headers.length)(requestHeaders.length)
+      val map            = requestHeaders.toMap
+      val uuid           = map.get(HeaderNames.CORRELATION_ID).value
+      val forwardedHost  = map.get(HeaderNames.FORWARDED_HOST).value
+      val contentType    = map.get(HeaderNames.CONTENT_TYPE).value
+      val accept         = map.get(HeaderNames.ACCEPT).value
+      val date           = map.get(HeaderNames.DATE).value
+      val clientId       = map.get(HeaderNames.CLIENT_ID).value
+      val authorization  = map.get(HeaderNames.AUTHORIZATION).value
+      assert(uuid.nonEmpty)
+      assertResult(forwardedHost)("localhost")
+      assertResult(contentType)(MimeTypes.JSON)
+      assertResult(accept)(MimeTypes.JSON)
+      assert(date.nonEmpty)
+      assertResult(clientId)("clientId")
+      assertResult(authorization)("bearerToken")
     }
   }
 
