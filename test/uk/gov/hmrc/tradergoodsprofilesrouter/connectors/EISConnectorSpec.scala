@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -26,6 +27,7 @@ import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
+import java.time.{Instant, OffsetDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
 class EISConnectorSpec extends PlaySpec with MockitoSugar {
