@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import org.apache.pekko.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -23,7 +24,11 @@ import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.client.HttpClientV2
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
+import play.api.http.MimeTypes
+import play.api.http.Status.OK
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
+import java.time.{Instant, OffsetDateTime}
 import scala.concurrent.{ExecutionContext, Future}
 
 class EISConnectorSpec extends PlaySpec with MockitoSugar {
@@ -38,9 +43,11 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
       val eisConnector     = new EISConnectorImpl(mockHttpClientV2)
 
       when(mockHttpClientV2.get(any)(any).setHeader(any).execute).thenReturn(Future.successful(HttpResponse(200, "Ok")))
-      val result = eisConnector.fetchRecord(eori, recordId)
+      val response = eisConnector.fetchRecord(eori, recordId).value.value.get
 
-
+      // TODO: Assert here...
+      assertResult(response.status)(OK)
+      assertResult(response.body)("Ok")
     }
   }
 
