@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import play.api.http.MimeTypes
-import play.api.http.Status.OK
-
-import scala.concurrent.{ExecutionContext, Future}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import java.time.{Instant}
-import java.util.{UUID}
+import java.time.Instant
+import java.util.UUID
+import scala.concurrent.{ExecutionContext, Future}
 
 trait EISConnector {
   def fetchRecord(
@@ -44,11 +42,11 @@ class EISConnectorImpl(httpClientV2: HttpClientV2) extends EISConnector {
     val url           = s"$baseUrl/$eori/$recordId"
     val correlationId = UUID.randomUUID().toString
     val headers       = Seq(
-      HeaderNames.CORRELATION_ID -> "3e8dae97-b586-4cef-8511-68ac12da9028",
+      HeaderNames.CORRELATION_ID -> correlationId,
       HeaderNames.FORWARDED_HOST -> "localhost",
       HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
       HeaderNames.ACCEPT         -> MimeTypes.JSON,
-      HeaderNames.DATE           -> "2023-01-01T00:00:00Z",
+      HeaderNames.DATE           -> Instant.now().toString,
       HeaderNames.CLIENT_ID      -> "clientId",
       HeaderNames.AUTHORIZATION  -> "bearerToken"
     )
