@@ -19,6 +19,7 @@ import play.api.http.MimeTypes
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.EISInstanceConfig
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.time.Instant
@@ -32,7 +33,11 @@ trait EISConnector {
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse]
 }
 
-class EISConnectorImpl(eisInstanceConfig: EISInstanceConfig, httpClientV2: HttpClientV2) extends EISConnector {
+class EISConnectorImpl(
+  eisInstanceConfig: EISInstanceConfig,
+  httpClientV2: HttpClientV2,
+  dateTimeService: DateTimeService
+) extends EISConnector {
 
   override def fetchRecord(
     eori: String,
@@ -45,7 +50,7 @@ class EISConnectorImpl(eisInstanceConfig: EISInstanceConfig, httpClientV2: HttpC
       HeaderNames.FORWARDED_HOST -> "localhost",
       HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
       HeaderNames.ACCEPT         -> MimeTypes.JSON,
-      HeaderNames.DATE           -> Instant.now().toString,
+      HeaderNames.DATE           -> dateTimeService.timestamp.toString,
       HeaderNames.CLIENT_ID      -> "clientId",
       HeaderNames.AUTHORIZATION  -> eisInstanceConfig.headers.authorization
     )
