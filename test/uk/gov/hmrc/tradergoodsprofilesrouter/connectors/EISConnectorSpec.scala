@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import org.apache.pekko.http.scaladsl.model.HttpHeader.ParsingResult.Ok
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
 import org.mockito.MockitoSugar.when
@@ -24,6 +25,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
@@ -69,6 +71,12 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
         HeaderNames.AUTHORIZATION  -> appConfig.eisConfig.headers.authorization
       )
 
+      val responseHeaders = Seq(
+        HeaderNames.CORRELATION_ID -> "3e8dae97-b586-4cef-8511-68ac12da9028",
+        HeaderNames.FORWARDED_HOST -> "uk.gov.hmrc.tgp-router",
+        HeaderNames.CONTENT_TYPE   -> "application/json"
+      )
+
       val requestHeaderCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
 
@@ -78,22 +86,24 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
           .setHeader(any)
           .execute
       )
-        .thenReturn(Future.successful(HttpResponse(200, "Ok")))
+        .thenReturn(Future.successful(HttpResponse(OK, getSingleRecordResponseData.toString())))
 
-      val response       = eisConnector.fetchRecord(eori, recordId).value.value.get
+      val response       = eisConnector.fetchRecord(eori, recordId)
       verify(mockHttpClientV2.get(any)(any), Mockito.atLeast(1)).setHeader(requestHeaderCaptor.capture(): _*)
       val requestHeaders = requestHeaderCaptor.getValue
-      assertResult(response.status)(OK)
-      assertResult(response.body)("Ok")
+
+      val eisResponse   = response.value.value.get
+      assertResult(eisResponse.status)(OK)
+      assertResult(eisResponse.body)(getSingleRecordResponseData.toString())
       assertResult(headers.length)(requestHeaders.length)
-      val map            = requestHeaders.toMap
-      val uuid           = map.get(HeaderNames.CORRELATION_ID).value
-      val forwardedHost  = map.get(HeaderNames.FORWARDED_HOST).value
-      val contentType    = map.get(HeaderNames.CONTENT_TYPE).value
-      val accept         = map.get(HeaderNames.ACCEPT).value
-      val date           = map.get(HeaderNames.DATE).value
-      val clientId       = map.get(HeaderNames.CLIENT_ID).value
-      val authorization  = map.get(HeaderNames.AUTHORIZATION).value
+      val map           = requestHeaders.toMap
+      val uuid          = map.get(HeaderNames.CORRELATION_ID).value
+      val forwardedHost = map.get(HeaderNames.FORWARDED_HOST).value
+      val contentType   = map.get(HeaderNames.CONTENT_TYPE).value
+      val accept        = map.get(HeaderNames.ACCEPT).value
+      val date          = map.get(HeaderNames.DATE).value
+      val clientId      = map.get(HeaderNames.CLIENT_ID).value
+      val authorization = map.get(HeaderNames.AUTHORIZATION).value
       assert(uuid.nonEmpty)
       assertResult(forwardedHost)("localhost")
       assertResult(contentType)(MimeTypes.JSON)
@@ -103,5 +113,60 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
       assertResult(authorization)("bearerToken")
     }
   }
+
+  val getSingleRecordResponseData: JsValue = Json.parse("""
+                                                          |{
+                                                          |"goodsItemRecords":
+                                                          |[
+                                                          |  {
+                                                          |    "eori": "GB1234567890",
+                                                          |    "actorId": "GB1234567890",
+                                                          |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                                                          |    "traderRef": "BAN001001",
+                                                          |    "comcode": "104101000",
+                                                          |    "accreditationRequest": "Not requested",
+                                                          |    "goodsDescription": "Organic bananas",
+                                                          |    "countryOfOrigin": "EC",
+                                                          |    "category": 3,
+                                                          |    "assessments": [
+                                                          |      {
+                                                          |        "assessmentId": "abc123",
+                                                          |        "primaryCategory": "1",
+                                                          |        "condition": {
+                                                          |          "type": "abc123",
+                                                          |          "conditionId": "Y923",
+                                                          |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                                                          |          "conditionTraderText": "Excluded product"
+                                                          |        }
+                                                          |      }
+                                                          |    ],
+                                                          |    "supplementaryUnit": 500,
+                                                          |    "measurementUnit": "square meters(m^2)",
+                                                          |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                                                          |    "comcodeEffectiveToDate": "",
+                                                          |    "version": 1,
+                                                          |    "active": true,
+                                                          |    "toReview": false,
+                                                          |    "reviewReason": null,
+                                                          |    "declarable": "IMMI declarable",
+                                                          |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                                                          |    "nirmsNumber": "RMS-GB-123456",
+                                                          |    "niphlNumber": "6 S12345",
+                                                          |    "locked": false,
+                                                          |    "srcSystemName": "CDAP",
+                                                          |    "createdDateTime": "2024-11-18T23:20:19Z",
+                                                          |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                                                          |  }
+                                                          |],
+                                                          |"pagination":
+                                                          | {
+                                                          |   "totalRecords": 1,
+                                                          |   "currentPage": 0,
+                                                          |   "totalPages": 1,
+                                                          |   "nextPage": null,
+                                                          |   "prevPage": null
+                                                          | }
+                                                          |}
+                                                          |""".stripMargin)
 
 }
