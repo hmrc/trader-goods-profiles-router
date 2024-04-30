@@ -27,6 +27,7 @@ import play.api.http.Status.OK
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.time.Instant
@@ -50,17 +51,20 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
 
   "fetchRecord " should {
     "return a single record" in {
-      val mockHttpClientV2 = mock[HttpClientV2](RETURNS_DEEP_STUBS)
-      val eori             = "GB123456789011"
-      val recordId         = "12345"
-      val eisConnector     = new EISConnectorImpl(appConfig.eisConfig, mockHttpClientV2)
+      val mockHttpClientV2    = mock[HttpClientV2](RETURNS_DEEP_STUBS)
+      val mockDateTimeService = mock[DateTimeService]
+      val eori                = "GB123456789011"
+      val recordId            = "12345"
+      val dateTime            = "2023-01-01T00:00:00Z"
+      val eisConnector        = new EISConnectorImpl(appConfig.eisConfig, mockHttpClientV2, mockDateTimeService)
 
+      when(mockDateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
       val headers = Seq(
         HeaderNames.CORRELATION_ID -> "3e8dae97-b586-4cef-8511-68ac12da9028",
         HeaderNames.FORWARDED_HOST -> appConfig.eisConfig.host,
         HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
         HeaderNames.ACCEPT         -> MimeTypes.JSON,
-        HeaderNames.DATE           -> Instant.now().toString,
+        HeaderNames.DATE           -> dateTime,
         HeaderNames.CLIENT_ID      -> "clientId",
         HeaderNames.AUTHORIZATION  -> appConfig.eisConfig.headers.authorization
       )
@@ -94,7 +98,7 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
       assertResult(forwardedHost)("localhost")
       assertResult(contentType)(MimeTypes.JSON)
       assertResult(accept)(MimeTypes.JSON)
-      assert(date.nonEmpty)
+      assertResult(date)(dateTime)
       assertResult(clientId)("clientId")
       assertResult(authorization)("bearerToken")
     }
