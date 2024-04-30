@@ -22,7 +22,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.config.EISInstanceConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import java.time.Instant
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
