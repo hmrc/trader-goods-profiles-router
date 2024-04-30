@@ -23,7 +23,7 @@ import java.time.{Instant, ZoneOffset, ZonedDateTime}
 
 @ImplementedBy(classOf[DateTimeServiceImpl])
 trait DateTimeService {
-  def timestamp: Instant
+  def timestamp(): Instant
 }
 
 @Singleton
