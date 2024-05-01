@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.error
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.format
 
-sealed trait EisError
+import cats.data.NonEmptyList
+import play.api.libs.functional.syntax.toInvariantFunctorOps
+import play.api.libs.json.Format
 
-object EisError {
-  case class NotFound(correlationId: String, eori: String) extends EisError
-  case class Unauthorised(correlationId: String, eori: String) extends EisError
-  case class BadRequest(thr: Option[Throwable] = None) extends EisError
-  case class InternalServerError(thr: Option[Throwable] = None) extends EisError
-  case class UnexpectedError(thr: Option[Throwable] = None) extends EisError
+object CommonFormats extends CommonFormats
+
+trait CommonFormats {
+
+  implicit def nonEmptyListFormat[A: Format]: Format[NonEmptyList[A]] =
+    Format
+      .of[List[A]]
+      .inmap(
+        NonEmptyList.fromListUnsafe,
+        _.toList
+      )
 }
