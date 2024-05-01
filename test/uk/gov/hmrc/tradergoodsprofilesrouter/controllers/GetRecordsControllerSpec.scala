@@ -48,13 +48,13 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
         mockEisConnector
       )
 
-      val eori                = "GB123456789011"
-      val recordId            = "12345"
+      val eori     = "GB123456789011"
+      val recordId = "12345"
 
       val HTTP_DATE_FORMATTER =
         DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneOffset.UTC)
 
-      val expectedJson        = Json.obj(
+      val expectedJson = Json.obj(
         "message"  -> "EIS record retrieved successfully",
         "eori"     -> eori,
         "recordId" -> recordId
@@ -72,8 +72,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
       val mockHttpResponse = HttpResponse(200, expectedJson.toString())
 
-
-      val fakeRequest                = FakeRequest(GET, s"/$eori/record/$recordId")
+      val fakeRequest = FakeRequest(GET, s"/$eori/record/$recordId")
         .withHeaders(headers: _*)
 
       implicit val hc: HeaderCarrier = HeaderCarrier()

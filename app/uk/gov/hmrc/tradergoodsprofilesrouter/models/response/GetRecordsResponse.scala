@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
+
+import play.api.libs.json.Json
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response.{GoodsItemRecords, Pagination}
 
 case class GetRecordsResponse(
-  goodsItemRecords: Seq[GoodsItemRecords],
+  records: Seq[GoodsItemRecords],
   pagination: Pagination
 )
+
+object GetRecordsResponse {
+  implicit val format = Json.format[GetRecordsResponse]
+}

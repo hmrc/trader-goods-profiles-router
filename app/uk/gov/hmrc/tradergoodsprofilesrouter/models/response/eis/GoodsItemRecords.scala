@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response
 
+import play.api.libs.json.Json
+
 case class GoodsItemRecords(
   eori: String,
   actorId: String,
@@ -44,3 +46,7 @@ case class GoodsItemRecords(
   createdDateTime: String,
   updatedDateTime: String
 )
+
+object GoodsItemRecords {
+  implicit val format = Json.format[GoodsItemRecords]
+}

@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import play.api.http.MimeTypes
-import play.api.http.Status.OK
 import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.EISInstanceConfig
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
@@ -30,19 +30,20 @@ trait EISConnector {
   def fetchRecord(
     eori: String,
     recordId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse]
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse]
 }
 
 class EISConnectorImpl(
   eisInstanceConfig: EISInstanceConfig,
   httpClientV2: HttpClientV2,
   dateTimeService: DateTimeService
-) extends EISConnector {
+) extends EISConnector
+    with BaseConnector {
 
   override def fetchRecord(
     eori: String,
     recordId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[HttpResponse] = {
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
     val url           = s"${eisInstanceConfig.url}/$eori/$recordId"
     val correlationId = UUID.randomUUID().toString
     val headers       = Seq(
@@ -58,12 +59,6 @@ class EISConnectorImpl(
     httpClientV2
       .get(url"$url")(hc)
       .setHeader(headers: _*)
-      .execute[HttpResponse]
-      .flatMap { response =>
-        response.status match {
-          case OK => Future.successful(response)
-          case _       => Future.successful(HttpResponse(400, "Something went wrong"))
-        }
-      }
+      .executeAndDeserialise[GetEisRecordsResponse]
   }
 }
