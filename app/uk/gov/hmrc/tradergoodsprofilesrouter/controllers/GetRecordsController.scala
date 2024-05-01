@@ -37,7 +37,7 @@ case class GetRecordsController(
       .fold[Result](
         // update status to fail
         presentationError => Status(500)("Json.toJson(presentationError"),
-        response => Accepted("") //TODO add success response
+        response => Ok("") //TODO add success response
       )
   }
 }
