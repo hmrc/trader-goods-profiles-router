@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.RouterService
 
 import scala.concurrent.ExecutionContext
 
 case class GetRecordsController(
   cc: ControllerComponents,
-  eisConnector: EISConnector
+  routerService: RouterService
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
@@ -32,6 +32,12 @@ case class GetRecordsController(
     eori: String,
     recordId: String
   ): Action[AnyContent] = Action.async { implicit request =>
-    eisConnector.fetchRecord(eori, recordId).map(response => Ok(response.body))
+    routerService
+      .fetchRecord(eori, recordId)
+      .fold[Result](
+        // update status to fail
+        presentationError => Status(500)("Json.toJson(presentationError"),
+        response => Accepted("") //TODO add success response
+      )
   }
 }

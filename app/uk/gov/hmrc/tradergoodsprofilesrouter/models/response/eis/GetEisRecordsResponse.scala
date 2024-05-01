@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.config
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response
 
-import play.api.Configuration
+import play.api.libs.json.Json
 
-import javax.inject.{Inject, Singleton}
+case class GetEisRecordsResponse(
+  goodsItemRecords: Seq[GoodsItemRecords],
+  pagination: Pagination
+)
 
-@Singleton
-class AppConfig @Inject() (config: Configuration) {
-
-  val appName: String              = config.get[String]("appName")
-  val eisConfig: EISInstanceConfig = config.get[EISInstanceConfig]("microservice.services.eis")
+object GetEisRecordsResponse {
+  implicit val format = Json.format[GetEisRecordsResponse]
 }
