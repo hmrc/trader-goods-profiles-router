@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json.{Format, Json, OFormat, OWrites, Reads, __}
+import play.api.libs.json.{JsSuccess, JsValue, Json, Reads, Writes, __}
 case class GoodsItemRecords(
   eori: String,
   actorId: String,
@@ -40,38 +39,74 @@ case class GoodsItemRecords(
   declarable: String,
   ukimsNumber: String,
   nirmsNumber: Option[String],
-  niphlNumber: Option[String]
-//  locked: Boolean
-//  srcSystemName: String,
-//  createdDateTime: String,
-//  updatedDateTime: String
+  niphlNumber: Option[String],
+  locked: Boolean,
+  srcSystemName: String,
+  createdDateTime: String,
+  updatedDateTime: String
 )
 
 object GoodsItemRecords {
-  implicit val format: Format[GoodsItemRecords] = Json.format[GoodsItemRecords]
 
-//  implicit val goodsItemRecordsWrites: OWrites[GoodsItemRecords] = (
-//    (__ \ "eori").write[String] and
-//      (__ \ "actorId").write[String] and
-//      (__ \ "recordId").write[String] and
-//      (__ \ "traderRef").write[String] and
-//      (__ \ "comcode").write[String] and
-//      (__ \ "accreditationRequest").write[String] and
-//      (__ \ "goodsDescription").write[String] and
-//      (__ \ "countryOfOrigin").write[String] and
-//      (__ \ "category").write[Int] and
-//      (__ \ "assessments").write[Option[Seq[Assessment]]] and
-//      (__ \ "supplementaryUnit").write[Option[Int]] and
-//      (__ \ "measurementUnit").write[Option[String]] and
-//      (__ \ "comcodeEffectiveFromDate").write[String] and
-//      (__ \ "comcodeEffectiveToDate").write[Option[String]] and
-//      (__ \ "version").write[Int] and
-//      (__ \ "active").write[Boolean] and
-//      (__ \ "toReview").write[Boolean] and
-//      (__ \ "reviewReason").write[Option[String]] and
-//      (__ \ "declarable").write[String] and
-//      (__ \ "ukimsNumber").write[String] and
-//      (__ \ "nirmsNumber").write[Option[String]] and
-//      (__ \ "niphlNumber").write[Option[String]]
-//    )(unlift(GoodsItemRecords.unapply))
+  implicit val goodsItemRecordsReads: Reads[GoodsItemRecords] = (json: JsValue) =>
+    JsSuccess(
+      GoodsItemRecords(
+        (json \ "eori").as[String],
+        (json \ "actorId").as[String],
+        (json \ "recordId").as[String],
+        (json \ "traderRef").as[String],
+        (json \ "comcode").as[String],
+        (json \ "accreditationRequest").as[String],
+        (json \ "goodsDescription").as[String],
+        (json \ "countryOfOrigin").as[String],
+        (json \ "category").as[Int],
+        (json \ "assessments").asOpt[Seq[Assessment]],
+        (json \ "supplementaryUnit").asOpt[Int],
+        (json \ "measurementUnit").asOpt[String],
+        (json \ "comcodeEffectiveFromDate").as[String],
+        (json \ "comcodeEffectiveToDate").asOpt[String],
+        (json \ "version").as[Int],
+        (json \ "active").as[Boolean],
+        (json \ "toReview").as[Boolean],
+        (json \ "reviewReason").asOpt[String],
+        (json \ "declarable").as[String],
+        (json \ "ukimsNumber").as[String],
+        (json \ "nirmsNumber").asOpt[String],
+        (json \ "niphlNumber").asOpt[String],
+        (json \ "locked").as[Boolean],
+        (json \ "srcSystemName").as[String],
+        (json \ "createdDateTime").as[String],
+        (json \ "updatedDateTime").as[String]
+      )
+    )
+
+  implicit val goodsItemRecordsWrites: Writes[GoodsItemRecords] = (goodsItemRecords: GoodsItemRecords) =>
+    Json.obj(
+      "eori"                     -> goodsItemRecords.eori,
+      "actorId"                  -> goodsItemRecords.actorId,
+      "recordId"                 -> goodsItemRecords.recordId,
+      "traderRef"                -> goodsItemRecords.traderRef,
+      "comcode"                  -> goodsItemRecords.comcode,
+      "accreditationRequest"     -> goodsItemRecords.accreditationRequest,
+      "goodsDescription"         -> goodsItemRecords.goodsDescription,
+      "countryOfOrigin"          -> goodsItemRecords.countryOfOrigin,
+      "category"                 -> goodsItemRecords.category,
+      "assessments"              -> goodsItemRecords.assessments,
+      "supplementaryUnit"        -> goodsItemRecords.supplementaryUnit,
+      "measurementUnit"          -> goodsItemRecords.measurementUnit,
+      "comcodeEffectiveFromDate" -> goodsItemRecords.comcodeEffectiveFromDate,
+      "comcodeEffectiveToDate"   -> goodsItemRecords.comcodeEffectiveToDate,
+      "version"                  -> goodsItemRecords.version,
+      "active"                   -> goodsItemRecords.active,
+      "toReview"                 -> goodsItemRecords.toReview,
+      "reviewReason"             -> goodsItemRecords.reviewReason,
+      "declarable"               -> goodsItemRecords.declarable,
+      "ukimsNumber"              -> goodsItemRecords.ukimsNumber,
+      "nirmsNumber"              -> goodsItemRecords.nirmsNumber,
+      "niphlNumber"              -> goodsItemRecords.niphlNumber,
+      "locked"                   -> goodsItemRecords.locked,
+      "srcSystemName"            -> goodsItemRecords.srcSystemName,
+      "createdDateTime"          -> goodsItemRecords.createdDateTime,
+      "updatedDateTime"          -> goodsItemRecords.updatedDateTime
+    )
 }

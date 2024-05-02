@@ -18,7 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import cats.data.EitherT
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.http.Status.{BAD_REQUEST, CONFLICT}
+import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, METHOD_NOT_ALLOWED, NOT_FOUND}
 import play.api.libs.Files.logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
@@ -27,7 +27,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, G
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{EisError, InvalidEisError}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 import scala.util.control.NonFatal
 
 @ImplementedBy(classOf[RouterServiceImpl])
@@ -43,24 +42,28 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector) extends RouterSer
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): EitherT[Future, EisError, GetEisRecordsResponse] =
-    EitherT {
-      eisConnector.fetchRecord(eori, recordId).map(Right(_)).recover {
-        case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
-          Left(EisError.BadRequest(Some(new Exception(message))))
-        case UpstreamErrorResponse(message, _, _, _)           =>
-          Left(EisError.UnexpectedError(Some(new Exception(message))))
-        case NonFatal(e)                                       =>
-          Left(EisError.UnexpectedError(Some(e)))
-      }
-    }
+    EitherT(
+      eisConnector
+        .fetchRecord(eori, recordId)
+        .map(result => Right(result))
+        .recover {
+          case UpstreamErrorResponse(message, BAD_REQUEST, _, _)           => Left(determineFetchRecordError(message))
+          case UpstreamErrorResponse(_, FORBIDDEN, _, _)                   => Left(EisError.Forbidden(eori))
+          case UpstreamErrorResponse(_, NOT_FOUND, _, _)                   => Left(EisError.NotFound(eori))
+          case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _)          => Left(EisError.MethodNotAllowed(eori))
+          case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) => Left(determineFetchRecordError(message))
+          case NonFatal(e)                                                 =>
+            logger.error(s"Unable to send to EIS : ${e.getMessage}", e)
+            Left(EisError.UnexpectedError(Some(e)))
+        }
+    )
 
-  def determineError(response: HttpResponse): EisError =
-    Json.parse(response.body).validate[ErrorDetail] match {
+  def determineFetchRecordError(message: String): EisError =
+    Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         detail.errorCode match {
-          case "NOT_FOUND"    => EisError.NotFound(detail.correlationId, detail.errorMessage)
-          case "UNAUTHORIZED" => EisError.Unauthorised(detail.correlationId, detail.errorMessage)
-          case _              => EisError.UnexpectedError(Some(new RuntimeException(detail.errorMessage)))
+          case "400" => null // setBadRequestResponse(detail)
+          case _     => EisError.UnexpectedError(Some(new RuntimeException(detail.errorMessage)))
         }
       case JsError(errors)      =>
         EisError.UnexpectedError(Some(new RuntimeException(s"Error parsing response: $errors")))
