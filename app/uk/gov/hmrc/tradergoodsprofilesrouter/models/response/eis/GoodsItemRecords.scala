@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.Json
-
+import play.api.libs.json.{Format, Json}
 case class GoodsItemRecords(
   eori: String,
   actorId: String,
@@ -48,5 +47,5 @@ case class GoodsItemRecords(
 )
 
 object GoodsItemRecords {
-  implicit val format = Json.format[GoodsItemRecords]
+  implicit val format: Format[GoodsItemRecords] = Json.format[GoodsItemRecords]
 }

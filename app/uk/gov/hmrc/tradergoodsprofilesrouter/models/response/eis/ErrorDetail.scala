@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.SourceFaultDetail
 
 import java.time.Instant
 
