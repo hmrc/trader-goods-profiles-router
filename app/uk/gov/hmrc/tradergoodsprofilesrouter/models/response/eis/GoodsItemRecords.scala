@@ -40,11 +40,7 @@ case class GoodsItemRecords(
   declarable: String,
   ukimsNumber: String,
   nirmsNumber: Option[String],
-  niphlNumber: Option[String],
-  locked: Boolean,
-  srcSystemName: String,
-  createdDateTime: String,
-  updatedDateTime: String
+  niphlNumber: Option[String]
 )
 
 object GoodsItemRecords {
@@ -71,5 +67,5 @@ object GoodsItemRecords {
       (__ \ "ukimsNumber").write[String] and
       (__ \ "nirmsNumber").write[Option[String]] and
       (__ \ "niphlNumber").write[Option[String]]
-  )(unlift(GoodsItemRecords.unapply()))
+    )(unlift(GoodsItemRecords.unapply))
 }
