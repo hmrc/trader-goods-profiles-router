@@ -20,10 +20,10 @@ import cats.data.EitherT
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.http.Status.{BAD_REQUEST, CONFLICT}
 import play.api.libs.Files.logger
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, GetEisRecordsResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{EisError, InvalidEisError}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,26 +44,25 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector) extends RouterSer
     hc: HeaderCarrier
   ): EitherT[Future, EisError, GetEisRecordsResponse] =
     EitherT {
-      eisConnector
-        .fetchRecord(eori, recordId)
-        .map(result => Right(result))
-        .recover {
-          case UpstreamErrorResponse(message, BAD_REQUEST, _, _) => Left(determineError(message))
-          // case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _)    => Left(onConflict(message))
-          case NonFatal(e)                                       =>
-            logger.error(s"Unable to send to EIS : ${e.getMessage}", e)
-            Left(EisError.UnexpectedError(thr = Some(e)))
-        }
+      eisConnector.fetchRecord(eori, recordId).map(Right(_)).recover {
+        case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
+          Left(EisError.BadRequest(Some(new Exception(message))))
+        case UpstreamErrorResponse(message, _, _, _)           =>
+          Left(EisError.UnexpectedError(Some(new Exception(message))))
+        case NonFatal(e)                                       =>
+          Left(EisError.UnexpectedError(Some(e)))
+      }
     }
 
-  private def determineError(message: String): EisError =
-    Try(Json.parse(message))
-      .map(_.validate[InvalidEisError])
-      .map {
-        case JsSuccess(value: InvalidEisError, _) => EisError.UnrecognisedEis(value.eori, value.field)
-        case _                                    => EisError.UnexpectedError()
-      }
-      .getOrElse(EisError.UnexpectedError()) // we didn't get Json, but the exception here would then be a
-  // red herring, so don't pass it on
-
+  def determineError(response: HttpResponse): EisError =
+    Json.parse(response.body).validate[ErrorDetail] match {
+      case JsSuccess(detail, _) =>
+        detail.errorCode match {
+          case "NOT_FOUND"    => EisError.NotFound(detail.correlationId, detail.errorMessage)
+          case "UNAUTHORIZED" => EisError.Unauthorised(detail.correlationId, detail.errorMessage)
+          case _              => EisError.UnexpectedError(Some(new RuntimeException(detail.errorMessage)))
+        }
+      case JsError(errors)      =>
+        EisError.UnexpectedError(Some(new RuntimeException(s"Error parsing response: $errors")))
+    }
 }

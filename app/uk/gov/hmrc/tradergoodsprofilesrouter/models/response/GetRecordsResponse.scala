@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 
-import play.api.libs.json.Json
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.eis.response.{GoodsItemRecords, Pagination}
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GoodsItemRecords, Pagination}
 
 case class GetRecordsResponse(
   records: Seq[GoodsItemRecords],
@@ -25,5 +25,5 @@ case class GetRecordsResponse(
 )
 
 object GetRecordsResponse {
-  implicit val format = Json.format[GetRecordsResponse]
+  implicit val format: Format[GetRecordsResponse] = Json.format[GetRecordsResponse]
 }
