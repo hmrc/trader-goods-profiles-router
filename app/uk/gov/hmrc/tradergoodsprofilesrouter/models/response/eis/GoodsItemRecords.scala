@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.functional.syntax._
+import play.api.libs.json.{Format, Json, OWrites, Reads, __}
 case class GoodsItemRecords(
   eori: String,
   actorId: String,
@@ -47,5 +48,28 @@ case class GoodsItemRecords(
 )
 
 object GoodsItemRecords {
-  implicit val format: Format[GoodsItemRecords] = Json.format[GoodsItemRecords]
+  implicit val goodsItemRecordsWrites: OWrites[GoodsItemRecords] = (
+    (__ \ "eori").write[String] and
+      (__ \ "actorId").write[String] and
+      (__ \ "recordId").write[String] and
+      (__ \ "traderRef").write[String] and
+      (__ \ "comcode").write[String] and
+      (__ \ "accreditationRequest").write[String] and
+      (__ \ "goodsDescription").write[String] and
+      (__ \ "countryOfOrigin").write[String] and
+      (__ \ "category").write[Int] and
+      (__ \ "assessments").write[Option[Seq[Assessment]]] and
+      (__ \ "supplementaryUnit").write[Option[Int]] and
+      (__ \ "measurementUnit").write[Option[String]] and
+      (__ \ "comcodeEffectiveFromDate").write[String] and
+      (__ \ "comcodeEffectiveToDate").write[Option[String]] and
+      (__ \ "version").write[Int] and
+      (__ \ "active").write[Boolean] and
+      (__ \ "toReview").write[Boolean] and
+      (__ \ "reviewReason").write[Option[String]] and
+      (__ \ "declarable").write[String] and
+      (__ \ "ukimsNumber").write[String] and
+      (__ \ "nirmsNumber").write[Option[String]] and
+      (__ \ "niphlNumber").write[Option[String]]
+  )(unlift(GoodsItemRecords.unapply()))
 }
