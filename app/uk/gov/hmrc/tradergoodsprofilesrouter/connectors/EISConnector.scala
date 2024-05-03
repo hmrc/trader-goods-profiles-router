@@ -15,17 +15,20 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
+import com.google.inject.ImplementedBy
 import play.api.http.MimeTypes
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.EISInstanceConfig
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.util.UUID
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
+@ImplementedBy(classOf[EISConnectorImpl])
 trait EISConnector {
   def fetchRecord(
     eori: String,
@@ -33,8 +36,8 @@ trait EISConnector {
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse]
 }
 
-class EISConnectorImpl(
-  eisInstanceConfig: EISInstanceConfig,
+class EISConnectorImpl @Inject() (
+  appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   dateTimeService: DateTimeService
 ) extends EISConnector
@@ -44,7 +47,8 @@ class EISConnectorImpl(
     eori: String,
     recordId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
-    val url           = s"${eisInstanceConfig.url}/$eori/$recordId"
+//    val url           = s"${appConfig.eisConfig.url}/$eori/$recordId"
+    val url           = s"${appConfig.eisConfig.url}/$eori"
     val correlationId = UUID.randomUUID().toString
     val headers       = Seq(
       HeaderNames.CORRELATION_ID -> correlationId,
@@ -53,7 +57,7 @@ class EISConnectorImpl(
       HeaderNames.ACCEPT         -> MimeTypes.JSON,
       HeaderNames.DATE           -> dateTimeService.timestamp.toString,
       HeaderNames.CLIENT_ID      -> "clientId",
-      HeaderNames.AUTHORIZATION  -> eisInstanceConfig.headers.authorization
+      HeaderNames.AUTHORIZATION  -> appConfig.eisConfig.headers.authorization
     )
 
     httpClientV2

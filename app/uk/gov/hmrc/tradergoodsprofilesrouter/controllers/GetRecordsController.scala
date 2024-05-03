@@ -18,13 +18,14 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json.toJson
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.RouterService
 
+import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-case class GetRecordsController(
+class GetRecordsController @Inject() (
   cc: ControllerComponents,
   routerService: RouterService
 )(implicit ec: ExecutionContext)
@@ -33,7 +34,7 @@ case class GetRecordsController(
   def getTGPRecord(
     eori: String,
     recordId: String
-  ): Action[_] = Action.async { implicit request =>
+  ): Action[AnyContent] = Action.async { implicit request =>
     routerService
       .fetchRecord(eori, recordId)
       .fold(
