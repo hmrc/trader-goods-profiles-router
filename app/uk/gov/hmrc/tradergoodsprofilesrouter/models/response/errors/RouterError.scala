@@ -16,15 +16,4 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 
-sealed trait EisError
-
-object EisError {
-  case class Forbidden(eori: String) extends EisError
-  case class NotFound(eori: String) extends EisError
-  case class MethodNotAllowed(eori: String) extends EisError
-  case class Unauthorised(correlationId: String, eori: String) extends EisError
-  case class BadRequest() extends EisError
-  case class UnrecognisedEis(correlationId: String, eori: String) extends EisError
-  case class InternalServerError(thr: Option[Throwable] = None) extends EisError
-  case class UnexpectedError(thr: Option[Throwable] = None) extends EisError
-}
+case class RouterError(status: Int, errorResponse: Option[ErrorResponse] = None)

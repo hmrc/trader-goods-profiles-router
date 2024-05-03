@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import play.api.libs.json.Format.GenericFormat
+import play.api.libs.json.Json.toJson
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.RouterService
 
@@ -31,13 +33,12 @@ case class GetRecordsController(
   def getTGPRecord(
     eori: String,
     recordId: String
-  ): Action[AnyContent] = Action.async { implicit request =>
+  ): Action[_] = Action.async { implicit request =>
     routerService
       .fetchRecord(eori, recordId)
-      .fold[Result](
-        // update status to fail
-        presentationError => Status(500)("Json.toJson(presentationError"),
-        response => Ok("") //TODO add success response
+      .fold(
+        error => Status(error.status)(toJson(error.errorResponse)),
+        response => Ok(toJson(response))
       )
   }
 }
