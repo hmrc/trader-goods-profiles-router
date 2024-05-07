@@ -25,8 +25,9 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse, RouterError}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BAD_REQUEST_CODE, BAD_REQUEST_MESSAGE, INTERNAL_ERROR_RESPONSE_CODE, INTERNAL_ERROR_RESPONSE_MESSAGE, INVALID_OR_EMPTY_PAYLOAD, INVALID_REQUEST_PARAMETER_CODE, NOT_FOUND_CODE, NOT_FOUND_MESSAGE, UNAUTHORIZED_CODE, UNAUTHORIZED_MESSAGE, UNEXPECTED_ERROR_CODE, UNEXPECTED_ERROR_MESSAGE}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -39,67 +40,166 @@ trait RouterService {
 }
 
 class RouterServiceImpl @Inject() (eisConnector: EISConnector) extends RouterService {
+  val correlationId                                 = UUID.randomUUID().toString
   override def fetchRecord(eori: String, recordId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): EitherT[Future, RouterError, GoodsItemRecords] =
     EitherT(
       eisConnector
-        .fetchRecord(eori, recordId)
+        .fetchRecord(eori, recordId, correlationId)
         .map(result => Right(result.goodsItemRecords.head))
         .recover {
           case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
-            Left(RouterError(BAD_REQUEST, Some(determine400Error(message))))
+            Left(RouterError(BAD_REQUEST, determine400Error(correlationId, message)))
 
-          case UpstreamErrorResponse(_, FORBIDDEN, _, _)                   => Left(RouterError(FORBIDDEN))
-          case UpstreamErrorResponse(_, NOT_FOUND, _, _)                   => Left(RouterError(NOT_FOUND, Some(ErrorResponse(NOT_FOUND_CODE, NOT_FOUND_MESSAGE))))
+          case UpstreamErrorResponse(_, FORBIDDEN, _, _)                   =>
+            Left(
+              RouterError(
+                FORBIDDEN,
+                ErrorResponse(
+                  correlationId,
+                  ApplicationConstants.FORBIDDEN_CODE,
+                  ApplicationConstants.FORBIDDEN_MESSAGE
+                )
+              )
+            )
+          case UpstreamErrorResponse(_, NOT_FOUND, _, _)                   =>
+            Left(
+              RouterError(
+                NOT_FOUND,
+                ErrorResponse(
+                  correlationId,
+                  ApplicationConstants.NOT_FOUND_CODE,
+                  ApplicationConstants.NOT_FOUND_MESSAGE
+                )
+              )
+            )
           case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _)          =>
-            Left(RouterError(METHOD_NOT_ALLOWED))
+            Left(
+              RouterError(
+                METHOD_NOT_ALLOWED,
+                ErrorResponse(
+                  correlationId,
+                  ApplicationConstants.METHOD_NOT_ALLOWED_CODE,
+                  ApplicationConstants.METHOD_NOT_ALLOWED_MESSAGE
+                )
+              )
+            )
           case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
-            Left(determine500Error(message))
+            Left(determine500Error(correlationId, message))
           case NonFatal(e)                                                 =>
             logger.error(s"Unable to send to EIS : ${e.getMessage}", e)
-            Left(RouterError(INTERNAL_SERVER_ERROR))
+            Left(
+              RouterError(
+                INTERNAL_SERVER_ERROR,
+                ErrorResponse(
+                  correlationId,
+                  ApplicationConstants.UNEXPECTED_ERROR_CODE,
+                  ApplicationConstants.UNEXPECTED_ERROR_MESSAGE
+                )
+              )
+            )
         }
     )
 
-  def determine400Error(message: String): ErrorResponse =
+  def determine400Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
-        setBadRequestResponse(detail)
+        setBadRequestResponse(correlationId, detail)
       case JsError(errors)      =>
-        ErrorResponse(UNEXPECTED_ERROR_CODE, UNEXPECTED_ERROR_MESSAGE)
+        ErrorResponse(
+          correlationId,
+          ApplicationConstants.UNEXPECTED_ERROR_CODE,
+          ApplicationConstants.UNEXPECTED_ERROR_MESSAGE
+        )
     }
 
-  def determine500Error(message: String): RouterError =
+  def determine500Error(correlationId: String, message: String): RouterError =
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         detail.errorCode match {
+          case "200" =>
+            RouterError(
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.INVALID_OR_EMPTY_PAYLOAD_CODE,
+                ApplicationConstants.INVALID_OR_EMPTY_PAYLOAD_MESSAGE
+              )
+            )
           case "400" =>
             RouterError(
-              BAD_REQUEST,
-              Some(ErrorResponse(INTERNAL_ERROR_RESPONSE_CODE, INTERNAL_ERROR_RESPONSE_MESSAGE))
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.INTERNAL_ERROR_RESPONSE_CODE,
+                ApplicationConstants.INTERNAL_ERROR_RESPONSE_MESSAGE
+              )
             )
           case "401" =>
             RouterError(
-              UNAUTHORIZED,
-              Some(ErrorResponse(UNAUTHORIZED_CODE, UNAUTHORIZED_MESSAGE))
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.UNAUTHORIZED_CODE,
+                ApplicationConstants.UNAUTHORIZED_MESSAGE
+              )
             )
-          case "200" =>
+          case "404" =>
             RouterError(
-              BAD_REQUEST,
-              Some(ErrorResponse(BAD_REQUEST_CODE, INVALID_OR_EMPTY_PAYLOAD))
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(correlationId, ApplicationConstants.NOT_FOUND_CODE, ApplicationConstants.NOT_FOUND_MESSAGE)
             )
-          case _     => RouterError(INTERNAL_SERVER_ERROR)
+          case "405" =>
+            RouterError(
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.METHOD_NOT_ALLOWED_CODE,
+                ApplicationConstants.METHOD_NOT_ALLOWED_MESSAGE
+              )
+            )
+          case "502" =>
+            RouterError(
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BAD_GATEWAY_CODE,
+                ApplicationConstants.BAD_GATEWAY_MESSAGE
+              )
+            )
+          case "503" =>
+            RouterError(
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.SERVICE_UNAVAILABLE_CODE,
+                ApplicationConstants.SERVICE_UNAVAILABLE_MESSAGE
+              )
+            )
+          case _     =>
+            RouterError(
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(correlationId, ApplicationConstants.UNKNOWN_CODE, ApplicationConstants.UNKNOWN_MESSAGE)
+            )
         }
       case JsError(errors)      =>
-        RouterError(INTERNAL_SERVER_ERROR)
+        RouterError(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(
+            correlationId,
+            ApplicationConstants.UNEXPECTED_ERROR_CODE,
+            ApplicationConstants.UNEXPECTED_ERROR_MESSAGE
+          )
+        )
     }
 
-  def setBadRequestResponse(detail: ErrorDetail): ErrorResponse =
+  def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse =
     ErrorResponse(
-      BAD_REQUEST_CODE,
-      BAD_REQUEST_MESSAGE,
+      correlationId,
+      ApplicationConstants.BAD_REQUEST_CODE,
+      ApplicationConstants.BAD_REQUEST_MESSAGE,
       detail.sourceFaultDetail.map { sfd =>
         sfd.detail.map(parseFaultDetail)
       }
@@ -111,14 +211,18 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector) extends RouterSer
     rawDetail match {
       case regex(code) =>
         code match {
-          case "006" => Error(INVALID_REQUEST_PARAMETER_CODE, "006 - Mandatory field comcode was missing from body")
-          case "007" => Error(INVALID_REQUEST_PARAMETER_CODE, "007 - eori doesn’t exist in the database")
-          case "025" => Error(INVALID_REQUEST_PARAMETER_CODE, "025 - Invalid optional request parameter")
-          case "026" => Error(INVALID_REQUEST_PARAMETER_CODE, "026 - recordId doesn’t exist in the database")
-          case "028" => Error(INVALID_REQUEST_PARAMETER_CODE, "028 - Invalid optional request parameter")
-          case "029" => Error(INVALID_REQUEST_PARAMETER_CODE, "029 - Invalid optional request parameter")
-          case "030" => Error(INVALID_REQUEST_PARAMETER_CODE, "030 - Invalid optional request parameter")
-          case _     => Error(UNEXPECTED_ERROR_CODE, UNEXPECTED_ERROR_MESSAGE)
+          case "006" =>
+            Error(
+              ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE,
+              ApplicationConstants.INVALID_OR_MISSING_EORI
+            )
+          case "007" =>
+            Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.EORI_DOES_NOT_EXISTS)
+          case "025" =>
+            Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.INVALID_RECORD_ID)
+          case "026" =>
+            Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.RECORD_ID_DOES_NOT_EXISTS)
+          case _     => Error(ApplicationConstants.UNEXPECTED_ERROR_CODE, ApplicationConstants.UNEXPECTED_ERROR_MESSAGE)
         }
 
       case _ =>

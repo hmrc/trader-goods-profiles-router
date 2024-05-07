@@ -16,4 +16,4 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 
-case class RouterError(status: Int, errorResponse: Option[ErrorResponse] = None)
+case class RouterError(status: Int, errorResponse: ErrorResponse)
