@@ -19,6 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 import play.api.libs.json.{Json, OFormat}
 
 case class ErrorResponse(
+  correlationId: String,
   code: String,
   message: String,
   errors: Option[Seq[Error]] = None

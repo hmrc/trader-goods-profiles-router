@@ -19,12 +19,11 @@ import com.google.inject.ImplementedBy
 import play.api.http.MimeTypes
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import java.util.UUID
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,7 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 trait EISConnector {
   def fetchRecord(
     eori: String,
-    recordId: String
+    recordId: String,
+    correlationId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse]
 }
 
@@ -45,18 +45,18 @@ class EISConnectorImpl @Inject() (
 
   override def fetchRecord(
     eori: String,
-    recordId: String
+    recordId: String,
+    correlationId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
 //    val url           = s"${appConfig.eisConfig.url}/$eori/$recordId"
-    val url           = s"${appConfig.eisConfig.url}/$eori"
-    val correlationId = UUID.randomUUID().toString
-    val headers       = Seq(
+    val url     = s"${appConfig.eisConfig.url}/$eori"
+    val headers = Seq(
       HeaderNames.CORRELATION_ID -> correlationId,
-      HeaderNames.FORWARDED_HOST -> "localhost",
+      HeaderNames.FORWARDED_HOST -> "MDTP",
       HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
       HeaderNames.ACCEPT         -> MimeTypes.JSON,
       HeaderNames.DATE           -> dateTimeService.timestamp.toString,
-      HeaderNames.CLIENT_ID      -> "clientId",
+      HeaderNames.CLIENT_ID      -> hc.headers(Seq("X-Client-ID")).headOption.map(_._2).getOrElse(""),
       HeaderNames.AUTHORIZATION  -> appConfig.eisConfig.headers.authorization
     )
 
