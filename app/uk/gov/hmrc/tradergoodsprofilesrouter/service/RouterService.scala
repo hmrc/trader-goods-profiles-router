@@ -34,17 +34,17 @@ import scala.util.control.NonFatal
 trait RouterService {
   def fetchRecord(
     eori: String,
-    recordId: String,
+    recordId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, RouterError, GoodsItemRecords]
 }
 
 class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: UuidService) extends RouterService {
 
-  val correlationId                                 = uuidService.uuid()
   override def fetchRecord(eori: String, recordId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): EitherT[Future, RouterError, GoodsItemRecords] =
+  ): EitherT[Future, RouterError, GoodsItemRecords] = {
+    val correlationId = uuidService.uuid
     EitherT(
       eisConnector
         .fetchRecord(eori, recordId, correlationId)
@@ -102,6 +102,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
             )
         }
     )
+  }
 
   def determine400Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {
@@ -210,7 +211,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       ApplicationConstants.BAD_REQUEST_CODE,
       ApplicationConstants.BAD_REQUEST_MESSAGE,
       detail.sourceFaultDetail.map { sfd =>
-        sfd.detail.map(parseFaultDetail)
+        sfd.detail.get.map(parseFaultDetail)
       }
     )
 
@@ -239,5 +240,3 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     }
   }
 }
-
-

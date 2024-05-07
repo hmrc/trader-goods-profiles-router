@@ -16,11 +16,15 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ErrorDetail
+import play.api.libs.json.{JsSuccess, JsValue, Reads}
 
 case class ErrorResponse(errorDetail: ErrorDetail)
 
 object ErrorResponse {
-  implicit val format: OFormat[ErrorResponse] = Json.format[ErrorResponse]
+  implicit val errorResponse: Reads[ErrorResponse] = (json: JsValue) =>
+    JsSuccess(
+      ErrorResponse(
+        (json \ "errorDetail").as[ErrorDetail]
+      )
+    )
 }

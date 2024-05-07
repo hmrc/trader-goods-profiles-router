@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.SourceFaultDetail
+import play.api.libs.json.{JsSuccess, JsValue, Reads}
 
 import java.time.Instant
 
@@ -30,5 +29,15 @@ case class ErrorDetail(
   sourceFaultDetail: Option[SourceFaultDetail] = None
 )
 object ErrorDetail {
-  implicit val format: OFormat[ErrorDetail] = Json.format[ErrorDetail]
+  implicit val errorDetail: Reads[ErrorDetail] = (json: JsValue) =>
+    JsSuccess(
+      ErrorDetail(
+        (json \ "timestamp").as[Instant],
+        (json \ "correlationId").as[String],
+        (json \ "errorCode").as[String],
+        (json \ "errorMessage").as[String],
+        (json \ "source").asOpt[String],
+        (json \ "sourceFaultDetail").asOpt[SourceFaultDetail]
+      )
+    )
 }
