@@ -48,8 +48,7 @@ class EISConnectorImpl @Inject() (
     recordId: String,
     correlationId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
-//    val url           = s"${appConfig.eisConfig.url}/$eori/$recordId"
-    val url     = s"${appConfig.eisConfig.url}/$eori"
+    val url     = s"${appConfig.eisConfig.url}/$eori/$recordId"
     val headers = Seq(
       HeaderNames.CORRELATION_ID -> correlationId,
       HeaderNames.FORWARDED_HOST -> "MDTP",

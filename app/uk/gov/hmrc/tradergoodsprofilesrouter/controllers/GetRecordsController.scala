@@ -35,11 +35,23 @@ class GetRecordsController @Inject() (
     eori: String,
     recordId: String
   ): Action[AnyContent] = Action.async { implicit request =>
+//    request.headers.get(HeaderNames.CLIENT_ID).map(_).getOrElse {
+//      BadRequest(
+//        toJson(
+//          ErrorResponse(
+//            null,
+//            ApplicationConstants.BAD_REQUEST_CODE,
+//            ApplicationConstants.INVALID_OR_MISSING_CLIENT_ID
+//          )
+//        )
+//      )
+//    }
     routerService
       .fetchRecord(eori, recordId)
       .fold(
         error => Status(error.status)(toJson(error.errorResponse)),
         response => Ok(toJson(response))
       )
+
   }
 }

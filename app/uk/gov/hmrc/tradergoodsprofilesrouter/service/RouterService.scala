@@ -108,7 +108,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         setBadRequestResponse(correlationId, detail)
-      case JsError(errors)      =>
+      case JsError(_)           =>
         ErrorResponse(
           correlationId,
           ApplicationConstants.UNEXPECTED_ERROR_CODE,
@@ -194,7 +194,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
               ErrorResponse(correlationId, ApplicationConstants.UNKNOWN_CODE, ApplicationConstants.UNKNOWN_MESSAGE)
             )
         }
-      case JsError(errors)      =>
+      case JsError(_)           =>
         RouterError(
           INTERNAL_SERVER_ERROR,
           ErrorResponse(
@@ -219,7 +219,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     val regex = """error:\s*(\d+),\s*message:\s*(.*)""".r
 
     rawDetail match {
-      case regex(code) =>
+      case regex(code, _) =>
         code match {
           case "006" =>
             Error(
@@ -234,8 +234,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
             Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.RECORD_ID_DOES_NOT_EXISTS)
           case _     => Error(ApplicationConstants.UNEXPECTED_ERROR_CODE, ApplicationConstants.UNEXPECTED_ERROR_MESSAGE)
         }
-
-      case _ =>
+      case _              =>
         throw new IllegalArgumentException(s"Unable to parse fault detail: $rawDetail")
     }
   }
