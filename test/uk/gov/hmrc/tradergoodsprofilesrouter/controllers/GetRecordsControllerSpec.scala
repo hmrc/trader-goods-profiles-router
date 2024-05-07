@@ -74,12 +74,12 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
       implicit val hc: HeaderCarrier = HeaderCarrier()
 
-      when(
-        mockEisConnector.fetchRecord(
-          eqTo(eori),
-          eqTo(recordId)
-        )(any, any)
-      )
+//      when(
+//        mockEisConnector.fetchRecord(
+//          eqTo(eori),
+//          eqTo(recordId)
+//        )(any, any)
+//      )
 //        .thenReturn(Future.successful(mockHttpResponse))
 
 //      val result = controller
