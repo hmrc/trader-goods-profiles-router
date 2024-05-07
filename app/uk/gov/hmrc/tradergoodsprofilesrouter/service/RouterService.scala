@@ -27,7 +27,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, G
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse, RouterError}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -35,12 +34,13 @@ import scala.util.control.NonFatal
 trait RouterService {
   def fetchRecord(
     eori: String,
-    recordId: String
+    recordId: String,
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, RouterError, GoodsItemRecords]
 }
 
-class RouterServiceImpl @Inject() (eisConnector: EISConnector) extends RouterService {
-  val correlationId                                 = UUID.randomUUID().toString
+class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: UuidService) extends RouterService {
+
+  val correlationId                                 = uuidService.uuid()
   override def fetchRecord(eori: String, recordId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
@@ -160,6 +160,15 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector) extends RouterSer
                 ApplicationConstants.METHOD_NOT_ALLOWED_MESSAGE
               )
             )
+          case "500" =>
+            RouterError(
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.INTERNAL_SERVER_ERROR_CODE,
+                ApplicationConstants.INTERNAL_SERVER_ERROR_MESSAGE
+              )
+            )
           case "502" =>
             RouterError(
               INTERNAL_SERVER_ERROR,
@@ -230,3 +239,5 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector) extends RouterSer
     }
   }
 }
+
+
