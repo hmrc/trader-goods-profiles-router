@@ -20,7 +20,7 @@ object ApplicationConstants {
   val UNEXPECTED_ERROR_CODE            = "UNEXPECTED_ERROR"
   val UNEXPECTED_ERROR_MESSAGE         = "Unexpected Error"
   val INTERNAL_ERROR_RESPONSE_CODE     = "INTERNAL_ERROR_RESPONSE"
-  val INTERNAL_ERROR_RESPONSE_MESSAGE  = "Internal Error response"
+  val INTERNAL_ERROR_RESPONSE_MESSAGE  = "Internal Error Response"
   val UNAUTHORIZED_CODE                = "UNAUTHORIZED"
   val UNAUTHORIZED_MESSAGE             = "Unauthorized"
   val BAD_REQUEST_CODE                 = "BAD_REQUEST"

@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsPath, Reads}
 
-case class SourceFaultDetail(detail: Seq[String])
+case class SourceFaultDetail(detail: Option[Seq[String]] = None)
 
 object SourceFaultDetail {
-  implicit val format: OFormat[SourceFaultDetail] = Json.format[SourceFaultDetail]
+  implicit val reads: Reads[SourceFaultDetail] =
+    (JsPath \ "detail").readNullable[Seq[String]].map(SourceFaultDetail.apply)
+
 }
