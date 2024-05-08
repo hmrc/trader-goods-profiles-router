@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.{JsSuccess, JsValue, Json, Reads, Writes, __}
+import play.api.libs.json._
 case class GoodsItemRecords(
   eori: String,
   actorId: String,

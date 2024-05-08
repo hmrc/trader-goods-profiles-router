@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.{JsSuccess, JsValue, Reads}
+import play.api.libs.json.{JsError, JsSuccess, JsValue, Reads}
 
 import java.time.Instant
 
@@ -30,7 +30,7 @@ case class ErrorDetail(
 )
 object ErrorDetail {
   implicit val errorDetail: Reads[ErrorDetail] = (json: JsValue) =>
-    JsSuccess(
+    try JsSuccess(
       ErrorDetail(
         (json \ "timestamp").as[Instant],
         (json \ "correlationId").as[String],
@@ -40,4 +40,7 @@ object ErrorDetail {
         (json \ "sourceFaultDetail").asOpt[SourceFaultDetail]
       )
     )
+    catch {
+      case e: Exception => JsError("Invalid json")
+    }
 }
