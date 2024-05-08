@@ -37,7 +37,7 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
   }
 
   val uuidService = new UuidService {
-    def generateUuid(): String = "1234-5678-9012"
+    def generateUuid: String = "1234-5678-9012"
   }
 
   val routerService = new RouterServiceImpl(eisConnector, uuidService)

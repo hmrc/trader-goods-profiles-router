@@ -27,6 +27,7 @@ object ApplicationConstants {
   val INVALID_OR_EMPTY_PAYLOAD_CODE    = "INVALID_OR_EMPTY_PAYLOAD"
   val INVALID_OR_EMPTY_PAYLOAD_MESSAGE = "Invalid Response Payload or Empty payload"
   val BAD_REQUEST_MESSAGE              = "Bad Request"
+  val MISSING_HEADER_CLIENT_ID         = "Missing mandatory header X-Client-ID"
   val INVALID_REQUEST_PARAMETER_CODE   = "INVALID_REQUEST_PARAMETER"
   val NOT_FOUND_MESSAGE                = "Not Found"
   val NOT_FOUND_CODE                   = "NOT_FOUND"
