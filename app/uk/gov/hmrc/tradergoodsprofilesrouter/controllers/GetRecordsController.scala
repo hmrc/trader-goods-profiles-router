@@ -20,14 +20,17 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json.toJson
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.RouterService
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class GetRecordsController @Inject() (
   cc: ControllerComponents,
-  routerService: RouterService
+  routerService: RouterService,
+  uuidService: UuidService
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
@@ -35,23 +38,26 @@ class GetRecordsController @Inject() (
     eori: String,
     recordId: String
   ): Action[AnyContent] = Action.async { implicit request =>
-//    request.headers.get(HeaderNames.CLIENT_ID).map(_).getOrElse {
-//      BadRequest(
-//        toJson(
-//          ErrorResponse(
-//            null,
-//            ApplicationConstants.BAD_REQUEST_CODE,
-//            ApplicationConstants.INVALID_OR_MISSING_CLIENT_ID
-//          )
-//        )
-//      )
-//    }
-    routerService
-      .fetchRecord(eori, recordId)
-      .fold(
-        error => Status(error.status)(toJson(error.errorResponse)),
-        response => Ok(toJson(response))
-      )
-
+    request.headers.get(HeaderNames.CLIENT_ID) match {
+      case Some(_) =>
+        routerService
+          .fetchRecord(eori, recordId)
+          .fold(
+            error => Status(error.status)(toJson(error.errorResponse)),
+            response => Ok(toJson(response))
+          )
+      case None    =>
+        Future.successful(
+          BadRequest(
+            toJson(
+              ErrorResponse(
+                uuidService.uuid,
+                ApplicationConstants.BAD_REQUEST_CODE,
+                ApplicationConstants.MISSING_HEADER_CLIENT_ID
+              )
+            )
+          )
+        )
+    }
   }
 }

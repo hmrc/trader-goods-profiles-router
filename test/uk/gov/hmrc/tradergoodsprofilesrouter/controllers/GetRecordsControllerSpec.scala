@@ -16,78 +16,141 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchersSugar.eqTo
-import org.mockito.Mockito.when
+import cats.data.EitherT
+import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.http.MimeTypes
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers.GET
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
+import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse, RouterError}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
-import java.time.format.DateTimeFormatter
-import java.time.{OffsetDateTime, ZoneOffset}
-import java.util.Locale
+import scala.concurrent.ExecutionContext
 import scala.language.postfixOps
 
 class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
-  "GetRecordsController GET /:eori/record/:recordId" should {
+  implicit val ec: ExecutionContext = ExecutionContext.global
+
+  val mockRouterService = mock[RouterService]
+  val mockUuidService   = mock[UuidService]
+
+  private val sut =
+    new GetRecordsController(
+      stubControllerComponents(),
+      mockRouterService,
+      mockUuidService
+    )
+
+  def validHeaders: Seq[(String, String)] = Seq(
+    HeaderNames.CLIENT_ID -> "clientId"
+  )
+
+  "GET /:eori/record/:recordId" should {
 
     "return a successful JSON response for a single record" in {
-      val mockEisConnector = mock[EISConnector]
-//      val controller       = GetRecordsController(
-//        Helpers.stubControllerComponents(),
-////        mockEisConnector
-//      )
 
-      val eori     = "GB123456789011"
-      val recordId = "12345"
+      when(mockRouterService.fetchRecord(any, any)(any, any))
+        .thenReturn(EitherT.rightT(getSingleRecordResponseData))
 
-      val HTTP_DATE_FORMATTER =
-        DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneOffset.UTC)
-
-      val expectedJson = Json.obj(
-        "message"  -> "EIS record retrieved successfully",
-        "eori"     -> eori,
-        "recordId" -> recordId
+      val result = sut.getTGPRecord("GB123456789001", "12345")(
+        FakeRequest().withHeaders(validHeaders: _*)
       )
+      status(result) mustBe OK
+      withClue("should return json response") {
+        contentAsJson(result) mustBe Json.toJson(getSingleRecordResponseData)
+      }
+    }
+    "return 400 Bad request when mandatory request parameter EORI is missing" in {
 
-      val headers = Seq(
-        HeaderNames.CORRELATION_ID -> "3e8dae97-b586-4cef-8511-68ac12da9028",
-        HeaderNames.FORWARDED_HOST -> "0.0.0.0",
-        HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
-        HeaderNames.ACCEPT         -> MimeTypes.JSON,
-        HeaderNames.DATE           -> HTTP_DATE_FORMATTER.format(OffsetDateTime.now()),
-        HeaderNames.CLIENT_ID      -> "clientId",
-        HeaderNames.AUTHORIZATION  -> "bearerToken"
+      val errorResponse = ErrorResponse(
+        "test",
+        ApplicationConstants.BAD_REQUEST_CODE,
+        ApplicationConstants.BAD_REQUEST_MESSAGE,
+        Some(
+          Seq(
+            Error(
+              ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE,
+              ApplicationConstants.INVALID_OR_MISSING_EORI
+            )
+          )
+        )
       )
+      val routerError   = RouterError(BAD_REQUEST, errorResponse)
 
-      val mockHttpResponse = HttpResponse(200, expectedJson.toString())
+      when(mockRouterService.fetchRecord(any, any)(any, any))
+        .thenReturn(EitherT.leftT(routerError))
 
-      val fakeRequest = FakeRequest(GET, s"/$eori/record/$recordId")
-        .withHeaders(headers: _*)
+      val result = sut.getTGPRecord(null, "12345")(
+        FakeRequest().withHeaders(validHeaders: _*)
+      )
+      status(result) mustBe BAD_REQUEST
+      contentAsJson(result) mustBe Json.toJson(errorResponse)
+    }
+    "return 400 Bad request when mandatory request header X-Client-ID" in {
 
-      implicit val hc: HeaderCarrier = HeaderCarrier()
+      val errorResponse =
+        ErrorResponse(
+          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+          ApplicationConstants.BAD_REQUEST_CODE,
+          ApplicationConstants.MISSING_HEADER_CLIENT_ID
+        )
 
-//      when(
-//        mockEisConnector.fetchRecord(
-//          eqTo(eori),
-//          eqTo(recordId)
-//        )(any, any)
-//      )
-//        .thenReturn(Future.successful(mockHttpResponse))
-
-//      val result = controller
-//        .getTGPRecord(eori, recordId)
-//        .apply(fakeRequest)
-//
-//      status(result) mustBe OK
-//      contentAsJson(result) mustBe expectedJson
+      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      val result = sut.getTGPRecord(null, "12345")(
+        FakeRequest()
+      )
+      status(result) mustBe BAD_REQUEST
+      contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
   }
+
+  val getSingleRecordResponseData: GoodsItemRecords = Json
+    .parse("""
+                                                          |  {
+                                                          |    "eori": "GB1234567890",
+                                                          |    "actorId": "GB1234567890",
+                                                          |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                                                          |    "traderRef": "BAN001001",
+                                                          |    "comcode": "104101000",
+                                                          |    "accreditationRequest": "Not requested",
+                                                          |    "goodsDescription": "Organic bananas",
+                                                          |    "countryOfOrigin": "EC",
+                                                          |    "category": 3,
+                                                          |    "assessments": [
+                                                          |      {
+                                                          |        "assessmentId": "abc123",
+                                                          |        "primaryCategory": "1",
+                                                          |        "condition": {
+                                                          |          "type": "abc123",
+                                                          |          "conditionId": "Y923",
+                                                          |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                                                          |          "conditionTraderText": "Excluded product"
+                                                          |        }
+                                                          |      }
+                                                          |    ],
+                                                          |    "supplementaryUnit": 500,
+                                                          |    "measurementUnit": "square meters(m^2)",
+                                                          |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                                                          |    "comcodeEffectiveToDate": "",
+                                                          |    "version": 1,
+                                                          |    "active": true,
+                                                          |    "toReview": false,
+                                                          |    "reviewReason": null,
+                                                          |    "declarable": "IMMI declarable",
+                                                          |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                                                          |    "nirmsNumber": "RMS-GB-123456",
+                                                          |    "niphlNumber": "6 S12345",
+                                                          |    "locked": false,
+                                                          |    "srcSystemName": "CDAP",
+                                                          |    "createdDateTime": "2024-11-18T23:20:19Z",
+                                                          |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                                                          |  }
+                                                          |""".stripMargin)
+    .as[GoodsItemRecords]
 }

@@ -51,11 +51,11 @@ class EISConnectorImpl @Inject() (
     val url     = s"${appConfig.eisConfig.url}/$eori/$recordId"
     val headers = Seq(
       HeaderNames.CORRELATION_ID -> correlationId,
-      HeaderNames.FORWARDED_HOST -> "MDTP",
+      HeaderNames.FORWARDED_HOST -> "MDTP", //TODO yet to be confirmed
       HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
       HeaderNames.ACCEPT         -> MimeTypes.JSON,
       HeaderNames.DATE           -> dateTimeService.timestamp.toString,
-      HeaderNames.CLIENT_ID      -> hc.headers(Seq("X-Client-ID")).headOption.map(_._2).getOrElse(""),
+      HeaderNames.CLIENT_ID      -> hc.headers(Seq(HeaderNames.CLIENT_ID)).head._2,
       HeaderNames.AUTHORIZATION  -> appConfig.eisConfig.headers.authorization
     )
 

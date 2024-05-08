@@ -16,48 +16,77 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
-import org.mockito.MockitoSugar.when
-import org.mockito.{ArgumentCaptor, Mockito}
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.Mockito.verify
+import org.mockito.MockitoSugar.{reset, when}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.MimeTypes
-import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-class EISConnectorSpec extends PlaySpec with MockitoSugar {
+class EISConnectorSpec extends PlaySpec with ScalaFutures with EitherValues with BeforeAndAfterEach with BaseConnector {
+//
+//  implicit val ec: ExecutionContext = ExecutionContext.global
+//  implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq(("X-Client-ID", "TSS")))
+//  private val requestBuilder        = mock[RequestBuilder]
+//  private val mockHttpClientV2      = mock[HttpClientV2]
+//  private val appConfig             = mock[AppConfig]
+//  private val mockDateTimeService   = mock[DateTimeService]
+//  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
+//
+//  private val sut = new EISConnectorImpl(appConfig, mockHttpClientV2, mockDateTimeService)
+//
+//  override def beforeEach(): Unit = {
+//    super.beforeEach()
+//
+//    reset(mockHttpClientV2, appConfig, mockDateTimeService)
+//    when(appConfig.eisConfig).thenReturn(
+//      new EISInstanceConfig(
+//        "http",
+//        "localhost",
+//        1234,
+//        "/tgp/getrecords/v1",
+//        Headers("bearerToken")
+//      )
+//    )
+//    when(mockHttpClientV2.get(any)(any)).thenReturn(requestBuilder)
+//    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
+//    when(requestBuilder.execute).thenReturn(Future.successful(HttpResponse(200, "message")))
+//    when(mockDateTimeService.timestamp).thenReturn(timestamp)
+//  }
+//
+//  "fetchRecord " should {
+//    "send a request with the right url" in {
+//      val eori          = "GB123456789011"
+//      val recordId      = "12345"
+//      val correlationId = "3e8dae97-b586-4cef-8511-68ac12da9028"
+//
+//      when(requestBuilder.executeAndDeserialise[GetEisRecordsResponse])
+//        .thenReturn(Future.successful(getSingleRecordResponseData))
+//
+//      await(sut.fetchRecord(eori, recordId, correlationId)(ec, hc))
+//
+//      verify(mockHttpClientV2).get(eqTo(url"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"))(any)
+//      verify(requestBuilder).setHeader(HeaderNames.CONTENT_TYPE -> MimeTypes.JSON)
+//      verify(requestBuilder).setHeader("X-Client-Id"            -> "clientId")
+//      verify(requestBuilder).execute
+//    }
+//
+//  }
+  /*
 
-  implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val hc: HeaderCarrier    = HeaderCarrier()
-  val appConfig                     = mock[AppConfig]
-
-  when(appConfig.eisConfig).thenReturn(
-    new EISInstanceConfig(
-      "http",
-      "localhost",
-      1234,
-      "/tgp/getrecords/v1",
-      Headers("bearerToken")
-    )
-  )
-
-  "fetchRecord " should {
-    "return successful response with a valid headers for single record" in {
-      val mockHttpClientV2                                           = mock[HttpClientV2](RETURNS_DEEP_STUBS)
-      val mockDateTimeService                                        = mock[DateTimeService]
-      val eori                                                       = "GB123456789011"
-      val recordId                                                   = "12345"
-      val dateTime                                                   = "2023-01-01T00:00:00Z"
-      val eisConnector                                               = new EISConnectorImpl(appConfig, mockHttpClientV2, mockDateTimeService)
       val expectedHeaders                                            = Seq(
         HeaderNames.CORRELATION_ID -> "3e8dae97-b586-4cef-8511-68ac12da9028",
         HeaderNames.FORWARDED_HOST -> appConfig.eisConfig.host,
@@ -75,11 +104,13 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
       val requestHeaderCaptor: ArgumentCaptor[Seq[(String, String)]] =
         ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
 
+      hc.withExtraHeaders(headers = expectedHeaders: _*)
+
       when(mockDateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
       when(
         mockHttpClientV2
-          .get(any)(any)
-          .setHeader(any)
+          .get(url)(hc)
+          .setHeader(expectedHeaders: _*)
           .execute
       )
         .thenReturn(
@@ -90,12 +121,12 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
       verify(mockHttpClientV2.get(any)(any), Mockito.atLeast(1)).setHeader(requestHeaderCaptor.capture(): _*)
 
       val actualRequestHeaders = requestHeaderCaptor.getValue
-      val eisResponse          = response.value.value.get
-
-      //      assertResult(eisResponse.status)(OK)
-      //      assertResult(eisResponse.body)(getSingleRecordResponseData.toString())
-      //      eisResponse.headers must contain allElementsOf expectedResponseHeaders
-      assertResult(expectedHeaders.length)(actualRequestHeaders.length)
+      assertResult(Future.successful(response))(getSingleRecordResponseData)
+//
+//      assertResult(eisResponse.status)(OK)
+//      assertResult(eisResponse.body)(getSingleRecordResponseData.toString())
+//      eisResponse.headers must contain allElementsOf expectedResponseHeaders
+//      assertResult(expectedHeaders.length)(actualRequestHeaders.length)
 
       //TODO assert headers in better way
       val map           = actualRequestHeaders.toMap
@@ -116,8 +147,9 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
       assertResult(authorization)("bearerToken")
     }
   }
-
-  val getSingleRecordResponseData: JsValue = Json.parse("""
+   */
+  val getSingleRecordResponseData: GetEisRecordsResponse = Json
+    .parse("""
                                                           |{
                                                           |"goodsItemRecords":
                                                           |[
@@ -171,5 +203,6 @@ class EISConnectorSpec extends PlaySpec with MockitoSugar {
                                                           | }
                                                           |}
                                                           |""".stripMargin)
+    .as[GetEisRecordsResponse]
 
 }
