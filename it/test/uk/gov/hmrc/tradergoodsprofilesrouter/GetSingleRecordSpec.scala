@@ -768,6 +768,51 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           )
           verifyThatDownstreamApiWasCalled()
         }
+        "Internal Server Error with unexpected error" in {
+          stubFor(
+            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+              .withHeader("Content-Type", equalTo("application/json"))
+              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Accept", equalTo("application/json"))
+              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("X-Client-ID", equalTo("tss"))
+              .willReturn(
+                aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withStatus(INTERNAL_SERVER_ERROR)
+                  .withBody(
+                    s"""
+                       | {
+                       |    "invalid": "error"
+                       |  }
+                       |""".stripMargin)
+              )
+          )
+
+          val response = await(
+            wsClient
+              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .get()
+          )
+
+          assertAsExpected(
+            response = response,
+            status = INTERNAL_SERVER_ERROR,
+            jsonBodyOpt = Some(
+              """
+                |{
+                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
+                |    "code": "UNEXPECTED_ERROR",
+                |    "message": "Unexpected Error"
+                |}
+                |""".stripMargin
+            )
+          )
+          verifyThatDownstreamApiWasCalled()
+        }
         "Bad Request for invalid or missing EORI" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/null/$recordId"))
