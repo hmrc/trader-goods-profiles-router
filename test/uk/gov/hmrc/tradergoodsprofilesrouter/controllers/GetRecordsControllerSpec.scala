@@ -48,7 +48,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.CLIENT_ID -> "clientId"
+    HeaderNames.ClientId -> "clientId"
   )
 
   "GET /:eori/record/:recordId" should {
@@ -70,13 +70,13 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
       val errorResponse = ErrorResponse(
         "test",
-        ApplicationConstants.BAD_REQUEST_CODE,
-        ApplicationConstants.BAD_REQUEST_MESSAGE,
+        ApplicationConstants.BadRequestCode,
+        ApplicationConstants.BadRequestMessage,
         Some(
           Seq(
             Error(
-              ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE,
-              ApplicationConstants.INVALID_OR_MISSING_EORI
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidOrMissingEori
             )
           )
         )
@@ -97,8 +97,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
       val errorResponse =
         ErrorResponse(
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          ApplicationConstants.BAD_REQUEST_CODE,
-          ApplicationConstants.MISSING_HEADER_CLIENT_ID
+          ApplicationConstants.BadRequestCode,
+          ApplicationConstants.MissingHeaderClientId
         )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")

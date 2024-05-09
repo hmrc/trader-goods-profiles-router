@@ -59,8 +59,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
                 FORBIDDEN,
                 ErrorResponse(
                   correlationId,
-                  ApplicationConstants.FORBIDDEN_CODE,
-                  ApplicationConstants.FORBIDDEN_MESSAGE
+                  ApplicationConstants.ForbiddenCode,
+                  ApplicationConstants.ForbiddenMessage
                 )
               )
             )
@@ -70,8 +70,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
                 NOT_FOUND,
                 ErrorResponse(
                   correlationId,
-                  ApplicationConstants.NOT_FOUND_CODE,
-                  ApplicationConstants.NOT_FOUND_MESSAGE
+                  ApplicationConstants.NotFoundCode,
+                  ApplicationConstants.NotFoundMessage
                 )
               )
             )
@@ -81,22 +81,25 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
                 METHOD_NOT_ALLOWED,
                 ErrorResponse(
                   correlationId,
-                  ApplicationConstants.METHOD_NOT_ALLOWED_CODE,
-                  ApplicationConstants.METHOD_NOT_ALLOWED_MESSAGE
+                  ApplicationConstants.MethodNotAllowedCode,
+                  ApplicationConstants.MethodNotAllowedMessage
                 )
               )
             )
           case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
             Left(determine500Error(correlationId, message))
           case NonFatal(e)                                                 =>
-            logger.error(s"Unable to send to EIS : ${e.getMessage}", e)
+            logger.error(
+              s"[RouterService] - Error getting record for eori number $eori and record ID $recordId, with message ${e.getMessage}",
+              e
+            )
             Left(
               RouterError(
                 INTERNAL_SERVER_ERROR,
                 ErrorResponse(
                   correlationId,
-                  ApplicationConstants.UNEXPECTED_ERROR_CODE,
-                  ApplicationConstants.UNEXPECTED_ERROR_MESSAGE
+                  ApplicationConstants.UnexpectedErrorCode,
+                  ApplicationConstants.UnexpectedErrorMessage
                 )
               )
             )
@@ -111,8 +114,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       case JsError(_)           =>
         ErrorResponse(
           correlationId,
-          ApplicationConstants.UNEXPECTED_ERROR_CODE,
-          ApplicationConstants.UNEXPECTED_ERROR_MESSAGE
+          ApplicationConstants.UnexpectedErrorCode,
+          ApplicationConstants.UnexpectedErrorMessage
         )
     }
 
@@ -125,8 +128,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
               INTERNAL_SERVER_ERROR,
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.INVALID_OR_EMPTY_PAYLOAD_CODE,
-                ApplicationConstants.INVALID_OR_EMPTY_PAYLOAD_MESSAGE
+                ApplicationConstants.InvalidOrEmptyPayloadCode,
+                ApplicationConstants.InvalidOrEmptyPayloadMessage
               )
             )
           case "400" =>
@@ -134,8 +137,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
               INTERNAL_SERVER_ERROR,
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.INTERNAL_ERROR_RESPONSE_CODE,
-                ApplicationConstants.INTERNAL_ERROR_RESPONSE_MESSAGE
+                ApplicationConstants.InternalErrorResponseCode,
+                ApplicationConstants.InternalErrorResponseMessage
               )
             )
           case "401" =>
@@ -143,22 +146,22 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
               INTERNAL_SERVER_ERROR,
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.UNAUTHORIZED_CODE,
-                ApplicationConstants.UNAUTHORIZED_MESSAGE
+                ApplicationConstants.UnauthorizedCode,
+                ApplicationConstants.UnauthorizedMessage
               )
             )
           case "404" =>
             RouterError(
               INTERNAL_SERVER_ERROR,
-              ErrorResponse(correlationId, ApplicationConstants.NOT_FOUND_CODE, ApplicationConstants.NOT_FOUND_MESSAGE)
+              ErrorResponse(correlationId, ApplicationConstants.NotFoundCode, ApplicationConstants.NotFoundMessage)
             )
           case "405" =>
             RouterError(
               INTERNAL_SERVER_ERROR,
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.METHOD_NOT_ALLOWED_CODE,
-                ApplicationConstants.METHOD_NOT_ALLOWED_MESSAGE
+                ApplicationConstants.MethodNotAllowedCode,
+                ApplicationConstants.MethodNotAllowedMessage
               )
             )
           case "500" =>
@@ -166,8 +169,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
               INTERNAL_SERVER_ERROR,
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.INTERNAL_SERVER_ERROR_CODE,
-                ApplicationConstants.INTERNAL_SERVER_ERROR_MESSAGE
+                ApplicationConstants.InternalServerErrorCode,
+                ApplicationConstants.InternalServerErrorMessage
               )
             )
           case "502" =>
@@ -175,8 +178,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
               INTERNAL_SERVER_ERROR,
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.BAD_GATEWAY_CODE,
-                ApplicationConstants.BAD_GATEWAY_MESSAGE
+                ApplicationConstants.BadGatewayCode,
+                ApplicationConstants.BadGatewayMessage
               )
             )
           case "503" =>
@@ -184,14 +187,14 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
               INTERNAL_SERVER_ERROR,
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.SERVICE_UNAVAILABLE_CODE,
-                ApplicationConstants.SERVICE_UNAVAILABLE_MESSAGE
+                ApplicationConstants.ServiceUnavailableCode,
+                ApplicationConstants.ServiceUnavailableMessage
               )
             )
           case _     =>
             RouterError(
               INTERNAL_SERVER_ERROR,
-              ErrorResponse(correlationId, ApplicationConstants.UNKNOWN_CODE, ApplicationConstants.UNKNOWN_MESSAGE)
+              ErrorResponse(correlationId, ApplicationConstants.UnknownCode, ApplicationConstants.UnknownMessage)
             )
         }
       case JsError(_)           =>
@@ -199,8 +202,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
           INTERNAL_SERVER_ERROR,
           ErrorResponse(
             correlationId,
-            ApplicationConstants.UNEXPECTED_ERROR_CODE,
-            ApplicationConstants.UNEXPECTED_ERROR_MESSAGE
+            ApplicationConstants.UnexpectedErrorCode,
+            ApplicationConstants.UnexpectedErrorMessage
           )
         )
     }
@@ -208,8 +211,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
   def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse =
     ErrorResponse(
       correlationId,
-      ApplicationConstants.BAD_REQUEST_CODE,
-      ApplicationConstants.BAD_REQUEST_MESSAGE,
+      ApplicationConstants.BadRequestCode,
+      ApplicationConstants.BadRequestMessage,
       detail.sourceFaultDetail.map { sfd =>
         sfd.detail.get.map(parseFaultDetail)
       }
@@ -223,16 +226,16 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
         code match {
           case "006" =>
             Error(
-              ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE,
-              ApplicationConstants.INVALID_OR_MISSING_EORI
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidOrMissingEori
             )
           case "007" =>
-            Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.EORI_DOES_NOT_EXISTS)
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.EoriDoesNotExists)
           case "025" =>
-            Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.INVALID_RECORD_ID)
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidRecordId)
           case "026" =>
-            Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.RECORD_ID_DOES_NOT_EXISTS)
-          case _     => Error(ApplicationConstants.UNEXPECTED_ERROR_CODE, ApplicationConstants.UNEXPECTED_ERROR_MESSAGE)
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.RecordIdDoesNotExists)
+          case _     => Error(ApplicationConstants.UnexpectedErrorCode, ApplicationConstants.UnexpectedErrorMessage)
         }
       case _              =>
         throw new IllegalArgumentException(s"Unable to parse fault detail: $rawDetail")

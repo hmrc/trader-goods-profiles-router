@@ -38,7 +38,7 @@ class GetRecordsController @Inject() (
     eori: String,
     recordId: String
   ): Action[AnyContent] = Action.async { implicit request =>
-    request.headers.get(HeaderNames.CLIENT_ID) match {
+    request.headers.get(HeaderNames.ClientId) match {
       case Some(_) =>
         routerService
           .fetchRecord(eori, recordId)
@@ -52,8 +52,8 @@ class GetRecordsController @Inject() (
             toJson(
               ErrorResponse(
                 uuidService.uuid,
-                ApplicationConstants.BAD_REQUEST_CODE,
-                ApplicationConstants.MISSING_HEADER_CLIENT_ID
+                ApplicationConstants.BadRequestCode,
+                ApplicationConstants.MissingHeaderClientId
               )
             )
           )

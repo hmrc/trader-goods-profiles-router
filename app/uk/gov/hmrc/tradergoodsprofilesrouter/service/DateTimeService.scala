@@ -38,5 +38,11 @@ object DateTimeService {
       ZonedDateTime
         .ofInstant(dateTime, ZoneOffset.UTC)
         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX"))
+
+    implicit def asStringHttp: String =
+      ZonedDateTime
+        .ofInstant(dateTime, ZoneOffset.UTC)
+        .format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz"))
+
   }
 }
