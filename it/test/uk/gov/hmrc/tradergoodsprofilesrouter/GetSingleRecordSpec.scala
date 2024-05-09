@@ -44,11 +44,11 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
             .withHeader("Content-Type", equalTo("application/json"))
             .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-            .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+            .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
             .withHeader("X-Forwarded-Host", equalTo("MDTP"))
             .withHeader("Accept", equalTo("application/json"))
             .withHeader("Authorization", equalTo("bearerToken"))
-            .withHeader("X-Client-ID", equalTo("tss"))
+            .withHeader("X-Client-Id", equalTo("tss"))
             .willReturn(
               aResponse()
                 .withHeader("Content-Type", "application/json")
@@ -110,7 +110,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
         val response = wsClient
           .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
           .get()
           .futureValue
 
@@ -159,10 +159,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -173,7 +173,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -198,10 +198,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -212,7 +212,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -237,10 +237,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -251,7 +251,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -276,10 +276,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -290,7 +290,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -315,10 +315,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -341,7 +341,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -366,10 +366,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -392,7 +392,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -417,10 +417,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -443,7 +443,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -468,10 +468,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -494,7 +494,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -519,10 +519,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -545,7 +545,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -570,10 +570,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -596,7 +596,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -621,10 +621,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -647,7 +647,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -672,10 +672,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -698,7 +698,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -723,10 +723,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -749,7 +749,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -774,10 +774,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -793,7 +793,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -818,10 +818,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -846,7 +846,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/null/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -875,10 +875,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -903,7 +903,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -932,10 +932,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -961,7 +961,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/null"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -994,10 +994,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -1022,7 +1022,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -1051,10 +1051,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -1077,7 +1077,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -1101,10 +1101,10 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("2021-12-17T09:30:47.456Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
+              .withHeader("X-Client-Id", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -1120,7 +1120,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           val response = await(
             wsClient
               .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
 
@@ -1156,7 +1156,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               |{
               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
               |    "code": "BAD_REQUEST",
-              |    "message": "Missing mandatory header X-Client-ID"
+              |    "message": "Missing mandatory header X-Client-Id"
               |}
               |""".stripMargin
           )

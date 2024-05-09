@@ -22,6 +22,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import javax.inject.Inject
@@ -50,13 +51,13 @@ class EISConnectorImpl @Inject() (
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
     val url     = s"${appConfig.eisConfig.url}/$eori/$recordId"
     val headers = Seq(
-      HeaderNames.CORRELATION_ID -> correlationId,
-      HeaderNames.FORWARDED_HOST -> "MDTP", //TODO yet to be confirmed
-      HeaderNames.CONTENT_TYPE   -> MimeTypes.JSON,
-      HeaderNames.ACCEPT         -> MimeTypes.JSON,
-      HeaderNames.DATE           -> dateTimeService.timestamp.toString,
-      HeaderNames.CLIENT_ID      -> hc.headers(Seq(HeaderNames.CLIENT_ID)).head._2,
-      HeaderNames.AUTHORIZATION  -> appConfig.eisConfig.headers.authorization
+      HeaderNames.CorrelationId -> correlationId,
+      HeaderNames.ForwardedHost -> "MDTP", //TODO yet to be confirmed
+      HeaderNames.ContentType   -> MimeTypes.JSON,
+      HeaderNames.Accept        -> MimeTypes.JSON,
+      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
+      HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      HeaderNames.Authorization -> appConfig.eisConfig.headers.authorization
     )
 
     httpClientV2

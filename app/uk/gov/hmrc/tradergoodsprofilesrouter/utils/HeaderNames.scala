@@ -18,11 +18,11 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
 object HeaderNames {
 
-  val CORRELATION_ID = "X-Correlation-Id"
-  val FORWARDED_HOST = "X-Forwarded-Host"
-  val CONTENT_TYPE   = "Content-Type"
-  val ACCEPT         = "Accept"
-  val DATE           = "Date"
-  val CLIENT_ID      = "X-Client-ID"
-  val AUTHORIZATION  = "Authorization"
+  val CorrelationId = "X-Correlation-Id"
+  val ForwardedHost = "X-Forwarded-Host"
+  val ContentType   = "Content-Type"
+  val Accept        = "Accept"
+  val Date          = "Date"
+  val ClientId      = "X-Client-Id"
+  val Authorization = "Authorization"
 }

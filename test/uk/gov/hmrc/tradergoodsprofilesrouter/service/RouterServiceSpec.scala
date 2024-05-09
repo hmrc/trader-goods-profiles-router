@@ -64,8 +64,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.INVALID_OR_EMPTY_PAYLOAD_CODE,
-          ApplicationConstants.INVALID_OR_EMPTY_PAYLOAD_MESSAGE
+          ApplicationConstants.InvalidOrEmptyPayloadCode,
+          ApplicationConstants.InvalidOrEmptyPayloadMessage
         )
       )
 
@@ -93,8 +93,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.INTERNAL_ERROR_RESPONSE_CODE,
-          ApplicationConstants.INTERNAL_ERROR_RESPONSE_MESSAGE
+          ApplicationConstants.InternalErrorResponseCode,
+          ApplicationConstants.InternalErrorResponseMessage
         )
       )
 
@@ -122,8 +122,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.UNAUTHORIZED_CODE,
-          ApplicationConstants.UNAUTHORIZED_MESSAGE
+          ApplicationConstants.UnauthorizedCode,
+          ApplicationConstants.UnauthorizedMessage
         )
       )
 
@@ -150,8 +150,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.NOT_FOUND_CODE,
-          ApplicationConstants.NOT_FOUND_MESSAGE
+          ApplicationConstants.NotFoundCode,
+          ApplicationConstants.NotFoundMessage
         )
       )
 
@@ -178,8 +178,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.METHOD_NOT_ALLOWED_CODE,
-          ApplicationConstants.METHOD_NOT_ALLOWED_MESSAGE
+          ApplicationConstants.MethodNotAllowedCode,
+          ApplicationConstants.MethodNotAllowedMessage
         )
       )
 
@@ -206,8 +206,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.INTERNAL_SERVER_ERROR_CODE,
-          ApplicationConstants.INTERNAL_SERVER_ERROR_MESSAGE
+          ApplicationConstants.InternalServerErrorCode,
+          ApplicationConstants.InternalServerErrorMessage
         )
       )
 
@@ -234,8 +234,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.BAD_GATEWAY_CODE,
-          ApplicationConstants.BAD_GATEWAY_MESSAGE
+          ApplicationConstants.BadGatewayCode,
+          ApplicationConstants.BadGatewayMessage
         )
       )
 
@@ -262,8 +262,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.SERVICE_UNAVAILABLE_CODE,
-          ApplicationConstants.SERVICE_UNAVAILABLE_MESSAGE
+          ApplicationConstants.ServiceUnavailableCode,
+          ApplicationConstants.ServiceUnavailableMessage
         )
       )
 
@@ -290,8 +290,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.UNKNOWN_CODE,
-          ApplicationConstants.UNKNOWN_MESSAGE
+          ApplicationConstants.UnknownCode,
+          ApplicationConstants.UnknownMessage
         )
       )
 
@@ -307,8 +307,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
         INTERNAL_SERVER_ERROR,
         ErrorResponse(
           correlationId,
-          ApplicationConstants.UNEXPECTED_ERROR_CODE,
-          ApplicationConstants.UNEXPECTED_ERROR_MESSAGE
+          ApplicationConstants.UnexpectedErrorCode,
+          ApplicationConstants.UnexpectedErrorMessage
         )
       )
 
@@ -324,8 +324,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
       val detail = "error: 006, message: Mandatory field comcode was missing from body"
 
       val expectedError = Error(
-        ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE,
-        ApplicationConstants.INVALID_OR_MISSING_EORI
+        ApplicationConstants.InvalidRequestParameterCode,
+        ApplicationConstants.InvalidOrMissingEori
       )
 
       val result = routerService.parseFaultDetail(detail)
@@ -336,7 +336,7 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
       val detail = "error: 007, message: Mandatory field comcode was missing from body"
 
       val expectedError =
-        Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.EORI_DOES_NOT_EXISTS)
+        Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.EoriDoesNotExists)
 
       val result = routerService.parseFaultDetail(detail)
       result shouldBe expectedError
@@ -346,7 +346,7 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
       val detail = "error: 025, message: Mandatory field comcode was missing from body"
 
       val expectedError =
-        Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.INVALID_RECORD_ID)
+        Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidRecordId)
 
       val result = routerService.parseFaultDetail(detail)
       result shouldBe expectedError
@@ -356,7 +356,7 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
       val detail = "error: 026, message: Mandatory field comcode was missing from body"
 
       val expectedError =
-        Error(ApplicationConstants.INVALID_REQUEST_PARAMETER_CODE, ApplicationConstants.RECORD_ID_DOES_NOT_EXISTS)
+        Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.RecordIdDoesNotExists)
 
       val result = routerService.parseFaultDetail(detail)
       result shouldBe expectedError
@@ -366,7 +366,7 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
       val detail = "error: 002, message: Mandatory field comcode was missing from body"
 
       val expectedError =
-        Error(ApplicationConstants.UNEXPECTED_ERROR_CODE, ApplicationConstants.UNEXPECTED_ERROR_MESSAGE)
+        Error(ApplicationConstants.UnexpectedErrorCode, ApplicationConstants.UnexpectedErrorMessage)
 
       val result = routerService.parseFaultDetail(detail)
       result shouldBe expectedError
@@ -404,8 +404,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
 
       val expectedError = ErrorResponse(
         correlationId,
-        ApplicationConstants.BAD_REQUEST_CODE,
-        ApplicationConstants.BAD_REQUEST_MESSAGE,
+        ApplicationConstants.BadRequestCode,
+        ApplicationConstants.BadRequestMessage,
         Some(
           Seq(
             Error("INVALID_REQUEST_PARAMETER", "006 - Missing or invalid mandatory request parameter EORI"),
@@ -429,8 +429,8 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
 
       val expectedError = ErrorResponse(
         correlationId,
-        ApplicationConstants.UNEXPECTED_ERROR_CODE,
-        ApplicationConstants.UNEXPECTED_ERROR_MESSAGE
+        ApplicationConstants.UnexpectedErrorCode,
+        ApplicationConstants.UnexpectedErrorMessage
       )
 
       val result = routerService.determine400Error(correlationId, validJson)
