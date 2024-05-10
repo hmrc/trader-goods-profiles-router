@@ -19,6 +19,7 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
+import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 
 import java.time.Instant
@@ -346,20 +347,12 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           )
 
           response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe
-            assertAsExpected(
-              response = response,
-              status = INTERNAL_SERVER_ERROR,
-              jsonBodyOpt = Some(
-                """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "INTERNAL_SERVER_ERROR",
-                |    "message": "Internal Server Error"
-                |}
-                |""".stripMargin
-              )
-            )
+          response.json   shouldBe Json.obj(
+            "correlationId" -> "d677693e-9981-4ee3-8574-654981ebe606",
+            "code"          -> "INTERNAL_SERVER_ERROR",
+            "message"       -> "Internal Server Error"
+          )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 200 errorCode" in {

@@ -21,12 +21,13 @@ import org.mockito.Mockito._
 import org.mockito.MockitoSugar.reset
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AsyncFlatSpec
+import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, Upstream5xxResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -127,10 +128,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
                |""".stripMargin)
 
     val expectedResponse: GetEisRecordsResponse = sampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = mock[HttpResponse]
-
-    when(httpResponse.json).thenReturn(sampleJson)
-    when(httpResponse.status).thenReturn(200)
+    val httpResponse                            = HttpResponse(200, sampleJson, Map.empty)
 
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
 
