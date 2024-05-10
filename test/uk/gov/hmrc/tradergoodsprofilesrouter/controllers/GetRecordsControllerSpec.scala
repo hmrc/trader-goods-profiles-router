@@ -21,12 +21,13 @@ import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.{BAD_REQUEST, OK}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
+import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse, RouterError}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
@@ -66,48 +67,41 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
         contentAsJson(result) mustBe Json.toJson(getSingleRecordResponseData)
       }
     }
-    "return 400 Bad request when mandatory request parameter EORI is missing" in {
 
-      val errorResponse = ErrorResponse(
-        "test",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.BadRequestMessage,
-        Some(
-          Seq(
-            Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidOrMissingEori
-            )
-          )
-        )
-      )
-      val routerError   = RouterError(BAD_REQUEST, errorResponse)
-
-      when(mockRouterService.fetchRecord(any, any)(any, any))
-        .thenReturn(EitherT.leftT(routerError))
-
-      val result = sut.getTGPRecord(null, "12345")(
-        FakeRequest().withHeaders(validHeaders: _*)
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(errorResponse)
-    }
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
-      val errorResponse =
-        ErrorResponse(
-          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          ApplicationConstants.BadRequestCode,
-          ApplicationConstants.MissingHeaderClientId
-        )
-
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.getTGPRecord(null, "12345")(
+      val result = sut.getTGPRecord("eori", "12345")(
         FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(errorResponse)
+      contentAsJson(result) mustBe Json.toJson(createErrorResponse)
     }
+
+    "return an error if cannot fetch a record" in {
+      val errorResponseJson =  Json.obj("error" -> "error")
+
+      when(mockRouterService.fetchRecord(any, any)(any, any))
+        .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
+
+      val result = sut.getTGPRecord("GB123456789001", "12345")(
+        FakeRequest().withHeaders(validHeaders: _*)
+      )
+      status(result) mustBe INTERNAL_SERVER_ERROR
+      withClue("should return json response") {
+        contentAsJson(result) mustBe errorResponseJson
+      }
+    }
+  }
+
+  private def createErrorResponse = {
+    val errorResponse =
+      ErrorResponse(
+        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        ApplicationConstants.BadRequestCode,
+        ApplicationConstants.MissingHeaderClientId
+      )
+    errorResponse
   }
 
   val getSingleRecordResponseData: GoodsItemRecords = Json

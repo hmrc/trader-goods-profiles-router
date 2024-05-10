@@ -21,10 +21,12 @@ import com.google.inject.{ImplementedBy, Inject}
 import play.api.http.Status._
 import play.api.libs.Files.logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.mvc.Result
+import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, GoodsItemRecords}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse, RouterError}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +37,7 @@ trait RouterService {
   def fetchRecord(
     eori: String,
     recordId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, RouterError, GoodsItemRecords]
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords]
 }
 
 class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: UuidService) extends RouterService {
@@ -43,7 +45,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
   override def fetchRecord(eori: String, recordId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
-  ): EitherT[Future, RouterError, GoodsItemRecords] = {
+  ): EitherT[Future, Result, GoodsItemRecords] = {
     val correlationId = uuidService.uuid
     EitherT(
       eisConnector
@@ -51,55 +53,61 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
         .map(result => Right(result.goodsItemRecords.head))
         .recover {
           case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
-            Left(RouterError(BAD_REQUEST, determine400Error(correlationId, message)))
+            Left(BadRequest(Json.toJson(determine400Error(correlationId, message))))
+          case UpstreamErrorResponse(_, FORBIDDEN, _, _)         =>
+            Left(
+              Forbidden(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.ForbiddenCode,
+                    ApplicationConstants.ForbiddenMessage
+                  )
+                )
+              )
+            )
 
-          case UpstreamErrorResponse(_, FORBIDDEN, _, _)                   =>
+          case UpstreamErrorResponse(_, NOT_FOUND, _, _)          =>
             Left(
-              RouterError(
-                FORBIDDEN,
-                ErrorResponse(
-                  correlationId,
-                  ApplicationConstants.ForbiddenCode,
-                  ApplicationConstants.ForbiddenMessage
+              NotFound(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.NotFoundCode,
+                    ApplicationConstants.NotFoundMessage
+                  )
                 )
               )
             )
-          case UpstreamErrorResponse(_, NOT_FOUND, _, _)                   =>
+          case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _) =>
             Left(
-              RouterError(
-                NOT_FOUND,
-                ErrorResponse(
-                  correlationId,
-                  ApplicationConstants.NotFoundCode,
-                  ApplicationConstants.NotFoundMessage
+              MethodNotAllowed(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.MethodNotAllowedCode,
+                    ApplicationConstants.MethodNotAllowedMessage
+                  )
                 )
               )
             )
-          case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _)          =>
-            Left(
-              RouterError(
-                METHOD_NOT_ALLOWED,
-                ErrorResponse(
-                  correlationId,
-                  ApplicationConstants.MethodNotAllowedCode,
-                  ApplicationConstants.MethodNotAllowedMessage
-                )
-              )
-            )
+
           case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
-            Left(determine500Error(correlationId, message))
-          case NonFatal(e)                                                 =>
+            Left(InternalServerError(Json.toJson(determine500Error(correlationId, message))))
+
+          case NonFatal(e) =>
             logger.error(
               s"[RouterService] - Error getting record for eori number $eori and record ID $recordId, with message ${e.getMessage}",
               e
             )
             Left(
-              RouterError(
-                INTERNAL_SERVER_ERROR,
-                ErrorResponse(
-                  correlationId,
-                  ApplicationConstants.UnexpectedErrorCode,
-                  ApplicationConstants.UnexpectedErrorMessage
+              InternalServerError(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.UnexpectedErrorCode,
+                    ApplicationConstants.UnexpectedErrorMessage
+                  )
                 )
               )
             )
@@ -119,92 +127,62 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
         )
     }
 
-  def determine500Error(correlationId: String, message: String): RouterError =
+  def determine500Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         detail.errorCode match {
           case "200" =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(
-                correlationId,
-                ApplicationConstants.InvalidOrEmptyPayloadCode,
-                ApplicationConstants.InvalidOrEmptyPayloadMessage
-              )
+            ErrorResponse(
+              correlationId,
+              ApplicationConstants.InvalidOrEmptyPayloadCode,
+              ApplicationConstants.InvalidOrEmptyPayloadMessage
             )
           case "400" =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(
-                correlationId,
-                ApplicationConstants.InternalErrorResponseCode,
-                ApplicationConstants.InternalErrorResponseMessage
-              )
+            ErrorResponse(
+              correlationId,
+              ApplicationConstants.InternalErrorResponseCode,
+              ApplicationConstants.InternalErrorResponseMessage
             )
           case "401" =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(
-                correlationId,
-                ApplicationConstants.UnauthorizedCode,
-                ApplicationConstants.UnauthorizedMessage
-              )
+            ErrorResponse(
+              correlationId,
+              ApplicationConstants.UnauthorizedCode,
+              ApplicationConstants.UnauthorizedMessage
             )
           case "404" =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(correlationId, ApplicationConstants.NotFoundCode, ApplicationConstants.NotFoundMessage)
-            )
+            ErrorResponse(correlationId, ApplicationConstants.NotFoundCode, ApplicationConstants.NotFoundMessage)
           case "405" =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(
-                correlationId,
-                ApplicationConstants.MethodNotAllowedCode,
-                ApplicationConstants.MethodNotAllowedMessage
-              )
+            ErrorResponse(
+              correlationId,
+              ApplicationConstants.MethodNotAllowedCode,
+              ApplicationConstants.MethodNotAllowedMessage
             )
           case "500" =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(
-                correlationId,
-                ApplicationConstants.InternalServerErrorCode,
-                ApplicationConstants.InternalServerErrorMessage
-              )
+            ErrorResponse(
+              correlationId,
+              ApplicationConstants.InternalServerErrorCode,
+              ApplicationConstants.InternalServerErrorMessage
             )
           case "502" =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(
-                correlationId,
-                ApplicationConstants.BadGatewayCode,
-                ApplicationConstants.BadGatewayMessage
-              )
+            ErrorResponse(
+              correlationId,
+              ApplicationConstants.BadGatewayCode,
+              ApplicationConstants.BadGatewayMessage
             )
           case "503" =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(
-                correlationId,
-                ApplicationConstants.ServiceUnavailableCode,
-                ApplicationConstants.ServiceUnavailableMessage
-              )
+            ErrorResponse(
+              correlationId,
+              ApplicationConstants.ServiceUnavailableCode,
+              ApplicationConstants.ServiceUnavailableMessage
             )
           case _     =>
-            RouterError(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(correlationId, ApplicationConstants.UnknownCode, ApplicationConstants.UnknownMessage)
-            )
+            ErrorResponse(correlationId, ApplicationConstants.UnknownCode, ApplicationConstants.UnknownMessage)
         }
       case JsError(_)           =>
-        RouterError(
-          INTERNAL_SERVER_ERROR,
-          ErrorResponse(
-            correlationId,
-            ApplicationConstants.UnexpectedErrorCode,
-            ApplicationConstants.UnexpectedErrorMessage
-          )
+        ErrorResponse(
+          correlationId,
+          ApplicationConstants.UnexpectedErrorCode,
+          ApplicationConstants.UnexpectedErrorMessage
         )
     }
 
