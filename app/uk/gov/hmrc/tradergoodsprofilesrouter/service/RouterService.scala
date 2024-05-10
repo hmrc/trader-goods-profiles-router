@@ -115,7 +115,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
-  def determine400Error(correlationId: String, message: String): ErrorResponse =
+  private def determine400Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         setBadRequestResponse(correlationId, detail)
@@ -127,7 +127,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
         )
     }
 
-  def determine500Error(correlationId: String, message: String): ErrorResponse =
+  private def determine500Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         detail.errorCode match {
@@ -186,7 +186,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
         )
     }
 
-  def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse =
+  private def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse =
     ErrorResponse(
       correlationId,
       ApplicationConstants.BadRequestCode,
@@ -196,7 +196,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       }
     )
 
-  def parseFaultDetail(rawDetail: String): Error = {
+  private def parseFaultDetail(rawDetail: String): Error = {
     val regex = """error:\s*(\d+),\s*message:\s*(.*)""".r
 
     rawDetail match {
