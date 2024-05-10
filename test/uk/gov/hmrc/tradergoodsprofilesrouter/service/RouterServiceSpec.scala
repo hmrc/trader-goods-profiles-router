@@ -16,10 +16,17 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
+import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.MockitoSugar.{reset, when}
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import uk.gov.hmrc.http.HeaderCarrier
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status._
+import play.api.libs.json.Json
+import play.api.mvc.Results.InternalServerError
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse, RouterError}
@@ -27,21 +34,79 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RouterServiceSpec extends AnyWordSpec with Matchers {
+class RouterServiceSpec
+    extends AnyWordSpec
+    with Matchers
+    with ScalaFutures
+    with EitherValues
+    with IntegrationPatience
+    with BeforeAndAfterEach {
 
-  val eisConnector = new EISConnector {
-    override def fetchRecord(eori: String, recordId: String, correlationId: String)(implicit
-      ec: ExecutionContext,
-      hc: HeaderCarrier
-    ): Future[GetEisRecordsResponse] = ???
-  }
+  implicit val ec: ExecutionContext = ExecutionContext.global
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  val uuidService = new UuidService {
-    def generateUuid: String = "1234-5678-9012"
-  }
+  private val eoriNumber    = "eori"
+  private val recordId      = "recordId"
+  private val correlationId = "1234-5678-9012"
+  private val eisConnector  = mock[EISConnector]
+  private val uuidService   = mock[UuidService]
 
   val routerService = new RouterServiceImpl(eisConnector, uuidService)
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    reset(eisConnector, uuidService)
+    when(uuidService.uuid).thenReturn(correlationId)
+  }
+
+  "fetchRecord"       should {
+    "return a record item" in {
+      val eisResponse = getSingleRecordResponseData
+      when(eisConnector.fetchRecord(any, any, any)(any, any))
+        .thenReturn(Future.successful(eisResponse))
+
+      val result = routerService.fetchRecord(eoriNumber, recordId)
+
+      whenReady(result.value) {
+        _.value shouldBe eisResponse.goodsItemRecords.head
+      }
+    }
+
+    "return an error" when {
+      "Invalid payload response" in {
+        val eisResponse =
+          s"""
+            |{
+            |    "timestamp": "2023-09-14T11:29:18Z",
+            |    "correlationId": "$correlationId",
+            |    "errorCode": "200",
+            |    "errorMessage": "Internal Server Error",
+            |    "source": "BACKEND",
+            |    "sourceFaultDetail": {
+            |      "detail": null
+            |    }
+            |  }
+        """.stripMargin
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.fetchRecord(eoriNumber, recordId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.InvalidOrEmptyPayloadCode,
+                ApplicationConstants.InvalidOrEmptyPayloadMessage
+              )
+            )
+          )
+        }
+      }
+    }
+  }
   "determine500Error" should {
 
     "return proper RouterError for ErrorDetail with errorCode 200" in {
@@ -437,5 +502,63 @@ class RouterServiceSpec extends AnyWordSpec with Matchers {
       result shouldBe expectedError
     }
   }
+
+  val getSingleRecordResponseData: GetEisRecordsResponse =
+    Json
+      .parse("""
+    |{
+    | "goodsItemRecords":
+    | [
+    |  {
+    |    "eori": "GB1234567890",
+    |    "actorId": "GB1234567890",
+    |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+    |    "traderRef": "BAN001001",
+    |    "comcode": "104101000",
+    |    "accreditationRequest": "Not requested",
+    |    "goodsDescription": "Organic bananas",
+    |    "countryOfOrigin": "EC",
+    |    "category": 3,
+    |    "assessments": [
+    |      {
+    |        "assessmentId": "abc123",
+    |        "primaryCategory": "1",
+    |        "condition": {
+    |          "type": "abc123",
+    |          "conditionId": "Y923",
+    |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+    |          "conditionTraderText": "Excluded product"
+    |        }
+    |      }
+    |    ],
+    |    "supplementaryUnit": 500,
+    |    "measurementUnit": "square meters(m^2)",
+    |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+    |    "comcodeEffectiveToDate": "",
+    |    "version": 1,
+    |    "active": true,
+    |    "toReview": false,
+    |    "reviewReason": null,
+    |    "declarable": "IMMI declarable",
+    |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+    |    "nirmsNumber": "RMS-GB-123456",
+    |    "niphlNumber": "6 S12345",
+    |    "locked": false,
+    |    "srcSystemName": "CDAP",
+    |    "createdDateTime": "2024-11-18T23:20:19Z",
+    |    "updatedDateTime": "2024-11-18T23:20:19Z"
+    |  }
+    |],
+    |"pagination":
+    | {
+    |   "totalRecords": 1,
+    |   "currentPage": 0,
+    |   "totalPages": 1,
+    |   "nextPage": null,
+    |   "prevPage": null
+    | }
+    |}
+    |""".stripMargin)
+      .as[GetEisRecordsResponse]
 
 }

@@ -16,9 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
+import cats.data.EitherT
 import play.api.libs.json.Format.GenericFormat
+import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
-import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import play.api.mvc._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
@@ -37,27 +39,30 @@ class GetRecordsController @Inject() (
   def getTGPRecord(
     eori: String,
     recordId: String
-  ): Action[AnyContent] = Action.async { implicit request =>
-    request.headers.get(HeaderNames.ClientId) match {
-      case Some(_) =>
-        routerService
-          .fetchRecord(eori, recordId)
-          .fold(
-            error => Status(error.status)(toJson(error.errorResponse)),
-            response => Ok(toJson(response))
-          )
-      case None    =>
-        Future.successful(
-          BadRequest(
-            toJson(
-              ErrorResponse(
-                uuidService.uuid,
-                ApplicationConstants.BadRequestCode,
-                ApplicationConstants.MissingHeaderClientId
-              )
-            )
+  ): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+
+    val result = for {
+      _ <- validateClientId
+      recordItem <-      routerService.fetchRecord(eori, recordId)
+    } yield {
+      Ok(Json.toJson(recordItem))
+    }
+
+    result.merge
+  }
+
+  private def validateClientId(implicit request: Request[AnyContent]): EitherT[Future, Result, String] = {
+    EitherT.fromOption(
+      request.headers.get(HeaderNames.ClientId),
+      BadRequest(
+        toJson(
+          ErrorResponse(
+            uuidService.uuid,
+            ApplicationConstants.BadRequestCode,
+            ApplicationConstants.MissingHeaderClientId
           )
         )
-    }
+      )
+    )
   }
 }

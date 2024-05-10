@@ -23,6 +23,7 @@ import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.{JsValue, Json}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
@@ -131,10 +132,8 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
 
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
 
-    val result = eisConnector.fetchRecord(eori, recordId, correlationId)(ec, hc)
+    val result = await(eisConnector.fetchRecord(eori, recordId, correlationId)(ec, hc))
 
-    result.map { res =>
-      res shouldBe expectedResponse
-    }
+    result shouldBe expectedResponse
   }
 }
