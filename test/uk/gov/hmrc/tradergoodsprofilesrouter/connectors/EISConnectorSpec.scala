@@ -18,6 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
+import org.mockito.MockitoSugar.reset
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -48,6 +49,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
   private val eisConnector: EISConnectorImpl = new EISConnectorImpl(appConfig, httpClientV2, dateTimeService)
 
   override def beforeEach(): Unit = {
+    reset(appConfig, httpClientV2, dateTimeService)
     super.beforeEach()
 
     when(appConfig.eisConfig).thenReturn(
