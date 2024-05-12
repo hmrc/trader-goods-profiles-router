@@ -17,10 +17,11 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.when
-import org.scalatest.BeforeAndAfterEach
+import org.scalatest.{BeforeAndAfterEach, stats}
 import play.api.http.Status._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 
 import java.time.Instant
 
@@ -28,86 +29,22 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
   val eori                           = "GB123456789001"
   val recordId                       = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
+  val dateTime                       = "2021-12-17T09:30:47.456Z"
+  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 Z"
   override def connectorPath: String = s"/tgp/getrecords/v1"
   override def connectorName: String = "eis"
 
   override def beforeEach: Unit = {
     super.beforeEach()
-    when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
-    when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
+    when(uuidService.uuid).thenReturn(correlationId)
+    when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
   }
 
   "attempting to get records, when" - {
     "the request is" - {
       "valid" in {
-
-        stubFor(
-          get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-            .withHeader("Content-Type", equalTo("application/json"))
-            .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-            .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-            .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-            .withHeader("Accept", equalTo("application/json"))
-            .withHeader("Authorization", equalTo("bearerToken"))
-            .withHeader("X-Client-Id", equalTo("tss"))
-            .willReturn(
-              aResponse()
-                .withHeader("Content-Type", "application/json")
-                .withStatus(OK)
-                .withBody(s"""
-                       |{
-                       |    "goodsItemRecords": [
-                       |        {
-                       |            "eori": "GB1234567890",
-                       |            "actorId": "GB1234567890",
-                       |            "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-                       |            "traderRef": "BAN001001",
-                       |            "comcode": "104101000",
-                       |            "accreditationRequest": "Not requested",
-                       |            "goodsDescription": "Organic bananas",
-                       |            "countryOfOrigin": "EC",
-                       |            "category": 3,
-                       |            "assessments": [
-                       |                {
-                       |                    "assessmentId": "abc123",
-                       |                    "primaryCategory": "1",
-                       |                    "condition": {
-                       |                        "type": "abc123",
-                       |                        "conditionId": "Y923",
-                       |                        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-                       |                        "conditionTraderText": "Excluded product"
-                       |                    }
-                       |                }
-                       |            ],
-                       |            "supplementaryUnit": 500,
-                       |            "measurementUnit": "square meters(m^2)",
-                       |            "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                       |            "comcodeEffectiveToDate": "",
-                       |            "version": 1,
-                       |            "active": true,
-                       |            "toReview": false,
-                       |            "reviewReason": null,
-                       |            "declarable": "IMMI declarable",
-                       |            "ukimsNumber": "XIUKIM47699357400020231115081800",
-                       |            "nirmsNumber": "RMS-GB-123456",
-                       |            "niphlNumber": "6 S12345",
-                       |            "locked": false,
-                       |            "srcSystemName": "CDAP",
-                       |            "createdDateTime": "2024-11-18T23:20:19Z",
-                       |            "updatedDateTime": "2024-11-18T23:20:19Z"
-                       |        }
-                       |    ],
-                       |    "pagination": {
-                       |        "totalRecords": 1,
-                       |        "currentPage": 0,
-                       |        "totalPages": 1,
-                       |        "nextPage": null,
-                       |        "prevPage": null
-                       |    }
-                       |}
-                       |""".stripMargin)
-            )
-        )
+        stubForEis(OK, Some(getSingleRecordResponseData.toString()))
 
         val response = wsClient
           .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
@@ -115,61 +52,14 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           .get()
           .futureValue
 
-        assertAsExpected(
-          response = response,
-          status = OK,
-          jsonBodyOpt = Some(
-            """
-                |{
-                |    "eori": "GB1234567890",
-                |    "actorId": "GB1234567890",
-                |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-                |    "traderRef": "BAN001001",
-                |    "comcode": "104101000",
-                |    "accreditationRequest": "Not requested",
-                |    "goodsDescription": "Organic bananas",
-                |    "countryOfOrigin": "EC",
-                |    "category": 3,
-                |    "assessments": null,
-                |    "supplementaryUnit": 500,
-                |    "measurementUnit": "square meters(m^2)",
-                |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                |    "comcodeEffectiveToDate": "",
-                |    "version": 1,
-                |    "active": true,
-                |    "toReview": false,
-                |    "reviewReason": null,
-                |    "declarable": "IMMI declarable",
-                |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                |    "nirmsNumber": "RMS-GB-123456",
-                |    "niphlNumber": "6 S12345",
-                |    "locked": false,
-                |    "srcSystemName": "CDAP",
-                |    "createdDateTime": "2024-11-18T23:20:19Z",
-                |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                |}
-                |""".stripMargin
-          )
-        )
+        response.status shouldBe OK
+        response.json   shouldBe Json.toJson(getSingleRecordResponseData.as[GetEisRecordsResponse].goodsItemRecords.head)
+
         verifyThatDownstreamApiWasCalled()
       }
       "valid but the integration call fails with response:" - {
         "Forbidden" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(FORBIDDEN)
-              )
-          )
+          stubForEis(FORBIDDEN)
 
           val response = await(
             wsClient
@@ -178,37 +68,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = FORBIDDEN,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "FORBIDDEN",
-                |    "message": "Forbidden"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe FORBIDDEN
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "FORBIDDEN",
+            "message"       -> "Forbidden"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Not Found" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(NOT_FOUND)
-              )
-          )
+          stubForEis(NOT_FOUND)
 
           val response = await(
             wsClient
@@ -217,37 +87,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = NOT_FOUND,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "NOT_FOUND",
-                |    "message": "Not Found"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe NOT_FOUND
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "NOT_FOUND",
+            "message"       -> "Not Found"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Method Not Allowed" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(METHOD_NOT_ALLOWED)
-              )
-          )
+          stubForEis(METHOD_NOT_ALLOWED)
 
           val response = await(
             wsClient
@@ -256,37 +106,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = METHOD_NOT_ALLOWED,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "METHOD_NOT_ALLOWED",
-                |    "message": "Method Not Allowed"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe METHOD_NOT_ALLOWED
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "METHOD_NOT_ALLOWED",
+            "message"       -> "Method Not Allowed"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Unexpected Error" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(SERVICE_UNAVAILABLE)
-              )
-          )
+          stubForEis(SERVICE_UNAVAILABLE)
 
           val response = await(
             wsClient
@@ -295,49 +125,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "UNEXPECTED_ERROR",
-                |    "message": "Unexpected Error"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "UNEXPECTED_ERROR",
+            "message"       -> "Unexpected Error"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "500",
-                               |    "errorMessage": "Internal Server Error",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("500", "Internal Server Error")))
 
           val response = await(
             wsClient
@@ -356,33 +154,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 200 errorCode" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "200",
-                               |    "errorMessage": "Internal Server Error",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("200", "Internal Server Error")))
 
           val response = await(
             wsClient
@@ -391,49 +163,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "INVALID_OR_EMPTY_PAYLOAD",
-                |    "message": "Invalid Response Payload or Empty payload"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "INVALID_OR_EMPTY_PAYLOAD",
+            "message"       -> "Invalid Response Payload or Empty payload"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 400 errorCode" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Internal Error Response",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("400", "Internal Error Response")))
 
           val response = await(
             wsClient
@@ -442,49 +182,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "INTERNAL_ERROR_RESPONSE",
-                |    "message": "Internal Error Response"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "INTERNAL_ERROR_RESPONSE",
+            "message"       -> "Internal Error Response"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 401 errorCode" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "401",
-                               |    "errorMessage": "Unauthorised",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
 
           val response = await(
             wsClient
@@ -493,49 +201,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "UNAUTHORIZED",
-                |    "message": "Unauthorized"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "UNAUTHORIZED",
+            "message"       -> "Unauthorized"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 404 errorCode" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "404",
-                               |    "errorMessage": "Not Found",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
 
           val response = await(
             wsClient
@@ -544,49 +220,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "NOT_FOUND",
-                |    "message": "Not Found"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "NOT_FOUND",
+            "message"       -> "Not Found"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 405 errorCode" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "405",
-                               |    "errorMessage": "Method Not Allowed",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("405", "Method Not Allowed")))
 
           val response = await(
             wsClient
@@ -595,49 +239,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "METHOD_NOT_ALLOWED",
-                |    "message": "Method Not Allowed"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "METHOD_NOT_ALLOWED",
+            "message"       -> "Method Not Allowed"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 502 errorCode" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "502",
-                               |    "errorMessage": "Bad Gateway",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
 
           val response = await(
             wsClient
@@ -646,49 +258,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "BAD_GATEWAY",
-                |    "message": "Bad Gateway"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_GATEWAY",
+            "message"       -> "Bad Gateway"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 503 errorCode" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "503",
-                               |    "errorMessage": "Service Unavailable",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("503", "Service Unavailable")))
 
           val response = await(
             wsClient
@@ -697,49 +277,17 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "SERVICE_UNAVAILABLE",
-                |    "message": "Service Unavailable"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "SERVICE_UNAVAILABLE",
+            "message"       -> "Service Unavailable"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with unknown errorCode" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                               | {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "501",
-                               |    "errorMessage": "Not Implemented",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": null
-                               |    }
-                               |  }
-                               |""".stripMargin)
-              )
-          )
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("501", "Not Implemented")))
 
           val response = await(
             wsClient
@@ -748,42 +296,23 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "UNKNOWN",
-                |    "message": "Unknown Error"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "UNKNOWN",
+            "message"       -> "Unknown Error"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with unexpected error" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(INTERNAL_SERVER_ERROR)
-                  .withBody(s"""
-                       | {
-                       |    "invalid": "error"
-                       |  }
-                       |""".stripMargin)
-              )
-          )
+          val eisErrorResponseBody = s"""
+                                        | {
+                                        |    "invalid": "error"
+                                        |  }
+                                        |""".stripMargin
+
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponseBody))
 
           val response = await(
             wsClient
@@ -792,19 +321,13 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                |    "code": "UNEXPECTED_ERROR",
-                |    "message": "Unexpected Error"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "UNEXPECTED_ERROR",
+            "message"       -> "Unexpected Error"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Bad Request for invalid or missing EORI" in {
@@ -845,23 +368,19 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = BAD_REQUEST,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |  "correlationId" : "d677693e-9981-4ee3-8574-654981ebe606",
-                |  "code" : "BAD_REQUEST",
-                |  "message" : "Bad Request",
-                |  "errors" : [ {
-                |    "code" : "INVALID_REQUEST_PARAMETER",
-                |    "message" : "006 - Missing or invalid mandatory request parameter EORI"
-                |  } ]
-                |}
-                |""".stripMargin
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "006 - Missing or invalid mandatory request parameter EORI"
+              )
             )
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Bad Request for EORI does not exists in database" in {
@@ -902,23 +421,19 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = BAD_REQUEST,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |  "correlationId" : "d677693e-9981-4ee3-8574-654981ebe606",
-                |  "code" : "BAD_REQUEST",
-                |  "message" : "Bad Request",
-                |  "errors" : [ {
-                |    "code" : "INVALID_REQUEST_PARAMETER",
-                |    "message" : "007 - EORI doesn’t exist in the database"
-                |  } ]
-                |}
-                |""".stripMargin
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "007 - EORI does not exist in the database"
+              )
             )
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Bad Request for recordId does not exists in database and Invalid/Missing recordId" in {
@@ -960,27 +475,23 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = BAD_REQUEST,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |  "correlationId" : "d677693e-9981-4ee3-8574-654981ebe606",
-                |  "code" : "BAD_REQUEST",
-                |  "message" : "Bad Request",
-                |  "errors" : [ {
-                |    "code" : "INVALID_REQUEST_PARAMETER",
-                |    "message" : "025 - Invalid request parameter recordId"
-                |  },
-                |   {
-                |    "code" : "INVALID_REQUEST_PARAMETER",
-                |    "message" : "026 - recordId does not exist in the database"
-                |  }]
-                |}
-                |""".stripMargin
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "025 - Invalid request parameter recordId"
+              ),
+              Json.obj(
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "026 - recordId does not exist in the database"
+              )
             )
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with unexpected error" in {
@@ -1021,23 +532,19 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = BAD_REQUEST,
-            jsonBodyOpt = Some(
-              """
-                {
-                |  "correlationId" : "d677693e-9981-4ee3-8574-654981ebe606",
-                |  "code" : "BAD_REQUEST",
-                |  "message" : "Bad Request",
-                |  "errors" : [ {
-                |    "code" : "UNEXPECTED_ERROR",
-                |    "message" : "Unexpected Error"
-                |  } ]
-                |}
-                |""".stripMargin
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"    -> "UNEXPECTED_ERROR",
+                "message" -> "Unexpected Error"
+              )
             )
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with unable to parse the detail" in {
@@ -1076,18 +583,12 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = INTERNAL_SERVER_ERROR,
-            jsonBodyOpt = Some(
-              """
-                |{
-                |  "statusCode" : 500,
-                |  "message" : "Unable to parse fault detail: error"
-                |}
-                |""".stripMargin
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "statusCode" -> 500,
+            "message"    -> "Unable to parse fault detail: error"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with invalid json" in {
@@ -1119,19 +620,13 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
               .get()
           )
 
-          assertAsExpected(
-            response = response,
-            status = BAD_REQUEST,
-            jsonBodyOpt = Some(
-              """
-                | {
-                |  "correlationId" : "d677693e-9981-4ee3-8574-654981ebe606",
-                |  "code" : "UNEXPECTED_ERROR",
-                |  "message" : "Unexpected Error"
-                | }
-                |""".stripMargin
-            )
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "UNEXPECTED_ERROR",
+            "message"       -> "Unexpected Error"
           )
+
           verifyThatDownstreamApiWasCalled()
         }
       }
@@ -1143,21 +638,107 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           .get()
           .futureValue
 
-        assertAsExpected(
-          response = response,
-          status = BAD_REQUEST,
-          jsonBodyOpt = Some(
-            """
-              |{
-              |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-              |    "code": "BAD_REQUEST",
-              |    "message": "Missing mandatory header X-Client-Id"
-              |}
-              |""".stripMargin
-          )
+        response.status shouldBe BAD_REQUEST
+        response.json   shouldBe Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Missing mandatory header X-Client-Id"
         )
+
         verifyThatDownstreamApiWasNotCalled()
       }
     }
   }
+
+  private def stubForEis(httpStatus: Int, body: Option[String] = None) = stubFor(
+    get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+      .withHeader("Content-Type", equalTo("application/json"))
+      .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+      .withHeader("X-Correlation-ID", equalTo(correlationId))
+      .withHeader("Date", equalTo(timestamp))
+      .withHeader("Accept", equalTo("application/json"))
+      .withHeader("Authorization", equalTo("bearerToken"))
+      .withHeader("X-Client-Id", equalTo("tss"))
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(httpStatus)
+          .withBody(body.getOrElse(null))
+      )
+  )
+
+  private def eisErrorResponse(errorCode: String, errorMessage: String): String =
+    Json
+      .parse(
+        s"""
+       | {
+       |    "timestamp": "2023-09-14T11:29:18Z",
+       |    "correlationId": "$correlationId",
+       |    "errorCode": "$errorCode",
+       |    "errorMessage": "$errorMessage",
+       |    "source": "BACKEND",
+       |    "sourceFaultDetail": {
+       |      "detail":null
+       |    }
+       |  }
+       |""".stripMargin
+      )
+      .toString()
+
+  val getSingleRecordResponseData: JsValue =
+    Json
+      .parse("""
+               |{
+               | "goodsItemRecords":
+               | [
+               |  {
+               |    "eori": "GB1234567890",
+               |    "actorId": "GB1234567890",
+               |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+               |    "traderRef": "BAN001001",
+               |    "comcode": "104101000",
+               |    "accreditationRequest": "Not requested",
+               |    "goodsDescription": "Organic bananas",
+               |    "countryOfOrigin": "EC",
+               |    "category": 3,
+               |    "assessments": [
+               |      {
+               |        "assessmentId": "abc123",
+               |        "primaryCategory": "1",
+               |        "condition": {
+               |          "type": "abc123",
+               |          "conditionId": "Y923",
+               |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+               |          "conditionTraderText": "Excluded product"
+               |        }
+               |      }
+               |    ],
+               |    "supplementaryUnit": 500,
+               |    "measurementUnit": "square meters(m^2)",
+               |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |    "comcodeEffectiveToDate": "",
+               |    "version": 1,
+               |    "active": true,
+               |    "toReview": false,
+               |    "reviewReason": null,
+               |    "declarable": "IMMI declarable",
+               |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |    "nirmsNumber": "RMS-GB-123456",
+               |    "niphlNumber": "6 S12345",
+               |    "locked": false,
+               |    "srcSystemName": "CDAP",
+               |    "createdDateTime": "2024-11-18T23:20:19Z",
+               |    "updatedDateTime": "2024-11-18T23:20:19Z"
+               |  }
+               |],
+               |"pagination":
+               | {
+               |   "totalRecords": 1,
+               |   "currentPage": 0,
+               |   "totalPages": 1,
+               |   "nextPage": null,
+               |   "prevPage": null
+               | }
+               |}
+               |""".stripMargin)
 }

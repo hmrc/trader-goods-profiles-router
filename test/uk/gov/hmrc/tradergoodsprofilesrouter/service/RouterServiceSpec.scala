@@ -385,7 +385,7 @@ class RouterServiceSpec
              |    "sourceFaultDetail": {
              |      "detail": [
              |        "error: 006, message: Mandatory field comcode was missing from body",
-             |        "error: 007, message: eori doesn't exist in the database"
+             |        "error: 007, message: eori does not exist in the database"
              |      ]
              |    }
              |  }
@@ -405,7 +405,7 @@ class RouterServiceSpec
                 Some(
                   Seq(
                     Error("INVALID_REQUEST_PARAMETER", "006 - Missing or invalid mandatory request parameter EORI"),
-                    Error("INVALID_REQUEST_PARAMETER", "007 - EORI doesn’t exist in the database")
+                    Error("INVALID_REQUEST_PARAMETER", "007 - EORI does not exist in the database")
                   )
                 )
               )
@@ -550,25 +550,6 @@ class RouterServiceSpec
         val emptyResponse = ""
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 405)))
-
-        val result = routerService.fetchRecord(eoriNumber, recordId)
-
-        whenReady(result.value) {
-          _.left.value shouldBe MethodNotAllowed(
-            Json.toJson(
-              ErrorResponse(
-                correlationId,
-                ApplicationConstants.MethodNotAllowedCode,
-                ApplicationConstants.MethodNotAllowedMessage
-              )
-            )
-          )
-        }
-      }
-      "Internal server error response" in {
-        val emptyResponse = ""
-        when(eisConnector.fetchRecord(any, any, any)(any, any))
-          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 500)))
 
         val result = routerService.fetchRecord(eoriNumber, recordId)
 

@@ -42,7 +42,7 @@ object ApplicationConstants {
   val UnknownCode                  = "UNKNOWN"
   val UnknownMessage               = "Unknown Error"
   val InvalidOrMissingEori         = "006 - Missing or invalid mandatory request parameter EORI"
-  val EoriDoesNotExists            = "007 - EORI doesn’t exist in the database"
+  val EoriDoesNotExists            = "007 - EORI does not exist in the database"
   val InvalidRecordId              = "025 - Invalid request parameter recordId"
   val RecordIdDoesNotExists        = "026 - recordId does not exist in the database"
   val InternalServerErrorCode      = "INTERNAL_SERVER_ERROR"
