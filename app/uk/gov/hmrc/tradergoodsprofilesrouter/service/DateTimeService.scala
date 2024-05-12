@@ -34,11 +34,6 @@ class DateTimeServiceImpl extends DateTimeService {
 object DateTimeService {
   implicit class DateTimeFormat(val dateTime: Instant) extends AnyVal {
 
-    implicit def asStringInMilliseconds: String =
-      ZonedDateTime
-        .ofInstant(dateTime, ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX"))
-
     implicit def asStringHttp: String =
       ZonedDateTime
         .ofInstant(dateTime, ZoneOffset.UTC)

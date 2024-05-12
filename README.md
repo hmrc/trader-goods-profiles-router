@@ -3,7 +3,7 @@
 
 ## About
 
-This is the router for TGP; it mostly acts as a conduit between the frontend (web and API) and the integration layer: EIS (
+This is the router for TGP; it acts as a conduit between the frontend (web and API) and the integration layer: EIS (
 Enterprise Integration Services).
 
 By default, this service runs on port `10904`.
