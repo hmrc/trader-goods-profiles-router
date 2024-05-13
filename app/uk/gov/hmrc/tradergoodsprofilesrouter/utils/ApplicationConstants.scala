@@ -47,4 +47,5 @@ object ApplicationConstants {
   val RecordIdDoesNotExists        = "026 - recordId does not exist in the database"
   val InternalServerErrorCode      = "INTERNAL_SERVER_ERROR"
   val InternalServerErrorMessage   = "Internal Server Error"
+  val InvalidRequestObject         = "Invalid request object"
 }

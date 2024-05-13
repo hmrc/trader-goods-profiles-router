@@ -1,0 +1,1188 @@
+{
+	"info": {
+		"_postman_id": "8fa02cbe-1d43-4554-bee2-ac09e55ad4d7",
+		"name": "Create Record",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5298634"
+	},
+	"item": [
+		{
+			"name": "Success",
+			"item": [
+				{
+					"name": "Complete Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code as expected\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"uuid": "002909ae-1e5b-4495-be92-fef69aa93e5e"
+							},
+							{
+								"key": "Date",
+								"value": "2021-12-17T09:30:47.456Z",
+								"uuid": "0a2e449e-419f-4c27-bf62-1df5b4370000"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "uk.gov.hmrc",
+								"uuid": "ac321292-ee20-4548-870b-1da5b63150b6"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"uuid": "c7e02f01-378c-425e-b573-487ada55d173"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"uuid": "6ea78c8c-d86e-48b5-8a2e-249cc5938e0c"
+							},
+							{
+								"key": "Authorization",
+								"value": "bearerToken",
+								"uuid": "9eb239d4-0ed0-44ba-b034-883df0b4bf0a"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "tss",
+								"uuid": "b252dfb2-3d50-4f59-b4c4-64bf1fd81673"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eori\": \"GB123456789012\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"records"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Required Request Body Only",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code as expected\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"uuid": "322e0a3a-627e-4715-b8bf-00e93900034b"
+							},
+							{
+								"key": "Date",
+								"value": "2021-12-17T09:30:47.456Z",
+								"uuid": "f1cfea29-7d6d-4e60-abce-e4df40a729e3"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "uk.gov.hmrc",
+								"uuid": "12d9299b-934e-461e-99ac-b47b5a9cc025"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"uuid": "5a1f1fc5-8c33-4ee9-9b34-9d7522f015f4"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"uuid": "9a8e78d1-13bd-4001-9c32-dc6dd8364302"
+							},
+							{
+								"key": "Authorization",
+								"value": "bearerToken",
+								"uuid": "ec366708-db7e-48a9-bb89-31ab9e29f742"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "tss",
+								"uuid": "c37ca791-4ae1-4862-af18-ed91c5a5da53"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eori\": \"GB123456789012\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"records"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Required Request Body One Optional",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code as expected\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"uuid": "9ff2a7f9-9ea1-40ea-ae6f-ac906cabf61c"
+							},
+							{
+								"key": "Date",
+								"value": "2021-12-17T09:30:47.456Z",
+								"uuid": "ae3f8087-c486-4387-aba2-545ef952d0e7"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "uk.gov.hmrc",
+								"uuid": "0f3abce7-8a32-413e-82ab-2532eadc34fb"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"uuid": "88792a82-a9d2-4f80-a5fb-98a1c8e111b5"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"uuid": "3154e938-8ee4-42fb-9581-9e1f84c8bafa"
+							},
+							{
+								"key": "Authorization",
+								"value": "bearerToken",
+								"uuid": "de18c45f-6bab-490f-987b-e7a7085c0954"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "tss",
+								"uuid": "b6877f9f-560b-47b2-9e6b-aebf76f1a102"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eori\": \"GB123456789012\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"supplementaryUnit\": 500,\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"records"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Required Request Body With Two Optionals",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code as expected\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"uuid": "b496f866-4213-4227-84b5-f88fc25f86c5"
+							},
+							{
+								"key": "Date",
+								"value": "2021-12-17T09:30:47.456Z",
+								"uuid": "c52016a5-a089-467a-92fa-db655af7a8d2"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "uk.gov.hmrc",
+								"uuid": "320e78a5-0f38-4e96-9753-0b3438b8fe8c"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"uuid": "ad604553-fd29-44c9-b144-b4abf1b50608"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"uuid": "395c4b53-b583-42ed-ab88-a015a48a8a1b"
+							},
+							{
+								"key": "Authorization",
+								"value": "bearerToken",
+								"uuid": "63115640-39d9-4654-8176-5593b6b7de7b"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "tss",
+								"uuid": "35d89da7-cb51-45ec-8098-dd0d66e6ea83"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eori\": \"GB123456789012\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"records"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Failure",
+			"item": [
+				{
+					"name": "Downstream",
+					"item": [
+						{
+							"name": "Bad Request",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "b3de966a-6b22-4e9f-836e-1dae396fb767"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "ec201080-b467-4072-9471-2f167937d4f4"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "ec802aeb-d536-48b0-a64c-7af27d90e158"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "f229a39f-cc9b-4494-8e40-175f342c7a81"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "7c3aff52-b4ff-4b0f-8a7a-f0d329c5568f"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "eb4f04ab-8c09-4e18-ace9-e723d09c0e23"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "aa0c8d4c-4eda-4522-a269-1e6be0fc03a5"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789002\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Forbidden",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "2cc22c02-1244-4109-893c-95e17fce314b"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "768646a5-6776-4a5a-8684-b48e4a53f36e"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "5056d69a-1bd5-42d1-a669-8c1bed3aa279"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "f7af149c-81e1-4848-bff3-3733e9cd25db"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "e082fa04-a3d9-46fc-ada9-09bf9bc179d3"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "9b21eec0-83b1-464f-b08b-a072fe097b99"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "fc4912ec-9c99-49f4-8e88-178bdc2134dc"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789002\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Not Found",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(404);",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "b9c46ea8-0535-4693-af3a-c52bd6ec69ec"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "0f0d051f-529c-4b1d-8af9-9552f74cdf8c"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "0af65cbb-d239-4e73-a1b7-29c495d80841"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "d9519614-6e99-4ed2-be0b-043854ee9dd7"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "d3700d2d-81d4-4743-bef1-cd224ee575d8"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "42e2195d-bf75-4dc0-9336-ed2bfc1bc658"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "a88c00d0-0767-409d-9978-42b8d738b092"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789005\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Method Not Allowed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(405);",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "2b24d92d-02b5-4cf5-a580-7bd520da604b"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "c12af02a-baa2-4b65-b75f-88fbd86ddb07"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "4bda7617-d692-4b8b-b59b-25c2d4d83c9e"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "987ce821-b7b6-4e32-bd0b-9e4b00998182"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "93e9ea77-acc2-470e-b9dd-7a3ad1d7c199"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "e03c92cb-8176-4c69-adce-5dd6763a1c1e"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "a2235060-aba3-4ade-bdfc-3326d69e6893"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789006\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Internal Server Error",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(500);",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "3a7ef51c-c6a3-41c6-aa7b-bcd51df976fb"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "9fec0f4f-93ef-4fa7-a3b4-93ecf89f26c9"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "2bb19cd3-fe70-4c7f-be18-9fb5b99d5b9d"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "f2970b0c-e0d1-4537-b322-0b2bafb9934d"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "b04d2a9e-660a-425b-9e8a-02ed89f9896c"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "b8acb2df-5a1f-4e45-992c-f5363f6f5e13"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "118e0afa-3dd0-4e31-a313-b9cb777b1f50"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789008\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Internal Server Error with a 500 error code",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(500);",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().code).to.eql(\"UNEXPECTED_ERROR\");",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().message).to.eql(\"Unexpected Error\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "b16833dd-87d0-407a-8a14-9de2f68af9c1"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "d895b57a-37a2-4f2c-aabe-597a23a877fa"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "35e880be-621e-46b7-8aa5-7d5ed660d75f"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "64fd0348-421a-41bb-84d9-fb99f0da3ae0"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "b068142c-2ad7-4ee8-9097-cd8c46d395a3"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "66a3471e-d36a-4598-94e8-53175d8d7f89"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "c5a709de-bc1b-4711-87cc-5970c5dcf69d"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789008\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Internal Server Error with a 201 error code",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(500);",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().code).to.eql(\"INVALID_OR_EMPTY_PAYLOAD\");",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().message).to.eql(\"Invalid Response Payload or Empty payload\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "17842000-7fce-458f-821f-4b840d493064"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "f2fe5bce-3c83-4780-ac55-43f4578beea6"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "d63a351f-d7d9-4e97-a5ac-94a0b6e5fbb5"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "7649f47c-8085-400a-ba51-3d304d93fcde"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "322855a6-09f6-4a1b-a770-76a171eaceb6"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "18edfc49-94c8-4ab2-9eca-9139f70a2d56"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "1311a731-8060-4fce-83f2-93978369d1e8"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789009\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Internal Server Error with a 200 error code",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(500);",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().code).to.eql(\"INVALID_OR_EMPTY_PAYLOAD\");",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().message).to.eql(\"Invalid Response Payload or Empty payload\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "9e478850-f651-4d7d-9ea7-b27852ec023b"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "b0b24dbc-bf3c-41ff-ae23-0c0967935ae9"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "7d743fe2-4b4a-47aa-b4f4-7bb48b639e60"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "d7c2a340-9811-4156-b7bd-83d061f68067"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "f3849b8e-1f34-4fe4-a3fb-16b897f14604"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "ba83cc4f-a0ee-45e7-a0a8-2aa02ed6ca93"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "a223d823-dfa5-4dc0-b4f4-21e786bc00e0"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789010\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Invalid",
+					"item": [
+						{
+							"name": "Missing X-Client-Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().code).to.eql(\"BAD_REQUEST\");",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().message).to.eql(\"Missing mandatory header X-Client-Id\");",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "58c985ae-9ae5-42a8-881e-5c5fd8df4b60"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "8c17bdb8-132c-4868-8d0a-6dff81542cd8"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "df17acd8-40ab-4420-a5aa-c8ec8dbff5b8"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "eba1908d-f3c1-4183-9d4b-456f90ebd9a8"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "a8e12fbd-402f-49ed-b774-4b793e32bb01"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "237163f0-b110-4336-8e33-d9e5fecfa42a"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"eori\": \"GB123456789012\",\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Missing Required Request Field",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code as expected\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().code).to.eql(\"BAD_REQUEST\");",
+											"});",
+											"",
+											"pm.test(\"Error code is as expected\", function () {",
+											"    pm.expect(pm.response.json().message).to.eql(\"Invalid request object\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Correlation-ID",
+										"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+										"uuid": "9688a5f0-02df-4b8b-b268-fcbfa6d65f24"
+									},
+									{
+										"key": "Date",
+										"value": "2021-12-17T09:30:47.456Z",
+										"uuid": "8d668ad5-ce7f-4e96-a7bc-ae85f9db7bf7"
+									},
+									{
+										"key": "X-Forwarded-Host",
+										"value": "uk.gov.hmrc",
+										"uuid": "d050f921-852d-4edf-ad77-9c96b9dc63b5"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"uuid": "5e8839d5-8b50-4ff5-bc19-95346a89a65b"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"uuid": "0d839ba7-7eab-4f27-a73e-50737be7c612"
+									},
+									{
+										"key": "Authorization",
+										"value": "bearerToken",
+										"uuid": "556d8088-e0ee-441b-80a7-8e4e9aa9f99c"
+									},
+									{
+										"key": "X-Client-ID",
+										"value": "tss",
+										"uuid": "82ebc8f6-884d-4146-821b-ab14b2125b88"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"actorId\": \"GB098765432112\",\n    \"traderRef\": \"BAN001001\",\n    \"comcode\": \"104101000\",\n    \"goodsDescription\": \"Organic bananas\",\n    \"countryOfOrigin\": \"EC\",\n    \"category\": 1,\n    \"assessments\": [\n        {\n            \"assessmentId\": \"abc123\",\n            \"primaryCategory\": 1,\n            \"condition\": {\n                \"type\": \"abc123\",\n                \"conditionId\": \"Y923\",\n                \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n                \"conditionTraderText\": \"Excluded product\"\n            }\n        }\n    ],\n    \"supplementaryUnit\": 500,\n    \"measurementUnit\": \"Square metre (m2)\",\n    \"comcodeEffectiveFromDate\": \"2024-11-18T23:20:19Z\",\n    \"comcodeEffectiveToDate\": \"2024-11-18T23:20:19Z\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:10904/trader-goods-profiles-router/records",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "10904",
+									"path": [
+										"trader-goods-profiles-router",
+										"records"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

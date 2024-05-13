@@ -24,11 +24,13 @@ case class EISInstanceConfig(
   protocol: String,
   host: String,
   port: Int,
-  uri: String,
+  getRecords: String,
+  createRecord: String,
   forwardedHost: String,
   headers: Headers
 ) {
-  lazy val url: String = s"$protocol://$host:$port$uri"
+  lazy val getRecordsUrl: String   = s"$protocol://$host:$port$getRecords"
+  lazy val createRecordUrl: String = s"$protocol://$host:$port$createRecord"
 }
 
 object EISInstanceConfig {
@@ -40,7 +42,8 @@ object EISInstanceConfig {
         config.get[String]("protocol"),
         config.get[String]("host"),
         config.get[Int]("port"),
-        config.get[String]("get-records.uri"),
+        config.get[String]("get-records"),
+        config.get[String]("create-record"),
         config.get[String]("forwarded-host"),
         headers = Headers(authorization = config.get[String]("headers.authorization"))
       )

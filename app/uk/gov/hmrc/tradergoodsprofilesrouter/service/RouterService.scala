@@ -22,9 +22,11 @@ import play.api.http.Status._
 import play.api.libs.Files.logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.Result
-import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
+import play.api.mvc.Results.{BadGateway, BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound, ServiceUnavailable}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
@@ -38,6 +40,10 @@ trait RouterService {
     eori: String,
     recordId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords]
+
+  def createRecord(
+    request: CreateRecordRequest
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, CreateRecordResponse]
 }
 
 class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: UuidService) extends RouterService {
@@ -115,6 +121,107 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
+  override def createRecord(request: CreateRecordRequest)(implicit
+    ec: ExecutionContext,
+    hc: HeaderCarrier
+  ): EitherT[Future, Result, CreateRecordResponse] = {
+    val correlationId = uuidService.uuid
+    EitherT(
+      eisConnector
+        .createRecord(request, correlationId)
+        .map(result => Right(result))
+        .recover {
+          case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
+            Left(BadRequest(Json.toJson(determine400Error(correlationId, message))))
+
+          case UpstreamErrorResponse(_, FORBIDDEN, _, _) =>
+            Left(
+              Forbidden(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.ForbiddenCode,
+                    ApplicationConstants.ForbiddenMessage
+                  )
+                )
+              )
+            )
+
+          case UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
+            Left(
+              NotFound(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.NotFoundCode,
+                    ApplicationConstants.NotFoundMessage
+                  )
+                )
+              )
+            )
+
+          case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _) =>
+            Left(
+              MethodNotAllowed(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.MethodNotAllowedCode,
+                    ApplicationConstants.MethodNotAllowedMessage
+                  )
+                )
+              )
+            )
+
+          case UpstreamErrorResponse(_, BAD_GATEWAY, _, _) =>
+            Left(
+              BadGateway(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.BadGatewayCode,
+                    ApplicationConstants.BadGatewayMessage
+                  )
+                )
+              )
+            )
+
+          case UpstreamErrorResponse(_, SERVICE_UNAVAILABLE, _, _) =>
+            Left(
+              ServiceUnavailable(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.ServiceUnavailableCode,
+                    ApplicationConstants.ServiceUnavailableMessage
+                  )
+                )
+              )
+            )
+
+          case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
+            Left(InternalServerError(Json.toJson(determine500Error(correlationId, message))))
+
+          case NonFatal(e) =>
+            logger.error(
+              s"[RouterService] - Error creating record for eori number ${request.eori} and actor ID ${request.actorId}, with message ${e.getMessage}",
+              e
+            )
+            Left(
+              InternalServerError(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.UnexpectedErrorCode,
+                    ApplicationConstants.UnexpectedErrorMessage
+                  )
+                )
+              )
+            )
+        }
+    )
+  }
+
   private def determine400Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
@@ -131,51 +238,51 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         detail.errorCode match {
-          case "200" =>
+          case "200" | "201" =>
             ErrorResponse(
               correlationId,
               ApplicationConstants.InvalidOrEmptyPayloadCode,
               ApplicationConstants.InvalidOrEmptyPayloadMessage
             )
-          case "400" =>
+          case "400"         =>
             ErrorResponse(
               correlationId,
               ApplicationConstants.InternalErrorResponseCode,
               ApplicationConstants.InternalErrorResponseMessage
             )
-          case "401" =>
+          case "401"         =>
             ErrorResponse(
               correlationId,
               ApplicationConstants.UnauthorizedCode,
               ApplicationConstants.UnauthorizedMessage
             )
-          case "404" =>
+          case "404"         =>
             ErrorResponse(correlationId, ApplicationConstants.NotFoundCode, ApplicationConstants.NotFoundMessage)
-          case "405" =>
+          case "405"         =>
             ErrorResponse(
               correlationId,
               ApplicationConstants.MethodNotAllowedCode,
               ApplicationConstants.MethodNotAllowedMessage
             )
-          case "500" =>
+          case "500"         =>
             ErrorResponse(
               correlationId,
               ApplicationConstants.InternalServerErrorCode,
               ApplicationConstants.InternalServerErrorMessage
             )
-          case "502" =>
+          case "502"         =>
             ErrorResponse(
               correlationId,
               ApplicationConstants.BadGatewayCode,
               ApplicationConstants.BadGatewayMessage
             )
-          case "503" =>
+          case "503"         =>
             ErrorResponse(
               correlationId,
               ApplicationConstants.ServiceUnavailableCode,
               ApplicationConstants.ServiceUnavailableMessage
             )
-          case _     =>
+          case _             =>
             ErrorResponse(correlationId, ApplicationConstants.UnknownCode, ApplicationConstants.UnknownMessage)
         }
       case JsError(_)           =>

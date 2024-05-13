@@ -30,6 +30,8 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
@@ -63,22 +65,37 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
         "localhost",
         1234,
         "/tgp/getrecords/v1",
+        "/tgp/createrecord/v1",
         "MDTP",
         Headers("bearerToken")
       )
     )
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any())(any())).thenReturn(requestBuilder)
+    when(httpClientV2.post(any())(any())).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
+    when(requestBuilder.withBody(any())(any(), any(), any())).thenReturn(requestBuilder)
   }
 
   it should "fetch a record successfully" in {
-    val expectedResponse: GetEisRecordsResponse = sampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = HttpResponse(200, sampleJson, Map.empty)
+    val expectedResponse: GetEisRecordsResponse = fetchRecordSampleJson.as[GetEisRecordsResponse]
+    val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
 
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
 
     val result = await(eisConnector.fetchRecord(eori, recordId, correlationId)(ec, hc))
+
+    result shouldBe expectedResponse
+  }
+
+  it should "create a record successfully" in {
+    val expectedResponse: CreateRecordResponse = createRecordSampleJson.as[CreateRecordResponse]
+    val httpResponse                           = HttpResponse(201, createRecordSampleJson, Map.empty)
+
+    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
+
+    val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
+    val result                       = await(eisConnector.createRecord(request, correlationId)(ec, hc))
 
     result shouldBe expectedResponse
   }
@@ -107,8 +124,8 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
       "Authorization"    -> "bearerToken"
     )
 
-    val expectedResponse: GetEisRecordsResponse = sampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = HttpResponse(200, sampleJson, Map.empty)
+    val expectedResponse: GetEisRecordsResponse = fetchRecordSampleJson.as[GetEisRecordsResponse]
+    val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
 
     val result = await(eisConnector.fetchRecord(eori, recordId, correlationId)(ec, hc))
@@ -121,7 +138,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     result shouldBe expectedResponse
   }
 
-  val sampleJson: JsValue = Json
+  val fetchRecordSampleJson: JsValue = Json
     .parse("""
              |{
              |    "goodsItemRecords": [
@@ -174,4 +191,75 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
              |    }
              |}
              |""".stripMargin)
+
+  val createRecordSampleJson: JsValue = Json
+    .parse("""
+        |{
+        |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+        |  "eori": "GB123456789012",
+        |  "actorId": "GB098765432112",
+        |  "traderRef": "BAN001001",
+        |  "comcode": "104101000",
+        |  "accreditationStatus": "Not Requested",
+        |  "goodsDescription": "Organic bananas",
+        |  "countryOfOrigin": "EC",
+        |  "category": 1,
+        |  "supplementaryUnit": 500,
+        |  "measurementUnit": "Square metre (m2)",
+        |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+        |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+        |  "version": 1,
+        |  "active": true,
+        |  "toReview": false,
+        |  "reviewReason": "Commodity code change",
+        |  "declarable": "SPIMM",
+        |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+        |  "nirmsNumber": "RMS-GB-123456",
+        |  "niphlNumber": "6 S12345",
+        |  "createdDateTime": "2024-11-18T23->20->19Z",
+        |  "updatedDateTime": "2024-11-18T23->20->19Z",
+        |  "assessments": [
+        |    {
+        |      "assessmentId": "abc123",
+        |      "primaryCategory": 1,
+        |      "condition": {
+        |        "type": "abc123",
+        |        "conditionId": "Y923",
+        |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+        |        "conditionTraderText": "Excluded product"
+        |      }
+        |    }
+        |  ]
+        |}
+        |""".stripMargin)
+
+  val createRecordRequest: JsValue = Json
+    .parse("""
+        |{
+        |    "eori": "GB123456789012",
+        |    "actorId": "GB098765432112",
+        |    "traderRef": "BAN001001",
+        |    "comcode": "104101000",
+        |    "goodsDescription": "Organic bananas",
+        |    "countryOfOrigin": "EC",
+        |    "category": 1,
+        |    "assessments": [
+        |        {
+        |            "assessmentId": "abc123",
+        |            "primaryCategory": 1,
+        |            "condition": {
+        |                "type": "abc123",
+        |                "conditionId": "Y923",
+        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+        |                "conditionTraderText": "Excluded product"
+        |            }
+        |        }
+        |    ],
+        |    "supplementaryUnit": 500,
+        |    "measurementUnit": "Square metre (m2)",
+        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+        |}
+        |""".stripMargin)
+
 }
