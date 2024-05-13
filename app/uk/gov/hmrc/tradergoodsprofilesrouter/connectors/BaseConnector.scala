@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, isSuccessful}
 import play.api.libs.Files.logger
 import play.api.libs.json.{JsResult, Json, Reads}
 import uk.gov.hmrc.http.HttpReads.Implicits._
-import uk.gov.hmrc.http.{HttpErrorFunctions, HttpResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.http.client.RequestBuilder
+import uk.gov.hmrc.http.{HttpErrorFunctions, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
@@ -63,12 +63,9 @@ trait BaseConnector extends HttpErrorFunctions {
     def executeAndDeserialise[T](implicit ec: ExecutionContext, reads: Reads[T], tt: TypeTag[T]): Future[T] =
       requestBuilder
         .execute[HttpResponse]
-        .flatMap { response =>
-          response.status match {
-            case OK => response.as[T]
-            case _  =>
-              response.error
-          }
+        .flatMap {
+          case response if isSuccessful(response.status) => response.as[T]
+          case response                                  => response.error
         }
 
     /**
