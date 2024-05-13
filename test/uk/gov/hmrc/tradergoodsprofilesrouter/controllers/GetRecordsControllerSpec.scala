@@ -79,7 +79,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
     }
 
     "return an error if cannot fetch a record" in {
-      val errorResponseJson =  Json.obj("error" -> "error")
+      val errorResponseJson = Json.obj("error" -> "error")
 
       when(mockRouterService.fetchRecord(any, any)(any, any))
         .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
