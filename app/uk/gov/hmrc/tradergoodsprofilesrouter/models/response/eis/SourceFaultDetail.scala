@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.config
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.Configuration
+import play.api.libs.json.{JsPath, Reads}
 
-import javax.inject.{Inject, Singleton}
+case class SourceFaultDetail(detail: Option[Seq[String]] = None)
 
-@Singleton
-class AppConfig @Inject() (config: Configuration) {
+object SourceFaultDetail {
+  implicit val reads: Reads[SourceFaultDetail] =
+    (JsPath \ "detail").readNullable[Seq[String]].map(SourceFaultDetail.apply)
 
-  val eisConfig: EISInstanceConfig = config.get[EISInstanceConfig]("microservice.services.eis")
 }

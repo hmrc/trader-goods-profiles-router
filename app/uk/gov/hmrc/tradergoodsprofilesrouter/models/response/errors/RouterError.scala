@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.config
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 
-import play.api.Configuration
+import play.api.libs.json.{Json, OFormat}
 
-import javax.inject.{Inject, Singleton}
+case class RouterError(status: Int, errorResponse: ErrorResponse)
 
-@Singleton
-class AppConfig @Inject() (config: Configuration) {
-
-  val eisConfig: EISInstanceConfig = config.get[EISInstanceConfig]("microservice.services.eis")
+object RouterError {
+  implicit val format: OFormat[RouterError] = Json.format[RouterError]
 }

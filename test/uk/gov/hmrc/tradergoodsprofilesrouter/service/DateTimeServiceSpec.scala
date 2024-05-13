@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
+package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.http.Status
-import play.api.test.Helpers._
-import play.api.test.{FakeRequest, Helpers}
+import org.scalatestplus.play.PlaySpec
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 
-class MicroserviceHelloWorldControllerSpec extends AnyWordSpec with Matchers {
+import java.time.Instant
 
-  private val fakeRequest = FakeRequest("GET", "/")
-  private val controller  = new MicroserviceHelloWorldController(Helpers.stubControllerComponents())
+class DateTimeServiceSpec extends PlaySpec {
 
-  "GET /" should {
-    "return 200" in {
-      val result = controller.hello()(fakeRequest)
-      status(result) shouldBe Status.OK
+  "asStringHttp" should {
+    "return date and time in specified format" in {
+      val dateTime = Instant.parse("2021-12-17T09:30:47Z")
+      dateTime.asStringHttp mustBe "Fri, 17 Dec 2021 09:30:47 Z"
     }
   }
+
 }

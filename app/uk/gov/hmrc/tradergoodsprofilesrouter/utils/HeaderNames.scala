@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.config
+package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
-import play.api.Configuration
+object HeaderNames {
 
-import javax.inject.{Inject, Singleton}
-
-@Singleton
-class AppConfig @Inject() (config: Configuration) {
-
-  val eisConfig: EISInstanceConfig = config.get[EISInstanceConfig]("microservice.services.eis")
+  val CorrelationId = "X-Correlation-ID"
+  val ForwardedHost = "X-Forwarded-Host"
+  val ContentType   = "Content-Type"
+  val Accept        = "Accept"
+  val Date          = "Date"
+  val ClientId      = "X-Client-ID"
+  val Authorization = "Authorization"
 }
