@@ -25,6 +25,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
@@ -475,37 +476,32 @@ class RouterServiceSpec
           )
         }
       }
-//      "Unable to parse source fault detail" in {
-//        val eisResponse =
-//          s"""
-//             |{
-//             |    "timestamp": "2023-09-14T11:29:18Z",
-//             |    "correlationId": "$correlationId",
-//             |    "errorCode": "400",
-//             |    "errorMessage": "Bad Request",
-//             |    "source": "BACKEND",
-//             |    "sourceFaultDetail": {
-//             |      "detail": [
-//             |        "002, unknown"
-//             |      ]
-//             |    }
-//             |  }
-//        """.stripMargin
-//        when(eisConnector.fetchRecord(any, any, any)(any, any))
-//          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
-//
-////        assertThrows[IllegalArgumentException](routerService.fetchRecord(eoriNumber, recordId))
-//
-//        // whenReady(result.value) {
-//        //   _.left.value shouldBe
-//        // }
-//
-//        val exception = intercept[IllegalArgumentException] {
-//         await( routerService.fetchRecord(eoriNumber, recordId).value.futureValue)
-//        }
-//        exception.getMessage should be(s"Unable to parse fault detail: $recordId")
-//
-//      }
+      "Unable to parse source fault detail" in {
+        val eisResponse =
+          s"""
+             |{
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "400",
+             |    "errorMessage": "Bad Request",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": [
+             |        "002, unknown"
+             |      ]
+             |    }
+             |  }
+        """.stripMargin
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val exception = intercept[IllegalArgumentException] {
+          await(routerService.fetchRecord(eoriNumber, recordId).value)
+        }
+
+        exception.getMessage should be(s"Unable to parse fault detail for correlation Id: $correlationId")
+
+      }
     }
     "return an error" when {
       "Forbidden response" in {

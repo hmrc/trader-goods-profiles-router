@@ -192,11 +192,11 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       ApplicationConstants.BadRequestCode,
       ApplicationConstants.BadRequestMessage,
       detail.sourceFaultDetail.map { sfd =>
-        sfd.detail.get.map(parseFaultDetail)
+        sfd.detail.get.map(detail => parseFaultDetail(detail, correlationId))
       }
     )
 
-  private def parseFaultDetail(rawDetail: String): Error = {
+  private def parseFaultDetail(rawDetail: String, correlationId: String): Error = {
     val regex = """error:\s*(\d+),\s*message:\s*(.*)""".r
 
     rawDetail match {
@@ -216,7 +216,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
           case _     => Error(ApplicationConstants.UnexpectedErrorCode, ApplicationConstants.UnexpectedErrorMessage)
         }
       case _              =>
-        throw new IllegalArgumentException(s"Unable to parse fault detail: $rawDetail")
+        throw new IllegalArgumentException(s"Unable to parse fault detail for correlation Id: $correlationId")
     }
   }
 }

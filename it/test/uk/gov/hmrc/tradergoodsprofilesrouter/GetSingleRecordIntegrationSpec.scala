@@ -25,7 +25,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsRe
 
 import java.time.Instant
 
-class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
+class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
 
   val eori                           = "GB123456789001"
   val recordId                       = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
@@ -47,7 +47,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
         stubForEis(OK, Some(getSingleRecordResponseData.toString()))
 
         val response = wsClient
-          .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+          .url(fullUrl(s"/$eori/records/$recordId"))
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
           .get()
           .futureValue
@@ -63,7 +63,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -82,7 +82,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -101,7 +101,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -120,7 +120,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -139,7 +139,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -158,7 +158,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -177,7 +177,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -196,7 +196,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -215,7 +215,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -234,7 +234,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -253,7 +253,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -272,7 +272,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -291,7 +291,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -316,7 +316,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -416,7 +416,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -527,7 +527,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -578,7 +578,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -586,7 +586,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
             "statusCode" -> 500,
-            "message"    -> "Unable to parse fault detail: error"
+            "message"    -> s"Unable to parse fault detail for correlation Id: $correlationId"
           )
 
           verifyThatDownstreamApiWasCalled()
@@ -615,7 +615,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl(s"/$eori/records/$recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -633,7 +633,7 @@ class GetSingleRecordSpec extends BaseIntegrationWithConnectorSpec with BeforeAn
       "invalid with missing mandatory header" in {
 
         val response = wsClient
-          .url(fullUrl("/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+          .url(fullUrl(s"/$eori/records/$recordId"))
           .withHttpHeaders(("Content-Type", "application/json"))
           .get()
           .futureValue
