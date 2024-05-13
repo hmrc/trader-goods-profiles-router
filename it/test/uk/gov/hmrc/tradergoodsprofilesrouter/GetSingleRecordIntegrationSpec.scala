@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.when
-import org.scalatest.{BeforeAndAfterEach, stats}
+import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
