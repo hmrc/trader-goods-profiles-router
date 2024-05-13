@@ -20,7 +20,14 @@ import play.api.{ConfigLoader, Configuration}
 
 case class Headers(authorization: String)
 
-case class EISInstanceConfig(protocol: String, host: String, port: Int, uri: String, headers: Headers) {
+case class EISInstanceConfig(
+  protocol: String,
+  host: String,
+  port: Int,
+  uri: String,
+  forwardedHost: String,
+  headers: Headers
+) {
   lazy val url: String = s"$protocol://$host:$port$uri"
 }
 
@@ -33,7 +40,8 @@ object EISInstanceConfig {
         config.get[String]("protocol"),
         config.get[String]("host"),
         config.get[Int]("port"),
-        config.get[String]("uri"),
+        config.get[String]("get-records.uri"),
+        config.get[String]("forwarded-host"),
         headers = Headers(authorization = config.get[String]("headers.authorization"))
       )
     }
