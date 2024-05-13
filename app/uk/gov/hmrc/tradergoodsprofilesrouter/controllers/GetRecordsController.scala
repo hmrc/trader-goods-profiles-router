@@ -40,18 +40,15 @@ class GetRecordsController @Inject() (
     eori: String,
     recordId: String
   ): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-
     val result = for {
-      _ <- validateClientId
-      recordItem <-      routerService.fetchRecord(eori, recordId)
-    } yield {
-      Ok(Json.toJson(recordItem))
-    }
+      _          <- validateClientId
+      recordItem <- routerService.fetchRecord(eori, recordId)
+    } yield Ok(Json.toJson(recordItem))
 
     result.merge
   }
 
-  private def validateClientId(implicit request: Request[AnyContent]): EitherT[Future, Result, String] = {
+  private def validateClientId(implicit request: Request[AnyContent]): EitherT[Future, Result, String] =
     EitherT.fromOption(
       request.headers.get(HeaderNames.ClientId),
       BadRequest(
@@ -64,5 +61,4 @@ class GetRecordsController @Inject() (
         )
       )
     )
-  }
 }
