@@ -345,7 +345,8 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                   .withHeader("Content-Type", "application/json")
                   .withStatus(BAD_REQUEST)
                   .withBody(s"""
-                               | {
+                               |{
+                               |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
                                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
                                |    "errorCode": "400",
@@ -357,6 +358,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                                |      ]
                                |    }
                                |  }
+                               |}
                                |""".stripMargin)
               )
           )
@@ -398,7 +400,8 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                   .withHeader("Content-Type", "application/json")
                   .withStatus(BAD_REQUEST)
                   .withBody(s"""
-                               | {
+                               |{
+                               |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
                                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
                                |    "errorCode": "400",
@@ -410,6 +413,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                                |      ]
                                |    }
                                |  }
+                               |}
                                |""".stripMargin)
               )
           )
@@ -451,7 +455,8 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                   .withHeader("Content-Type", "application/json")
                   .withStatus(BAD_REQUEST)
                   .withBody(s"""
-                               | {
+                               |{
+                               |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
                                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
                                |    "errorCode": "400",
@@ -464,6 +469,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                                |      ]
                                |    }
                                |  }
+                               |}
                                |""".stripMargin)
               )
           )
@@ -509,7 +515,8 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                   .withHeader("Content-Type", "application/json")
                   .withStatus(BAD_REQUEST)
                   .withBody(s"""
-                               | {
+                               |{
+                               |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
                                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
                                |    "errorCode": "400",
@@ -521,6 +528,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                                |      ]
                                |    }
                                |  }
+                               |}
                                |""".stripMargin)
               )
           )
@@ -562,7 +570,8 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                   .withHeader("Content-Type", "application/json")
                   .withStatus(BAD_REQUEST)
                   .withBody(s"""
-                               | {
+                               |{
+                               |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
                                |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
                                |    "errorCode": "400",
@@ -572,6 +581,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                                |      "detail": ["error"]
                                |    }
                                |  }
+                               |}
                                |""".stripMargin)
               )
           )
@@ -671,7 +681,8 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
     Json
       .parse(
         s"""
-       | {
+       |{
+       |  "errorDetail": {
        |    "timestamp": "2023-09-14T11:29:18Z",
        |    "correlationId": "$correlationId",
        |    "errorCode": "$errorCode",
@@ -681,6 +692,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
        |      "detail":null
        |    }
        |  }
+       |}
        |""".stripMargin
       )
       .toString()
