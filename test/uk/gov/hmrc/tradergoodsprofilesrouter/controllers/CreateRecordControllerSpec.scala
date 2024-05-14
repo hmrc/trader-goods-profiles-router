@@ -26,7 +26,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
@@ -73,7 +73,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
       val errorResponse = ErrorResponse(
         "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         ApplicationConstants.BadRequestCode,
-        ApplicationConstants.InvalidRequestObject
+        ApplicationConstants.BadRequestMessage,
+        Some(Seq(Error("INVALID_REQUEST_OBJECT", "006 - Missing or invalid mandatory request parameter EORI")))
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")

@@ -292,7 +292,8 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             BAD_REQUEST,
             createRecordRequestData,
             Some(s"""
-                 | {
+                 |{
+                 |  "errorDetail": {
                  |    "timestamp": "2023-09-14T11:29:18Z",
                  |    "correlationId": "$correlationId",
                  |    "errorCode": "400",
@@ -304,6 +305,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
                  |      ]
                  |    }
                  |  }
+                 |}
                  |""".stripMargin)
           )
 
@@ -333,7 +335,8 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             BAD_REQUEST,
             createRecordRequestData,
             Some(s"""
-                 | {
+                 |{
+                 |  "errorDetail": {
                  |    "timestamp": "2023-09-14T11:29:18Z",
                  |    "correlationId": "$correlationId",
                  |    "errorCode": "400",
@@ -346,6 +349,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
                  |      ]
                  |    }
                  |  }
+                 |}
                  |""".stripMargin)
           )
 
@@ -379,7 +383,8 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             BAD_REQUEST,
             createRecordRequestData,
             Some(s"""
-                 | {
+                 |{
+                 |  "errorDetail": {
                  |    "timestamp": "2023-09-14T11:29:18Z",
                  |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
                  |    "errorCode": "400",
@@ -391,6 +396,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
                  |      ]
                  |    }
                  |  }
+                 |}
                  |""".stripMargin)
           )
 
@@ -420,7 +426,8 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             BAD_REQUEST,
             createRecordRequestData,
             Some(s"""
-                 | {
+                 |{
+                 |  "errorDetail": {
                  |    "timestamp": "2023-09-14T11:29:18Z",
                  |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
                  |    "errorCode": "400",
@@ -430,6 +437,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
                  |      "detail": ["error"]
                  |    }
                  |  }
+                 |}
                  |""".stripMargin)
           )
 
@@ -502,7 +510,13 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
             "code"          -> "BAD_REQUEST",
-            "message"       -> "Invalid request object"
+            "message"       -> "Bad Request",
+            "errors" -> Json.arr(
+              Json.obj(
+                "code" -> "INVALID_REQUEST_OBJECT",
+                "message" -> "006 - Missing or invalid mandatory request parameter EORI"
+              )
+            )
           )
 
           verifyThatDownstreamApiWasNotCalled()
@@ -677,16 +691,18 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
     Json
       .parse(
         s"""
-           | {
+           |{
+           |  "errorDetail": {
            |    "timestamp": "2023-09-14T11:29:18Z",
            |    "correlationId": "$correlationId",
            |    "errorCode": "$errorCode",
            |    "errorMessage": "$errorMessage",
            |    "source": "BACKEND",
            |    "sourceFaultDetail": {
-           |      "detail":null
+           |      "detail": null
            |    }
            |  }
+           |}
            |""".stripMargin
       )
       .toString()

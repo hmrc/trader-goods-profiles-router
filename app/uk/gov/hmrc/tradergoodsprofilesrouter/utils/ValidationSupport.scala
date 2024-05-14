@@ -35,7 +35,7 @@ object ValidationSupport {
 
   def isValidDate(rawDate: String): Boolean = Try(dateFormat.parse(rawDate)).isSuccess
 
-  def isValidActorId(phoneNumber: String): Boolean = actorIdPattern.matches(phoneNumber)
+  def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
 
   object Reads {
     def lengthBetween(min: Int, max: Int): Reads[String] =

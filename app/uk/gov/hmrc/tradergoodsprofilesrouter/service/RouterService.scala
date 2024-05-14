@@ -401,6 +401,73 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
             )
           case "007" =>
             Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.EoriDoesNotExists)
+          case "008" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingActorId)
+          case "009" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingTraderRef)
+          case "010" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.TraderRefIsNotUnique)
+          case "011" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingComcode)
+          case "012" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidOrMissingGoodsDescription
+            )
+          case "013" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidOrMissingCountryOfOrigin
+            )
+          case "014" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingCategory)
+          case "015" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingAssessmentId)
+          case "016" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidAssessmentPrimaryCategory
+            )
+          case "017" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionType
+            )
+          case "018" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionId
+            )
+          case "019" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionDescription
+            )
+          case "020" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionTraderText
+            )
+          case "021" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidOrMissingSupplementaryUnit
+            )
+          case "022" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidOrMissingMeasurementUnit
+            )
+          case "023" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidOrMissingComcodeEffectiveFromDate
+            )
+          case "024" =>
+            Error(
+              ApplicationConstants.InvalidRequestParameterCode,
+              ApplicationConstants.InvalidOrMissingComcodeEffectiveToDate
+            )
           case "025" =>
             Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidRecordId)
           case "026" =>

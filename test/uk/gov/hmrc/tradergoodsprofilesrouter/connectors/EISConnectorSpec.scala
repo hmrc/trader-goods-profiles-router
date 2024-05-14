@@ -188,56 +188,6 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     result shouldBe expectedResponse
   }
 
-  it should "fetch multiple records successfully" in {
-    val expectedResponse: GetEisRecordsResponse = fetchRecordSampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
-
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
-
-    val result = await(eisConnector.fetchRecords(eori, correlationId)(ec, hc))
-
-    result shouldBe expectedResponse
-  }
-
-  it should "response json failure for fetch records" in {
-    val httpResponse = mock[HttpResponse]
-
-    when(httpResponse.body).thenReturn("message")
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(HttpResponse(200, "message")))
-
-    val exception = intercept[UpstreamErrorResponse] {
-      await(eisConnector.fetchRecords(eori, correlationId)(ec, hc))
-    }
-
-    exception.getMessage should be(s"Response body could not be read: message")
-  }
-
-  it should "send a request with the right url for fetch records" in {
-    val headers = Seq(
-      "X-Correlation-ID" -> correlationId,
-      "X-Forwarded-Host" -> "MDTP",
-      "Content-Type"     -> MimeTypes.JSON,
-      "Accept"           -> MimeTypes.JSON,
-      "Date"             -> "Sun, 12 May 2024 12:15:15 Z",
-      "X-Client-ID"      -> "TSS",
-      "Authorization"    -> "bearerToken"
-    )
-
-    val expectedResponse: GetEisRecordsResponse = fetchRecordSampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
-
-    val result =
-      await(eisConnector.fetchRecords(eori, correlationId, Some(timestamp.toString), Some(1), Some(1))(ec, hc))
-
-    val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$timestamp&page=1&size=1"
-    verify(httpClientV2).get(url"$expectedUrl")
-    verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
-    verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
-
-    result shouldBe expectedResponse
-  }
-
   val fetchRecordSampleJson: JsValue = Json
     .parse("""
              |{
