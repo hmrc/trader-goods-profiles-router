@@ -45,6 +45,9 @@ object ApplicationConstants {
   val EoriDoesNotExists            = "007 - EORI does not exist in the database"
   val InvalidRecordId              = "025 - Invalid request parameter recordId"
   val RecordIdDoesNotExists        = "026 - recordId does not exist in the database"
+  val InvalidLastUpdatedDate       = "028 - Invalid optional request parameter lastUpdatedDate"
+  val InvalidPage                  = "029 - Invalid optional request parameter page"
+  val InvalidSize                  = "030 - Invalid optional request parameter size"
   val InternalServerErrorCode      = "INTERNAL_SERVER_ERROR"
   val InternalServerErrorMessage   = "Internal Server Error"
 }
