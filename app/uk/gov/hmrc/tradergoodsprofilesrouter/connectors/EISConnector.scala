@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.google.inject.ImplementedBy
 import play.api.http.MimeTypes
+import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
@@ -35,6 +36,15 @@ trait EISConnector {
     recordId: String,
     correlationId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse]
+
+  def fetchRecords(
+    eori: String,
+    correlationId: String,
+    lastUpdatedDate: Option[String] = None,
+    page: Option[Int] = None,
+    size: Option[Int] = None
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse]
+
 }
 
 class EISConnectorImpl @Inject() (
@@ -49,8 +59,32 @@ class EISConnectorImpl @Inject() (
     recordId: String,
     correlationId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
-    val url     = s"${appConfig.eisConfig.url}/$eori/$recordId"
-    val headers = Seq(
+    val url = s"${appConfig.eisConfig.url}/$eori/$recordId"
+
+    httpClientV2
+      .get(url"$url")(hc)
+      .setHeader(eisRequestHeaders(correlationId): _*)
+      .executeAndDeserialise[GetEisRecordsResponse]
+  }
+
+  override def fetchRecords(
+    eori: String,
+    correlationId: String,
+    lastUpdatedDate: Option[String] = None,
+    page: Option[Int] = None,
+    size: Option[Int] = None
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
+    val uri =
+      uri"${appConfig.eisConfig.url}/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
+
+    httpClientV2
+      .get(url"$uri")(hc)
+      .setHeader(eisRequestHeaders(correlationId): _*)
+      .executeAndDeserialise[GetEisRecordsResponse]
+  }
+
+  private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> appConfig.eisConfig.forwardedHost,
       HeaderNames.ContentType   -> MimeTypes.JSON,
@@ -59,10 +93,4 @@ class EISConnectorImpl @Inject() (
       HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
       HeaderNames.Authorization -> appConfig.eisConfig.headers.authorization
     )
-
-    httpClientV2
-      .get(url"$url")(hc)
-      .setHeader(headers: _*)
-      .executeAndDeserialise[GetEisRecordsResponse]
-  }
 }
