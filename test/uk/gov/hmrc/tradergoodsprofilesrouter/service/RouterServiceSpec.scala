@@ -18,10 +18,10 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, when}
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
@@ -29,7 +29,7 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse, RouterError}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -596,7 +596,7 @@ class RouterServiceSpec
     |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
     |    "traderRef": "BAN001001",
     |    "comcode": "104101000",
-    |    "accreditationRequest": "Not requested",
+    |    "accreditationStatus": "Not requested",
     |    "goodsDescription": "Organic bananas",
     |    "countryOfOrigin": "EC",
     |    "category": 3,

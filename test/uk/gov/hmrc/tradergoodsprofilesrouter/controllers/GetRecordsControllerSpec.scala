@@ -112,7 +112,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
                                                           |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
                                                           |    "traderRef": "BAN001001",
                                                           |    "comcode": "104101000",
-                                                          |    "accreditationRequest": "Not requested",
+                                                          |    "accreditationStatus": "Not requested",
                                                           |    "goodsDescription": "Organic bananas",
                                                           |    "countryOfOrigin": "EC",
                                                           |    "category": 3,
