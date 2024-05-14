@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, GoodsItemRecords}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
@@ -40,6 +40,13 @@ trait RouterService {
     eori: String,
     recordId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords]
+
+  def fetchRecords(
+    eori: String,
+    lastUpdatedDate: Option[String] = None,
+    page: Option[Int] = None,
+    size: Option[Int] = None
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, GetEisRecordsResponse]
 
   def createRecord(
     request: CreateRecordRequest
@@ -104,6 +111,84 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
           case NonFatal(e) =>
             logger.error(
               s"[RouterService] - Error getting record for eori number $eori and record ID $recordId, with message ${e.getMessage}",
+              e
+            )
+            Left(
+              InternalServerError(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.UnexpectedErrorCode,
+                    ApplicationConstants.UnexpectedErrorMessage
+                  )
+                )
+              )
+            )
+        }
+    )
+  }
+
+  override def fetchRecords(
+    eori: String,
+    lastUpdatedDate: Option[String] = None,
+    page: Option[Int] = None,
+    size: Option[Int] = None
+  )(implicit
+    ec: ExecutionContext,
+    hc: HeaderCarrier
+  ): EitherT[Future, Result, GetEisRecordsResponse] = {
+    val correlationId = uuidService.uuid
+    EitherT(
+      eisConnector
+        .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
+        .map(result => Right(result))
+        .recover {
+          case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
+            Left(BadRequest(Json.toJson(determine400Error(correlationId, message))))
+          case UpstreamErrorResponse(_, FORBIDDEN, _, _)         =>
+            Left(
+              Forbidden(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.ForbiddenCode,
+                    ApplicationConstants.ForbiddenMessage
+                  )
+                )
+              )
+            )
+
+          case UpstreamErrorResponse(_, NOT_FOUND, _, _)          =>
+            Left(
+              NotFound(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.NotFoundCode,
+                    ApplicationConstants.NotFoundMessage
+                  )
+                )
+              )
+            )
+          case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _) =>
+            Left(
+              MethodNotAllowed(
+                Json.toJson(
+                  ErrorResponse(
+                    correlationId,
+                    ApplicationConstants.MethodNotAllowedCode,
+                    ApplicationConstants.MethodNotAllowedMessage
+                  )
+                )
+              )
+            )
+
+          case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
+            Left(InternalServerError(Json.toJson(determine500Error(correlationId, message))))
+
+          case NonFatal(e) =>
+            logger.error(
+              s"[RouterService] - Error getting records for eori number $eori,  with message ${e.getMessage}",
               e
             )
             Left(
@@ -320,6 +405,12 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
             Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidRecordId)
           case "026" =>
             Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.RecordIdDoesNotExists)
+          case "028" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidLastUpdatedDate)
+          case "029" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidPage)
+          case "030" =>
+            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidSize)
           case _     => Error(ApplicationConstants.UnexpectedErrorCode, ApplicationConstants.UnexpectedErrorMessage)
         }
       case _              =>

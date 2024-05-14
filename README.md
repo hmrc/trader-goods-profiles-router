@@ -46,7 +46,7 @@ curl --location 'http://localhost:10904/trader-goods-profiles-router/GB123456789
   "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
   "traderRef": "BAN001001",
   "comcode": "104101000",
-  "accreditationRequest": "Not requested",
+  "accreditationStatus": "Not requested",
   "goodsDescription": "Organic bananas",
   "countryOfOrigin": "EC",
   "category": 3,
@@ -70,7 +70,81 @@ curl --location 'http://localhost:10904/trader-goods-profiles-router/GB123456789
 }
 ```
 
-To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/GetSingleRecordIntegrationSpec.scala) and one
+To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/GetSingleRecordIntegrationSpec.scala)
+
+### Get Multiple Records
+
+Here's an example of a successful call to get a multiple records:
+
+```bash
+curl -X GET \
+  'http://localhost:10904/trader-goods-profiles-router/GB123456789001?lastUpdatedDate=2021-12-17T09:30:47.456Z&page=1&size=1' \
+  -H 'X-Correlation-ID:3e8dae97-b586-4cef-8511-68ac12da9028' \
+  -H 'Date:2021-12-17T09:30:47.456Z' \
+  -H 'X-Forwarded-Host:uk.gov.hmrc' \
+  -H 'Content-Type:application/json' \
+  -H 'Accept:application/json' \
+  -H 'Authorization:bearerToken' \
+  -H 'X-Client-ID:tss'
+```
+
+```json
+{
+  "goodsItemRecords":
+  [
+    {
+      "eori": "GB1234567890",
+      "actorId": "GB1234567890",
+      "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+      "traderRef": "BAN001001",
+      "comcode": "104101000",
+      "accreditationStatus": "Not requested",
+      "goodsDescription": "Organic bananas",
+      "countryOfOrigin": "EC",
+      "category": 3,
+      "assessments": [
+        {
+          "assessmentId": "abc123",
+          "primaryCategory": "1",
+          "condition": {
+            "type": "abc123",
+            "conditionId": "Y923",
+            "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law"
+            "conditionTraderText": "Excluded product"
+          }
+        }
+      ],
+      "supplementaryUnit": 500,
+      "measurementUnit": "square meters(m^2)",
+      "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+      "comcodeEffectiveToDate": "",
+      "version": 1,
+      "active": true,
+      "toReview": false,
+      "reviewReason": null,
+      "declarable": "IMMI declarable",
+      "ukimsNumber": "XIUKIM47699357400020231115081800",
+      "nirmsNumber": "RMS-GB-123456",
+      "niphlNumber": "6 S12345",
+      "locked": false,
+      "srcSystemName": "CDAP",
+      "createdDateTime": "2024-11-18T23:20:19Z",
+      "updatedDateTime": "2024-11-18T23:20:19Z"
+    }
+  ],
+  "pagination":
+  {
+    "totalRecords": 1,
+    "currentPage": 0,
+    "totalPages": 1,
+    "nextPage": null,
+    "prevPage": null
+  }
+}
+```
+
+To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/GetMultipleRecordsIntegrationSpec.scala)
+
 
 ### Create Record
 
@@ -153,7 +227,7 @@ curl --location 'http://localhost:10904/trader-goods-profiles-router/records' \
 }
 ```
 
-To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/CreateRecordIntegrationSpec.scala) and one
+To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/CreateRecordIntegrationSpec.scala)
 
 ## Dev
 

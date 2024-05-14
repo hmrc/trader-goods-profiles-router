@@ -48,6 +48,20 @@ class GetRecordsController @Inject() (
     result.merge
   }
 
+  def getTGPRecords(
+    eori: String,
+    lastUpdatedDate: Option[String] = None,
+    page: Option[Int] = None,
+    size: Option[Int] = None
+  ): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    val result = for {
+      _       <- validateClientId
+      records <- routerService.fetchRecords(eori, lastUpdatedDate, page, size)
+    } yield Ok(Json.toJson(records))
+
+    result.merge
+  }
+
   private def validateClientId(implicit request: Request[AnyContent]): EitherT[Future, Result, String] =
     EitherT.fromOption(
       request.headers.get(HeaderNames.ClientId),

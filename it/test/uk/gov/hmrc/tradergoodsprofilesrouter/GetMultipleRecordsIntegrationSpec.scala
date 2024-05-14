@@ -15,20 +15,21 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
+
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import sttp.model.Uri.UriContext
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 
 import java.time.Instant
 
-class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
+class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
 
   val eori                           = "GB123456789001"
-  val recordId                       = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
   val dateTime                       = "2021-12-17T09:30:47.456Z"
   val timestamp                      = "Fri, 17 Dec 2021 09:30:47 Z"
@@ -43,17 +44,73 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
   "attempting to get records, when" - {
     "the request is" - {
-      "valid" in {
-        stubForEis(OK, Some(getSingleRecordResponseData.toString()))
+      "valid without optional query parameter" in {
+        stubForEis(OK, Some(getMultipleRecordResponseData.toString()))
 
         val response = wsClient
-          .url(fullUrl(s"/$eori/records/$recordId"))
+          .url(fullUrl(s"/$eori"))
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
           .get()
           .futureValue
 
         response.status shouldBe OK
-        response.json   shouldBe Json.toJson(getSingleRecordResponseData.as[GetEisRecordsResponse].goodsItemRecords.head)
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+
+        verifyThatDownstreamApiWasCalled()
+      }
+      "valid with optional query parameter lastUpdatedDate, page and size" in {
+        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime), Some(1), Some(1))
+
+        val response = wsClient
+          .url(fullUrl(s"/$eori?lastUpdatedDate=$dateTime&page=1&size=1"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .get()
+          .futureValue
+
+        response.status shouldBe OK
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+
+        verifyThatDownstreamApiWasCalled()
+      }
+      "valid with optional query parameter page and size" in {
+        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), None, Some(1), Some(1))
+
+        val response = wsClient
+          .url(fullUrl(s"/$eori?page=1&size=1"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .get()
+          .futureValue
+
+        response.status shouldBe OK
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+
+        verifyThatDownstreamApiWasCalled()
+      }
+      "valid with optional query parameter page" in {
+        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), None, Some(1), None)
+
+        val response = wsClient
+          .url(fullUrl(s"/$eori?page=1"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .get()
+          .futureValue
+
+        response.status shouldBe OK
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+
+        verifyThatDownstreamApiWasCalled()
+      }
+      "valid with optional query parameter lastUpdatedDate" in {
+        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime))
+
+        val response = wsClient
+          .url(fullUrl(s"/$eori?lastUpdatedDate=$dateTime"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .get()
+          .futureValue
+
+        response.status shouldBe OK
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
 
         verifyThatDownstreamApiWasCalled()
       }
@@ -63,7 +120,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -82,7 +139,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -101,7 +158,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -120,7 +177,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -139,7 +196,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -158,7 +215,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -177,7 +234,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -196,7 +253,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -215,7 +272,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -234,7 +291,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -253,7 +310,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -272,7 +329,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -291,7 +348,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -316,7 +373,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -332,7 +389,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         }
         "Bad Request for invalid or missing EORI" in {
           stubFor(
-            get(urlEqualTo(s"$connectorPath/null/$recordId"))
+            get(urlEqualTo(s"$connectorPath/null"))
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
@@ -365,7 +422,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl("/null/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl("/null"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -387,7 +444,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         }
         "Bad Request for EORI does not exists in database" in {
           stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+            get(urlEqualTo(s"$connectorPath/$eori"))
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
@@ -420,7 +477,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -440,9 +497,9 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           verifyThatDownstreamApiWasCalled()
         }
-        "Bad Request for recordId does not exists in database and Invalid/Missing recordId" in {
+        "Bad Request for invalid query parameter lastUpdatedDate" in {
           stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/null"))
+            get(urlEqualTo(s"$connectorPath/$eori"))
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
@@ -464,8 +521,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
                                |    "source": "BACKEND",
                                |    "sourceFaultDetail": {
                                |      "detail": [
-                               |      "error: 025, message: Invalid request parameter recordId",
-                               |      "error: 026, message: recordId doesn’t exist in the database"
+                               |      "error: 028, message: Invalid optional request parameter lastUpdatedDate"
                                |      ]
                                |    }
                                |  }
@@ -476,7 +532,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/null"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -489,11 +545,117 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
             "errors"        -> Json.arr(
               Json.obj(
                 "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "025 - Invalid request parameter recordId"
-              ),
+                "message" -> "028 - Invalid optional request parameter lastUpdatedDate"
+              )
+            )
+          )
+
+          verifyThatDownstreamApiWasCalled()
+        }
+        "Bad Request for invalid query parameter page" in {
+          stubFor(
+            get(urlEqualTo(s"$connectorPath/$eori"))
+              .withHeader("Content-Type", equalTo("application/json"))
+              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
+              .withHeader("Accept", equalTo("application/json"))
+              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("X-Client-Id", equalTo("tss"))
+              .willReturn(
+                aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
+                               |{
+                               |  "errorDetail": {
+                               |    "timestamp": "2023-09-14T11:29:18Z",
+                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
+                               |    "errorCode": "400",
+                               |    "errorMessage": "Invalid request parameter",
+                               |    "source": "BACKEND",
+                               |    "sourceFaultDetail": {
+                               |      "detail": [
+                               |      "error: 029, message: Invalid optional request parameter page"
+                               |      ]
+                               |    }
+                               |  }
+                               |}
+                               |""".stripMargin)
+              )
+          )
+
+          val response = await(
+            wsClient
+              .url(fullUrl(s"/$eori"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .get()
+          )
+
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
               Json.obj(
                 "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "026 - recordId does not exist in the database"
+                "message" -> "029 - Invalid optional request parameter page"
+              )
+            )
+          )
+
+          verifyThatDownstreamApiWasCalled()
+        }
+        "Bad Request for invalid query parameter size" in {
+          stubFor(
+            get(urlEqualTo(s"$connectorPath/$eori"))
+              .withHeader("Content-Type", equalTo("application/json"))
+              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
+              .withHeader("Accept", equalTo("application/json"))
+              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("X-Client-Id", equalTo("tss"))
+              .willReturn(
+                aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
+                               |{
+                               |  "errorDetail": {
+                               |    "timestamp": "2023-09-14T11:29:18Z",
+                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
+                               |    "errorCode": "400",
+                               |    "errorMessage": "Invalid request parameter",
+                               |    "source": "BACKEND",
+                               |    "sourceFaultDetail": {
+                               |      "detail": [
+                               |      "error: 030, message: Invalid optional request parameter size"
+                               |      ]
+                               |    }
+                               |  }
+                               |}
+                               |""".stripMargin)
+              )
+          )
+
+          val response = await(
+            wsClient
+              .url(fullUrl(s"/$eori"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .get()
+          )
+
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "030 - Invalid optional request parameter size"
               )
             )
           )
@@ -502,7 +664,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         }
         "Bad Request with unexpected error" in {
           stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+            get(urlEqualTo(s"$connectorPath/$eori"))
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
@@ -535,7 +697,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -557,7 +719,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         }
         "Bad Request with unable to parse the detail" in {
           stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+            get(urlEqualTo(s"$connectorPath/$eori"))
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
@@ -588,7 +750,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -603,7 +765,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         }
         "Bad Request with invalid json" in {
           stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+            get(urlEqualTo(s"$connectorPath/$eori"))
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
@@ -625,7 +787,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(fullUrl(s"/$eori"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
               .get()
           )
@@ -643,7 +805,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
       "invalid with missing mandatory header" in {
 
         val response = wsClient
-          .url(fullUrl(s"/$eori/records/$recordId"))
+          .url(fullUrl(s"/$eori"))
           .withHttpHeaders(("Content-Type", "application/json"))
           .get()
           .futureValue
@@ -660,22 +822,33 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
     }
   }
 
-  private def stubForEis(httpStatus: Int, body: Option[String] = None) = stubFor(
-    get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-      .withHeader("Content-Type", equalTo("application/json"))
-      .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-      .withHeader("X-Correlation-ID", equalTo(correlationId))
-      .withHeader("Date", equalTo(timestamp))
-      .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("bearerToken"))
-      .withHeader("X-Client-Id", equalTo("tss"))
-      .willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(httpStatus)
-          .withBody(body.getOrElse(null))
-      )
-  )
+  private def stubForEis(
+    httpStatus: Int,
+    body: Option[String] = None,
+    lastUpdatedDate: Option[String] = None,
+    page: Option[Int] = None,
+    size: Option[Int] = None
+  ) = {
+
+    val uri =
+      uri"$connectorPath/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
+    stubFor(
+      get(urlEqualTo(s"$uri"))
+        .withHeader("Content-Type", equalTo("application/json"))
+        .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+        .withHeader("X-Correlation-ID", equalTo(correlationId))
+        .withHeader("Date", equalTo(timestamp))
+        .withHeader("Accept", equalTo("application/json"))
+        .withHeader("Authorization", equalTo("bearerToken"))
+        .withHeader("X-Client-Id", equalTo("tss"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(httpStatus)
+            .withBody(body.getOrElse(null))
+        )
+    )
+  }
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json
@@ -689,7 +862,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
        |    "errorMessage": "$errorMessage",
        |    "source": "BACKEND",
        |    "sourceFaultDetail": {
-       |      "detail":null
+       |      "detail": null
        |    }
        |  }
        |}
@@ -697,60 +870,97 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
       )
       .toString()
 
-  val getSingleRecordResponseData: JsValue =
-    Json
-      .parse("""
-               |{
-               | "goodsItemRecords":
-               | [
-               |  {
-               |    "eori": "GB1234567890",
-               |    "actorId": "GB1234567890",
-               |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-               |    "traderRef": "BAN001001",
-               |    "comcode": "104101000",
-               |    "accreditationStatus": "Not requested",
-               |    "goodsDescription": "Organic bananas",
-               |    "countryOfOrigin": "EC",
-               |    "category": 3,
-               |    "assessments": [
-               |      {
-               |        "assessmentId": "abc123",
-               |        "primaryCategory": "1",
-               |        "condition": {
-               |          "type": "abc123",
-               |          "conditionId": "Y923",
-               |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-               |          "conditionTraderText": "Excluded product"
-               |        }
-               |      }
-               |    ],
-               |    "supplementaryUnit": 500,
-               |    "measurementUnit": "square meters(m^2)",
-               |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |    "comcodeEffectiveToDate": "",
-               |    "version": 1,
-               |    "active": true,
-               |    "toReview": false,
-               |    "reviewReason": null,
-               |    "declarable": "IMMI declarable",
-               |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |    "nirmsNumber": "RMS-GB-123456",
-               |    "niphlNumber": "6 S12345",
-               |    "locked": false,
-               |    "srcSystemName": "CDAP",
-               |    "createdDateTime": "2024-11-18T23:20:19Z",
-               |    "updatedDateTime": "2024-11-18T23:20:19Z"
-               |  }
-               |],
-               |"pagination":
-               | {
-               |   "totalRecords": 1,
-               |   "currentPage": 0,
-               |   "totalPages": 1,
-               |   "nextPage": null,
-               |   "prevPage": null
-               | }
-               |}
-               |""".stripMargin)
+  def getMultipleRecordResponseData: JsValue = Json.parse(s"""
+                                                                           |{
+                                                                           |"goodsItemRecords":
+                                                                           |[
+                                                                           |  {
+                                                                           |    "eori": "$eori",
+                                                                           |    "actorId": "GB1234567890",
+                                                                           |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                                                                           |    "traderRef": "BAN001001",
+                                                                           |    "comcode": "104101000",
+                                                                           |    "accreditationStatus": "Not requested",
+                                                                           |    "goodsDescription": "Organic bananas",
+                                                                           |    "countryOfOrigin": "EC",
+                                                                           |    "category": 3,
+                                                                           |    "assessments": [
+                                                                           |      {
+                                                                           |        "assessmentId": "abc123",
+                                                                           |        "primaryCategory": 1,
+                                                                           |        "condition": {
+                                                                           |          "type": "abc123",
+                                                                           |          "conditionId": "Y923",
+                                                                           |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                                                                           |          "conditionTraderText": "Excluded product"
+                                                                           |        }
+                                                                           |      }
+                                                                           |    ],
+                                                                           |    "supplementaryUnit": 500,
+                                                                           |    "measurementUnit": "square meters(m^2)",
+                                                                           |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                                                                           |    "comcodeEffectiveToDate": "",
+                                                                           |    "version": 1,
+                                                                           |    "active": true,
+                                                                           |    "toReview": false,
+                                                                           |    "reviewReason": null,
+                                                                           |    "declarable": "IMMI declarable",
+                                                                           |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                                                                           |    "nirmsNumber": "RMS-GB-123456",
+                                                                           |    "niphlNumber": "6 S12345",
+                                                                           |    "locked": false,
+                                                                           |    "srcSystemName": "CDAP",
+                                                                           |    "createdDateTime": "2024-11-18T23:20:19Z",
+                                                                           |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                                                                           |  },
+                                                                           |    {
+                                                                           |    "eori": "$eori",
+                                                                           |    "actorId": "GB1234567890",
+                                                                           |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                                                                           |    "traderRef": "BAN001001",
+                                                                           |    "comcode": "104101000",
+                                                                           |    "accreditationStatus": "Not requested",
+                                                                           |    "goodsDescription": "Organic bananas",
+                                                                           |    "countryOfOrigin": "EC",
+                                                                           |    "category": 3,
+                                                                           |    "assessments": [
+                                                                           |      {
+                                                                           |        "assessmentId": "abc123",
+                                                                           |        "primaryCategory": 1,
+                                                                           |        "condition": {
+                                                                           |          "type": "abc123",
+                                                                           |          "conditionId": "Y923",
+                                                                           |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                                                                           |          "conditionTraderText": "Excluded product"
+                                                                           |        }
+                                                                           |      }
+                                                                           |    ],
+                                                                           |    "supplementaryUnit": 500,
+                                                                           |    "measurementUnit": "square meters(m^2)",
+                                                                           |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                                                                           |    "comcodeEffectiveToDate": "",
+                                                                           |    "version": 1,
+                                                                           |    "active": true,
+                                                                           |    "toReview": false,
+                                                                           |    "reviewReason": null,
+                                                                           |    "declarable": "IMMI declarable",
+                                                                           |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                                                                           |    "nirmsNumber": "RMS-GB-123456",
+                                                                           |    "niphlNumber": "6 S12345",
+                                                                           |    "locked": false,
+                                                                           |    "srcSystemName": "CDAP",
+                                                                           |    "createdDateTime": "2024-11-18T23:20:19Z",
+                                                                           |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                                                                           |  }
+                                                                           |],
+                                                                           |"pagination":
+                                                                           | {
+                                                                           |   "totalRecords": 2,
+                                                                           |   "currentPage": 0,
+                                                                           |   "totalPages": 1,
+                                                                           |   "nextPage": null,
+                                                                           |   "prevPage": null
+                                                                           | }
+                                                                           |}
+                                                                           |""".stripMargin)
 }
