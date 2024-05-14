@@ -70,6 +70,7 @@ curl -X GET \
   "updatedDateTime": "2024-11-18T23:20:19Z"
 }
 ```
+To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/GetSingleRecordSpec.scala)
 
 ### Get Multiple Records
 
@@ -142,7 +143,7 @@ curl -X GET \
 }
 ```
 
-To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/GetSingleRecordSpec.scala) and one
+To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/GetMultipleRecordsIntegrationSpec.scala)
 
 ## Dev
 
