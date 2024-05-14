@@ -32,12 +32,12 @@ object ErrorDetail {
   implicit val errorDetail: Reads[ErrorDetail] = (json: JsValue) =>
     try JsSuccess(
       ErrorDetail(
-        (json \ "timestamp").as[Instant],
-        (json \ "correlationId").as[String],
-        (json \ "errorCode").as[String],
-        (json \ "errorMessage").as[String],
-        (json \ "source").asOpt[String],
-        (json \ "sourceFaultDetail").asOpt[SourceFaultDetail]
+        (json \ "errorDetail" \ "timestamp").as[Instant],
+        (json \ "errorDetail" \ "correlationId").as[String],
+        (json \ "errorDetail" \ "errorCode").as[String],
+        (json \ "errorDetail" \ "errorMessage").as[String],
+        (json \ "errorDetail" \ "source").asOpt[String],
+        (json \ "errorDetail" \ "sourceFaultDetail").asOpt[SourceFaultDetail]
       )
     )
     catch {

@@ -78,6 +78,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
             |{
+            |  "errorDetail": {
             |    "timestamp": "2023-09-14T11:29:18Z",
             |    "correlationId": "$correlationId",
             |    "errorCode": "200",
@@ -87,6 +88,7 @@ class RouterServiceSpec
             |      "detail": null
             |    }
             |  }
+            |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -108,7 +110,8 @@ class RouterServiceSpec
       "Payload schema mismatch" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -118,6 +121,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -139,7 +143,8 @@ class RouterServiceSpec
       "Unauthorised" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "401",
@@ -149,6 +154,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -170,7 +176,8 @@ class RouterServiceSpec
       "Not found" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "404",
@@ -180,6 +187,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -201,7 +209,8 @@ class RouterServiceSpec
       "Method not allowed" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "405",
@@ -211,6 +220,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -232,7 +242,8 @@ class RouterServiceSpec
       "Internal server error" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "500",
@@ -242,6 +253,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -263,7 +275,8 @@ class RouterServiceSpec
       "Bad gateway" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "502",
@@ -273,6 +286,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -294,7 +308,8 @@ class RouterServiceSpec
       "Service unavailable" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "503",
@@ -304,6 +319,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -325,7 +341,8 @@ class RouterServiceSpec
       "Unknown error response" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "001",
@@ -335,6 +352,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -378,6 +396,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
              |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -390,6 +409,7 @@ class RouterServiceSpec
              |      ]
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
@@ -442,6 +462,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
              |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -453,6 +474,7 @@ class RouterServiceSpec
              |      ]
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
@@ -480,6 +502,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
              |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -491,6 +514,7 @@ class RouterServiceSpec
              |      ]
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecord(any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
@@ -602,6 +626,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
              |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "200",
@@ -611,6 +636,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -632,7 +658,8 @@ class RouterServiceSpec
       "Payload schema mismatch" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -642,6 +669,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -663,7 +691,8 @@ class RouterServiceSpec
       "Unauthorised" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "401",
@@ -673,6 +702,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -694,7 +724,8 @@ class RouterServiceSpec
       "Not found" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "404",
@@ -704,6 +735,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -725,7 +757,8 @@ class RouterServiceSpec
       "Method not allowed" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "405",
@@ -735,6 +768,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -756,7 +790,8 @@ class RouterServiceSpec
       "Internal server error" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "500",
@@ -766,6 +801,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -787,7 +823,8 @@ class RouterServiceSpec
       "Bad gateway" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "502",
@@ -797,6 +834,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -818,7 +856,8 @@ class RouterServiceSpec
       "Service unavailable" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "503",
@@ -828,6 +867,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -849,7 +889,8 @@ class RouterServiceSpec
       "Unknown error response" in {
         val eisResponse =
           s"""
-             | {
+             |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "001",
@@ -859,6 +900,7 @@ class RouterServiceSpec
              |      "detail": null
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
@@ -902,6 +944,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
              |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -914,6 +957,7 @@ class RouterServiceSpec
              |      ]
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
@@ -942,6 +986,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
              |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -955,6 +1000,7 @@ class RouterServiceSpec
              |      ]
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
@@ -1008,6 +1054,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
              |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -1019,6 +1066,7 @@ class RouterServiceSpec
              |      ]
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
@@ -1046,6 +1094,7 @@ class RouterServiceSpec
         val eisResponse =
           s"""
              |{
+             |  "errorDetail": {
              |    "timestamp": "2023-09-14T11:29:18Z",
              |    "correlationId": "$correlationId",
              |    "errorCode": "400",
@@ -1057,6 +1106,7 @@ class RouterServiceSpec
              |      ]
              |    }
              |  }
+             |}
         """.stripMargin
         when(eisConnector.fetchRecords(any, any, any, any, any)(any, any))
           .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
