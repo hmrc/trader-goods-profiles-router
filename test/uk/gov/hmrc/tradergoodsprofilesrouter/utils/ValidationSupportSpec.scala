@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.{isValidActorId, isValidCountryCode, isValidDate}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.{isValidCountryCode, isValidDate}
 
 class ValidationSupportSpec extends PlaySpec {
 
@@ -27,12 +27,6 @@ class ValidationSupportSpec extends PlaySpec {
     }
     "an invalid date must return false" in {
       isValidDate("2024-32-03") mustBe false
-    }
-    "a valid actorId must return true" in {
-      isValidActorId("GB098765432112") mustBe true
-    }
-    "an invalid actorId must return false" in {
-      isValidActorId("GB098765112") mustBe false
     }
     "a valid countryCode must return true" in {
       isValidCountryCode("GB") mustBe true

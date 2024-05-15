@@ -29,7 +29,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{ErrorDetail, GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -64,67 +64,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       eisConnector
         .fetchRecord(eori, recordId, correlationId)
         .map(result => Right(result.goodsItemRecords.head))
-        .recover {
-          case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
-            Left(BadRequest(Json.toJson(determine400Error(correlationId, message))))
-          case UpstreamErrorResponse(_, FORBIDDEN, _, _)         =>
-            Left(
-              Forbidden(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.ForbiddenCode,
-                    ApplicationConstants.ForbiddenMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(_, NOT_FOUND, _, _)          =>
-            Left(
-              NotFound(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.NotFoundCode,
-                    ApplicationConstants.NotFoundMessage
-                  )
-                )
-              )
-            )
-          case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _) =>
-            Left(
-              MethodNotAllowed(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.MethodNotAllowedCode,
-                    ApplicationConstants.MethodNotAllowedMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
-            Left(InternalServerError(Json.toJson(determine500Error(correlationId, message))))
-
-          case NonFatal(e) =>
-            logger.error(
-              s"[RouterService] - Error getting record for eori number $eori and record ID $recordId, with message ${e.getMessage}",
-              e
-            )
-            Left(
-              InternalServerError(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.UnexpectedErrorCode,
-                    ApplicationConstants.UnexpectedErrorMessage
-                  )
-                )
-              )
-            )
-        }
+        .recover(handleError(correlationId, eori))
     )
   }
 
@@ -142,67 +82,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       eisConnector
         .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
         .map(result => Right(result))
-        .recover {
-          case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
-            Left(BadRequest(Json.toJson(determine400Error(correlationId, message))))
-          case UpstreamErrorResponse(_, FORBIDDEN, _, _)         =>
-            Left(
-              Forbidden(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.ForbiddenCode,
-                    ApplicationConstants.ForbiddenMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(_, NOT_FOUND, _, _)          =>
-            Left(
-              NotFound(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.NotFoundCode,
-                    ApplicationConstants.NotFoundMessage
-                  )
-                )
-              )
-            )
-          case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _) =>
-            Left(
-              MethodNotAllowed(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.MethodNotAllowedCode,
-                    ApplicationConstants.MethodNotAllowedMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
-            Left(InternalServerError(Json.toJson(determine500Error(correlationId, message))))
-
-          case NonFatal(e) =>
-            logger.error(
-              s"[RouterService] - Error getting records for eori number $eori,  with message ${e.getMessage}",
-              e
-            )
-            Left(
-              InternalServerError(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.UnexpectedErrorCode,
-                    ApplicationConstants.UnexpectedErrorMessage
-                  )
-                )
-              )
-            )
-        }
+        .recover(handleError[GetEisRecordsResponse](correlationId, eori))
     )
   }
 
@@ -215,98 +95,102 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       eisConnector
         .createRecord(request, correlationId)
         .map(result => Right(result))
-        .recover {
-          case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
-            Left(BadRequest(Json.toJson(determine400Error(correlationId, message))))
-
-          case UpstreamErrorResponse(_, FORBIDDEN, _, _) =>
-            Left(
-              Forbidden(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.ForbiddenCode,
-                    ApplicationConstants.ForbiddenMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
-            Left(
-              NotFound(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.NotFoundCode,
-                    ApplicationConstants.NotFoundMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _) =>
-            Left(
-              MethodNotAllowed(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.MethodNotAllowedCode,
-                    ApplicationConstants.MethodNotAllowedMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(_, BAD_GATEWAY, _, _) =>
-            Left(
-              BadGateway(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.BadGatewayCode,
-                    ApplicationConstants.BadGatewayMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(_, SERVICE_UNAVAILABLE, _, _) =>
-            Left(
-              ServiceUnavailable(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.ServiceUnavailableCode,
-                    ApplicationConstants.ServiceUnavailableMessage
-                  )
-                )
-              )
-            )
-
-          case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
-            Left(InternalServerError(Json.toJson(determine500Error(correlationId, message))))
-
-          case NonFatal(e) =>
-            logger.error(
-              s"[RouterService] - Error creating record for eori number ${request.eori} and actor ID ${request.actorId}, with message ${e.getMessage}",
-              e
-            )
-            Left(
-              InternalServerError(
-                Json.toJson(
-                  ErrorResponse(
-                    correlationId,
-                    ApplicationConstants.UnexpectedErrorCode,
-                    ApplicationConstants.UnexpectedErrorMessage
-                  )
-                )
-              )
-            )
-        }
+        .recover(handleError[CreateRecordResponse](correlationId, request.eori))
     )
   }
 
+  private def handleError[A](
+    correlationId: String,
+    eori: String
+  ): PartialFunction[Throwable, Either[Result, A]]                                     = {
+    case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
+      Left(BadRequest(Json.toJson(determine400Error(correlationId, message))))
+
+    case UpstreamErrorResponse(_, FORBIDDEN, _, _) =>
+      Left(
+        Forbidden(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              ForbiddenCode,
+              ForbiddenMessage
+            )
+          )
+        )
+      )
+
+    case UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
+      Left(
+        NotFound(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              NotFoundCode,
+              NotFoundMessage
+            )
+          )
+        )
+      )
+
+    case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _) =>
+      Left(
+        MethodNotAllowed(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              MethodNotAllowedCode,
+              MethodNotAllowedMessage
+            )
+          )
+        )
+      )
+
+    case UpstreamErrorResponse(_, BAD_GATEWAY, _, _) =>
+      Left(
+        BadGateway(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              BadGatewayCode,
+              BadGatewayMessage
+            )
+          )
+        )
+      )
+
+    case UpstreamErrorResponse(_, SERVICE_UNAVAILABLE, _, _) =>
+      Left(
+        ServiceUnavailable(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              ServiceUnavailableCode,
+              ServiceUnavailableMessage
+            )
+          )
+        )
+      )
+
+    case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
+      Left(InternalServerError(Json.toJson(determine500Error(correlationId, message))))
+
+    case NonFatal(e) =>
+      logger.error(
+        s"[RouterService] - Error creating record for eori number $eori with message ${e.getMessage}",
+        e
+      )
+      Left(
+        InternalServerError(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              UnexpectedErrorCode,
+              UnexpectedErrorMessage
+            )
+          )
+        )
+      )
+  }
   private def determine400Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
@@ -314,8 +198,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       case JsError(_)           =>
         ErrorResponse(
           correlationId,
-          ApplicationConstants.UnexpectedErrorCode,
-          ApplicationConstants.UnexpectedErrorMessage
+          UnexpectedErrorCode,
+          UnexpectedErrorMessage
         )
     }
 
@@ -326,63 +210,63 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
           case "200" | "201" =>
             ErrorResponse(
               correlationId,
-              ApplicationConstants.InvalidOrEmptyPayloadCode,
-              ApplicationConstants.InvalidOrEmptyPayloadMessage
+              InvalidOrEmptyPayloadCode,
+              InvalidOrEmptyPayloadMessage
             )
           case "400"         =>
             ErrorResponse(
               correlationId,
-              ApplicationConstants.InternalErrorResponseCode,
-              ApplicationConstants.InternalErrorResponseMessage
+              InternalErrorResponseCode,
+              InternalErrorResponseMessage
             )
           case "401"         =>
             ErrorResponse(
               correlationId,
-              ApplicationConstants.UnauthorizedCode,
-              ApplicationConstants.UnauthorizedMessage
+              UnauthorizedCode,
+              UnauthorizedMessage
             )
           case "404"         =>
-            ErrorResponse(correlationId, ApplicationConstants.NotFoundCode, ApplicationConstants.NotFoundMessage)
+            ErrorResponse(correlationId, NotFoundCode, NotFoundMessage)
           case "405"         =>
             ErrorResponse(
               correlationId,
-              ApplicationConstants.MethodNotAllowedCode,
-              ApplicationConstants.MethodNotAllowedMessage
+              MethodNotAllowedCode,
+              MethodNotAllowedMessage
             )
           case "500"         =>
             ErrorResponse(
               correlationId,
-              ApplicationConstants.InternalServerErrorCode,
-              ApplicationConstants.InternalServerErrorMessage
+              InternalServerErrorCode,
+              InternalServerErrorMessage
             )
           case "502"         =>
             ErrorResponse(
               correlationId,
-              ApplicationConstants.BadGatewayCode,
-              ApplicationConstants.BadGatewayMessage
+              BadGatewayCode,
+              BadGatewayMessage
             )
           case "503"         =>
             ErrorResponse(
               correlationId,
-              ApplicationConstants.ServiceUnavailableCode,
-              ApplicationConstants.ServiceUnavailableMessage
+              ServiceUnavailableCode,
+              ServiceUnavailableMessage
             )
           case _             =>
-            ErrorResponse(correlationId, ApplicationConstants.UnknownCode, ApplicationConstants.UnknownMessage)
+            ErrorResponse(correlationId, UnknownCode, UnknownMessage)
         }
       case JsError(_)           =>
         ErrorResponse(
           correlationId,
-          ApplicationConstants.UnexpectedErrorCode,
-          ApplicationConstants.UnexpectedErrorMessage
+          UnexpectedErrorCode,
+          UnexpectedErrorMessage
         )
     }
 
   private def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse =
     ErrorResponse(
       correlationId,
-      ApplicationConstants.BadRequestCode,
-      ApplicationConstants.BadRequestMessage,
+      BadRequestCode,
+      BadRequestMessage,
       detail.sourceFaultDetail.map { sfd =>
         sfd.detail.get.map(detail => parseFaultDetail(detail, correlationId))
       }
@@ -394,91 +278,94 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     rawDetail match {
       case regex(code, _) =>
         code match {
-          case "006" =>
+          case InvalidOrMissingEoriCode                                 =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidOrMissingEori
+              InvalidOrMissingEoriCode,
+              InvalidOrMissingEori
             )
-          case "007" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.EoriDoesNotExists)
-          case "008" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingActorId)
-          case "009" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingTraderRef)
-          case "010" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.TraderRefIsNotUnique)
-          case "011" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingComcode)
-          case "012" =>
+          case EoriDoesNotExistsCode                                    =>
+            Error(EoriDoesNotExistsCode, EoriDoesNotExists)
+          case InvalidOrMissingActorIdCode                              =>
+            Error(InvalidOrMissingActorIdCode, InvalidOrMissingActorId)
+          case InvalidOrMissingTraderRefCode                            =>
+            Error(InvalidOrMissingTraderRefCode, InvalidOrMissingTraderRef)
+          case TraderRefIsNotUniqueCode                                 =>
+            Error(TraderRefIsNotUniqueCode, TraderRefIsNotUnique)
+          case InvalidOrMissingComcodeCode                              =>
+            Error(InvalidOrMissingComcodeCode, InvalidOrMissingComcode)
+          case InvalidOrMissingGoodsDescriptionCode                     =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidOrMissingGoodsDescription
+              InvalidOrMissingGoodsDescriptionCode,
+              InvalidOrMissingGoodsDescription
             )
-          case "013" =>
+          case InvalidOrMissingCountryOfOriginCode                      =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidOrMissingCountryOfOrigin
+              InvalidOrMissingCountryOfOriginCode,
+              InvalidOrMissingCountryOfOrigin
             )
-          case "014" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingCategory)
-          case "015" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidOrMissingAssessmentId)
-          case "016" =>
+          case InvalidOrMissingCategoryCode                             =>
+            Error(InvalidOrMissingCategoryCode, InvalidOrMissingCategory)
+          case InvalidOrMissingAssessmentIdCode                         =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidAssessmentPrimaryCategory
+              InvalidOrMissingAssessmentIdCode,
+              InvalidOrMissingAssessmentId
             )
-          case "017" =>
+          case InvalidAssessmentPrimaryCategoryCode                     =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionType
+              InvalidAssessmentPrimaryCategoryCode,
+              InvalidAssessmentPrimaryCategory
             )
-          case "018" =>
+          case InvalidAssessmentPrimaryCategoryConditionTypeCode        =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionId
+              InvalidAssessmentPrimaryCategoryConditionTypeCode,
+              InvalidAssessmentPrimaryCategoryConditionType
             )
-          case "019" =>
+          case InvalidAssessmentPrimaryCategoryConditionIdCode          =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionDescription
+              InvalidAssessmentPrimaryCategoryConditionIdCode,
+              InvalidAssessmentPrimaryCategoryConditionId
             )
-          case "020" =>
+          case InvalidAssessmentPrimaryCategoryConditionDescriptionCode =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionTraderText
+              InvalidAssessmentPrimaryCategoryConditionDescriptionCode,
+              InvalidAssessmentPrimaryCategoryConditionDescription
             )
-          case "021" =>
+          case InvalidAssessmentPrimaryCategoryConditionTraderTextCode  =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidOrMissingSupplementaryUnit
+              InvalidAssessmentPrimaryCategoryConditionTraderTextCode,
+              InvalidAssessmentPrimaryCategoryConditionTraderText
             )
-          case "022" =>
+          case InvalidOrMissingSupplementaryUnitCode                    =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidOrMissingMeasurementUnit
+              InvalidOrMissingSupplementaryUnitCode,
+              InvalidOrMissingSupplementaryUnit
             )
-          case "023" =>
+          case InvalidOrMissingMeasurementUnitCode                      =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidOrMissingComcodeEffectiveFromDate
+              InvalidOrMissingMeasurementUnitCode,
+              InvalidOrMissingMeasurementUnit
             )
-          case "024" =>
+          case InvalidOrMissingComcodeEffectiveFromDateCode             =>
             Error(
-              ApplicationConstants.InvalidRequestParameterCode,
-              ApplicationConstants.InvalidOrMissingComcodeEffectiveToDate
+              InvalidOrMissingComcodeEffectiveFromDateCode,
+              InvalidOrMissingComcodeEffectiveFromDate
             )
-          case "025" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidRecordId)
-          case "026" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.RecordIdDoesNotExists)
-          case "028" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidLastUpdatedDate)
-          case "029" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidPage)
-          case "030" =>
-            Error(ApplicationConstants.InvalidRequestParameterCode, ApplicationConstants.InvalidSize)
-          case _     => Error(ApplicationConstants.UnexpectedErrorCode, ApplicationConstants.UnexpectedErrorMessage)
+          case InvalidOrMissingComcodeEffectiveToDateCode               =>
+            Error(
+              InvalidOrMissingComcodeEffectiveToDateCode,
+              InvalidOrMissingComcodeEffectiveToDate
+            )
+          case InvalidRecordIdCode                                      =>
+            Error(InvalidRecordIdCode, InvalidRecordId)
+          case RecordIdDoesNotExistsCode                                =>
+            Error(RecordIdDoesNotExistsCode, RecordIdDoesNotExists)
+          case InvalidLastUpdatedDateCode                               =>
+            Error(InvalidLastUpdatedDateCode, InvalidLastUpdatedDate)
+          case InvalidPageCode                                          =>
+            Error(InvalidPageCode, InvalidPage)
+          case InvalidSizeCode                                          =>
+            Error(InvalidSizeCode, InvalidSize)
+          case _                                                        => Error(UnexpectedErrorCode, UnexpectedErrorMessage)
         }
       case _              =>
         throw new IllegalArgumentException(s"Unable to parse fault detail for correlation Id: $correlationId")

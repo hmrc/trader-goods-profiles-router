@@ -22,7 +22,7 @@ import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
@@ -36,8 +36,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val mockRouterService = mock[RouterService]
-  val mockUuidService   = mock[UuidService]
+  val mockRouterService: RouterService = mock[RouterService]
+  val mockUuidService: UuidService     = mock[UuidService]
 
   private val sut =
     new CreateRecordController(
@@ -74,7 +74,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         ApplicationConstants.BadRequestCode,
         ApplicationConstants.BadRequestMessage,
-        Some(Seq(Error("INVALID_REQUEST_OBJECT", "006 - Missing or invalid mandatory request parameter EORI")))
+        Some(Seq(Error("006", "Mandatory field eori was missing from body")))
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
@@ -107,7 +107,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
     }
   }
 
-  val createRecordResponseData: CreateRecordResponse = Json
+  lazy val createRecordResponseData: CreateRecordResponse = Json
     .parse("""
              |{
              |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -149,7 +149,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
              |""".stripMargin)
     .as[CreateRecordResponse]
 
-  val createRecordRequestData = Json
+  lazy val createRecordRequestData: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789012",
@@ -178,7 +178,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         |}
         |""".stripMargin)
 
-  val invalidCreateRecordRequestData = Json
+  lazy val invalidCreateRecordRequestData: JsValue = Json
     .parse("""
         |{
         |    "actorId": "GB098765432112",

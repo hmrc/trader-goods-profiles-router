@@ -22,7 +22,6 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
@@ -32,7 +31,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
@@ -429,8 +427,8 @@ class RouterServiceSpec
                 ApplicationConstants.BadRequestMessage,
                 Some(
                   Seq(
-                    Error("INVALID_REQUEST_PARAMETER", "006 - Missing or invalid mandatory request parameter EORI"),
-                    Error("INVALID_REQUEST_PARAMETER", "007 - EORI does not exist in the database")
+                    Error("006", "Mandatory field eori was missing from body"),
+                    Error("007", "EORI number does not have a TGP")
                   )
                 )
               )
@@ -944,8 +942,8 @@ class RouterServiceSpec
                 ApplicationConstants.BadRequestMessage,
                 Some(
                   Seq(
-                    Error("INVALID_REQUEST_PARAMETER", "006 - Missing or invalid mandatory request parameter EORI"),
-                    Error("INVALID_REQUEST_PARAMETER", "007 - EORI does not exist in the database")
+                    Error("006", "Mandatory field eori was missing from body"),
+                    Error("007", "EORI number does not have a TGP")
                   )
                 )
               )
@@ -1492,8 +1490,8 @@ class RouterServiceSpec
                 ApplicationConstants.BadRequestMessage,
                 Some(
                   Seq(
-                    Error("INVALID_REQUEST_PARAMETER", "006 - Missing or invalid mandatory request parameter EORI"),
-                    Error("INVALID_REQUEST_PARAMETER", "007 - EORI does not exist in the database")
+                    Error("006", "Mandatory field eori was missing from body"),
+                    Error("007", "EORI number does not have a TGP")
                   )
                 )
               )
@@ -1535,9 +1533,9 @@ class RouterServiceSpec
                 ApplicationConstants.BadRequestMessage,
                 Some(
                   Seq(
-                    Error("INVALID_REQUEST_PARAMETER", "028 - Invalid optional request parameter lastUpdatedDate"),
-                    Error("INVALID_REQUEST_PARAMETER", "029 - Invalid optional request parameter page"),
-                    Error("INVALID_REQUEST_PARAMETER", "030 - Invalid optional request parameter size")
+                    Error("028", "The URL parameter lastUpdatedDate is in the wrong format"),
+                    Error("029", "The URL parameter page is in the wrong format"),
+                    Error("030", "The URL parameter size is in the wrong format")
                   )
                 )
               )
@@ -1719,7 +1717,7 @@ class RouterServiceSpec
 
   }
 
-  val getEisRecordsResponseData: GetEisRecordsResponse =
+  lazy val getEisRecordsResponseData: GetEisRecordsResponse =
     Json
       .parse("""
     |{
@@ -1777,7 +1775,7 @@ class RouterServiceSpec
     |""".stripMargin)
       .as[GetEisRecordsResponse]
 
-  val createRecordResponseData: CreateRecordResponse =
+  lazy val createRecordResponseData: CreateRecordResponse =
     Json
       .parse("""
           |{
@@ -1820,7 +1818,7 @@ class RouterServiceSpec
           |""".stripMargin)
       .as[CreateRecordResponse]
 
-  val createRecordRequest: CreateRecordRequest = Json
+  lazy val createRecordRequest: CreateRecordRequest = Json
     .parse("""
         |{
         |    "eori": "GB123456789012",

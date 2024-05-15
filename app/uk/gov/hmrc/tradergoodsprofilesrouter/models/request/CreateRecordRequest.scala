@@ -22,7 +22,7 @@ import play.api.libs.json.Reads.verifying
 import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
 import scala.Function.unlift
@@ -45,7 +45,7 @@ case class CreateRecordRequest(
 object CreateRecordRequest {
 
   implicit val reads: Reads[CreateRecordRequest] =
-    ((JsPath \ "eori").read(validActorId) and
+    ((JsPath \ "eori").read(lengthBetween(14, 17)) and
       (JsPath \ "actorId").read(lengthBetween(14, 17)) and
       (JsPath \ "traderRef").read(lengthBetween(1, 512)) and
       (JsPath \ "comcode").read(lengthBetween(6, 10)) and

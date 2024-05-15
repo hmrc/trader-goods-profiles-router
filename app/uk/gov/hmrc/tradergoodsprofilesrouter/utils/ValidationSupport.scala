@@ -17,32 +17,35 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
 import play.api.libs.functional.syntax.toApplicativeOps
-import play.api.libs.json.Reads
-import play.api.libs.json.Reads.{maxLength, minLength, verifying}
+import play.api.libs.json.Reads.{maxLength, minLength}
+import play.api.libs.json.{JsPath, JsonValidationError, Reads}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 
 import java.text.SimpleDateFormat
 import java.util.{Locale, TimeZone}
 import scala.util.Try
-import scala.util.matching.Regex
 
 object ValidationSupport {
 
-  private val dateFormat            = generateDateFormat()
-  private val actorIdPattern: Regex = "^[A-Za-z]{2}\\d{12}(\\d{3})?$".r
+  private val dateFormat = generateDateFormat()
 
   def isValidCountryCode(rawCountryCode: String): Boolean =
     Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)
 
   def isValidDate(rawDate: String): Boolean = Try(dateFormat.parse(rawDate)).isSuccess
 
-  def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
+  def convertError(
+    errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
+    fieldsToErrorCode: Map[String, (String, String)]
+  ): Seq[Error] =
+    extractSimplePaths(errors)
+      .map(key => fieldsToErrorCode.get(key).map(res => Error(res._1, res._2)))
+      .toSeq
+      .flatten
 
   object Reads {
     def lengthBetween(min: Int, max: Int): Reads[String] =
       minLength[String](min).keepAnd(maxLength[String](max))
-
-    val validActorId: Reads[String] =
-      lengthBetween(14, 17).keepAnd(verifying(ValidationSupport.isValidActorId))
   }
 
   private def generateDateFormat(): SimpleDateFormat = {
@@ -51,4 +54,12 @@ object ValidationSupport {
     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
     dateFormat
   }
+
+  private def extractSimplePaths(
+    errors: scala.collection.Seq[(JsPath, collection.Seq[JsonValidationError])]
+  ): collection.Seq[String] =
+    errors
+      .map(_._1)
+      .map(_.path)
+      .map(_.mkString)
 }

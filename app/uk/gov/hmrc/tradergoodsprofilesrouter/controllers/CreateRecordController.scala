@@ -21,13 +21,14 @@ import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.Json.toJson
-import play.api.libs.json.{JsPath, JsValue, Json, JsonValidationError}
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{HeaderNames, ValidationSupport}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -44,25 +45,7 @@ class CreateRecordController @Inject() (
     val result = for {
       _ <- validateClientId
 
-      createRecordRequest <- request.body
-                               .validate[CreateRecordRequest]
-                               .asEither
-                               .leftMap { errors =>
-                                 logger.warn(
-                                   "[CreateRecordController] - Create Record Validation JsError in CreateRecordController.create"
-                                 )
-                                 BadRequest(
-                                   toJson(
-                                     ErrorResponse(
-                                       uuidService.uuid,
-                                       ApplicationConstants.BadRequestCode,
-                                       ApplicationConstants.BadRequestMessage,
-                                       Some(convertError(errors))
-                                     )
-                                   )
-                                 ): Result
-                               }
-                               .toEitherT[Future]
+      createRecordRequest <- validateRequestBody(request)
 
       response <- routerService.createRecord(createRecordRequest)
     } yield Created(Json.toJson(response))
@@ -77,46 +60,51 @@ class CreateRecordController @Inject() (
         toJson(
           ErrorResponse(
             uuidService.uuid,
-            ApplicationConstants.BadRequestCode,
-            ApplicationConstants.MissingHeaderClientId
+            BadRequestCode,
+            MissingHeaderClientId
           )
         )
       )
     )
 
-  private def convertError(
-    errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
-  ): Seq[Error] =
-    extractSimplePaths(errors)
-      .map(key => fieldsToErrorCode.get(key).map(res => Error(ApplicationConstants.InvalidRequestObjectCode, res._2)))
-      .toSeq
-      .flatten
-
-  private def extractSimplePaths(
-    errors: scala.collection.Seq[(JsPath, collection.Seq[JsonValidationError])]
-  ): collection.Seq[String] =
-    errors
-      .map(_._1)
-      .map(_.path)
-      .map(_.mkString)
+  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, CreateRecordRequest] =
+    request.body
+      .validate[CreateRecordRequest]
+      .asEither
+      .leftMap { errors =>
+        logger.warn(
+          "[CreateRecordController] - Create Record Validation JsError in CreateRecordController.create"
+        )
+        BadRequest(
+          toJson(
+            ErrorResponse(
+              uuidService.uuid,
+              BadRequestCode,
+              BadRequestMessage,
+              Some(ValidationSupport.convertError(errors, fieldsToErrorCode))
+            )
+          )
+        ): Result
+      }
+      .toEitherT[Future]
 
   private val fieldsToErrorCode: Map[String, (String, String)] = Map(
-    "/eori"                                                       -> ("006", ApplicationConstants.InvalidOrMissingEori),
-    "/actorId"                                                    -> ("008", ApplicationConstants.InvalidOrMissingActorId),
-    "/traderRef"                                                  -> ("009", ApplicationConstants.InvalidOrMissingTraderRef),
-    "/comcode"                                                    -> ("011", ApplicationConstants.InvalidOrMissingComcode),
-    "/goodsDescription"                                           -> ("012", ApplicationConstants.InvalidOrMissingGoodsDescription),
-    "/countryOfOrigin"                                            -> ("013", ApplicationConstants.InvalidOrMissingCountryOfOrigin),
-    "/category"                                                   -> ("014", ApplicationConstants.InvalidOrMissingCategory),
-    "/assessments"                                                -> ("015", ApplicationConstants.InvalidOrMissingAssessmentId),
-    "/supplementaryUnit"                                          -> ("016", ApplicationConstants.InvalidAssessmentPrimaryCategory),
-    "/assessments/primaryCategory/condition/type"                 -> ("017", ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionType),
-    "/assessments/primaryCategory/condition/conditionId"          -> ("018", ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionId),
-    "/assessments/primaryCategory/condition/conditionDescription" -> ("019", ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionDescription),
-    "/assessments/primaryCategory/condition/conditionTraderText"  -> ("020", ApplicationConstants.InvalidAssessmentPrimaryCategoryConditionTraderText),
-    "/supplementaryUnit"                                          -> ("021", ApplicationConstants.InvalidOrMissingSupplementaryUnit),
-    "/measurementUnit"                                            -> ("022", ApplicationConstants.InvalidOrMissingMeasurementUnit),
-    "/comcodeEffectiveFromDate"                                   -> ("023", ApplicationConstants.InvalidOrMissingComcodeEffectiveFromDate),
-    "/comcodeEffectiveToDate"                                     -> ("024", ApplicationConstants.InvalidOrMissingComcodeEffectiveToDate)
+    "/eori"                                                       -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
+    "/actorId"                                                    -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),
+    "/traderRef"                                                  -> (InvalidOrMissingTraderRefCode, InvalidOrMissingTraderRef),
+    "/comcode"                                                    -> (InvalidOrMissingComcodeCode, InvalidOrMissingComcode),
+    "/goodsDescription"                                           -> (InvalidOrMissingGoodsDescriptionCode, InvalidOrMissingGoodsDescription),
+    "/countryOfOrigin"                                            -> (InvalidOrMissingCountryOfOriginCode, InvalidOrMissingCountryOfOrigin),
+    "/category"                                                   -> (InvalidOrMissingCategoryCode, InvalidOrMissingCategory),
+    "/assessments"                                                -> (InvalidOrMissingAssessmentIdCode, InvalidOrMissingAssessmentId),
+    "/supplementaryUnit"                                          -> (InvalidAssessmentPrimaryCategoryCode, InvalidAssessmentPrimaryCategory),
+    "/assessments/primaryCategory/condition/type"                 -> (InvalidAssessmentPrimaryCategoryConditionTypeCode, InvalidAssessmentPrimaryCategoryConditionType),
+    "/assessments/primaryCategory/condition/conditionId"          -> (InvalidAssessmentPrimaryCategoryConditionIdCode, InvalidAssessmentPrimaryCategoryConditionId),
+    "/assessments/primaryCategory/condition/conditionDescription" -> (InvalidAssessmentPrimaryCategoryConditionDescriptionCode, InvalidAssessmentPrimaryCategoryConditionDescription),
+    "/assessments/primaryCategory/condition/conditionTraderText"  -> (InvalidAssessmentPrimaryCategoryConditionTraderTextCode, InvalidAssessmentPrimaryCategoryConditionTraderText),
+    "/supplementaryUnit"                                          -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
+    "/measurementUnit"                                            -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
+    "/comcodeEffectiveFromDate"                                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
+    "/comcodeEffectiveToDate"                                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate)
   )
 }

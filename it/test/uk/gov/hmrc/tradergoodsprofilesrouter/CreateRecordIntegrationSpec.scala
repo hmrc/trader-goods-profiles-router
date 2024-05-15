@@ -322,8 +322,8 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "006 - Missing or invalid mandatory request parameter EORI"
+                "code"    -> "006",
+                "message" -> "Mandatory field eori was missing from body"
               )
             )
           )
@@ -366,12 +366,12 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "025 - Invalid request parameter recordId"
+                "code"    -> "025",
+                "message" -> "The recordId has been provided in the wrong format"
               ),
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "026 - recordId does not exist in the database"
+                "code"    -> "026",
+                "message" -> "The requested recordId to update doesn’t exist"
               )
             )
           )
@@ -511,10 +511,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "correlationId" -> correlationId,
             "code"          -> "BAD_REQUEST",
             "message"       -> "Bad Request",
-            "errors" -> Json.arr(
+            "errors"        -> Json.arr(
               Json.obj(
-                "code" -> "INVALID_REQUEST_OBJECT",
-                "message" -> "006 - Missing or invalid mandatory request parameter EORI"
+                "code"    -> "006",
+                "message" -> "Mandatory field eori was missing from body"
               )
             )
           )
@@ -539,11 +539,11 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withStatus(httpStatus)
-          .withBody(responseBody.getOrElse(null))
+          .withBody(responseBody.orNull)
       )
   )
 
-  val createRecordResponseData: JsValue =
+  lazy val createRecordResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -585,7 +585,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         |}
         |""".stripMargin)
 
-  val createRecordRequestData: String =
+  lazy val createRecordRequestData: String =
     """
         |{
         |    "eori": "GB123456789012",
@@ -614,7 +614,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         |}
         |""".stripMargin
 
-  val createRecordRequiredRequestData: String =
+  lazy val createRecordRequiredRequestData: String =
     """
       |{
       |    "eori": "GB123456789012",
@@ -628,7 +628,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       |}
       |""".stripMargin
 
-  val createRecordRequiredResponseData: JsValue =
+  lazy val createRecordRequiredResponseData: JsValue =
     Json
       .parse("""
           |{
@@ -659,7 +659,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           |}
           |""".stripMargin)
 
-  val invalidRequestData: String =
+  lazy val invalidRequestData: String =
     """
       |{
       |    "actorId": "GB098765432112",
