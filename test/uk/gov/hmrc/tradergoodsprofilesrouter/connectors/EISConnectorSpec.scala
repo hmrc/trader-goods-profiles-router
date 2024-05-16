@@ -20,15 +20,15 @@ import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito
 import org.mockito.Mockito._
 import org.mockito.MockitoSugar.reset
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
@@ -39,7 +39,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar with BeforeAndAfterEach {
+class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar with BeforeAndAfterEach with EitherValues {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
@@ -51,7 +51,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
   private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val eori                             = "GB123456789011"
   private val recordId                         = "12345"
-  private val correlationId                    = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  implicit val correlationId                   = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val eisConnector: EISConnectorImpl = new EISConnectorImpl(appConfig, httpClientV2, dateTimeService)
 
@@ -83,9 +83,9 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
 
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
 
-    val result = await(eisConnector.fetchRecord(eori, recordId, correlationId)(ec, hc))
+    val result = await(eisConnector.fetchRecord(eori, recordId))
 
-    result shouldBe expectedResponse
+    result.value shouldBe expectedResponse
   }
 
   it should "create a record successfully" in {
@@ -106,8 +106,8 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     when(httpResponse.body).thenReturn("message")
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(HttpResponse(200, "message")))
 
-    val exception = intercept[UpstreamErrorResponse] {
-      await(eisConnector.fetchRecord(eori, recordId, correlationId)(ec, hc))
+    val exception = intercept[RuntimeException] {
+      await(eisConnector.fetchRecord(eori, recordId))
     }
 
     exception.getMessage should be(s"Response body could not be read: message")
@@ -128,14 +128,14 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
 
-    val result = await(eisConnector.fetchRecord(eori, recordId, correlationId)(ec, hc))
+    val result = await(eisConnector.fetchRecord(eori, recordId))
 
     val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
     verify(httpClientV2).get(url"$expectedUrl")
     verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
     verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
 
-    result shouldBe expectedResponse
+    result.value shouldBe expectedResponse
   }
 
   it should "fetch multiple records successfully" in {
@@ -144,9 +144,9 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
 
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
 
-    val result = await(eisConnector.fetchRecords(eori, correlationId)(ec, hc))
+    val result = await(eisConnector.fetchRecords(eori))
 
-    result shouldBe expectedResponse
+    result.value shouldBe expectedResponse
   }
 
   it should "response json failure for fetch records" in {
@@ -155,8 +155,8 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     when(httpResponse.body).thenReturn("message")
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(HttpResponse(200, "message")))
 
-    val exception = intercept[UpstreamErrorResponse] {
-      await(eisConnector.fetchRecords(eori, correlationId)(ec, hc))
+    val exception = intercept[RuntimeException] {
+      await(eisConnector.fetchRecords(eori))
     }
 
     exception.getMessage should be(s"Response body could not be read: message")
@@ -178,14 +178,14 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
 
     val result =
-      await(eisConnector.fetchRecords(eori, correlationId, Some(timestamp.toString), Some(1), Some(1))(ec, hc))
+      await(eisConnector.fetchRecords(eori, Some(timestamp.toString), Some(1), Some(1)))
 
     val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$timestamp&page=1&size=1"
     verify(httpClientV2).get(url"$expectedUrl")
     verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
     verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
 
-    result shouldBe expectedResponse
+    result.value shouldBe expectedResponse
   }
 
   val fetchRecordSampleJson: JsValue = Json

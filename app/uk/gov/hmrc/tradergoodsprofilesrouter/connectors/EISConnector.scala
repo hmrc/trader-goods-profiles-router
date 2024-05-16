@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.google.inject.ImplementedBy
 import play.api.http.MimeTypes
+import play.api.mvc.Result
 import play.api.libs.json.Json.toJson
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -36,22 +37,26 @@ import scala.concurrent.{ExecutionContext, Future}
 trait EISConnector {
   def fetchRecord(
     eori: String,
-    recordId: String,
+    recordId: String
+  )(implicit
+    hc: HeaderCarrier,
     correlationId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse]
+  ): Future[Either[Result, GetEisRecordsResponse]]
 
   def fetchRecords(
     eori: String,
-    correlationId: String,
     lastUpdatedDate: Option[String] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse]
+  )(implicit
+    hc: HeaderCarrier,
+    correlationId: String
+  ): Future[Either[Result, GetEisRecordsResponse]]
 
   def createRecord(
     request: CreateRecordRequest,
     correlationId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[CreateRecordResponse]
+  )(implicit hc: HeaderCarrier): Future[CreateRecordResponse]
 
 }
 
@@ -59,15 +64,19 @@ class EISConnectorImpl @Inject() (
   appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   dateTimeService: DateTimeService
-) extends EISConnector
+)(implicit val ec: ExecutionContext)
+    extends EISConnector
     with BaseConnector {
 
   override def fetchRecord(
     eori: String,
-    recordId: String,
+    recordId: String
+  )(implicit
+    ec: ExecutionContext,
+    hc: HeaderCarrier,
     correlationId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
-    val url = s"${appConfig.eisConfig.getRecordsUrl}/$eori/$recordId"
+  ): Future[Either[Result, GetEisRecordsResponse]] = {
+    val url = s"${appConfig.eisConfig.url}/$eori/$recordId"
 
     httpClientV2
       .get(url"$url")(hc)
@@ -77,11 +86,14 @@ class EISConnectorImpl @Inject() (
 
   override def fetchRecords(
     eori: String,
-    correlationId: String,
     lastUpdatedDate: Option[String] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
+  )(implicit
+    ec: ExecutionContext,
+    hc: HeaderCarrier,
+    correlationId: String
+  ): Future[Either[Result, GetEisRecordsResponse]] = {
     val uri =
       uri"${appConfig.eisConfig.getRecordsUrl}/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
 

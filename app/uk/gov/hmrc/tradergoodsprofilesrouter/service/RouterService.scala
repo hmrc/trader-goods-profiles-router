@@ -18,12 +18,10 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import cats.data.EitherT
 import com.google.inject.{ImplementedBy, Inject}
-import play.api.http.Status._
-import play.api.libs.Files.logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.Result
-import play.api.mvc.Results.{BadGateway, BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound, ServiceUnavailable}
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import play.api.mvc.Results.InternalServerError
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
@@ -32,7 +30,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, Erro
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
 @ImplementedBy(classOf[RouterServiceImpl])
 trait RouterService {
@@ -59,12 +56,18 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): EitherT[Future, Result, GoodsItemRecords] = {
-    val correlationId = uuidService.uuid
+    implicit val correlationId: String = uuidService.uuid
     EitherT(
       eisConnector
-        .fetchRecord(eori, recordId, correlationId)
-        .map(result => Right(result.goodsItemRecords.head))
-        .recover(handleError(correlationId, eori))
+        .fetchRecord(eori, recordId)
+        .map {
+          case Right(response) => Right(response.goodsItemRecords.head)
+          case Left(error)     =>
+            Left(error)
+        }
+        .recover { case ex: Throwable =>
+          Left(InternalServerError(ex.getMessage))
+        }
     )
   }
 
@@ -77,119 +80,15 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): EitherT[Future, Result, GetEisRecordsResponse] = {
-    val correlationId = uuidService.uuid
+    implicit val correlationId: String = uuidService.uuid
     EitherT(
       eisConnector
-        .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
-        .map(result => Right(result))
-        .recover(handleError[GetEisRecordsResponse](correlationId, eori))
+        .fetchRecords(eori, lastUpdatedDate, page, size)
+        .map {
+          case Right(response) => Right(response)
+          case Left(error)     => Left(error)
+        }
     )
-  }
-
-  override def createRecord(request: CreateRecordRequest)(implicit
-    ec: ExecutionContext,
-    hc: HeaderCarrier
-  ): EitherT[Future, Result, CreateRecordResponse] = {
-    val correlationId = uuidService.uuid
-    EitherT(
-      eisConnector
-        .createRecord(request, correlationId)
-        .map(result => Right(result))
-        .recover(handleError[CreateRecordResponse](correlationId, request.eori))
-    )
-  }
-
-  private def handleError[A](
-    correlationId: String,
-    eori: String
-  ): PartialFunction[Throwable, Either[Result, A]]                                     = {
-    case UpstreamErrorResponse(message, BAD_REQUEST, _, _) =>
-      Left(BadRequest(Json.toJson(determine400Error(correlationId, message))))
-
-    case UpstreamErrorResponse(_, FORBIDDEN, _, _) =>
-      Left(
-        Forbidden(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              ForbiddenCode,
-              ForbiddenMessage
-            )
-          )
-        )
-      )
-
-    case UpstreamErrorResponse(_, NOT_FOUND, _, _) =>
-      Left(
-        NotFound(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              NotFoundCode,
-              NotFoundMessage
-            )
-          )
-        )
-      )
-
-    case UpstreamErrorResponse(_, METHOD_NOT_ALLOWED, _, _) =>
-      Left(
-        MethodNotAllowed(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              MethodNotAllowedCode,
-              MethodNotAllowedMessage
-            )
-          )
-        )
-      )
-
-    case UpstreamErrorResponse(_, BAD_GATEWAY, _, _) =>
-      Left(
-        BadGateway(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              BadGatewayCode,
-              BadGatewayMessage
-            )
-          )
-        )
-      )
-
-    case UpstreamErrorResponse(_, SERVICE_UNAVAILABLE, _, _) =>
-      Left(
-        ServiceUnavailable(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              ServiceUnavailableCode,
-              ServiceUnavailableMessage
-            )
-          )
-        )
-      )
-
-    case UpstreamErrorResponse(message, INTERNAL_SERVER_ERROR, _, _) =>
-      Left(InternalServerError(Json.toJson(determine500Error(correlationId, message))))
-
-    case NonFatal(e) =>
-      logger.error(
-        s"[RouterService] - Error creating record for eori number $eori with message ${e.getMessage}",
-        e
-      )
-      Left(
-        InternalServerError(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              UnexpectedErrorCode,
-              UnexpectedErrorMessage
-            )
-          )
-        )
-      )
   }
   private def determine400Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {

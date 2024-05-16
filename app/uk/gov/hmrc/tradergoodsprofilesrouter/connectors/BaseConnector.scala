@@ -16,12 +16,16 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, isSuccessful}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.Files.logger
 import play.api.libs.json.{JsResult, Json, Reads}
+import play.api.mvc.Result
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{HttpErrorFunctions, HttpResponse, UpstreamErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISHttpReader.responseHandler
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+//import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISHttpReader
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
@@ -59,14 +63,15 @@ trait BaseConnector extends HttpErrorFunctions {
 
   }
 
-  implicit class RequestBuilderHelpers(requestBuilder: RequestBuilder) {
-    def executeAndDeserialise[T](implicit ec: ExecutionContext, reads: Reads[T], tt: TypeTag[T]): Future[T] =
+  implicit class RequestBuilderHelpers(requestBuilder: RequestBuilder)(implicit correlationId: String) {
+    def executeAndDeserialise[T](implicit
+      ec: ExecutionContext,
+      reads: Reads[T],
+      tt: TypeTag[T]
+    ): Future[Either[Result, GetEisRecordsResponse]] =
       requestBuilder
         .execute[HttpResponse]
-        .flatMap {
-          case response if isSuccessful(response.status) => response.as[T]
-          case response                                  => response.error
-        }
+        .flatMap(r => responseHandler(r))
 
     /**
       * This method will be used for other endpoint e.g. delete
