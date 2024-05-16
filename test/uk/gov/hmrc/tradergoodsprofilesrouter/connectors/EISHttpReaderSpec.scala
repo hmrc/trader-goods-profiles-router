@@ -20,13 +20,14 @@ import org.scalatest.EitherValues
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISHttpReader.responseHandler
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
 class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherValues {
 
@@ -206,21 +207,7 @@ class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         )
       }
       "Unexpected error code response" in {
-        val eisResponse  =
-          s"""
-             |{
-             |    "timestamp": "2023-09-14T11:29:18Z",
-             |    "correlationId": "$correlationId",
-             |    "errorCode": "400",
-             |    "errorMessage": "Bad Request",
-             |    "source": "BACKEND",
-             |    "sourceFaultDetail": {
-             |      "detail": [
-             |        "error: 100, message: unknown"
-             |      ]
-             |    }
-             |  }
-        """.stripMargin
+        val eisResponse  = createEisErrorResponseWithDetailsAsJson("400", "Bad Request", "error: 100, message: unknown")
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
         val result = await(responseHandler(httpResponse))
@@ -235,21 +222,7 @@ class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       }
 
       "Unable to parse source fault detail" in {
-        val eisResponse  =
-          s"""
-             |{
-             |    "timestamp": "2023-09-14T11:29:18Z",
-             |    "correlationId": "$correlationId",
-             |    "errorCode": "400",
-             |    "errorMessage": "Bad Request",
-             |    "source": "BACKEND",
-             |    "sourceFaultDetail": {
-             |      "detail": [
-             |        "002, unknown"
-             |      ]
-             |    }
-             |  }
-        """.stripMargin
+        val eisResponse  = createEisErrorResponseWithDetailsAsJson("400", "Bad Request", "002, unknown")
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
         val exception = intercept[IllegalArgumentException] {
@@ -259,6 +232,59 @@ class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         exception.getMessage mustBe s"Unable to parse fault detail for correlation Id: $correlationId"
 
       }
+    }
+
+    "return an error" when {
+      "Forbidden response" in {
+        val httpResponse = HttpResponse(403, "")
+
+        val result = await(responseHandler(httpResponse))
+
+        result.left.value mustBe Forbidden(
+          createErrorResponseAsJson(ApplicationConstants.ForbiddenCode, ApplicationConstants.ForbiddenMessage)
+        )
+
+      }
+      "Not found response" in {
+        val httpResponse = HttpResponse(404, "")
+
+        val result = await(responseHandler(httpResponse))
+
+        result.left.value mustBe NotFound(
+          createErrorResponseAsJson(ApplicationConstants.NotFoundCode, ApplicationConstants.NotFoundMessage)
+        )
+      }
+      "Method not allowed response" in {
+        val httpResponse = HttpResponse(405, "")
+
+        val result = await(responseHandler(httpResponse))
+
+        result.left.value mustBe MethodNotAllowed(
+          createErrorResponseAsJson(
+            ApplicationConstants.MethodNotAllowedCode,
+            ApplicationConstants.MethodNotAllowedMessage
+          )
+        )
+      }
+//      "Unknown error response" in {
+//        val emptyResponse = ""
+//        when(eisConnector.fetchRecord(any, any)(any, any, any))
+//          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 504)))
+//
+//        val result = routerService.fetchRecord(eoriNumber, recordId)
+//
+//        whenReady(result.value) {
+//          _.left.value shouldBe InternalServerError(
+//            Json.toJson(
+//              ErrorResponse(
+//                correlationId,
+//                ApplicationConstants.UnexpectedErrorCode,
+//                ApplicationConstants.UnexpectedErrorMessage
+//              )
+//            )
+//          )
+//        }
+//      }
     }
   }
 
