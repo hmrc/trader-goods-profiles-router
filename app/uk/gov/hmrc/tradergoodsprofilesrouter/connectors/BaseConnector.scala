@@ -71,7 +71,7 @@ trait BaseConnector extends HttpErrorFunctions {
     ): Future[Either[Result, GetEisRecordsResponse]] =
       requestBuilder
         .execute[HttpResponse]
-        .flatMap(r => responseHandler(r))
+        .flatMap(responseHandler)
 
     /**
       * This method will be used for other endpoint e.g. delete
