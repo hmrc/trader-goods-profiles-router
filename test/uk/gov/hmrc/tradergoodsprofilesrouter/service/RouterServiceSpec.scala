@@ -28,6 +28,8 @@ import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodN
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
@@ -425,8 +427,523 @@ class RouterServiceSpec
                 ApplicationConstants.BadRequestMessage,
                 Some(
                   Seq(
-                    Error("INVALID_REQUEST_PARAMETER", "006 - Missing or invalid mandatory request parameter EORI"),
-                    Error("INVALID_REQUEST_PARAMETER", "007 - EORI does not exist in the database")
+                    Error("006", "Mandatory field eori was missing from body"),
+                    Error("007", "EORI number does not have a TGP")
+                  )
+                )
+              )
+            )
+          )
+        }
+      }
+      "Unexpected error response given an invalid json string" in {
+        val eisResponse =
+          s"""
+             | {
+             |  "invalid": "json"
+             |  }
+        """.stripMargin
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val result = routerService.fetchRecord(eoriNumber, recordId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.UnexpectedErrorCode,
+                ApplicationConstants.UnexpectedErrorMessage
+              )
+            )
+          )
+        }
+      }
+      "Unexpected error code response" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "400",
+             |    "errorMessage": "Bad Request",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": [
+             |        "error: 100, message: unknown"
+             |      ]
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val result = routerService.fetchRecord(eoriNumber, recordId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BadRequestCode,
+                ApplicationConstants.BadRequestMessage,
+                Some(
+                  Seq(
+                    Error(ApplicationConstants.UnexpectedErrorCode, ApplicationConstants.UnexpectedErrorMessage)
+                  )
+                )
+              )
+            )
+          )
+        }
+      }
+      "Unable to parse source fault detail" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "400",
+             |    "errorMessage": "Bad Request",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": [
+             |        "002, unknown"
+             |      ]
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val exception = intercept[IllegalArgumentException] {
+          await(routerService.fetchRecord(eoriNumber, recordId).value)
+        }
+
+        exception.getMessage should be(s"Unable to parse fault detail for correlation Id: $correlationId")
+
+      }
+    }
+    "return an error" when {
+      "Forbidden response" in {
+        val emptyResponse = ""
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 403)))
+
+        val result = routerService.fetchRecord(eoriNumber, recordId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe Forbidden(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.ForbiddenCode,
+                ApplicationConstants.ForbiddenMessage
+              )
+            )
+          )
+        }
+      }
+      "Not found response" in {
+        val emptyResponse = ""
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 404)))
+
+        val result = routerService.fetchRecord(eoriNumber, recordId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe NotFound(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.NotFoundCode,
+                ApplicationConstants.NotFoundMessage
+              )
+            )
+          )
+        }
+      }
+      "Method not allowed response" in {
+        val emptyResponse = ""
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 405)))
+
+        val result = routerService.fetchRecord(eoriNumber, recordId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe MethodNotAllowed(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.MethodNotAllowedCode,
+                ApplicationConstants.MethodNotAllowedMessage
+              )
+            )
+          )
+        }
+      }
+      "Unknown error response" in {
+        val emptyResponse = ""
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 504)))
+
+        val result = routerService.fetchRecord(eoriNumber, recordId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.UnexpectedErrorCode,
+                ApplicationConstants.UnexpectedErrorMessage
+              )
+            )
+          )
+        }
+      }
+    }
+
+  }
+
+  "createRecord" should {
+    "create a record item" in {
+      val eisResponse = createRecordResponseData
+      when(eisConnector.createRecord(any, any)(any, any))
+        .thenReturn(Future.successful(eisResponse))
+
+      val result = routerService.createRecord(createRecordRequest)
+
+      whenReady(result.value) {
+        _.value shouldBe eisResponse
+      }
+    }
+
+    "return an internal server error" when {
+      "Invalid payload response" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "201",
+             |    "errorMessage": "Internal Server Error",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.InvalidOrEmptyPayloadCode,
+                ApplicationConstants.InvalidOrEmptyPayloadMessage
+              )
+            )
+          )
+        }
+      }
+      "Unauthorised" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "401",
+             |    "errorMessage": "Unauthorised",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.UnauthorizedCode,
+                ApplicationConstants.UnauthorizedMessage
+              )
+            )
+          )
+        }
+      }
+      "Not found" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "404",
+             |    "errorMessage": "Not Found",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.NotFoundCode,
+                ApplicationConstants.NotFoundMessage
+              )
+            )
+          )
+        }
+      }
+      "Method not allowed" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "405",
+             |    "errorMessage": "Method Not Allowed",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.MethodNotAllowedCode,
+                ApplicationConstants.MethodNotAllowedMessage
+              )
+            )
+          )
+        }
+      }
+      "Internal server error" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "500",
+             |    "errorMessage": "Internal Server Error",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.InternalServerErrorCode,
+                ApplicationConstants.InternalServerErrorMessage
+              )
+            )
+          )
+        }
+      }
+      "Bad gateway" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "502",
+             |    "errorMessage": "Bad Gateway",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BadGatewayCode,
+                ApplicationConstants.BadGatewayMessage
+              )
+            )
+          )
+        }
+      }
+      "Service unavailable" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "503",
+             |    "errorMessage": "Service Unavailable",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.ServiceUnavailableCode,
+                ApplicationConstants.ServiceUnavailableMessage
+              )
+            )
+          )
+        }
+      }
+      "Unknown error response" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "001",
+             |    "errorMessage": "Service Unavailable",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.UnknownCode,
+                ApplicationConstants.UnknownMessage
+              )
+            )
+          )
+        }
+      }
+      "Unexpected error is thrown" in {
+        val invalidJson = """{ "wrongField": "value" }"""
+        when(eisConnector.createRecord(any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(invalidJson, 500)))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.UnexpectedErrorCode,
+                ApplicationConstants.UnexpectedErrorMessage
+              )
+            )
+          )
+        }
+      }
+    }
+    "return an bad request error" when {
+      "eori does not exist and comcode is missing" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "400",
+             |    "errorMessage": "Internal Server Error",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": [
+             |        "error: 006, message: Mandatory field comcode was missing from body",
+             |        "error: 007, message: eori does not exist in the database"
+             |      ]
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.fetchRecord(any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val result = routerService.fetchRecord(eoriNumber, recordId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BadRequestCode,
+                ApplicationConstants.BadRequestMessage,
+                Some(
+                  Seq(
+                    Error("006", "Mandatory field eori was missing from body"),
+                    Error("007", "EORI number does not have a TGP")
                   )
                 )
               )
@@ -973,8 +1490,8 @@ class RouterServiceSpec
                 ApplicationConstants.BadRequestMessage,
                 Some(
                   Seq(
-                    Error("INVALID_REQUEST_PARAMETER", "006 - Missing or invalid mandatory request parameter EORI"),
-                    Error("INVALID_REQUEST_PARAMETER", "007 - EORI does not exist in the database")
+                    Error("006", "Mandatory field eori was missing from body"),
+                    Error("007", "EORI number does not have a TGP")
                   )
                 )
               )
@@ -1016,9 +1533,9 @@ class RouterServiceSpec
                 ApplicationConstants.BadRequestMessage,
                 Some(
                   Seq(
-                    Error("INVALID_REQUEST_PARAMETER", "028 - Invalid optional request parameter lastUpdatedDate"),
-                    Error("INVALID_REQUEST_PARAMETER", "029 - Invalid optional request parameter page"),
-                    Error("INVALID_REQUEST_PARAMETER", "030 - Invalid optional request parameter size")
+                    Error("028", "The URL parameter lastUpdatedDate is in the wrong format"),
+                    Error("029", "The URL parameter page is in the wrong format"),
+                    Error("030", "The URL parameter size is in the wrong format")
                   )
                 )
               )
@@ -1200,7 +1717,7 @@ class RouterServiceSpec
 
   }
 
-  val getEisRecordsResponseData: GetEisRecordsResponse =
+  lazy val getEisRecordsResponseData: GetEisRecordsResponse =
     Json
       .parse("""
     |{
@@ -1257,5 +1774,78 @@ class RouterServiceSpec
     |}
     |""".stripMargin)
       .as[GetEisRecordsResponse]
+
+  lazy val createRecordResponseData: CreateRecordResponse =
+    Json
+      .parse("""
+          |{
+          |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+          |  "eori": "GB123456789012",
+          |  "actorId": "GB098765432112",
+          |  "traderRef": "BAN001001",
+          |  "comcode": "104101000",
+          |  "accreditationStatus": "Not Requested",
+          |  "goodsDescription": "Organic bananas",
+          |  "countryOfOrigin": "EC",
+          |  "category": 1,
+          |  "supplementaryUnit": 500,
+          |  "measurementUnit": "Square metre (m2)",
+          |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+          |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+          |  "version": 1,
+          |  "active": true,
+          |  "toReview": false,
+          |  "reviewReason": "Commodity code change",
+          |  "declarable": "SPIMM",
+          |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+          |  "nirmsNumber": "RMS-GB-123456",
+          |  "niphlNumber": "6 S12345",
+          |  "createdDateTime": "2024-11-18T23->20->19Z",
+          |  "updatedDateTime": "2024-11-18T23->20->19Z",
+          |  "assessments": [
+          |    {
+          |      "assessmentId": "abc123",
+          |      "primaryCategory": 1,
+          |      "condition": {
+          |        "type": "abc123",
+          |        "conditionId": "Y923",
+          |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+          |        "conditionTraderText": "Excluded product"
+          |      }
+          |    }
+          |  ]
+          |}
+          |""".stripMargin)
+      .as[CreateRecordResponse]
+
+  lazy val createRecordRequest: CreateRecordRequest = Json
+    .parse("""
+        |{
+        |    "eori": "GB123456789012",
+        |    "actorId": "GB098765432112",
+        |    "traderRef": "BAN001001",
+        |    "comcode": "104101000",
+        |    "goodsDescription": "Organic bananas",
+        |    "countryOfOrigin": "EC",
+        |    "category": 1,
+        |    "assessments": [
+        |        {
+        |            "assessmentId": "abc123",
+        |            "primaryCategory": 1,
+        |            "condition": {
+        |                "type": "abc123",
+        |                "conditionId": "Y923",
+        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+        |                "conditionTraderText": "Excluded product"
+        |            }
+        |        }
+        |    ],
+        |    "supplementaryUnit": 500,
+        |    "measurementUnit": "Square metre (m2)",
+        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+        |}
+        |""".stripMargin)
+    .as[CreateRecordRequest]
 
 }

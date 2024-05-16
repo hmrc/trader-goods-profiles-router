@@ -172,7 +172,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
           verifyThatDownstreamApiWasCalled()
         }
-        "Unexpected Error" in {
+        "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
 
           val response = await(
@@ -182,11 +182,11 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .get()
           )
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe SERVICE_UNAVAILABLE
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "Unexpected Error"
+            "code"          -> "SERVICE_UNAVAILABLE",
+            "message"       -> "Service Unavailable"
           )
 
           verifyThatDownstreamApiWasCalled()
@@ -434,8 +434,8 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "006 - Missing or invalid mandatory request parameter EORI"
+                "code"    -> "006",
+                "message" -> "Mandatory field eori was missing from body"
               )
             )
           )
@@ -489,8 +489,8 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "007 - EORI does not exist in the database"
+                "code"    -> "007",
+                "message" -> "EORI number does not have a TGP"
               )
             )
           )
@@ -544,8 +544,8 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "028 - Invalid optional request parameter lastUpdatedDate"
+                "code"    -> "028",
+                "message" -> "The URL parameter lastUpdatedDate is in the wrong format"
               )
             )
           )
@@ -599,8 +599,8 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "029 - Invalid optional request parameter page"
+                "code"    -> "029",
+                "message" -> "The URL parameter page is in the wrong format"
               )
             )
           )
@@ -654,8 +654,8 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "030 - Invalid optional request parameter size"
+                "code"    -> "030",
+                "message" -> "The URL parameter size is in the wrong format"
               )
             )
           )
@@ -845,7 +845,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           aResponse()
             .withHeader("Content-Type", "application/json")
             .withStatus(httpStatus)
-            .withBody(body.getOrElse(null))
+            .withBody(body.orNull)
         )
     )
   }

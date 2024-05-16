@@ -115,7 +115,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           verifyThatDownstreamApiWasCalled()
         }
-        "Unexpected Error" in {
+        "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
 
           val response = await(
@@ -125,11 +125,11 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
               .get()
           )
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe SERVICE_UNAVAILABLE
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "Unexpected Error"
+            "code"          -> "SERVICE_UNAVAILABLE",
+            "message"       -> "Service Unavailable"
           )
 
           verifyThatDownstreamApiWasCalled()
@@ -377,8 +377,8 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "006 - Missing or invalid mandatory request parameter EORI"
+                "code"    -> "006",
+                "message" -> "Mandatory field eori was missing from body"
               )
             )
           )
@@ -432,8 +432,8 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "007 - EORI does not exist in the database"
+                "code"    -> "007",
+                "message" -> "EORI number does not have a TGP"
               )
             )
           )
@@ -488,12 +488,12 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "025 - Invalid request parameter recordId"
+                "code"    -> "025",
+                "message" -> "The recordId has been provided in the wrong format"
               ),
               Json.obj(
-                "code"    -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "026 - recordId does not exist in the database"
+                "code"    -> "026",
+                "message" -> "The requested recordId to update doesn’t exist"
               )
             )
           )
@@ -673,7 +673,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withStatus(httpStatus)
-          .withBody(body.getOrElse(null))
+          .withBody(body.orNull)
       )
   )
 
@@ -697,7 +697,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
       )
       .toString()
 
-  val getSingleRecordResponseData: JsValue =
+  lazy val getSingleRecordResponseData: JsValue =
     Json
       .parse("""
                |{

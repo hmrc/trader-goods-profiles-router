@@ -17,10 +17,13 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.google.inject.ImplementedBy
 import play.api.http.MimeTypes
+import play.api.libs.json.Json.toJson
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -45,6 +48,11 @@ trait EISConnector {
     size: Option[Int] = None
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse]
 
+  def createRecord(
+    request: CreateRecordRequest,
+    correlationId: String
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[CreateRecordResponse]
+
 }
 
 class EISConnectorImpl @Inject() (
@@ -59,7 +67,7 @@ class EISConnectorImpl @Inject() (
     recordId: String,
     correlationId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
-    val url = s"${appConfig.eisConfig.url}/$eori/$recordId"
+    val url = s"${appConfig.eisConfig.getRecordsUrl}/$eori/$recordId"
 
     httpClientV2
       .get(url"$url")(hc)
@@ -75,12 +83,25 @@ class EISConnectorImpl @Inject() (
     size: Option[Int] = None
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[GetEisRecordsResponse] = {
     val uri =
-      uri"${appConfig.eisConfig.url}/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
+      uri"${appConfig.eisConfig.getRecordsUrl}/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
 
     httpClientV2
       .get(url"$uri")(hc)
       .setHeader(eisRequestHeaders(correlationId): _*)
       .executeAndDeserialise[GetEisRecordsResponse]
+  }
+
+  override def createRecord(
+    request: CreateRecordRequest,
+    correlationId: String
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[CreateRecordResponse] = {
+    val url = appConfig.eisConfig.createRecordUrl
+
+    httpClientV2
+      .post(url"$url")(hc)
+      .setHeader(eisRequestHeaders(correlationId): _*)
+      .withBody(toJson(request))
+      .executeAndDeserialise[CreateRecordResponse]
   }
 
   private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
