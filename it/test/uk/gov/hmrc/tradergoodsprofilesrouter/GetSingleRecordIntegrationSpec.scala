@@ -16,16 +16,20 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.when
+import org.mockito.MockitoSugar.when
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
 import java.time.Instant
 
-class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
+class GetSingleRecordIntegrationSpec
+    extends BaseIntegrationWithConnectorSpec
+    with GetRecordsDataSupport
+    with BeforeAndAfterEach {
 
   val eori                           = "GB123456789001"
   val recordId                       = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
@@ -35,7 +39,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
   override def connectorPath: String = s"/tgp/getrecords/v1"
   override def connectorName: String = "eis"
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
@@ -53,7 +57,7 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
           .futureValue
 
         response.status shouldBe OK
-        response.json   shouldBe Json.toJson(getSingleRecordResponseData.as[GetEisRecordsResponse].goodsItemRecords.head)
+        response.json   shouldBe Json.toJson(getEisRecordsResponseData.as[GetEisRecordsResponse].goodsItemRecords.head)
 
         verifyThatDownstreamApiWasCalled()
       }
@@ -595,8 +599,9 @@ class GetSingleRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
-            "statusCode" -> 500,
-            "message"    -> s"Unable to parse fault detail for correlation Id: $correlationId"
+            "correlationId" -> correlationId,
+            "code"          -> "UNEXPECTED_ERROR",
+            "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
           )
 
           verifyThatDownstreamApiWasCalled()

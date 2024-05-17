@@ -26,15 +26,14 @@ import play.api.libs.json.Json
 import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import scala.concurrent.ExecutionContext
-import scala.language.postfixOps
 
-class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
+class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecordsDataSupport {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
@@ -159,145 +158,5 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
       )
     errorResponse
   }
-
-  val getSingleRecordResponseData: GoodsItemRecords = Json
-    .parse("""
-                                                          |  {
-                                                          |    "eori": "GB1234567890",
-                                                          |    "actorId": "GB1234567890",
-                                                          |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-                                                          |    "traderRef": "BAN001001",
-                                                          |    "comcode": "104101000",
-                                                          |    "accreditationStatus": "Not requested",
-                                                          |    "goodsDescription": "Organic bananas",
-                                                          |    "countryOfOrigin": "EC",
-                                                          |    "category": 3,
-                                                          |    "assessments": [
-                                                          |      {
-                                                          |        "assessmentId": "abc123",
-                                                          |        "primaryCategory": "1",
-                                                          |        "condition": {
-                                                          |          "type": "abc123",
-                                                          |          "conditionId": "Y923",
-                                                          |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-                                                          |          "conditionTraderText": "Excluded product"
-                                                          |        }
-                                                          |      }
-                                                          |    ],
-                                                          |    "supplementaryUnit": 500,
-                                                          |    "measurementUnit": "square meters(m^2)",
-                                                          |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                                                          |    "comcodeEffectiveToDate": "",
-                                                          |    "version": 1,
-                                                          |    "active": true,
-                                                          |    "toReview": false,
-                                                          |    "reviewReason": null,
-                                                          |    "declarable": "IMMI declarable",
-                                                          |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                                                          |    "nirmsNumber": "RMS-GB-123456",
-                                                          |    "niphlNumber": "6 S12345",
-                                                          |    "locked": false,
-                                                          |    "srcSystemName": "CDAP",
-                                                          |    "createdDateTime": "2024-11-18T23:20:19Z",
-                                                          |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                                                          |  }
-                                                          |""".stripMargin)
-    .as[GoodsItemRecords]
-
-  def getMultipleRecordResponseData: GetEisRecordsResponse = Json
-    .parse(s"""
-                                                             |{
-                                                             |"goodsItemRecords":
-                                                             |[
-                                                             |  {
-                                                             |    "eori": "GB1234567890",
-                                                             |    "actorId": "GB1234567890",
-                                                             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-                                                             |    "traderRef": "BAN001001",
-                                                             |    "comcode": "104101000",
-                                                             |    "accreditationStatus": "Not requested",
-                                                             |    "goodsDescription": "Organic bananas",
-                                                             |    "countryOfOrigin": "EC",
-                                                             |    "category": 3,
-                                                             |    "assessments": [
-                                                             |      {
-                                                             |        "assessmentId": "abc123",
-                                                             |        "primaryCategory": 1,
-                                                             |        "condition": {
-                                                             |          "type": "abc123",
-                                                             |          "conditionId": "Y923",
-                                                             |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-                                                             |          "conditionTraderText": "Excluded product"
-                                                             |        }
-                                                             |      }
-                                                             |    ],
-                                                             |    "supplementaryUnit": 500,
-                                                             |    "measurementUnit": "square meters(m^2)",
-                                                             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                                                             |    "comcodeEffectiveToDate": "",
-                                                             |    "version": 1,
-                                                             |    "active": true,
-                                                             |    "toReview": false,
-                                                             |    "reviewReason": null,
-                                                             |    "declarable": "IMMI declarable",
-                                                             |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                                                             |    "nirmsNumber": "RMS-GB-123456",
-                                                             |    "niphlNumber": "6 S12345",
-                                                             |    "locked": false,
-                                                             |    "srcSystemName": "CDAP",
-                                                             |    "createdDateTime": "2024-11-18T23:20:19Z",
-                                                             |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                                                             |  },
-                                                             |    {
-                                                             |    "eori": "GB1234567890",
-                                                             |    "actorId": "GB1234567890",
-                                                             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-                                                             |    "traderRef": "BAN001001",
-                                                             |    "comcode": "104101000",
-                                                             |    "accreditationStatus": "Not requested",
-                                                             |    "goodsDescription": "Organic bananas",
-                                                             |    "countryOfOrigin": "EC",
-                                                             |    "category": 3,
-                                                             |    "assessments": [
-                                                             |      {
-                                                             |        "assessmentId": "abc123",
-                                                             |        "primaryCategory": 1,
-                                                             |        "condition": {
-                                                             |          "type": "abc123",
-                                                             |          "conditionId": "Y923",
-                                                             |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-                                                             |          "conditionTraderText": "Excluded product"
-                                                             |        }
-                                                             |      }
-                                                             |    ],
-                                                             |    "supplementaryUnit": 500,
-                                                             |    "measurementUnit": "square meters(m^2)",
-                                                             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                                                             |    "comcodeEffectiveToDate": "",
-                                                             |    "version": 1,
-                                                             |    "active": true,
-                                                             |    "toReview": false,
-                                                             |    "reviewReason": null,
-                                                             |    "declarable": "IMMI declarable",
-                                                             |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                                                             |    "nirmsNumber": "RMS-GB-123456",
-                                                             |    "niphlNumber": "6 S12345",
-                                                             |    "locked": false,
-                                                             |    "srcSystemName": "CDAP",
-                                                             |    "createdDateTime": "2024-11-18T23:20:19Z",
-                                                             |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                                                             |  }
-                                                             |],
-                                                             |"pagination":
-                                                             | {
-                                                             |   "totalRecords": 2,
-                                                             |   "currentPage": 0,
-                                                             |   "totalPages": 1,
-                                                             |   "nextPage": null,
-                                                             |   "prevPage": null
-                                                             | }
-                                                             |}
-                                                             |""".stripMargin)
-    .as[GetEisRecordsResponse]
 
 }

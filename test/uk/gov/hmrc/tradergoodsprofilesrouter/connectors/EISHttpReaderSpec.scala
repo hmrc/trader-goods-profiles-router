@@ -27,7 +27,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISHttpReader.responseHa
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
 class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherValues {
 
@@ -241,7 +240,7 @@ class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val result = await(responseHandler(httpResponse))
 
         result.left.value mustBe Forbidden(
-          createErrorResponseAsJson(ApplicationConstants.ForbiddenCode, ApplicationConstants.ForbiddenMessage)
+          createErrorResponseAsJson("FORBIDDEN", "Forbidden")
         )
 
       }
@@ -251,7 +250,7 @@ class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val result = await(responseHandler(httpResponse))
 
         result.left.value mustBe NotFound(
-          createErrorResponseAsJson(ApplicationConstants.NotFoundCode, ApplicationConstants.NotFoundMessage)
+          createErrorResponseAsJson("NOT_FOUND", "Not Found")
         )
       }
       "Method not allowed response" in {
@@ -261,30 +260,23 @@ class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
 
         result.left.value mustBe MethodNotAllowed(
           createErrorResponseAsJson(
-            ApplicationConstants.MethodNotAllowedCode,
-            ApplicationConstants.MethodNotAllowedMessage
+            "METHOD_NOT_ALLOWED",
+            "Method Not Allowed"
           )
         )
       }
-//      "Unknown error response" in {
-//        val emptyResponse = ""
-//        when(eisConnector.fetchRecord(any, any)(any, any, any))
-//          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 504)))
-//
-//        val result = routerService.fetchRecord(eoriNumber, recordId)
-//
-//        whenReady(result.value) {
-//          _.left.value shouldBe InternalServerError(
-//            Json.toJson(
-//              ErrorResponse(
-//                correlationId,
-//                ApplicationConstants.UnexpectedErrorCode,
-//                ApplicationConstants.UnexpectedErrorMessage
-//              )
-//            )
-//          )
-//        }
-//      }
+      "Unknown error response" in {
+        val httpResponse = HttpResponse(504, "")
+
+        val result = await(responseHandler(httpResponse))
+
+        result.left.value mustBe InternalServerError(
+          createErrorResponseAsJson(
+            "UNEXPECTED_ERROR",
+            "Unexpected Error"
+          )
+        )
+      }
     }
   }
 

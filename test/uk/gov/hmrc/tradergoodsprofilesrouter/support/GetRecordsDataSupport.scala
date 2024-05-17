@@ -65,7 +65,7 @@ trait GetRecordsDataSupport {
              |""".stripMargin)
     .as[GoodsItemRecords]
 
-  def getMultipleRecordResponseData: GetEisRecordsResponse = Json
+  val getMultipleRecordResponseData: GetEisRecordsResponse = Json
     .parse(s"""
               |{
               |"goodsItemRecords":

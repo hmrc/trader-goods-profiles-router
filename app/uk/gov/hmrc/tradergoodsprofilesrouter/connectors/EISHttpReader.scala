@@ -37,7 +37,7 @@ object EISHttpReader {
     httpResponse match {
       case response if isSuccessful(response.status) =>
         Future.successful(Right(jsonAs[GetEisRecordsResponse](response)))
-      case resposne                                  => Future.successful(Left(handleErrorResponse(resposne)))
+      case response                                  => Future.successful(Left(handleErrorResponse(response)))
     }
 
   private def handleErrorResponse(httpResponse: HttpResponse)(implicit correlationId: String): Result =

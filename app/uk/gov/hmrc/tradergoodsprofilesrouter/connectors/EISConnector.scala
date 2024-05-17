@@ -98,7 +98,7 @@ class EISConnectorImpl @Inject() (
       uri"${appConfig.eisConfig.getRecordsUrl}/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
 
     httpClientV2
-      .get(url"$uri")(hc)
+      .get(url"$uri")
       .setHeader(eisRequestHeaders(correlationId): _*)
       .executeAndDeserialise[GetEisRecordsResponse]
   }

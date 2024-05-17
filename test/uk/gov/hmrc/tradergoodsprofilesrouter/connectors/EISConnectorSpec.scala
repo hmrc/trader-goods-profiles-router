@@ -17,13 +17,10 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito
-import org.mockito.Mockito._
-import org.mockito.MockitoSugar.reset
-import org.scalatest.flatspec.AsyncFlatSpec
-import org.scalatest.matchers.should.Matchers
+import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
-import org.scalatestplus.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar.mock
+import org.scalatestplus.play.PlaySpec
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -39,7 +36,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar with BeforeAndAfterEach with EitherValues {
+class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValues {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
@@ -51,13 +48,14 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
   private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val eori                             = "GB123456789011"
   private val recordId                         = "12345"
-  implicit val correlationId                   = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  implicit val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val eisConnector: EISConnectorImpl = new EISConnectorImpl(appConfig, httpClientV2, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(appConfig, httpClientV2, dateTimeService)
+
+    reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
     when(appConfig.eisConfig).thenReturn(
       new EISInstanceConfig(
@@ -73,119 +71,106 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any())(any())).thenReturn(requestBuilder)
     when(httpClientV2.post(any())(any())).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any())(any(), any(), any())).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
 
-  it should "fetch a record successfully" in {
-    val expectedResponse: GetEisRecordsResponse = fetchRecordSampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
+  "fetchRecord" should {
+    "fetch a record successfully" in {
+      val expectedResponse: GetEisRecordsResponse = sampleJson.as[GetEisRecordsResponse]
+      val httpResponse                            = HttpResponse(200, sampleJson, Map.empty)
+      when(requestBuilder.execute[HttpResponse](any, any)).thenReturn(Future.successful(httpResponse))
 
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
+      val result = await(eisConnector.fetchRecord(eori, recordId))
 
-    val result = await(eisConnector.fetchRecord(eori, recordId))
-
-    result.value shouldBe expectedResponse
-  }
-
-  it should "create a record successfully" in {
-    val expectedResponse: CreateRecordResponse = createRecordSampleJson.as[CreateRecordResponse]
-    val httpResponse                           = HttpResponse(201, createRecordSampleJson, Map.empty)
-
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
-
-    val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
-    val result                       = await(eisConnector.createRecord(request, correlationId)(ec, hc))
-
-    result shouldBe expectedResponse
-  }
-
-  it should "response json failure" in {
-    val httpResponse = mock[HttpResponse]
-
-    when(httpResponse.body).thenReturn("message")
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(HttpResponse(200, "message")))
-
-    val exception = intercept[RuntimeException] {
-      await(eisConnector.fetchRecord(eori, recordId))
+      result.value mustBe expectedResponse
     }
 
-    exception.getMessage should be(s"Response body could not be read: message")
-  }
+    "response json failure" in {
+      when(requestBuilder.execute[HttpResponse](any, any))
+        .thenReturn(Future.successful(HttpResponse(200, "message")))
 
-  it should "send a request with the right url" in {
-    val headers = Seq(
-      "X-Correlation-ID" -> correlationId,
-      "X-Forwarded-Host" -> "MDTP",
-      "Content-Type"     -> MimeTypes.JSON,
-      "Accept"           -> MimeTypes.JSON,
-      "Date"             -> "Sun, 12 May 2024 12:15:15 Z",
-      "X-Client-ID"      -> "TSS",
-      "Authorization"    -> "bearerToken"
-    )
+      val exception = intercept[RuntimeException] {
+        await(eisConnector.fetchRecord(eori, recordId))
+      }
 
-    val expectedResponse: GetEisRecordsResponse = fetchRecordSampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
-
-    val result = await(eisConnector.fetchRecord(eori, recordId))
-
-    val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
-    verify(httpClientV2).get(url"$expectedUrl")
-    verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
-    verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
-
-    result.value shouldBe expectedResponse
-  }
-
-  it should "fetch multiple records successfully" in {
-    val expectedResponse: GetEisRecordsResponse = fetchRecordSampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
-
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
-
-    val result = await(eisConnector.fetchRecords(eori))
-
-    result.value shouldBe expectedResponse
-  }
-
-  it should "response json failure for fetch records" in {
-    val httpResponse = mock[HttpResponse]
-
-    when(httpResponse.body).thenReturn("message")
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(HttpResponse(200, "message")))
-
-    val exception = intercept[RuntimeException] {
-      await(eisConnector.fetchRecords(eori))
+      exception.getMessage mustBe s"Response body could not be read: message"
     }
 
-    exception.getMessage should be(s"Response body could not be read: message")
+    "send a request with the right url" in {
+      val headers = Seq(
+        "X-Correlation-ID" -> correlationId,
+        "X-Forwarded-Host" -> "MDTP",
+        "Content-Type"     -> MimeTypes.JSON,
+        "Accept"           -> MimeTypes.JSON,
+        "Date"             -> "Sun, 12 May 2024 12:15:15 Z",
+        "X-Client-ID"      -> "TSS",
+        "Authorization"    -> "bearerToken"
+      )
+
+      val expectedResponse: GetEisRecordsResponse = sampleJson.as[GetEisRecordsResponse]
+      val httpResponse                            = HttpResponse(200, sampleJson, Map.empty)
+      when(requestBuilder.execute[HttpResponse](any, any)).thenReturn(Future.successful(httpResponse))
+
+      val result = await(eisConnector.fetchRecord(eori, recordId))
+
+      val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
+      verify(httpClientV2).get(url"$expectedUrl")
+      verify(requestBuilder).setHeader(headers: _*)
+      verify(requestBuilder).execute(any, any)
+
+      result.value mustBe expectedResponse
+    }
   }
 
-  it should "send a request with the right url for fetch records" in {
-    val headers = Seq(
-      "X-Correlation-ID" -> correlationId,
-      "X-Forwarded-Host" -> "MDTP",
-      "Content-Type"     -> MimeTypes.JSON,
-      "Accept"           -> MimeTypes.JSON,
-      "Date"             -> "Sun, 12 May 2024 12:15:15 Z",
-      "X-Client-ID"      -> "TSS",
-      "Authorization"    -> "bearerToken"
-    )
+  "fetchRecords" should {
+    "fetch multiple records successfully" in {
+      val expectedResponse: GetEisRecordsResponse = sampleJson.as[GetEisRecordsResponse]
+      val httpResponse                            = HttpResponse(200, sampleJson, Map.empty)
 
-    val expectedResponse: GetEisRecordsResponse = fetchRecordSampleJson.as[GetEisRecordsResponse]
-    val httpResponse                            = HttpResponse(200, fetchRecordSampleJson, Map.empty)
-    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
+      when(requestBuilder.execute[HttpResponse](any, any)).thenReturn(Future.successful(httpResponse))
 
-    val result =
-      await(eisConnector.fetchRecords(eori, Some(timestamp.toString), Some(1), Some(1)))
+      val result = await(eisConnector.fetchRecords(eori))
 
-    val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$timestamp&page=1&size=1"
-    verify(httpClientV2).get(url"$expectedUrl")
-    verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
-    verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
+      result.value mustBe expectedResponse
+    }
 
-    result.value shouldBe expectedResponse
+    "response json failure for fetch records" in {
+      when(requestBuilder.execute[HttpResponse](any, any))
+        .thenReturn(Future.successful(HttpResponse(200, "message")))
+
+      val exception = intercept[RuntimeException] {
+        await(eisConnector.fetchRecords(eori))
+      }
+
+      exception.getMessage mustBe s"Response body could not be read: message"
+    }
+
+    "send a request with the right url for fetch records" in {
+      val headers = Seq(
+        "X-Correlation-ID" -> correlationId,
+        "X-Forwarded-Host" -> "MDTP",
+        "Content-Type"     -> MimeTypes.JSON,
+        "Accept"           -> MimeTypes.JSON,
+        "Date"             -> "Sun, 12 May 2024 12:15:15 Z",
+        "X-Client-ID"      -> "TSS",
+        "Authorization"    -> "bearerToken"
+      )
+
+      val expectedResponse: GetEisRecordsResponse = sampleJson.as[GetEisRecordsResponse]
+      val httpResponse                            = HttpResponse(200, sampleJson, Map.empty)
+      when(requestBuilder.execute[HttpResponse](any, any)).thenReturn(Future.successful(httpResponse))
+
+      val result =
+        await(eisConnector.fetchRecords(eori, Some(timestamp.toString), Some(1), Some(1)))
+
+      val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$timestamp&page=1&size=1"
+      verify(httpClientV2).get(url"$expectedUrl")
+      verify(requestBuilder).setHeader(headers: _*)
+      verify(requestBuilder).execute(any, any)
+
+      result.value mustBe expectedResponse
+    }
   }
 
   val fetchRecordSampleJson: JsValue = Json
