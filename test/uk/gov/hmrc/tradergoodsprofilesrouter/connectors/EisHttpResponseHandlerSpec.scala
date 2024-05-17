@@ -23,12 +23,12 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISHttpReader.responseHandler
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpResponseHandler.responseHandler
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
-class EISHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherValues {
+class EisHttpResponseHandlerSpec extends PlaySpec with GetRecordsDataSupport with EitherValues {
 
   implicit val correlationId: String = "1234-456"
   "responseHandler" should {

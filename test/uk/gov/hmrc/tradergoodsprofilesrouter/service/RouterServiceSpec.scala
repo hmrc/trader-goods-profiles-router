@@ -63,7 +63,7 @@ class RouterServiceSpec
 
   "fetchRecord" should {
     "return a record item" in {
-      when(eisConnector.fetchRecord(any, any)(any, any, any))
+      when(eisConnector.fetchRecord(any, any)(any, any))
         .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
 
       val result = routerService.fetchRecord(eoriNumber, recordId)
@@ -75,7 +75,7 @@ class RouterServiceSpec
 
     "return an error" when {
       "EIS return an error" in {
-        when(eisConnector.fetchRecord(any, any)(any, any, any))
+        when(eisConnector.fetchRecord(any, any)(any, any))
           .thenReturn(Future.successful(Left(BadRequest("error"))))
 
         val result = routerService.fetchRecord(eoriNumber, recordId)
@@ -86,7 +86,7 @@ class RouterServiceSpec
       }
 
       "error when an exception is thrown" in {
-        when(eisConnector.fetchRecord(any, any)(any, any, any))
+        when(eisConnector.fetchRecord(any, any)(any, any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
         val result = routerService.fetchRecord(eoriNumber, recordId)
@@ -112,7 +112,7 @@ class RouterServiceSpec
 
     "return a records" in {
       val eisResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
-      when(eisConnector.fetchRecords(any, any, any, any)(any, any, any))
+      when(eisConnector.fetchRecords(any, any, any, any)(any, any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
       val result = routerService.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))
@@ -123,14 +123,14 @@ class RouterServiceSpec
 
       withClue("should call the eisConnector with teh right parameters") {
         verify(eisConnector)
-          .fetchRecords(eqTo(eoriNumber), eqTo(Some(lastUpdateDate)), eqTo(Some(1)), eqTo(Some(1)))(any, any, any)
+          .fetchRecords(eqTo(eoriNumber), eqTo(Some(lastUpdateDate)), eqTo(Some(1)), eqTo(Some(1)))(any, any)
       }
     }
 
     "return an error" when {
 
       "EIS return an error" in {
-        when(eisConnector.fetchRecords(any, any, any, any)(any, any, any))
+        when(eisConnector.fetchRecords(any, any, any, any)(any, any))
           .thenReturn(Future.successful(Left(BadRequest("error"))))
 
         val result = routerService.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))
@@ -141,7 +141,7 @@ class RouterServiceSpec
       }
 
       "error when an exception is thrown" in {
-        when(eisConnector.fetchRecords(any, any, any, any)(any, any, any))
+        when(eisConnector.fetchRecords(any, any, any, any)(any, any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
         val result = routerService.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))

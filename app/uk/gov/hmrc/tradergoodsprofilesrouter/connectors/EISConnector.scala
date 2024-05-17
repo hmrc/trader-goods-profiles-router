@@ -72,7 +72,6 @@ class EISConnectorImpl @Inject() (
     eori: String,
     recordId: String
   )(implicit
-    ec: ExecutionContext,
     hc: HeaderCarrier,
     correlationId: String
   ): Future[Either[Result, GetEisRecordsResponse]] = {
@@ -90,7 +89,6 @@ class EISConnectorImpl @Inject() (
     page: Option[Int] = None,
     size: Option[Int] = None
   )(implicit
-    ec: ExecutionContext,
     hc: HeaderCarrier,
     correlationId: String
   ): Future[Either[Result, GetEisRecordsResponse]] = {

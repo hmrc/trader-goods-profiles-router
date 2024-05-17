@@ -30,7 +30,7 @@ import scala.concurrent.Future
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
 import scala.util.{Failure, Success, Try}
 
-object EISHttpReader {
+object EisHttpResponseHandler {
   def responseHandler[T](
     httpResponse: HttpResponse
   )(implicit correlationId: String): Future[Either[Result, GetEisRecordsResponse]] =
