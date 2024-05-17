@@ -23,6 +23,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -53,6 +54,12 @@ trait EISConnector {
     correlationId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[CreateRecordResponse]
 
+  def removeRecord(
+    eori: String,
+    recordId: String,
+    actorId: String,
+    correlationId: String
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Int]
 }
 
 class EISConnectorImpl @Inject() (
@@ -102,6 +109,20 @@ class EISConnectorImpl @Inject() (
       .setHeader(eisRequestHeaders(correlationId): _*)
       .withBody(toJson(request))
       .executeAndDeserialise[CreateRecordResponse]
+  }
+
+  override def removeRecord(
+    eori: String,
+    recordId: String,
+    actorId: String,
+    correlationId: String
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Int] = {
+    val url = appConfig.eisConfig.removeRecordUrl
+    httpClientV2
+      .get(url"$url")(hc)
+      .setHeader(eisRequestHeaders(correlationId): _*)
+      .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
+      .executeAndExpect(200)
   }
 
   private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =

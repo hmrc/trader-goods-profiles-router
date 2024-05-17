@@ -23,6 +23,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.http.Status.OK
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -47,7 +48,8 @@ class RouterServiceSpec
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  private val eoriNumber    = "eori"
+  private val eoriNumber    = "GB123456789011"
+  private val actorId       = "GB123456789011"
   private val recordId      = "recordId"
   private val correlationId = "1234-5678-9012"
   private val eisConnector  = mock[EISConnector]
@@ -1717,6 +1719,467 @@ class RouterServiceSpec
 
   }
 
+  "removeRecord" should {
+    "return success response on removal of record" in {
+      when(eisConnector.removeRecord(any, any, any, any)(any, any))
+        .thenReturn(Future.successful(OK))
+
+      val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+      whenReady(result.value) {
+        _.value shouldBe OK
+      }
+    }
+
+    "return an internal server error" when {
+      "Unauthorised" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "401",
+             |    "errorMessage": "Unauthorised",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.UnauthorizedCode,
+                ApplicationConstants.UnauthorizedMessage
+              )
+            )
+          )
+        }
+      }
+      "Not found" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "404",
+             |    "errorMessage": "Not Found",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.NotFoundCode,
+                ApplicationConstants.NotFoundMessage
+              )
+            )
+          )
+        }
+      }
+      "Method not allowed" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "405",
+             |    "errorMessage": "Method Not Allowed",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.MethodNotAllowedCode,
+                ApplicationConstants.MethodNotAllowedMessage
+              )
+            )
+          )
+        }
+      }
+      "Internal server error" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "500",
+             |    "errorMessage": "Internal Server Error",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.InternalServerErrorCode,
+                ApplicationConstants.InternalServerErrorMessage
+              )
+            )
+          )
+        }
+      }
+      "Bad gateway" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "502",
+             |    "errorMessage": "Bad Gateway",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BadGatewayCode,
+                ApplicationConstants.BadGatewayMessage
+              )
+            )
+          )
+        }
+      }
+      "Service unavailable" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "503",
+             |    "errorMessage": "Service Unavailable",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": null
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 500)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.ServiceUnavailableCode,
+                ApplicationConstants.ServiceUnavailableMessage
+              )
+            )
+          )
+        }
+      }
+      "Unexpected error is thrown" in {
+        val invalidJson = """{ "wrongField": "value" }"""
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(invalidJson, 500)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.UnexpectedErrorCode,
+                ApplicationConstants.UnexpectedErrorMessage
+              )
+            )
+          )
+        }
+      }
+    }
+    "return an bad request error" when {
+      "eori and recordId does not exist in the database " in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "400",
+             |    "errorMessage": "Internal Server Error",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": [
+             |        "error: 007, message: EORI number does not have a TGP",
+             |        "error: 026, message: The requested recordId to update doesn’t exist"
+             |      ]
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BadRequestCode,
+                ApplicationConstants.BadRequestMessage,
+                Some(
+                  Seq(
+                    Error("007", "EORI number does not have a TGP"),
+                    Error("026", "The requested recordId to update doesn’t exist")
+                  )
+                )
+              )
+            )
+          )
+        }
+      }
+      "invalid or missing eori, recordId and actorId" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "400",
+             |    "errorMessage": "Internal Server Error",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": [
+             |        "error: 006, message: Mandatory field eori was missing from body",
+             |        "error: 008, message: Mandatory field actorId was missing from body",
+             |        "error: 025, message: The recordId has been provided in the wrong format"
+             |      ]
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BadRequestCode,
+                ApplicationConstants.BadRequestMessage,
+                Some(
+                  Seq(
+                    Error("006", "Mandatory field eori was missing from body"),
+                    Error("008", "Mandatory field actorId was missing from body"),
+                    Error("025", "The recordId has been provided in the wrong format")
+                  )
+                )
+              )
+            )
+          )
+        }
+      }
+      "ongoing accreditationStatus" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "400",
+             |    "errorMessage": "Internal Server Error",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": [
+             |        "error: 027, message: There is an ongoing accreditation request and the record can not be updated"
+             |      ]
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BadRequestCode,
+                ApplicationConstants.BadRequestMessage,
+                Some(
+                  Seq(
+                    Error("027", "There is an ongoing accreditation request and the record can not be updated")
+                  )
+                )
+              )
+            )
+          )
+        }
+      }
+      "Unexpected error code response" in {
+        val eisResponse =
+          s"""
+             |{
+             |  "errorDetail": {
+             |    "timestamp": "2023-09-14T11:29:18Z",
+             |    "correlationId": "$correlationId",
+             |    "errorCode": "400",
+             |    "errorMessage": "Bad Request",
+             |    "source": "BACKEND",
+             |    "sourceFaultDetail": {
+             |      "detail": [
+             |        "error: 100, message: unknown"
+             |      ]
+             |    }
+             |  }
+             |}
+        """.stripMargin
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(eisResponse, 400)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.BadRequestCode,
+                ApplicationConstants.BadRequestMessage,
+                Some(
+                  Seq(
+                    Error(ApplicationConstants.UnexpectedErrorCode, ApplicationConstants.UnexpectedErrorMessage)
+                  )
+                )
+              )
+            )
+          )
+        }
+      }
+    }
+    "return an error" when {
+      "Forbidden response" in {
+        val emptyResponse = ""
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 403)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe Forbidden(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.ForbiddenCode,
+                ApplicationConstants.ForbiddenMessage
+              )
+            )
+          )
+        }
+      }
+      "Not found response" in {
+        val emptyResponse = ""
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 404)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe NotFound(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.NotFoundCode,
+                ApplicationConstants.NotFoundMessage
+              )
+            )
+          )
+        }
+      }
+      "Method not allowed response" in {
+        val emptyResponse = ""
+        when(eisConnector.removeRecord(any, any, any, any)(any, any))
+          .thenReturn(Future.failed(UpstreamErrorResponse(emptyResponse, 405)))
+
+        val result = routerService.removeRecord(eoriNumber, recordId, actorId)
+
+        whenReady(result.value) {
+          _.left.value shouldBe MethodNotAllowed(
+            Json.toJson(
+              ErrorResponse(
+                correlationId,
+                ApplicationConstants.MethodNotAllowedCode,
+                ApplicationConstants.MethodNotAllowedMessage
+              )
+            )
+          )
+        }
+      }
+    }
+
+  }
+
   lazy val getEisRecordsResponseData: GetEisRecordsResponse =
     Json
       .parse("""
@@ -1847,5 +2310,4 @@ class RouterServiceSpec
         |}
         |""".stripMargin)
     .as[CreateRecordRequest]
-
 }

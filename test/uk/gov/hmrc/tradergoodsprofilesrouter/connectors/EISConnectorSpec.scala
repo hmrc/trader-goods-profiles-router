@@ -25,6 +25,7 @@ import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.http.MimeTypes
+import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
@@ -50,6 +51,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
   private val dateTimeService: DateTimeService = mock[DateTimeService]
   private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val eori                             = "GB123456789011"
+  private val actorId                          = "GB123456789011"
   private val recordId                         = "12345"
   private val correlationId                    = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
@@ -66,6 +68,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
         1234,
         "/tgp/getrecords/v1",
         "/tgp/createrecord/v1",
+        "/tgp/removerecord/v1",
         "MDTP",
         Headers("bearerToken")
       )
@@ -188,7 +191,42 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     result shouldBe expectedResponse
   }
 
-  val fetchRecordSampleJson: JsValue = Json
+  it should "remove a record successfully" in {
+    val httpResponse = HttpResponse(OK, null)
+
+    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
+
+    val result = await(eisConnector.removeRecord(eori, recordId, actorId, correlationId)(ec, hc))
+
+    result shouldBe OK
+  }
+
+  it should "send a request with the right url for remove record" in {
+    val headers = Seq(
+      "X-Correlation-ID" -> correlationId,
+      "X-Forwarded-Host" -> "MDTP",
+      "Content-Type"     -> MimeTypes.JSON,
+      "Accept"           -> MimeTypes.JSON,
+      "Date"             -> "Sun, 12 May 2024 12:15:15 Z",
+      "X-Client-ID"      -> "TSS",
+      "Authorization"    -> "bearerToken"
+    )
+
+    val httpResponse = HttpResponse(OK, null)
+    when(requestBuilder.execute[HttpResponse](any(), any())).thenReturn(Future.successful(httpResponse))
+
+    val result =
+      await(eisConnector.removeRecord(eori, recordId, actorId, correlationId)(ec, hc))
+
+    val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
+    verify(httpClientV2).get(url"$expectedUrl")
+    verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
+    verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
+
+    result shouldBe OK
+  }
+
+  lazy val fetchRecordSampleJson: JsValue = Json
     .parse("""
              |{
              |    "goodsItemRecords": [
@@ -242,7 +280,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
              |}
              |""".stripMargin)
 
-  val createRecordSampleJson: JsValue = Json
+  lazy val createRecordSampleJson: JsValue = Json
     .parse("""
         |{
         |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -283,7 +321,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
         |}
         |""".stripMargin)
 
-  val createRecordRequest: JsValue = Json
+  lazy val createRecordRequest: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789012",
@@ -311,5 +349,4 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
         |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
         |}
         |""".stripMargin)
-
 }

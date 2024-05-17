@@ -49,7 +49,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
         val response = wsClient
           .url(fullUrl(s"/$eori"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -63,7 +63,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
         val response = wsClient
           .url(fullUrl(s"/$eori?lastUpdatedDate=$dateTime&page=1&size=1"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -77,7 +77,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
         val response = wsClient
           .url(fullUrl(s"/$eori?page=1&size=1"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -91,7 +91,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
         val response = wsClient
           .url(fullUrl(s"/$eori?page=1"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -105,7 +105,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
         val response = wsClient
           .url(fullUrl(s"/$eori?lastUpdatedDate=$dateTime"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -121,7 +121,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -140,7 +140,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -159,7 +159,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -178,7 +178,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -197,7 +197,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -216,7 +216,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -235,7 +235,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -254,7 +254,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -273,7 +273,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -292,7 +292,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -311,7 +311,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -330,7 +330,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -349,7 +349,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -374,7 +374,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -396,7 +396,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -423,7 +423,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl("/null"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -451,7 +451,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -478,7 +478,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -506,7 +506,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -533,7 +533,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -561,7 +561,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -588,7 +588,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -616,7 +616,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -643,7 +643,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -671,7 +671,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -698,7 +698,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -726,7 +726,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -751,7 +751,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -772,7 +772,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-Id", equalTo("tss"))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -788,7 +788,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
 
@@ -814,7 +814,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         response.json   shouldBe Json.obj(
           "correlationId" -> correlationId,
           "code"          -> "BAD_REQUEST",
-          "message"       -> "Missing mandatory header X-Client-Id"
+          "message"       -> "Missing mandatory header X-Client-ID"
         )
 
         verifyThatDownstreamApiWasNotCalled()
@@ -840,7 +840,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         .withHeader("Date", equalTo(timestamp))
         .withHeader("Accept", equalTo("application/json"))
         .withHeader("Authorization", equalTo("bearerToken"))
-        .withHeader("X-Client-Id", equalTo("tss"))
+        .withHeader("X-Client-ID", equalTo("tss"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

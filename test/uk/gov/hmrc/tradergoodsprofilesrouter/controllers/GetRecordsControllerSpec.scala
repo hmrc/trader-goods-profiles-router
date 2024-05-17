@@ -32,7 +32,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import scala.concurrent.ExecutionContext
-import scala.language.postfixOps
 
 class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 

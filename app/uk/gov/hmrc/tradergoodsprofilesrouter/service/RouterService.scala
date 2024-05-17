@@ -51,6 +51,13 @@ trait RouterService {
   def createRecord(
     request: CreateRecordRequest
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, CreateRecordResponse]
+
+  def removeRecord(
+    eori: String,
+    recordId: String,
+    actorId: String
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, Int]
+
 }
 
 class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: UuidService) extends RouterService {
@@ -64,7 +71,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       eisConnector
         .fetchRecord(eori, recordId, correlationId)
         .map(result => Right(result.goodsItemRecords.head))
-        .recover(handleError(correlationId, eori))
+        .recover(handleError[GoodsItemRecords](correlationId, eori))
     )
   }
 
@@ -96,6 +103,19 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
         .createRecord(request, correlationId)
         .map(result => Right(result))
         .recover(handleError[CreateRecordResponse](correlationId, request.eori))
+    )
+  }
+
+  override def removeRecord(eori: String, recordId: String, actorId: String)(implicit
+    ec: ExecutionContext,
+    hc: HeaderCarrier
+  ): EitherT[Future, Result, Int] = {
+    val correlationId = uuidService.uuid
+    EitherT(
+      eisConnector
+        .removeRecord(eori, recordId, actorId, correlationId)
+        .map(_ => Right(OK))
+        .recover(handleError[Int](correlationId, eori))
     )
   }
 
@@ -176,9 +196,10 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
 
     case NonFatal(e) =>
       logger.error(
-        s"[RouterService] - Error creating record for eori number $eori with message ${e.getMessage}",
+        s"[RouterService] - Error occured while proceesing EIS response for eori $eori,  with message ${e.getMessage}",
         e
       )
+
       Left(
         InternalServerError(
           Json.toJson(
@@ -365,6 +386,10 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
             Error(InvalidPageCode, InvalidPage)
           case InvalidSizeCode                                          =>
             Error(InvalidSizeCode, InvalidSize)
+          case AccreditationRequestInProgressCode                       =>
+            Error(AccreditationRequestInProgressCode, AccreditationRequestInProgressMessage)
+          case RecordRemovedAndCanNotBeUpdatedCode                      =>
+            Error(RecordRemovedAndCanNotBeUpdatedCode, RecordRemovedAndCanNotBeUpdatedMessage)
           case _                                                        => Error(UnexpectedErrorCode, UnexpectedErrorMessage)
         }
       case _              =>

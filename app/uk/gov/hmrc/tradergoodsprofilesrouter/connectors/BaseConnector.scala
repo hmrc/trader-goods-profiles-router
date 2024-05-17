@@ -68,15 +68,12 @@ trait BaseConnector extends HttpErrorFunctions {
           case response                                  => response.error
         }
 
-    /**
-      * This method will be used for other endpoint e.g. delete
-      */
-    def executeAndExpect(expected: Int)(implicit ec: ExecutionContext): Future[Unit] =
+    def executeAndExpect(expected: Int)(implicit ec: ExecutionContext): Future[Int] =
       requestBuilder
         .execute[HttpResponse]
         .flatMap { response =>
           response.status match {
-            case `expected` => Future.successful(())
+            case `expected` => Future.successful(expected)
             case _          => response.error
           }
         }

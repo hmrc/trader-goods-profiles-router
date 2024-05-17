@@ -109,7 +109,7 @@ curl -X GET \
           "condition": {
             "type": "abc123",
             "conditionId": "Y923",
-            "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law"
+            "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
             "conditionTraderText": "Excluded product"
           }
         }
@@ -228,6 +228,30 @@ curl --location 'http://localhost:10904/trader-goods-profiles-router/records' \
 ```
 
 To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/CreateRecordIntegrationSpec.scala)
+
+### Remove Record
+
+Here's an example of a successful call to remove a record:
+
+```bash
+curl --location 'http://localhost:10904/trader-goods-profiles-router/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f' \
+--header 'X-Correlation-ID: 3e8dae97-b586-4cef-8511-68ac12da9028' \
+--header 'Date: 2021-12-17T09:30:47.456Z' \
+--header 'X-Forwarded-Host: uk.gov.hmrc' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--header 'Authorization: bearerToken' \
+--header 'X-Client-ID: tss' \
+--data '{
+    "actorId": "GB123456789001"
+}'
+
+```
+Return successful response with 200 status code and with no payload  
+
+```
+
+To get a sense of the various scenarios, you could look at the integration [tests](it/test/uk/gov/hmrc/tradergoodsprofilesrouter/RemoveRecordIntegrationSpec.scala)
 
 ## Dev
 
