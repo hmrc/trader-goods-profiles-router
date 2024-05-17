@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.google.inject.ImplementedBy
 import play.api.http.MimeTypes
+import play.api.http.Status.OK
 import play.api.libs.json.Json.toJson
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -122,7 +123,7 @@ class EISConnectorImpl @Inject() (
       .get(url"$url")(hc)
       .setHeader(eisRequestHeaders(correlationId): _*)
       .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
-      .executeAndExpect(200)
+      .executeAndExpect(OK)
   }
 
   private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =

@@ -196,7 +196,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
 
     case NonFatal(e) =>
       logger.error(
-        s"[RouterService] - Error occured while proceesing EIS response for eori $eori,  with message ${e.getMessage}",
+        s"[RouterService] - Error occurred while processing EIS response for eori $eori,  with message ${e.getMessage}",
         e
       )
 

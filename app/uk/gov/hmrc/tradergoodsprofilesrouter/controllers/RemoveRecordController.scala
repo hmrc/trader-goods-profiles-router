@@ -43,14 +43,14 @@ class RemoveRecordController @Inject() (
   def remove(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
       _                   <- validateClientId
-      removeRecordRequest <- removeRecordRequest(request)
+      removeRecordRequest <- validateRemoveRecordRequest(request)
       _                   <- routerService.removeRecord(eori, recordId, removeRecordRequest.actorId)
     } yield Ok
 
     result.merge
   }
 
-  private def removeRecordRequest(request: Request[JsValue]): EitherT[Future, Result, RemoveRecordRequest] =
+  private def validateRemoveRecordRequest(request: Request[JsValue]): EitherT[Future, Result, RemoveRecordRequest] =
     request.body
       .validate[RemoveRecordRequest]
       .asEither

@@ -100,5 +100,5 @@ object ApplicationConstants {
   val InvalidLastUpdatedDateCode                               = "028"
   val InvalidPageCode                                          = "029"
   val InvalidSizeCode                                          = "030"
-  val RecordRemovedAndCanNotBeUpdatedCode                      = "030"
+  val RecordRemovedAndCanNotBeUpdatedCode                      = "031"
 }
