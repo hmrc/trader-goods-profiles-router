@@ -247,7 +247,7 @@ curl --location 'http://localhost:10904/trader-goods-profiles-router/GB123456789
 }'
 
 ```
-Return successful response with 200 status code and with no payload  
+Returns successful response with 200 status code and with no payload  
 
 ```
 
