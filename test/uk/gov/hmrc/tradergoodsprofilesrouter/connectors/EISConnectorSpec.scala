@@ -96,7 +96,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      val result = await(eisConnector.fetchRecord(eori, recordId))
+      val result = await(eisConnector.fetchRecord(eori, recordId, correlationId))
 
       result.value mustBe response
     }
@@ -105,7 +105,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(eisConnector.fetchRecord(eori, recordId))
+      val result = await(eisConnector.fetchRecord(eori, recordId, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -116,7 +116,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Any](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(eisConnector.fetchRecord(eori, recordId))
+      await(eisConnector.fetchRecord(eori, recordId, correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
@@ -133,7 +133,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      val result = await(eisConnector.fetchRecords(eori))
+      val result = await(eisConnector.fetchRecords(eori, correlationId))
 
       result.value mustBe response
     }
@@ -142,7 +142,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(eisConnector.fetchRecord(eori, recordId))
+      val result = await(eisConnector.fetchRecord(eori, recordId, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -153,7 +153,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(eisConnector.fetchRecords(eori, Some(timestamp.toString), Some(1), Some(1)))
+      await(eisConnector.fetchRecords(eori, correlationId, Some(timestamp.toString), Some(1), Some(1)))
 
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$timestamp&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
@@ -171,7 +171,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         .thenReturn(Future.successful(Right(expectedResponse)))
 
       val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
-      val result                       = await(eisConnector.createRecord(request))
+      val result                       = await(eisConnector.createRecord(request, correlationId))
 
       result.value mustBe expectedResponse
     }
@@ -180,7 +180,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, CreateRecordResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(eisConnector.fetchRecord(eori, recordId))
+      val result = await(eisConnector.fetchRecord(eori, recordId, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -191,7 +191,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, CreateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      await(eisConnector.createRecord(createRecordRequest.as[CreateRecordRequest]))
+      await(eisConnector.createRecord(createRecordRequest.as[CreateRecordRequest], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
       verify(httpClientV2).post(url"$expectedUrl")
@@ -208,8 +208,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     verify(requestBuilder).execute(captor.capture, any)
 
     val httpReader = captor.value
-    httpReader.isInstanceOf[HttpReader[Either[Result, GetEisRecordsResponse]]] mustBe true
-    httpReader.asInstanceOf[HttpReader[Either[Result, GetEisRecordsResponse]]].correlationId mustBe correlationId
+    httpReader.asInstanceOf[HttpReader[Either[Result, Any]]].correlationId mustBe correlationId
   }
 
   val createRecordSampleJson: JsValue = Json

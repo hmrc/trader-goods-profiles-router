@@ -38,25 +38,26 @@ import scala.concurrent.{ExecutionContext, Future}
 trait EISConnector {
   def fetchRecord(
     eori: String,
-    recordId: String
-  )(implicit
-    hc: HeaderCarrier,
+    recordId: String,
     correlationId: String
+  )(implicit
+    hc: HeaderCarrier
   ): Future[Either[Result, GetEisRecordsResponse]]
 
   def fetchRecords(
     eori: String,
+    correlationId: String,
     lastUpdatedDate: Option[String] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
   )(implicit
-    hc: HeaderCarrier,
-    correlationId: String
+    hc: HeaderCarrier
   ): Future[Either[Result, GetEisRecordsResponse]]
 
   def createRecord(
-    request: CreateRecordRequest
-  )(implicit hc: HeaderCarrier, correlationId: String): Future[Either[Result, CreateRecordResponse]]
+    request: CreateRecordRequest,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateRecordResponse]]
 
 }
 
@@ -70,11 +71,9 @@ class EISConnectorImpl @Inject() (
 
   override def fetchRecord(
     eori: String,
-    recordId: String
-  )(implicit
-    hc: HeaderCarrier,
+    recordId: String,
     correlationId: String
-  ): Future[Either[Result, GetEisRecordsResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[Result, GetEisRecordsResponse]] = {
     val url = s"${appConfig.eisConfig.getRecordsUrl}/$eori/$recordId"
 
     httpClientV2
@@ -86,13 +85,11 @@ class EISConnectorImpl @Inject() (
 
   override def fetchRecords(
     eori: String,
+    correlationId: String,
     lastUpdatedDate: Option[String] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  )(implicit
-    hc: HeaderCarrier,
-    correlationId: String
-  ): Future[Either[Result, GetEisRecordsResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[Result, GetEisRecordsResponse]] = {
     val uri =
       uri"${appConfig.eisConfig.getRecordsUrl}/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
 
@@ -103,8 +100,9 @@ class EISConnectorImpl @Inject() (
   }
 
   override def createRecord(
-    request: CreateRecordRequest
-  )(implicit hc: HeaderCarrier, correlationId: String): Future[Either[Result, CreateRecordResponse]] = {
+    request: CreateRecordRequest,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateRecordResponse]] = {
     val url = appConfig.eisConfig.createRecordUrl
 
     httpClientV2

@@ -59,10 +59,10 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
   override def fetchRecord(eori: String, recordId: String)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, Result, GoodsItemRecords] = {
-    implicit val correlationId: String = uuidService.uuid
+    val correlationId: String = uuidService.uuid
     EitherT(
       eisConnector
-        .fetchRecord(eori, recordId)
+        .fetchRecord(eori, recordId, correlationId)
         .map {
           case Right(response) => Right(response.goodsItemRecords.head)
           case Left(error)     => Left(error)
@@ -90,10 +90,10 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
   )(implicit
     hc: HeaderCarrier
   ): EitherT[Future, Result, GetEisRecordsResponse] = {
-    implicit val correlationId: String = uuidService.uuid
+    val correlationId: String = uuidService.uuid
     EitherT(
       eisConnector
-        .fetchRecords(eori, lastUpdatedDate, page, size)
+        .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
         .map {
           case Right(response) => Right(response)
           case Left(error)     => Left(error)
@@ -116,10 +116,10 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
   override def createRecord(
     request: CreateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateRecordResponse] = {
-    implicit val correlationId = uuidService.uuid
+    val correlationId = uuidService.uuid
     EitherT(
       eisConnector
-        .createRecord(request)
+        .createRecord(request, correlationId)
         .map {
           case response @ Right(_) => response
           case error @ Left(_)     => error
