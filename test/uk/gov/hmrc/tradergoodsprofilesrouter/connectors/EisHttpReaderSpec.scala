@@ -18,11 +18,11 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.scalatest.EitherValues
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.INTERNAL_SERVER_ERROR
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
 import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, RemoveRecordHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
@@ -32,7 +32,7 @@ import scala.reflect.runtime.universe.typeOf
 class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherValues {
 
   val correlationId: String = "1234-456"
-  "responseHandler" should {
+  "create or get record responseHandler" should {
     "return a record item" in {
       val eisResponse = HttpResponse(200, getEisRecordsResponseData, Map.empty)
 
@@ -294,6 +294,42 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       the[RuntimeException] thrownBy {
         HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisResponse)
       } must have message s"Response body could not be read as type ${typeOf[GetEisRecordsResponse]}"
+    }
+  }
+
+  "remove record responseHandler" should {
+    "remove a record item" in {
+      val eisResponse = HttpResponse(200, "")
+      val result      = RemoveRecordHttpReader(correlationId).read("PUT", "any-url", eisResponse)
+
+      result.value mustBe OK
+    }
+
+    "return an bad request error" when {
+      "ongoing accreditationStatus or record has been removed" in {
+        val eisResponse  = createEisErrorResponseWithDetailsAsJson(
+          "400",
+          "Internal Server Error",
+          Seq(
+            "error: 027, message: There is an ongoing accreditation request and the record can not be updated",
+            "error: 031, message: This record has been removed and cannot be updated"
+          ): _*
+        )
+        val httpResponse = HttpResponse(400, eisResponse, Map.empty)
+
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
+
+        result.left.value mustBe BadRequest(
+          createErrorResponseWithErrorAsJson(
+            "BAD_REQUEST",
+            "Bad Request",
+            Seq(
+              "027" -> "There is an ongoing accreditation request and the record can not be updated",
+              "031" -> "This record has been removed and cannot be updated"
+            ): _*
+          )
+        )
+      }
     }
   }
 

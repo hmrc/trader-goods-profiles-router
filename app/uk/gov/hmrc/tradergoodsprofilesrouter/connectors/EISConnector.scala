@@ -23,8 +23,9 @@ import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, RemoveRecordHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -59,6 +60,12 @@ trait EISConnector {
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[Result, CreateRecordResponse]]
 
+  def removeRecord(
+    eori: String,
+    recordId: String,
+    actorId: String,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[Result, Int]]
 }
 
 class EISConnectorImpl @Inject() (
@@ -66,8 +73,7 @@ class EISConnectorImpl @Inject() (
   httpClientV2: HttpClientV2,
   dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
-    extends EISConnector
-    with BaseConnector {
+    extends EISConnector {
 
   override def fetchRecord(
     eori: String,
@@ -111,6 +117,20 @@ class EISConnectorImpl @Inject() (
       .withBody(toJson(request))
       .execute(HttpReader[CreateRecordResponse](correlationId), ec)
 
+  }
+
+  override def removeRecord(
+    eori: String,
+    recordId: String,
+    actorId: String,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[Result, Int]] = {
+    val url = appConfig.eisConfig.removeRecordUrl
+    httpClientV2
+      .put(url"$url")
+      .setHeader(eisRequestHeaders(correlationId): _*)
+      .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
+      .execute(RemoveRecordHttpReader[Int](correlationId), ec)
   }
 
   private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
