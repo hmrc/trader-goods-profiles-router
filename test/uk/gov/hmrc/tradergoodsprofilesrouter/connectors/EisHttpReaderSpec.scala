@@ -27,6 +27,8 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsRe
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
+import scala.reflect.runtime.universe.typeOf
+
 class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherValues {
 
   val correlationId: String = "1234-456"
@@ -34,7 +36,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
     "return a record item" in {
       val eisResponse = HttpResponse(200, getEisRecordsResponseData, Map.empty)
 
-      val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisResponse)
+      val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisResponse)
 
       result.value mustBe getEisRecordsResponseData.as[GetEisRecordsResponse]
     }
@@ -44,7 +46,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse: String = createEisErrorResponseAsJson("200", "Internal Server Error")
         val eisHttpResponse     = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -58,7 +60,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse     = createEisErrorResponseAsJson("400", "Internal Error Response")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -72,7 +74,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse     = createEisErrorResponseAsJson("401", "Unauthorised")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -86,7 +88,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse     = createEisErrorResponseAsJson("404", "Not Found")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -100,7 +102,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse     = createEisErrorResponseAsJson("405", "Method Not Allowed")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -114,7 +116,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse     = createEisErrorResponseAsJson("500", "Internal Server Error")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -126,7 +128,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse     = createEisErrorResponseAsJson("502", "Bad Gateway")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -138,7 +140,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse     = createEisErrorResponseAsJson("503", "Service Unavailable")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -149,7 +151,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse     = createEisErrorResponseAsJson("001", "Service Unavailable")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -160,7 +162,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val invalidJson     = """{ "wrongField": "value" }"""
         val eisHttpResponse = HttpResponse(500, invalidJson)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", eisHttpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisHttpResponse)
 
         result.left.value.header.status mustBe INTERNAL_SERVER_ERROR
         result.left.value mustBe InternalServerError(
@@ -181,7 +183,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         )
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", httpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe BadRequest(
           createErrorResponseWithErrorAsJson(
@@ -198,7 +200,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       "Unexpected error response given an invalid json string" in {
         val httpResponse = HttpResponse(400, """{"invalid": "json"}""")
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", httpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe BadRequest(
           createErrorResponseAsJson("UNEXPECTED_ERROR", "Unexpected Error")
@@ -208,7 +210,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val eisResponse  = createEisErrorResponseWithDetailsAsJson("400", "Bad Request", "error: 100, message: unknown")
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", httpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe BadRequest(
           createErrorResponseWithErrorAsJson(
@@ -224,7 +226,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
         val exception = intercept[IllegalArgumentException] {
-          HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", httpResponse)
+          HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
         }
 
         exception.getMessage mustBe s"Unable to parse fault detail for correlation Id: $correlationId"
@@ -236,7 +238,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       "Forbidden response" in {
         val httpResponse = HttpResponse(403, "")
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", httpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe Forbidden(
           createErrorResponseAsJson("FORBIDDEN", "Forbidden")
@@ -246,7 +248,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       "Not found response" in {
         val httpResponse = HttpResponse(404, "")
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", httpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe NotFound(
           createErrorResponseAsJson("NOT_FOUND", "Not Found")
@@ -255,7 +257,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       "Method not allowed response" in {
         val httpResponse = HttpResponse(405, "")
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", httpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe MethodNotAllowed(
           createErrorResponseAsJson(
@@ -267,7 +269,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       "Unknown error response" in {
         val httpResponse = HttpResponse(504, "")
 
-        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "anu-url", httpResponse)
+        val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe InternalServerError(
           createErrorResponseAsJson(
@@ -276,6 +278,22 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
           )
         )
       }
+    }
+
+    "throw an error if cannot parse the response as json" in {
+      val eisResponse = HttpResponse(200, "message")
+
+      the[RuntimeException] thrownBy {
+        HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisResponse)
+      } must have message "Response body could not be read: message"
+    }
+
+    "throw an error if cannot parse the response as Object" in {
+      val eisResponse = HttpResponse(200, """{"eori": "GB1234567890"}""")
+
+      the[RuntimeException] thrownBy {
+        HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", eisResponse)
+      } must have message s"Response body could not be read as type ${typeOf[GetEisRecordsResponse]}"
     }
   }
 

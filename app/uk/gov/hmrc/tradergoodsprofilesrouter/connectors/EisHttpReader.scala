@@ -125,7 +125,7 @@ object EisHttpReader {
               s"[EisConnector] - Failed to validate or parse JSON body of type: ${typeOf[T]}",
               error
             )
-            throw new RuntimeException(JsResult.Exception(error))
+            throw new RuntimeException(s"Response body could not be read as type ${typeOf[T]}")
           }
       case Failure(exception) =>
         logger.error(
