@@ -139,6 +139,10 @@ object EisHttpReader {
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         detail.errorCode match {
+          //todo: 200 is only required for GetRecord and 201 only for create. We may
+          // want to refactor this to only use the right code for the right request
+          // as this is assuming that GetRecord also can get a 201 and CreateRecord can also get
+          // a 200
           case "200" | "201" =>
             ErrorResponse(
               correlationId,
