@@ -160,7 +160,53 @@ class RouterServiceSpec
     }
   }
 
-  lazy val createRecordResponseData: CreateRecordResponse =
+  "createRecord" should {
+    "create a record item" in {
+      val eisResponse = createRecordResponseData
+      when(eisConnector.createRecord(any)(any, any))
+        .thenReturn(Future.successful(Right(eisResponse)))
+
+      val result = routerService.createRecord(createRecordRequest)
+
+      whenReady(result.value) {
+        _.value shouldBe eisResponse
+      }
+    }
+
+    "return an internal server error" when {
+
+      "EIS return an error" in {
+        when(eisConnector.createRecord(any)(any, any))
+          .thenReturn(Future.successful(Left(BadRequest("error"))))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest("error")
+        }
+      }
+
+      "error when an exception is thrown" in {
+        when(eisConnector.createRecord(any)(any, any))
+          .thenReturn(Future.failed(new RuntimeException("error")))
+
+        val result = routerService.createRecord(createRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> "UNEXPECTED_ERROR",
+              "message"       -> "error"
+            )
+          )
+        }
+      }
+
+    }
+  }
+
+  val createRecordResponseData: CreateRecordResponse =
     Json
       .parse("""
           |{
@@ -203,7 +249,7 @@ class RouterServiceSpec
           |""".stripMargin)
       .as[CreateRecordResponse]
 
-  lazy val createRecordRequest: CreateRecordRequest = Json
+  val createRecordRequest: CreateRecordRequest = Json
     .parse("""
         |{
         |    "eori": "GB123456789012",

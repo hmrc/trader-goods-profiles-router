@@ -48,7 +48,7 @@ trait GetRecordsDataSupport {
              |    "supplementaryUnit": 500,
              |    "measurementUnit": "square meters(m^2)",
              |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-             |    "comcodeEffectiveToDate": "",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
              |    "version": 1,
              |    "active": true,
              |    "toReview": false,
@@ -65,13 +65,13 @@ trait GetRecordsDataSupport {
              |""".stripMargin)
     .as[GoodsItemRecords]
 
-  val getMultipleRecordResponseData: GetEisRecordsResponse = Json
+  def getMultipleRecordResponseData(eori: String = "GB1234567890"): GetEisRecordsResponse = Json
     .parse(s"""
               |{
               |"goodsItemRecords":
               |[
               |  {
-              |    "eori": "GB1234567890",
+              |    "eori": "$eori",
               |    "actorId": "GB1234567890",
               |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
               |    "traderRef": "BAN001001",
@@ -95,7 +95,7 @@ trait GetRecordsDataSupport {
               |    "supplementaryUnit": 500,
               |    "measurementUnit": "square meters(m^2)",
               |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-              |    "comcodeEffectiveToDate": "",
+              |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
               |    "version": 1,
               |    "active": true,
               |    "toReview": false,
@@ -134,7 +134,7 @@ trait GetRecordsDataSupport {
               |    "supplementaryUnit": 500,
               |    "measurementUnit": "square meters(m^2)",
               |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-              |    "comcodeEffectiveToDate": "",
+              |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
               |    "version": 1,
               |    "active": true,
               |    "toReview": false,
@@ -191,7 +191,7 @@ trait GetRecordsDataSupport {
                  |    "supplementaryUnit": 500,
                  |    "measurementUnit": "square meters(m^2)",
                  |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                 |    "comcodeEffectiveToDate": "",
+                 |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
                  |    "version": 1,
                  |    "active": true,
                  |    "toReview": false,

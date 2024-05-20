@@ -449,8 +449,9 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
-            "statusCode" -> 500,
-            "message"    -> s"Unable to parse fault detail for correlation Id: $correlationId"
+            "correlationId" -> correlationId,
+            "code"          -> "UNEXPECTED_ERROR",
+            "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
           )
 
           verifyThatDownstreamApiWasCalled()

@@ -37,8 +37,9 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val mockRouterService = mock[RouterService]
-  val mockUuidService   = mock[UuidService]
+  private val mockRouterService = mock[RouterService]
+  private val mockUuidService   = mock[UuidService]
+  private val eoriNumber        = "GB123456789001"
 
   private val sut =
     new GetRecordsController(
@@ -55,7 +56,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return a successful JSON response for a single record" in {
 
-      when(mockRouterService.fetchRecord(any, any)(any, any))
+      when(mockRouterService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.rightT(getSingleRecordResponseData))
 
       val result = sut.getTGPRecord("GB123456789001", "12345")(
@@ -80,7 +81,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     "return an error if cannot fetch a record" in {
       val errorResponseJson = Json.obj("error" -> "error")
 
-      when(mockRouterService.fetchRecord(any, any)(any, any))
+      when(mockRouterService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
       val result = sut.getTGPRecord("GB123456789001", "12345")(
@@ -97,36 +98,36 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return a successful JSON response for a multiple records with optional query parameters" in {
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any, any))
-        .thenReturn(EitherT.rightT(getMultipleRecordResponseData))
+      when(mockRouterService.fetchRecords(any, any, any, any)(any))
+        .thenReturn(EitherT.rightT(getMultipleRecordResponseData()))
 
-      val result = sut.getTGPRecords("GB123456789001", Some("2021-12-17T09:30:47.456Z"), Some(1), Some(1))(
+      val result = sut.getTGPRecords(eoriNumber, Some("2021-12-17T09:30:47.456Z"), Some(1), Some(1))(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
       withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData)
+        contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData())
       }
     }
 
     "return a successful JSON response for a multiple records without optional query parameters" in {
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any, any))
-        .thenReturn(EitherT.rightT(getMultipleRecordResponseData))
+      when(mockRouterService.fetchRecords(any, any, any, any)(any))
+        .thenReturn(EitherT.rightT(getMultipleRecordResponseData(eoriNumber)))
 
-      val result = sut.getTGPRecords("GB123456789001")(
+      val result = sut.getTGPRecords(eoriNumber)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
       withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData)
+        contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData(eoriNumber))
       }
     }
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.getTGPRecords("eori")(
+      val result = sut.getTGPRecords("eoriNumber")(
         FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
@@ -136,10 +137,10 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     "return an error if cannot fetch a records" in {
       val errorResponseJson = Json.obj("error" -> "error")
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any, any))
+      when(mockRouterService.fetchRecords(any, any, any, any)(any))
         .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
-      val result = sut.getTGPRecords("GB123456789001")(
+      val result = sut.getTGPRecords(eoriNumber)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe INTERNAL_SERVER_ERROR

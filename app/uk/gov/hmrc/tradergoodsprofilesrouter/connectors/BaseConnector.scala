@@ -16,13 +16,9 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import play.api.mvc.Result
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{HttpErrorFunctions, HttpResponse, UpstreamErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpResponseHandler.responseHandler
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-//import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISHttpReader
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,13 +31,7 @@ trait BaseConnector extends HttpErrorFunctions {
 
   }
 
-  implicit class RequestBuilderHelpers(requestBuilder: RequestBuilder)(implicit correlationId: String) {
-    def executeAndDeserialise[T](implicit
-      ec: ExecutionContext
-    ): Future[Either[Result, GetEisRecordsResponse]] =
-      requestBuilder
-        .execute[HttpResponse]
-        .flatMap(responseHandler)
+  implicit class RequestBuilderHelpers(requestBuilder: RequestBuilder) {
 
     /**
       * This method will be used for other endpoint e.g. delete

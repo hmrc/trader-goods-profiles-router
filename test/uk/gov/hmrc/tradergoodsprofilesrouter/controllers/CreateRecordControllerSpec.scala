@@ -54,7 +54,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
     "return a 201 with JSON response when creating a record" in {
 
-      when(mockRouterService.createRecord(any)(any, any))
+      when(mockRouterService.createRecord(any)(any))
         .thenReturn(EitherT.rightT(createRecordResponseData))
 
       val result = sut.create(
