@@ -16,43 +16,15 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, isSuccessful}
-import play.api.libs.Files.logger
-import play.api.libs.json.{JsResult, Json, Reads}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{HttpErrorFunctions, HttpResponse, UpstreamErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.runtime.universe.{TypeTag, typeOf}
-import scala.util.{Failure, Success, Try}
 
 trait BaseConnector extends HttpErrorFunctions {
 
   implicit class HttpResponseHelpers(response: HttpResponse) {
-
-    def as[A](implicit reads: Reads[A], tt: TypeTag[A]): Future[A] =
-      Try(Json.parse(response.body)) match {
-        case Success(value)     =>
-          value
-            .validate[A]
-            .map(result => Future.successful(result))
-            .recoverTotal { error =>
-              logger.error(
-                s"[EisConnector] - Failed to validate or parse JSON body of type: ${typeOf[A]}",
-                error
-              )
-              Future.failed(JsResult.Exception(error))
-            }
-        case Failure(exception) =>
-          logger.error(
-            s"[EisConnector] - Response body could not be parsed as JSON, body: ${response.body}",
-            exception
-          )
-          Future.failed(
-            UpstreamErrorResponse(s"Response body could not be read: ${response.body}", INTERNAL_SERVER_ERROR)
-          )
-      }
 
     def error[A]: Future[A] =
       Future.failed(UpstreamErrorResponse(response.body, response.status))
@@ -60,13 +32,6 @@ trait BaseConnector extends HttpErrorFunctions {
   }
 
   implicit class RequestBuilderHelpers(requestBuilder: RequestBuilder) {
-    def executeAndDeserialise[T](implicit ec: ExecutionContext, reads: Reads[T], tt: TypeTag[T]): Future[T] =
-      requestBuilder
-        .execute[HttpResponse]
-        .flatMap {
-          case response if isSuccessful(response.status) => response.as[T]
-          case response                                  => response.error
-        }
 
     /**
       * This method will be used for other endpoint e.g. delete

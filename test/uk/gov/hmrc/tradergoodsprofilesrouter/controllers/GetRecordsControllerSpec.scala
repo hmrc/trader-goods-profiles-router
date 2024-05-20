@@ -26,20 +26,20 @@ import play.api.libs.json.Json
 import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import scala.concurrent.ExecutionContext
-import scala.language.postfixOps
 
-class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
+class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecordsDataSupport {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val mockRouterService = mock[RouterService]
-  val mockUuidService   = mock[UuidService]
+  private val mockRouterService = mock[RouterService]
+  private val mockUuidService   = mock[UuidService]
+  private val eoriNumber        = "GB123456789001"
 
   private val sut =
     new GetRecordsController(
@@ -56,7 +56,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
     "return a successful JSON response for a single record" in {
 
-      when(mockRouterService.fetchRecord(any, any)(any, any))
+      when(mockRouterService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.rightT(getSingleRecordResponseData))
 
       val result = sut.getTGPRecord("GB123456789001", "12345")(
@@ -81,7 +81,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
     "return an error if cannot fetch a record" in {
       val errorResponseJson = Json.obj("error" -> "error")
 
-      when(mockRouterService.fetchRecord(any, any)(any, any))
+      when(mockRouterService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
       val result = sut.getTGPRecord("GB123456789001", "12345")(
@@ -98,36 +98,36 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
 
     "return a successful JSON response for a multiple records with optional query parameters" in {
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any, any))
-        .thenReturn(EitherT.rightT(getMultipleRecordResponseData))
+      when(mockRouterService.fetchRecords(any, any, any, any)(any))
+        .thenReturn(EitherT.rightT(getMultipleRecordResponseData()))
 
-      val result = sut.getTGPRecords("GB123456789001", Some("2021-12-17T09:30:47.456Z"), Some(1), Some(1))(
+      val result = sut.getTGPRecords(eoriNumber, Some("2021-12-17T09:30:47.456Z"), Some(1), Some(1))(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
       withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData)
+        contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData())
       }
     }
 
     "return a successful JSON response for a multiple records without optional query parameters" in {
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any, any))
-        .thenReturn(EitherT.rightT(getMultipleRecordResponseData))
+      when(mockRouterService.fetchRecords(any, any, any, any)(any))
+        .thenReturn(EitherT.rightT(getMultipleRecordResponseData(eoriNumber)))
 
-      val result = sut.getTGPRecords("GB123456789001")(
+      val result = sut.getTGPRecords(eoriNumber)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
       withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData)
+        contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData(eoriNumber))
       }
     }
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.getTGPRecords("eori")(
+      val result = sut.getTGPRecords("eoriNumber")(
         FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
@@ -137,10 +137,10 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
     "return an error if cannot fetch a records" in {
       val errorResponseJson = Json.obj("error" -> "error")
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any, any))
+      when(mockRouterService.fetchRecords(any, any, any, any)(any))
         .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
-      val result = sut.getTGPRecords("GB123456789001")(
+      val result = sut.getTGPRecords(eoriNumber)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe INTERNAL_SERVER_ERROR
@@ -159,145 +159,5 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar {
       )
     errorResponse
   }
-
-  val getSingleRecordResponseData: GoodsItemRecords = Json
-    .parse("""
-                                                          |  {
-                                                          |    "eori": "GB1234567890",
-                                                          |    "actorId": "GB1234567890",
-                                                          |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-                                                          |    "traderRef": "BAN001001",
-                                                          |    "comcode": "104101000",
-                                                          |    "accreditationStatus": "Not requested",
-                                                          |    "goodsDescription": "Organic bananas",
-                                                          |    "countryOfOrigin": "EC",
-                                                          |    "category": 3,
-                                                          |    "assessments": [
-                                                          |      {
-                                                          |        "assessmentId": "abc123",
-                                                          |        "primaryCategory": "1",
-                                                          |        "condition": {
-                                                          |          "type": "abc123",
-                                                          |          "conditionId": "Y923",
-                                                          |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-                                                          |          "conditionTraderText": "Excluded product"
-                                                          |        }
-                                                          |      }
-                                                          |    ],
-                                                          |    "supplementaryUnit": 500,
-                                                          |    "measurementUnit": "square meters(m^2)",
-                                                          |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                                                          |    "comcodeEffectiveToDate": "",
-                                                          |    "version": 1,
-                                                          |    "active": true,
-                                                          |    "toReview": false,
-                                                          |    "reviewReason": null,
-                                                          |    "declarable": "IMMI declarable",
-                                                          |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                                                          |    "nirmsNumber": "RMS-GB-123456",
-                                                          |    "niphlNumber": "6 S12345",
-                                                          |    "locked": false,
-                                                          |    "srcSystemName": "CDAP",
-                                                          |    "createdDateTime": "2024-11-18T23:20:19Z",
-                                                          |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                                                          |  }
-                                                          |""".stripMargin)
-    .as[GoodsItemRecords]
-
-  def getMultipleRecordResponseData: GetEisRecordsResponse = Json
-    .parse(s"""
-                                                             |{
-                                                             |"goodsItemRecords":
-                                                             |[
-                                                             |  {
-                                                             |    "eori": "GB1234567890",
-                                                             |    "actorId": "GB1234567890",
-                                                             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-                                                             |    "traderRef": "BAN001001",
-                                                             |    "comcode": "104101000",
-                                                             |    "accreditationStatus": "Not requested",
-                                                             |    "goodsDescription": "Organic bananas",
-                                                             |    "countryOfOrigin": "EC",
-                                                             |    "category": 3,
-                                                             |    "assessments": [
-                                                             |      {
-                                                             |        "assessmentId": "abc123",
-                                                             |        "primaryCategory": 1,
-                                                             |        "condition": {
-                                                             |          "type": "abc123",
-                                                             |          "conditionId": "Y923",
-                                                             |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-                                                             |          "conditionTraderText": "Excluded product"
-                                                             |        }
-                                                             |      }
-                                                             |    ],
-                                                             |    "supplementaryUnit": 500,
-                                                             |    "measurementUnit": "square meters(m^2)",
-                                                             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                                                             |    "comcodeEffectiveToDate": "",
-                                                             |    "version": 1,
-                                                             |    "active": true,
-                                                             |    "toReview": false,
-                                                             |    "reviewReason": null,
-                                                             |    "declarable": "IMMI declarable",
-                                                             |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                                                             |    "nirmsNumber": "RMS-GB-123456",
-                                                             |    "niphlNumber": "6 S12345",
-                                                             |    "locked": false,
-                                                             |    "srcSystemName": "CDAP",
-                                                             |    "createdDateTime": "2024-11-18T23:20:19Z",
-                                                             |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                                                             |  },
-                                                             |    {
-                                                             |    "eori": "GB1234567890",
-                                                             |    "actorId": "GB1234567890",
-                                                             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-                                                             |    "traderRef": "BAN001001",
-                                                             |    "comcode": "104101000",
-                                                             |    "accreditationStatus": "Not requested",
-                                                             |    "goodsDescription": "Organic bananas",
-                                                             |    "countryOfOrigin": "EC",
-                                                             |    "category": 3,
-                                                             |    "assessments": [
-                                                             |      {
-                                                             |        "assessmentId": "abc123",
-                                                             |        "primaryCategory": 1,
-                                                             |        "condition": {
-                                                             |          "type": "abc123",
-                                                             |          "conditionId": "Y923",
-                                                             |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-                                                             |          "conditionTraderText": "Excluded product"
-                                                             |        }
-                                                             |      }
-                                                             |    ],
-                                                             |    "supplementaryUnit": 500,
-                                                             |    "measurementUnit": "square meters(m^2)",
-                                                             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                                                             |    "comcodeEffectiveToDate": "",
-                                                             |    "version": 1,
-                                                             |    "active": true,
-                                                             |    "toReview": false,
-                                                             |    "reviewReason": null,
-                                                             |    "declarable": "IMMI declarable",
-                                                             |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                                                             |    "nirmsNumber": "RMS-GB-123456",
-                                                             |    "niphlNumber": "6 S12345",
-                                                             |    "locked": false,
-                                                             |    "srcSystemName": "CDAP",
-                                                             |    "createdDateTime": "2024-11-18T23:20:19Z",
-                                                             |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                                                             |  }
-                                                             |],
-                                                             |"pagination":
-                                                             | {
-                                                             |   "totalRecords": 2,
-                                                             |   "currentPage": 0,
-                                                             |   "totalPages": 1,
-                                                             |   "nextPage": null,
-                                                             |   "prevPage": null
-                                                             | }
-                                                             |}
-                                                             |""".stripMargin)
-    .as[GetEisRecordsResponse]
 
 }
