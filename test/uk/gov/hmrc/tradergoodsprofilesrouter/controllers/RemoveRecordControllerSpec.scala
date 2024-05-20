@@ -26,9 +26,10 @@ import play.api.libs.json.Json
 import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.ExecutionContext
 
@@ -36,14 +37,16 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val mockRouterService = mock[RouterService]
-  val mockUuidService   = mock[UuidService]
+  private val mockRouterService = mock[RouterService]
+  private val mockUuidService   = mock[UuidService]
 
-  private val sut =
+  private val validateClientId = new ValidateHeaderClientId(mockUuidService)
+  private val sut              =
     new RemoveRecordController(
       stubControllerComponents(),
       mockRouterService,
-      mockUuidService
+      mockUuidService,
+      validateClientId
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
@@ -75,8 +78,8 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     "return 400 Bad request when required request field actorId is missing" in {
       val errorResponse = ErrorResponse(
         "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.BadRequestMessage,
+        "BAD_REQUEST",
+        "Bad Request",
         Some(Seq(Error("008", "Mandatory field actorId was missing from body")))
       )
 
@@ -111,8 +114,8 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
   private def createErrorResponse =
     ErrorResponse(
       "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      ApplicationConstants.BadRequestCode,
-      ApplicationConstants.MissingHeaderClientId
+      "BAD_REQUEST",
+      "Missing mandatory header X-Client-ID"
     )
 
   lazy val removeRecordRequestData = Json

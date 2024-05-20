@@ -1758,8 +1758,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.UnauthorizedCode,
-                ApplicationConstants.UnauthorizedMessage
+                "UNAUTHORIZED",
+                "Unauthorized"
               )
             )
           )
@@ -1791,8 +1791,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.NotFoundCode,
-                ApplicationConstants.NotFoundMessage
+                "NOT_FOUND",
+                "Not Found"
               )
             )
           )
@@ -1824,8 +1824,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.MethodNotAllowedCode,
-                ApplicationConstants.MethodNotAllowedMessage
+                "METHOD_NOT_ALLOWED",
+                "Method Not Allowed"
               )
             )
           )
@@ -1857,8 +1857,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.InternalServerErrorCode,
-                ApplicationConstants.InternalServerErrorMessage
+                "INTERNAL_SERVER_ERROR",
+                "Internal Server Error"
               )
             )
           )
@@ -1890,8 +1890,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.BadGatewayCode,
-                ApplicationConstants.BadGatewayMessage
+                "BAD_GATEWAY",
+                "Bad Gateway"
               )
             )
           )
@@ -1923,8 +1923,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.ServiceUnavailableCode,
-                ApplicationConstants.ServiceUnavailableMessage
+                "SERVICE_UNAVAILABLE",
+                "Service Unavailable"
               )
             )
           )
@@ -1942,8 +1942,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.UnexpectedErrorCode,
-                ApplicationConstants.UnexpectedErrorMessage
+                "UNEXPECTED_ERROR",
+                "Unexpected Error"
               )
             )
           )
@@ -1980,8 +1980,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.BadRequestCode,
-                ApplicationConstants.BadRequestMessage,
+                "BAD_REQUEST",
+                "Bad Request",
                 Some(
                   Seq(
                     Error("007", "EORI number does not have a TGP"),
@@ -2023,8 +2023,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.BadRequestCode,
-                ApplicationConstants.BadRequestMessage,
+                "BAD_REQUEST",
+                "Bad Request",
                 Some(
                   Seq(
                     Error("006", "Mandatory field eori was missing from body"),
@@ -2065,8 +2065,8 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.BadRequestCode,
-                ApplicationConstants.BadRequestMessage,
+                "BAD_REQUEST",
+                "Bad Request",
                 Some(
                   Seq(
                     Error("027", "There is an ongoing accreditation request and the record can not be updated")
@@ -2105,11 +2105,11 @@ class RouterServiceSpec
             Json.toJson(
               ErrorResponse(
                 correlationId,
-                ApplicationConstants.BadRequestCode,
-                ApplicationConstants.BadRequestMessage,
+                "BAD_REQUEST",
+                "Bad Request",
                 Some(
                   Seq(
-                    Error(ApplicationConstants.UnexpectedErrorCode, ApplicationConstants.UnexpectedErrorMessage)
+                    Error("UNEXPECTED_ERROR", "Unexpected Error")
                   )
                 )
               )

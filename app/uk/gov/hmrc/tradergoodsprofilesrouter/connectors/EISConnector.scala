@@ -120,7 +120,7 @@ class EISConnectorImpl @Inject() (
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[Int] = {
     val url = appConfig.eisConfig.removeRecordUrl
     httpClientV2
-      .get(url"$url")(hc)
+      .put(url"$url")(hc)
       .setHeader(eisRequestHeaders(correlationId): _*)
       .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
       .executeAndExpect(OK)

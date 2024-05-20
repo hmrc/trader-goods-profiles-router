@@ -533,7 +533,7 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   }
 
   private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) = stubFor(
-    get(urlEqualTo(s"$connectorPath"))
+    put(urlEqualTo(s"$connectorPath"))
       .withRequestBody(equalToJson(requestBody))
       .withHeader("Content-Type", equalTo("application/json"))
       .withHeader("X-Forwarded-Host", equalTo("MDTP"))

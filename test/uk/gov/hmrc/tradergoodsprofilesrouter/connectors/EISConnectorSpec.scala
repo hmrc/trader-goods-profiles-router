@@ -76,6 +76,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any())(any())).thenReturn(requestBuilder)
     when(httpClientV2.post(any())(any())).thenReturn(requestBuilder)
+    when(httpClientV2.put(any())(any())).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any())(any(), any(), any())).thenReturn(requestBuilder)
   }
@@ -219,7 +220,7 @@ class EISConnectorSpec extends AsyncFlatSpec with Matchers with MockitoSugar wit
       await(eisConnector.removeRecord(eori, recordId, actorId, correlationId)(ec, hc))
 
     val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
-    verify(httpClientV2).get(url"$expectedUrl")
+    verify(httpClientV2).put(url"$expectedUrl")
     verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
     verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
 

@@ -24,17 +24,19 @@ import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJson
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RemoveRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordController @Inject() (
   cc: ControllerComponents,
   routerService: RouterService,
-  uuidService: UuidService
+  uuidService: UuidService,
+  validateHeaderClientId: ValidateHeaderClientId
 )(implicit
   executionContext: ExecutionContext
 ) extends BackendController(cc)
@@ -42,7 +44,7 @@ class RemoveRecordController @Inject() (
 
   def remove(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _                   <- validateClientId
+      _                   <- validateHeaderClientId.validateClientId(request)
       removeRecordRequest <- validateRemoveRecordRequest(request)
       _                   <- routerService.removeRecord(eori, recordId, removeRecordRequest.actorId)
     } yield Ok
@@ -77,18 +79,4 @@ class RemoveRecordController @Inject() (
         ): Result
       }
       .toEitherT[Future]
-
-  private def validateClientId(implicit request: Request[JsValue]): EitherT[Future, Result, String] =
-    EitherT.fromOption(
-      request.headers.get(HeaderNames.ClientId),
-      BadRequest(
-        toJson(
-          ErrorResponse(
-            uuidService.uuid,
-            ApplicationConstants.BadRequestCode,
-            ApplicationConstants.MissingHeaderClientId
-          )
-        )
-      )
-    )
 }
