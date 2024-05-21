@@ -1001,7 +1001,7 @@
 					"name": "Invalid",
 					"item": [
 						{
-							"name": "Missing X-Client-Id",
+							"name": "Missing X-Client-ID",
 							"event": [
 								{
 									"listen": "test",
@@ -1016,7 +1016,7 @@
 											"});",
 											"",
 											"pm.test(\"Error code is as expected\", function () {",
-											"    pm.expect(pm.response.json().message).to.eql(\"Missing mandatory header X-Client-Id\");",
+											"    pm.expect(pm.response.json().message).to.eql(\"Missing mandatory header X-Client-ID\");",
 											"});",
 											""
 										],

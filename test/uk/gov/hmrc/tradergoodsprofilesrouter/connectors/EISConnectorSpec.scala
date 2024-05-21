@@ -17,12 +17,14 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.Mockito
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.MimeTypes
+import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -52,6 +54,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
   private val dateTimeService: DateTimeService = mock[DateTimeService]
   private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val eori                             = "GB123456789011"
+  private val actorId                          = "GB123456789011"
   private val recordId                         = "12345"
   implicit val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
   private val headers                          = Seq(
@@ -78,6 +81,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         1234,
         "/tgp/getrecords/v1",
         "/tgp/createrecord/v1",
+        "/tgp/removerecord/v1",
         "MDTP",
         Headers("bearerToken")
       )
@@ -85,6 +89,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
+    when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
@@ -200,6 +205,41 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       verify(requestBuilder).execute(any, any)
 
       verifyExecuteWithParams
+    }
+  }
+
+  "removeRecord" should {
+    "remove a record successfully" in {
+      when(requestBuilder.execute[Either[Result, Int]](any, any))
+        .thenReturn(Future.successful(Right(OK)))
+
+      val result = await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
+
+      result.value mustBe OK
+    }
+
+    "send a request with the right url for remove record" in {
+      when(requestBuilder.execute[Either[Result, Int]](any, any))
+        .thenReturn(Future.successful(Right(OK)))
+
+      val result =
+        await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
+
+      val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
+      verify(httpClientV2).put(url"$expectedUrl")
+      verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
+      verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
+
+      result.value mustBe OK
+    }
+
+    "return an error if EIS return an error" in {
+      when(requestBuilder.execute[Either[Result, Int]](any, any))
+        .thenReturn(Future.successful(Left(BadRequest("error"))))
+
+      val result = await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
+
+      result.left.value mustBe BadRequest("error")
     }
   }
 

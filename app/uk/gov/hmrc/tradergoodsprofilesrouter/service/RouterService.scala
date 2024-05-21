@@ -19,6 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
+import play.api.http.Status.OK
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
@@ -28,7 +29,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -49,6 +50,12 @@ trait RouterService {
   def createRecord(
     request: CreateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateRecordResponse]
+
+  def removeRecord(
+    eori: String,
+    recordId: String,
+    actorId: String
+  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, Int]
 
 }
 
@@ -75,7 +82,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
           )
           Left(
             InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, ApplicationConstants.UnexpectedErrorCode, ex.getMessage))
+              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
             )
           )
         }
@@ -106,7 +113,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
           )
           Left(
             InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, ApplicationConstants.UnexpectedErrorCode, ex.getMessage))
+              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
             )
           )
         }
@@ -127,12 +134,39 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
         .recover { case ex: Throwable =>
           logger.error(
             s"""[RouterService] - Error when creating records for Eori Number: ${request.eori},
-            s"correlationId: $correlationId, message: ${ex.getMessage}""",
+            correlationId: $correlationId, message: ${ex.getMessage}""",
             ex
           )
           Left(
             InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, ApplicationConstants.UnexpectedErrorCode, ex.getMessage))
+              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+            )
+          )
+        }
+    )
+  }
+
+  override def removeRecord(eori: String, recordId: String, actorId: String)(implicit
+    ec: ExecutionContext,
+    hc: HeaderCarrier
+  ): EitherT[Future, Result, Int] = {
+    val correlationId = uuidService.uuid
+    EitherT(
+      eisConnector
+        .removeRecord(eori, recordId, actorId, correlationId)
+        .map {
+          case Right(_)    => Right(OK)
+          case Left(error) => Left(error)
+        }
+        .recover { case ex: Throwable =>
+          logger.error(
+            s"""[RouterService] - Error occurred while removing record for Eori Number: $eori, recordId: $recordId,
+            actorId: $actorId, correlationId: $correlationId, message: ${ex.getMessage}""",
+            ex
+          )
+          Left(
+            InternalServerError(
+              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
             )
           )
         }
