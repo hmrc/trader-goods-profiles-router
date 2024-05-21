@@ -20,12 +20,8 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
-import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RemoveRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 
 import java.time.Instant
 
@@ -298,8 +294,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "006",
-                "message" -> "Mandatory field eori was missing from body"
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
+                "errorNumber" -> 6
               )
             )
           )
@@ -344,20 +341,24 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "006",
-                "message" -> "Mandatory field eori was missing from body"
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
+                "errorNumber" -> 6
               ),
               Json.obj(
-                "code"    -> "008",
-                "message" -> "Mandatory field actorId was missing from body"
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field actorId was missing from body",
+                "errorNumber" -> 8
               ),
               Json.obj(
-                "code"    -> "025",
-                "message" -> "The recordId has been provided in the wrong format"
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "The recordId has been provided in the wrong format",
+                "errorNumber" -> 25
               ),
               Json.obj(
-                "code"    -> "027",
-                "message" -> "There is an ongoing accreditation request and the record can not be updated"
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "There is an ongoing accreditation request and the record can not be updated",
+                "errorNumber" -> 27
               )
             )
           )
@@ -399,8 +400,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "UNEXPECTED_ERROR",
-                "message" -> "Unexpected Error"
+                "code"        -> "UNEXPECTED_ERROR",
+                "message"     -> "Unrecognised error number",
+                "errorNumber" -> 40
               )
             )
           )
@@ -500,8 +502,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "008",
-                "message" -> "Mandatory field actorId was missing from body"
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field actorId was missing from body",
+                "errorNumber" -> 8
               )
             )
           )
@@ -522,8 +525,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "008",
-                "message" -> "Mandatory field actorId was missing from body"
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field actorId was missing from body",
+                "errorNumber" -> 8
               )
             )
           )

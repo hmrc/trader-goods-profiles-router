@@ -177,8 +177,8 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
           "400",
           "Internal Server Error",
           Seq(
-            "error: 006, message: Mandatory field comcode was missing from body",
-            "error: 007, message: eori does not exist in the database"
+            "error: 006, message: whatever",
+            "error: 007, message: whatever"
           ): _*
         )
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
@@ -186,11 +186,11 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe BadRequest(
-          createErrorResponseWithErrorAsJson(
+          createInvalidParameterErrorAsJson(
             "BAD_REQUEST",
             "Bad Request",
             Seq(
-              "006" -> "Mandatory field eori was missing from body",
+              "006" -> "Mandatory field eori was missing from body or is in the wrong format",
               "007" -> "EORI number does not have a TGP"
             ): _*
           )
@@ -213,10 +213,10 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe BadRequest(
-          createErrorResponseWithErrorAsJson(
+          createUnexpectedErrorAsJson(
             "BAD_REQUEST",
             "Bad Request",
-            Seq("UNEXPECTED_ERROR" -> "Unexpected Error"): _*
+            Seq("100" -> "Unrecognised error number"): _*
           )
         )
       }
@@ -320,7 +320,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         val result = HttpReader[GetEisRecordsResponse](correlationId).read("GET", "any-url", httpResponse)
 
         result.left.value mustBe BadRequest(
-          createErrorResponseWithErrorAsJson(
+          createInvalidParameterErrorAsJson(
             "BAD_REQUEST",
             "Bad Request",
             Seq(
@@ -368,13 +368,31 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
   private def createErrorResponseAsJson(code: String, message: String): JsValue =
     Json.toJson(ErrorResponse(correlationId, code, message))
 
-  private def createErrorResponseWithErrorAsJson(code: String, message: String, errors: (String, String)*): JsValue =
+  private def createInvalidParameterErrorAsJson(
+    code: String,
+    message: String,
+    errors: (String, String)*
+  ): JsValue =
     Json.toJson(
       ErrorResponse(
         correlationId,
         code,
         message,
-        Some(errors.map(e => Error(e._1, e._2)))
+        Some(errors.map(e => Error("INVALID_REQUEST_PARAMETER", e._2, e._1.toInt)))
+      )
+    )
+
+  private def createUnexpectedErrorAsJson(
+    code: String,
+    message: String,
+    errors: (String, String)*
+  ): JsValue =
+    Json.toJson(
+      ErrorResponse(
+        correlationId,
+        code,
+        message,
+        Some(errors.map(e => Error("UNEXPECTED_ERROR", e._2, e._1.toInt)))
       )
     )
 }

@@ -40,7 +40,7 @@ object ApplicationConstants {
   val BadGatewayMessage                                    = "Bad Gateway"
   val UnknownCode                                          = "UNKNOWN"
   val UnknownMessage                                       = "Unknown Error"
-  val InvalidOrMissingEori                                 = "Mandatory field eori was missing from body"
+  val InvalidOrMissingEori                                 = "Mandatory field eori was missing from body or is in the wrong format"
   val EoriDoesNotExists                                    = "EORI number does not have a TGP"
   val InvalidOrMissingActorId                              = "Mandatory field actorId was missing from body"
   val InvalidOrMissingTraderRef                            = "Mandatory field traderRef was missing from body"
@@ -101,4 +101,5 @@ object ApplicationConstants {
   val InvalidPageCode                                          = "029"
   val InvalidSizeCode                                          = "030"
   val RecordRemovedAndCanNotBeUpdatedCode                      = "031"
+
 }
