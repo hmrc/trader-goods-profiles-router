@@ -33,8 +33,8 @@ import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
@@ -82,6 +82,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         "/tgp/getrecords/v1",
         "/tgp/createrecord/v1",
         "/tgp/removerecord/v1",
+        "/tgp/updaterecord/v1",
         "MDTP",
         Headers("bearerToken")
       )
@@ -170,9 +171,10 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
 
   "createRecord" should {
     "create a record successfully" in {
-      val expectedResponse: CreateRecordResponse = createRecordSampleJson.as[CreateRecordResponse]
+      val expectedResponse: CreateOrUpdateRecordResponse =
+        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
 
-      when(requestBuilder.execute[Either[Result, CreateRecordResponse]](any, any))
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
       val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
@@ -182,18 +184,20 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, CreateRecordResponse]](any, any))
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(eisConnector.fetchRecord(eori, recordId, correlationId))
+      val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
+      val result                       = await(eisConnector.createRecord(request, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
 
     "send a request with the right url" in {
 
-      val expectedResponse: CreateRecordResponse = createRecordSampleJson.as[CreateRecordResponse]
-      when(requestBuilder.execute[Either[Result, CreateRecordResponse]](any, any))
+      val expectedResponse: CreateOrUpdateRecordResponse =
+        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
       await(eisConnector.createRecord(createRecordRequest.as[CreateRecordRequest], correlationId))
@@ -243,6 +247,49 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     }
   }
 
+  "updateRecord" should {
+    "update a record successfully" in {
+      val expectedResponse: CreateOrUpdateRecordResponse =
+        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
+
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
+        .thenReturn(Future.successful(Right(expectedResponse)))
+
+      val request: UpdateRecordRequest = updateRecordRequest.as[UpdateRecordRequest]
+      val result                       = await(eisConnector.updateRecord(request, correlationId))
+
+      result.value mustBe expectedResponse
+    }
+
+    "return an error if EIS return an error" in {
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
+        .thenReturn(Future.successful(Left(BadRequest("error"))))
+
+      val request: UpdateRecordRequest = updateRecordRequest.as[UpdateRecordRequest]
+      val result                       = await(eisConnector.updateRecord(request, correlationId))
+
+      result.left.value mustBe BadRequest("error")
+    }
+
+    "send a request with the right url" in {
+
+      val expectedResponse: CreateOrUpdateRecordResponse =
+        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
+        .thenReturn(Future.successful(Right(expectedResponse)))
+
+      await(eisConnector.updateRecord(updateRecordRequest.as[UpdateRecordRequest], correlationId))
+
+      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
+      verify(httpClientV2).put(url"$expectedUrl")
+      verify(requestBuilder).setHeader(headers: _*)
+      verify(requestBuilder).withBody(updateRecordRequest)
+      verify(requestBuilder).execute(any, any)
+
+      verifyExecuteWithParams
+    }
+  }
+
   private def verifyExecuteWithParams = {
     val captor = ArgCaptor[HttpReads[Either[Result, GetEisRecordsResponse]]]
     verify(requestBuilder).execute(captor.capture, any)
@@ -251,7 +298,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     httpReader.asInstanceOf[HttpReader[Either[Result, Any]]].correlationId mustBe correlationId
   }
 
-  val createRecordSampleJson: JsValue = Json
+  val createOrUpdateRecordSampleJson: JsValue = Json
     .parse("""
         |{
         |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -297,6 +344,36 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |{
         |    "eori": "GB123456789012",
         |    "actorId": "GB098765432112",
+        |    "traderRef": "BAN001001",
+        |    "comcode": "104101000",
+        |    "goodsDescription": "Organic bananas",
+        |    "countryOfOrigin": "EC",
+        |    "category": 1,
+        |    "assessments": [
+        |        {
+        |            "assessmentId": "abc123",
+        |            "primaryCategory": 1,
+        |            "condition": {
+        |                "type": "abc123",
+        |                "conditionId": "Y923",
+        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+        |                "conditionTraderText": "Excluded product"
+        |            }
+        |        }
+        |    ],
+        |    "supplementaryUnit": 500,
+        |    "measurementUnit": "Square metre (m2)",
+        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+        |}
+        |""".stripMargin)
+
+  val updateRecordRequest: JsValue = Json
+    .parse("""
+        |{
+        |    "eori": "GB123456789001",
+        |    "actorId": "GB098765432112",
+        |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         |    "traderRef": "BAN001001",
         |    "comcode": "104101000",
         |    "goodsDescription": "Organic bananas",

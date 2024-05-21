@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.{BAD_REQUEST, CREATED}
+import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
@@ -33,7 +33,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, Header
 
 import scala.concurrent.ExecutionContext
 
-class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
+class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
@@ -42,7 +42,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
   private val validateClientId = new ValidateHeaderClientId(mockUuidService)
   private val sut              =
-    new CreateRecordController(
+    new UpdateRecordController(
       stubControllerComponents(),
       mockRouterService,
       mockUuidService,
@@ -53,21 +53,21 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
     HeaderNames.ClientId -> "clientId"
   )
 
-  "POST /records" should {
+  "PUT /records" should {
 
-    "return a 201 with JSON response when creating a record" in {
+    "return a 200 with JSON response when updating a record" in {
 
-      when(mockRouterService.createRecord(any)(any))
-        .thenReturn(EitherT.rightT(createRecordResponseData))
+      when(mockRouterService.updateRecord(any)(any))
+        .thenReturn(EitherT.rightT(updateRecordResponseData))
 
-      val result = sut.create(
-        FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
+      val result = sut.update(
+        FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
       )
 
-      status(result) mustBe CREATED
+      status(result) mustBe OK
 
       withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(createRecordResponseData)
+        contentAsJson(result) mustBe Json.toJson(updateRecordResponseData)
       }
     }
 
@@ -77,12 +77,17 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         ApplicationConstants.BadRequestCode,
         ApplicationConstants.BadRequestMessage,
-        Some(Seq(Error("006", "Mandatory field eori was missing from body")))
+        Some(
+          Seq(
+            Error("006", "Mandatory field eori was missing from body"),
+            Error("026", "The recordId has been provided in the wrong format")
+          )
+        )
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.create(
-        FakeRequest().withBody(invalidCreateRecordRequestData).withHeaders(validHeaders: _*)
+      val result = sut.update(
+        FakeRequest().withBody(invalidUpdateRecordRequestData).withHeaders(validHeaders: _*)
       )
 
       status(result) mustBe BAD_REQUEST
@@ -102,60 +107,89 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.create(
-        FakeRequest().withBody(createRecordRequestData)
+      val result = sut.update(
+        FakeRequest().withBody(updateRecordRequestData)
       )
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
   }
 
-  lazy val createRecordResponseData: CreateOrUpdateRecordResponse = Json
+  lazy val updateRecordResponseData: CreateOrUpdateRecordResponse = Json
     .parse("""
-             |{
-             |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-             |  "eori": "GB123456789012",
-             |  "actorId": "GB098765432112",
-             |  "traderRef": "BAN001001",
-             |  "comcode": "104101000",
-             |  "accreditationStatus": "Not Requested",
-             |  "goodsDescription": "Organic bananas",
-             |  "countryOfOrigin": "EC",
-             |  "category": 1,
-             |  "supplementaryUnit": 500,
-             |  "measurementUnit": "Square metre (m2)",
-             |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-             |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
-             |  "version": 1,
-             |  "active": true,
-             |  "toReview": false,
-             |  "reviewReason": "Commodity code change",
-             |  "declarable": "SPIMM",
-             |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-             |  "nirmsNumber": "RMS-GB-123456",
-             |  "niphlNumber": "6 S12345",
-             |  "createdDateTime": "2024-11-18T23->20->19Z",
-             |  "updatedDateTime": "2024-11-18T23->20->19Z",
-             |  "assessments": [
-             |    {
-             |      "assessmentId": "abc123",
-             |      "primaryCategory": 1,
-             |      "condition": {
-             |        "type": "abc123",
-             |        "conditionId": "Y923",
-             |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-             |        "conditionTraderText": "Excluded product"
-             |      }
-             |    }
-             |  ]
-             |}
-             |""".stripMargin)
+        |{
+        |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+        |  "eori": "GB123456789012",
+        |  "actorId": "GB098765432112",
+        |  "traderRef": "BAN001001",
+        |  "comcode": "104101000",
+        |  "accreditationStatus": "Not Requested",
+        |  "goodsDescription": "Organic bananas",
+        |  "countryOfOrigin": "EC",
+        |  "category": 1,
+        |  "supplementaryUnit": 500,
+        |  "measurementUnit": "Square metre (m2)",
+        |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+        |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+        |  "version": 1,
+        |  "active": true,
+        |  "toReview": false,
+        |  "reviewReason": "Commodity code change",
+        |  "declarable": "SPIMM",
+        |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+        |  "nirmsNumber": "RMS-GB-123456",
+        |  "niphlNumber": "6 S12345",
+        |  "createdDateTime": "2024-11-18T23->20->19Z",
+        |  "updatedDateTime": "2024-11-18T23->20->19Z",
+        |  "assessments": [
+        |    {
+        |      "assessmentId": "abc123",
+        |      "primaryCategory": 1,
+        |      "condition": {
+        |        "type": "abc123",
+        |        "conditionId": "Y923",
+        |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+        |        "conditionTraderText": "Excluded product"
+        |      }
+        |    }
+        |  ]
+        |}
+        |""".stripMargin)
     .as[CreateOrUpdateRecordResponse]
 
-  lazy val createRecordRequestData: JsValue = Json
+  lazy val updateRecordRequestData: JsValue = Json
     .parse("""
         |{
-        |    "eori": "GB123456789012",
+        |    "eori": "GB123456789001",
+        |    "actorId": "GB098765432112",
+        |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        |    "traderRef": "BAN001001",
+        |    "comcode": "104101000",
+        |    "goodsDescription": "Organic bananas",
+        |    "countryOfOrigin": "EC",
+        |    "category": 1,
+        |    "assessments": [
+        |        {
+        |            "assessmentId": "abc123",
+        |            "primaryCategory": 1,
+        |            "condition": {
+        |                "type": "abc123",
+        |                "conditionId": "Y923",
+        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+        |                "conditionTraderText": "Excluded product"
+        |            }
+        |        }
+        |    ],
+        |    "supplementaryUnit": 500,
+        |    "measurementUnit": "Square metre (m2)",
+        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+        |}
+        |""".stripMargin)
+
+  lazy val invalidUpdateRecordRequestData: JsValue = Json
+    .parse("""
+        |{
         |    "actorId": "GB098765432112",
         |    "traderRef": "BAN001001",
         |    "comcode": "104101000",
@@ -181,31 +215,4 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         |}
         |""".stripMargin)
 
-  lazy val invalidCreateRecordRequestData: JsValue = Json
-    .parse("""
-        |{
-        |    "actorId": "GB098765432112",
-        |    "traderRef": "BAN001001",
-        |    "comcode": "104101000",
-        |    "goodsDescription": "Organic bananas",
-        |    "countryOfOrigin": "EC",
-        |    "category": 1,
-        |    "assessments": [
-        |        {
-        |            "assessmentId": "abc123",
-        |            "primaryCategory": 1,
-        |            "condition": {
-        |                "type": "abc123",
-        |                "conditionId": "Y923",
-        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-        |                "conditionTraderText": "Excluded product"
-        |            }
-        |        }
-        |    ],
-        |    "supplementaryUnit": 500,
-        |    "measurementUnit": "Square metre (m2)",
-        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-        |}
-        |""".stripMargin)
 }

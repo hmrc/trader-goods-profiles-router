@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
-case class CreateRecordResponse(
+case class CreateOrUpdateRecordResponse(
   recordId: String,
   eori: String,
   actorId: String,
@@ -46,11 +46,11 @@ case class CreateRecordResponse(
   updatedDateTime: String
 )
 
-object CreateRecordResponse {
+object CreateOrUpdateRecordResponse {
 
-  implicit val writes: Reads[CreateRecordResponse] = (json: JsValue) =>
+  implicit val writes: Reads[CreateOrUpdateRecordResponse] = (json: JsValue) =>
     JsSuccess(
-      CreateRecordResponse(
+      CreateOrUpdateRecordResponse(
         (json \ "recordId").as[String],
         (json \ "eori").as[String],
         (json \ "actorId").as[String],
@@ -78,7 +78,7 @@ object CreateRecordResponse {
       )
     )
 
-  implicit val reads: Writes[CreateRecordResponse] = (response: CreateRecordResponse) =>
+  implicit val reads: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) =>
     Json.obj(
       "recordId"                 -> response.recordId,
       "eori"                     -> response.eori,

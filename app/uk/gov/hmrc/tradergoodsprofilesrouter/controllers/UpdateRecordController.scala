@@ -25,7 +25,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
@@ -33,7 +33,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{HeaderNames, ValidationSuppo
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateRecordController @Inject() (
+class UpdateRecordController @Inject() (
   cc: ControllerComponents,
   routerService: RouterService,
   uuidService: UuidService,
@@ -43,25 +43,25 @@ class CreateRecordController @Inject() (
 ) extends BackendController(cc)
     with Logging {
 
-  def create: Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def update: Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
       _ <- validateHeaderClientId.validateClientId(request)
 
-      createRecordRequest <- validateRequestBody(request)
+      updateRecordRequest <- validateRequestBody(request)
 
-      response <- routerService.createRecord(createRecordRequest)
-    } yield Created(Json.toJson(response))
+      response <- routerService.updateRecord(updateRecordRequest)
+    } yield Ok(Json.toJson(response))
 
     result.merge
   }
 
-  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, CreateRecordRequest] =
+  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, UpdateRecordRequest] =
     request.body
-      .validate[CreateRecordRequest]
+      .validate[UpdateRecordRequest]
       .asEither
       .leftMap { errors =>
         logger.warn(
-          "[CreateRecordController] - Create Record Validation JsError in CreateRecordController.create"
+          "[UpdateRecordController] - Create Record Validation JsError in UpdateRecordController.create"
         )
         BadRequest(
           toJson(
@@ -78,6 +78,7 @@ class CreateRecordController @Inject() (
 
   private val fieldsToErrorCode: Map[String, (String, String)] = Map(
     "/eori"                                                       -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
+    "/recordId"                                                   -> (RecordIdDoesNotExistsCode, InvalidRecordId),
     "/actorId"                                                    -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),
     "/traderRef"                                                  -> (InvalidOrMissingTraderRefCode, InvalidOrMissingTraderRef),
     "/comcode"                                                    -> (InvalidOrMissingComcodeCode, InvalidOrMissingComcode),
