@@ -80,7 +80,15 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
         "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         "BAD_REQUEST",
         "Bad Request",
-        Some(Seq(Error("INVALID_REQUEST_PARAMETER", "Mandatory field actorId was missing from body", 8)))
+        Some(
+          Seq(
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field actorId was missing from body or is in the wrong format",
+              8
+            )
+          )
+        )
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")

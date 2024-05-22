@@ -27,7 +27,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorRespons
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 trait EisHttpErrorHandler {
-  def handleErrorResponse(httpResponse: HttpResponse)(implicit correlationId: String): Result =
+  def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): Result =
     httpResponse.status match {
 
       case BAD_REQUEST =>

@@ -347,7 +347,7 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
               ),
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field actorId was missing from body",
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "errorNumber" -> 8
               ),
               Json.obj(
@@ -503,7 +503,7 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field actorId was missing from body",
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "errorNumber" -> 8
               )
             )
@@ -526,7 +526,7 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field actorId was missing from body",
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "errorNumber" -> 8
               )
             )
