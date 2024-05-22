@@ -48,7 +48,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -62,7 +62,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequiredRequestData)
             .futureValue
 
@@ -78,7 +78,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -96,7 +96,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -114,7 +114,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -132,7 +132,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -154,7 +154,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -172,7 +172,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -194,7 +194,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -212,7 +212,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -234,7 +234,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -252,7 +252,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -274,7 +274,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -311,7 +311,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -356,7 +356,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -405,7 +405,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -447,7 +447,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -473,7 +473,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestData)
             .futureValue
 
@@ -507,7 +507,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "missing required request field" in {
           val response = wsClient
             .url(fullUrl(s"/records/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-Id", "tss"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(invalidRequestData)
             .futureValue
 
@@ -545,7 +545,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .withHeader("Date", equalTo(timestamp))
       .withHeader("Accept", equalTo("application/json"))
       .withHeader("Authorization", equalTo("bearerToken"))
-      .withHeader("X-Client-Id", equalTo("tss"))
+      .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
