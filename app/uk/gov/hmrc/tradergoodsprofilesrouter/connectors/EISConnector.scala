@@ -24,9 +24,9 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, RemoveRecordHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -58,7 +58,12 @@ trait EISConnector {
   def createRecord(
     request: CreateRecordRequest,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateRecordResponse]]
+  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]]
+
+  def updateRecord(
+    request: UpdateRecordRequest,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]]
 
   def removeRecord(
     eori: String,
@@ -109,15 +114,27 @@ class EISConnectorImpl @Inject() (
   override def createRecord(
     request: CreateRecordRequest,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateRecordResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
     val url = appConfig.eisConfig.createRecordUrl
 
     httpClientV2
       .post(url"$url")
       .setHeader(eisRequestHeaders(correlationId): _*)
       .withBody(toJson(request))
-      .execute(HttpReader[CreateRecordResponse](correlationId, handleErrorResponse), ec)
+      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
+  }
 
+  override def updateRecord(
+    request: UpdateRecordRequest,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
+    val url = appConfig.eisConfig.updateRecordUrl
+
+    httpClientV2
+      .put(url"$url")
+      .setHeader(eisRequestHeaders(correlationId): _*)
+      .withBody(toJson(request))
+      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 
   override def removeRecord(

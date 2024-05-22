@@ -19,7 +19,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
-case class CreateRecordResponse(
+import java.time.Instant
+
+case class CreateOrUpdateRecordResponse(
   recordId: String,
   eori: String,
   actorId: String,
@@ -32,8 +34,8 @@ case class CreateRecordResponse(
   assessments: Option[Seq[Assessment]],
   supplementaryUnit: Option[Int],
   measurementUnit: Option[String],
-  comcodeEffectiveFromDate: String,
-  comcodeEffectiveToDate: Option[String],
+  comcodeEffectiveFromDate: Instant,
+  comcodeEffectiveToDate: Option[Instant],
   version: Int,
   active: Boolean,
   toReview: Boolean,
@@ -42,15 +44,15 @@ case class CreateRecordResponse(
   ukimsNumber: String,
   nirmsNumber: Option[String],
   niphlNumber: Option[String],
-  createdDateTime: String,
-  updatedDateTime: String
+  createdDateTime: Instant,
+  updatedDateTime: Instant
 )
 
-object CreateRecordResponse {
+object CreateOrUpdateRecordResponse {
 
-  implicit val writes: Reads[CreateRecordResponse] = (json: JsValue) =>
+  implicit val writes: Reads[CreateOrUpdateRecordResponse] = (json: JsValue) =>
     JsSuccess(
-      CreateRecordResponse(
+      CreateOrUpdateRecordResponse(
         (json \ "recordId").as[String],
         (json \ "eori").as[String],
         (json \ "actorId").as[String],
@@ -63,8 +65,8 @@ object CreateRecordResponse {
         (json \ "assessments").asOpt[Seq[Assessment]],
         (json \ "supplementaryUnit").asOpt[Int],
         (json \ "measurementUnit").asOpt[String],
-        (json \ "comcodeEffectiveFromDate").as[String],
-        (json \ "comcodeEffectiveToDate").asOpt[String],
+        (json \ "comcodeEffectiveFromDate").as[Instant],
+        (json \ "comcodeEffectiveToDate").asOpt[Instant],
         (json \ "version").as[Int],
         (json \ "active").as[Boolean],
         (json \ "toReview").as[Boolean],
@@ -73,12 +75,12 @@ object CreateRecordResponse {
         (json \ "ukimsNumber").as[String],
         (json \ "nirmsNumber").asOpt[String],
         (json \ "niphlNumber").asOpt[String],
-        (json \ "createdDateTime").as[String],
-        (json \ "updatedDateTime").as[String]
+        (json \ "createdDateTime").as[Instant],
+        (json \ "updatedDateTime").as[Instant]
       )
     )
 
-  implicit val reads: Writes[CreateRecordResponse] = (response: CreateRecordResponse) =>
+  implicit val reads: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) =>
     Json.obj(
       "recordId"                 -> response.recordId,
       "eori"                     -> response.eori,

@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import play.api.libs.json._
+
+import java.time.Instant
 case class GoodsItemRecords(
   eori: String,
   actorId: String,
@@ -30,8 +32,8 @@ case class GoodsItemRecords(
   assessments: Option[Seq[Assessment]],
   supplementaryUnit: Option[Int],
   measurementUnit: Option[String],
-  comcodeEffectiveFromDate: String,
-  comcodeEffectiveToDate: Option[String],
+  comcodeEffectiveFromDate: Instant,
+  comcodeEffectiveToDate: Option[Instant],
   version: Int,
   active: Boolean,
   toReview: Boolean,
@@ -42,8 +44,8 @@ case class GoodsItemRecords(
   niphlNumber: Option[String],
   locked: Boolean,
   srcSystemName: String,
-  createdDateTime: String,
-  updatedDateTime: String
+  createdDateTime: Instant,
+  updatedDateTime: Instant
 )
 
 object GoodsItemRecords {
@@ -63,8 +65,8 @@ object GoodsItemRecords {
         (json \ "assessments").asOpt[Seq[Assessment]],
         (json \ "supplementaryUnit").asOpt[Int],
         (json \ "measurementUnit").asOpt[String],
-        (json \ "comcodeEffectiveFromDate").as[String],
-        (json \ "comcodeEffectiveToDate").asOpt[String],
+        (json \ "comcodeEffectiveFromDate").as[Instant],
+        (json \ "comcodeEffectiveToDate").asOpt[Instant],
         (json \ "version").as[Int],
         (json \ "active").as[Boolean],
         (json \ "toReview").as[Boolean],
@@ -75,8 +77,8 @@ object GoodsItemRecords {
         (json \ "niphlNumber").asOpt[String],
         (json \ "locked").as[Boolean],
         (json \ "srcSystemName").as[String],
-        (json \ "createdDateTime").as[String],
-        (json \ "updatedDateTime").as[String]
+        (json \ "createdDateTime").as[Instant],
+        (json \ "updatedDateTime").as[Instant]
       )
     )
 

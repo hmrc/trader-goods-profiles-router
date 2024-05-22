@@ -25,8 +25,8 @@ import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -49,14 +49,17 @@ trait RouterService {
 
   def createRecord(
     request: CreateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateRecordResponse]
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse]
+
+  def updateRecord(
+    request: UpdateRecordRequest
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse]
 
   def removeRecord(
     eori: String,
     recordId: String,
     actorId: String
   )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, Int]
-
 }
 
 class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: UuidService)(implicit ec: ExecutionContext)
@@ -114,7 +117,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
 
   override def createRecord(
     request: CreateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateRecordResponse] = {
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
     val correlationId = uuidService.uuid
     EitherT(
       eisConnector
@@ -152,6 +155,28 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
             ex,
             s"""[RouterService] - Error occurred while removing record for Eori Number: $eori, recordId: $recordId,
             actorId: $actorId, correlationId: $correlationId, message: ${ex.getMessage}"""
+          )
+        }
+    )
+  }
+
+  override def updateRecord(
+    request: UpdateRecordRequest
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
+    val correlationId = uuidService.uuid
+    EitherT(
+      eisConnector
+        .updateRecord(request, correlationId)
+        .map {
+          case response @ Right(_) => response
+          case error @ Left(_)     => error
+        }
+        .recover { case ex: Throwable =>
+          logMessageAndReturnError(
+            correlationId,
+            ex,
+            s"""[RouterService] - Error when updating records for Eori Number: ${request.eori},
+            s"correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
     )

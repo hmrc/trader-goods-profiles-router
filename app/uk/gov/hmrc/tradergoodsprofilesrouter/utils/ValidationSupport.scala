@@ -20,6 +20,7 @@ import play.api.libs.functional.syntax.toApplicativeOps
 import play.api.libs.json.Reads.{maxLength, minLength}
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 import java.text.SimpleDateFormat
 import java.util.{Locale, TimeZone}
@@ -35,8 +36,7 @@ object ValidationSupport {
   def isValidDate(rawDate: String): Boolean = Try(dateFormat.parse(rawDate)).isSuccess
 
   def convertError(
-    errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
-    fieldsToErrorCode: Map[String, (String, String)]
+    errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
   ): Seq[Error] =
     extractSimplePaths(errors)
       .map(key => fieldsToErrorCode.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt)))
@@ -62,4 +62,25 @@ object ValidationSupport {
       .map(_._1)
       .map(_.path)
       .map(_.mkString)
+
+  private val fieldsToErrorCode: Map[String, (String, String)] = Map(
+    "/eori"                                                       -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
+    "/recordId"                                                   -> (RecordIdDoesNotExistsCode, InvalidRecordId),
+    "/actorId"                                                    -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),
+    "/traderRef"                                                  -> (InvalidOrMissingTraderRefCode, InvalidOrMissingTraderRef),
+    "/comcode"                                                    -> (InvalidOrMissingComcodeCode, InvalidOrMissingComcode),
+    "/goodsDescription"                                           -> (InvalidOrMissingGoodsDescriptionCode, InvalidOrMissingGoodsDescription),
+    "/countryOfOrigin"                                            -> (InvalidOrMissingCountryOfOriginCode, InvalidOrMissingCountryOfOrigin),
+    "/category"                                                   -> (InvalidOrMissingCategoryCode, InvalidOrMissingCategory),
+    "/assessments"                                                -> (InvalidOrMissingAssessmentIdCode, InvalidOrMissingAssessmentId),
+    "/supplementaryUnit"                                          -> (InvalidAssessmentPrimaryCategoryCode, InvalidAssessmentPrimaryCategory),
+    "/assessments/primaryCategory/condition/type"                 -> (InvalidAssessmentPrimaryCategoryConditionTypeCode, InvalidAssessmentPrimaryCategoryConditionType),
+    "/assessments/primaryCategory/condition/conditionId"          -> (InvalidAssessmentPrimaryCategoryConditionIdCode, InvalidAssessmentPrimaryCategoryConditionId),
+    "/assessments/primaryCategory/condition/conditionDescription" -> (InvalidAssessmentPrimaryCategoryConditionDescriptionCode, InvalidAssessmentPrimaryCategoryConditionDescription),
+    "/assessments/primaryCategory/condition/conditionTraderText"  -> (InvalidAssessmentPrimaryCategoryConditionTraderTextCode, InvalidAssessmentPrimaryCategoryConditionTraderText),
+    "/supplementaryUnit"                                          -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
+    "/measurementUnit"                                            -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
+    "/comcodeEffectiveFromDate"                                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
+    "/comcodeEffectiveToDate"                                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate)
+  )
 }

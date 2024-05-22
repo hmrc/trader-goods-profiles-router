@@ -28,14 +28,15 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCoun
 import java.time.Instant
 import scala.Function.unlift
 
-case class CreateRecordRequest(
+case class UpdateRecordRequest(
   eori: String,
+  recordId: String,
   actorId: String,
-  traderRef: String,
-  comcode: String,
-  goodsDescription: String,
-  countryOfOrigin: String,
-  category: Int,
+  traderRef: Option[String],
+  comcode: Option[String],
+  goodsDescription: Option[String],
+  countryOfOrigin: Option[String],
+  category: Option[Int],
   assessments: Option[Seq[Assessment]],
   supplementaryUnit: Option[Int],
   measurementUnit: Option[String],
@@ -43,34 +44,36 @@ case class CreateRecordRequest(
   comcodeEffectiveToDate: Option[Instant]
 )
 
-object CreateRecordRequest {
+object UpdateRecordRequest {
 
-  implicit val reads: Reads[CreateRecordRequest] =
+  implicit val reads: Reads[UpdateRecordRequest] =
     ((JsPath \ "eori").read(lengthBetween(14, 17)) and
+      (JsPath \ "recordId").read(lengthBetween(36, 36)) and
       (JsPath \ "actorId").read(lengthBetween(14, 17)) and
-      (JsPath \ "traderRef").read(lengthBetween(1, 512)) and
-      (JsPath \ "comcode").read(lengthBetween(6, 10)) and
-      (JsPath \ "goodsDescription").read(lengthBetween(1, 512)) and
-      (JsPath \ "countryOfOrigin").read(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
-      (JsPath \ "category").read[Int] and
+      (JsPath \ "traderRef").readNullable(lengthBetween(1, 512)) and
+      (JsPath \ "comcode").readNullable(lengthBetween(6, 10)) and
+      (JsPath \ "goodsDescription").readNullable(lengthBetween(1, 512)) and
+      (JsPath \ "countryOfOrigin").readNullable(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
+      (JsPath \ "category").readNullable[Int] and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[Int] and
-      (JsPath \ "measurementUnit").readNullable[String] and
+      (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 512)) and
       (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
       (JsPath \ "comcodeEffectiveToDate")
-        .readNullable[Instant])(CreateRecordRequest.apply _)
+        .readNullable[Instant])(UpdateRecordRequest.apply _)
 
-  implicit lazy val writes: OWrites[CreateRecordRequest] =
+  implicit lazy val writes: OWrites[UpdateRecordRequest] =
     ((JsPath \ "eori").write[String] and
+      (JsPath \ "recordId").write[String] and
       (JsPath \ "actorId").write[String] and
-      (JsPath \ "traderRef").write[String] and
-      (JsPath \ "comcode").write[String] and
-      (JsPath \ "goodsDescription").write[String] and
-      (JsPath \ "countryOfOrigin").write[String] and
-      (JsPath \ "category").write[Int] and
+      (JsPath \ "traderRef").writeNullable[String] and
+      (JsPath \ "comcode").writeNullable[String] and
+      (JsPath \ "goodsDescription").writeNullable[String] and
+      (JsPath \ "countryOfOrigin").writeNullable[String] and
+      (JsPath \ "category").writeNullable[Int] and
       (JsPath \ "assessments").writeNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").writeNullable[Int] and
       (JsPath \ "measurementUnit").writeNullable[String] and
       (JsPath \ "comcodeEffectiveFromDate").write[Instant] and
-      (JsPath \ "comcodeEffectiveToDate").writeNullable[Instant])(unlift(CreateRecordRequest.unapply))
+      (JsPath \ "comcodeEffectiveToDate").writeNullable[Instant])(unlift(UpdateRecordRequest.unapply))
 }

@@ -28,8 +28,8 @@ import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
@@ -170,7 +170,7 @@ class RouterServiceSpec
 
   "createRecord" should {
     "create a record item" in {
-      val eisResponse = createRecordResponseData
+      val eisResponse = createOrUpdateRecordResponseData
       when(eisConnector.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
@@ -254,7 +254,54 @@ class RouterServiceSpec
       }
     }
   }
-  val createRecordResponseData: CreateRecordResponse =
+
+  "updateRecord" should {
+    "update a record item" in {
+      val eisResponse = createOrUpdateRecordResponseData
+      when(eisConnector.updateRecord(any, any)(any))
+        .thenReturn(Future.successful(Right(eisResponse)))
+
+      val result = routerService.updateRecord(updateRecordRequest)
+
+      whenReady(result.value) {
+        _.value shouldBe eisResponse
+      }
+    }
+
+    "return an internal server error" when {
+
+      "EIS return an error" in {
+        when(eisConnector.updateRecord(any, any)(any))
+          .thenReturn(Future.successful(Left(BadRequest("error"))))
+
+        val result = routerService.updateRecord(updateRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe BadRequest("error")
+        }
+      }
+
+      "error when an exception is thrown" in {
+        when(eisConnector.updateRecord(any, any)(any))
+          .thenReturn(Future.failed(new RuntimeException("error")))
+
+        val result = routerService.updateRecord(updateRecordRequest)
+
+        whenReady(result.value) {
+          _.left.value shouldBe InternalServerError(
+            Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> "UNEXPECTED_ERROR",
+              "message"       -> "error"
+            )
+          )
+        }
+      }
+
+    }
+  }
+
+  val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse =
     Json
       .parse("""
           |{
@@ -279,8 +326,8 @@ class RouterServiceSpec
           |  "ukimsNumber": "XIUKIM47699357400020231115081800",
           |  "nirmsNumber": "RMS-GB-123456",
           |  "niphlNumber": "6 S12345",
-          |  "createdDateTime": "2024-11-18T23->20->19Z",
-          |  "updatedDateTime": "2024-11-18T23->20->19Z",
+          |  "createdDateTime": "2024-11-18T23:20:19Z",
+          |  "updatedDateTime": "2024-11-18T23:20:19Z",
           |  "assessments": [
           |    {
           |      "assessmentId": "abc123",
@@ -295,7 +342,7 @@ class RouterServiceSpec
           |  ]
           |}
           |""".stripMargin)
-      .as[CreateRecordResponse]
+      .as[CreateOrUpdateRecordResponse]
 
   val createRecordRequest: CreateRecordRequest = Json
     .parse("""
@@ -326,5 +373,36 @@ class RouterServiceSpec
         |}
         |""".stripMargin)
     .as[CreateRecordRequest]
+
+  val updateRecordRequest: UpdateRecordRequest = Json
+    .parse("""
+        |{
+        |    "eori": "GB123456789001",
+        |    "actorId": "GB098765432112",
+        |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        |    "traderRef": "BAN001001",
+        |    "comcode": "104101000",
+        |    "goodsDescription": "Organic bananas",
+        |    "countryOfOrigin": "EC",
+        |    "category": 1,
+        |    "assessments": [
+        |        {
+        |            "assessmentId": "abc123",
+        |            "primaryCategory": 1,
+        |            "condition": {
+        |                "type": "abc123",
+        |                "conditionId": "Y923",
+        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+        |                "conditionTraderText": "Excluded product"
+        |            }
+        |        }
+        |    ],
+        |    "supplementaryUnit": 500,
+        |    "measurementUnit": "Square metre (m2)",
+        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+        |}
+        |""".stripMargin)
+    .as[UpdateRecordRequest]
 
 }
