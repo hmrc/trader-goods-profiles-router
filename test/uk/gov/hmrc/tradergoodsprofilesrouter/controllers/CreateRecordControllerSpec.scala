@@ -74,7 +74,15 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         ApplicationConstants.BadRequestCode,
         ApplicationConstants.BadRequestMessage,
-        Some(Seq(Error("006", "Mandatory field eori was missing from body")))
+        Some(
+          Seq(
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field eori was missing from body or is in the wrong format",
+              6
+            )
+          )
+        )
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")

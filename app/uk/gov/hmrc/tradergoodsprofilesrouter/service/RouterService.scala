@@ -75,15 +75,11 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
           case Left(error)     => Left(error)
         }
         .recover { case ex: Throwable =>
-          logger.error(
+          logMessageAndReturnError(
+            correlationId,
+            ex,
             s"""[RouterService] - Error when fetching a single record for Eori Number: $eori,
-            s"recordId: $recordId, correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
-          Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
+            s"recordId: $recordId, correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
     )
@@ -102,19 +98,15 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       eisConnector
         .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
         .map {
-          case Right(response) => Right(response)
-          case Left(error)     => Left(error)
+          case response @ Right(_) => response
+          case error @ Left(_)     => error
         }
         .recover { case ex: Throwable =>
-          logger.error(
+          logMessageAndReturnError(
+            correlationId,
+            ex,
             s"""[RouterService] - Error when fetching records for Eori Number: $eori,
-            s"correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
-          Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
+            s"correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
     )
@@ -132,15 +124,11 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
           case error @ Left(_)     => error
         }
         .recover { case ex: Throwable =>
-          logger.error(
+          logMessageAndReturnError(
+            correlationId,
+            ex,
             s"""[RouterService] - Error when creating records for Eori Number: ${request.eori},
-            correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
-          Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
+            correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
     )
@@ -155,21 +143,26 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       eisConnector
         .removeRecord(eori, recordId, actorId, correlationId)
         .map {
-          case Right(_)    => Right(OK)
-          case Left(error) => Left(error)
+          case Right(_)        => Right(OK)
+          case error @ Left(_) => error
         }
         .recover { case ex: Throwable =>
-          logger.error(
+          logMessageAndReturnError(
+            correlationId,
+            ex,
             s"""[RouterService] - Error occurred while removing record for Eori Number: $eori, recordId: $recordId,
-            actorId: $actorId, correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
-          Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
+            actorId: $actorId, correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
+    )
+  }
+
+  private def logMessageAndReturnError(correlationId: String, ex: Throwable, logMsg: String) = {
+    logger.error(logMsg, ex)
+    Left(
+      InternalServerError(
+        Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+      )
     )
   }
 }

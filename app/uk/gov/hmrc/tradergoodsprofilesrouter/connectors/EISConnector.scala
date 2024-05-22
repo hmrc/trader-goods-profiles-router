@@ -73,7 +73,8 @@ class EISConnectorImpl @Inject() (
   httpClientV2: HttpClientV2,
   dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
-    extends EISConnector {
+    extends EISConnector
+    with EisHttpErrorHandler {
 
   override def fetchRecord(
     eori: String,
@@ -85,7 +86,7 @@ class EISConnectorImpl @Inject() (
     httpClientV2
       .get(url"$url")
       .setHeader(eisRequestHeaders(correlationId): _*)
-      .execute(HttpReader[GetEisRecordsResponse](correlationId), ec)
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
 
   }
 
@@ -102,7 +103,7 @@ class EISConnectorImpl @Inject() (
     httpClientV2
       .get(url"$uri")
       .setHeader(eisRequestHeaders(correlationId): _*)
-      .execute(HttpReader[GetEisRecordsResponse](correlationId), ec)
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
   }
 
   override def createRecord(
@@ -115,7 +116,7 @@ class EISConnectorImpl @Inject() (
       .post(url"$url")
       .setHeader(eisRequestHeaders(correlationId): _*)
       .withBody(toJson(request))
-      .execute(HttpReader[CreateRecordResponse](correlationId), ec)
+      .execute(HttpReader[CreateRecordResponse](correlationId, handleErrorResponse), ec)
 
   }
 
@@ -130,7 +131,7 @@ class EISConnectorImpl @Inject() (
       .put(url"$url")
       .setHeader(eisRequestHeaders(correlationId): _*)
       .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
-      .execute(RemoveRecordHttpReader[Int](correlationId), ec)
+      .execute(RemoveRecordHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
   private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =

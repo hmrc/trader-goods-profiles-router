@@ -25,7 +25,7 @@ case class ErrorResponse(
   errors: Option[Seq[Error]] = None
 )
 
-case class Error(code: String, message: String)
+case class Error(code: String, message: String, errorNumber: Int)
 
 object ErrorResponse {
   implicit val format: OFormat[ErrorResponse] = Json.format[ErrorResponse]
@@ -33,4 +33,10 @@ object ErrorResponse {
 
 object Error {
   implicit val format: OFormat[Error] = Json.format[Error]
+
+  def invalidRequestParameterError(message: String, errorNumber: Int) =
+    Error("INVALID_REQUEST_PARAMETER", message, errorNumber)
+
+  def unexpectedError(message: String, errorNumber: Int) =
+    Error("UNEXPECTED_ERROR", message, errorNumber)
 }

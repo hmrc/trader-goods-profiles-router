@@ -387,38 +387,8 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
           verifyThatDownstreamApiWasCalled()
         }
-        "Bad Request for invalid or missing EORI" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/null"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 006, message: Missing or invalid mandatory request parameter EORI"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
-          )
+        "Bad Request for invalid request parameter error" in {
+          stubEisRequestForInvalidReqParam
 
           val response = await(
             wsClient
@@ -434,234 +404,36 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "006",
-                "message" -> "Mandatory field eori was missing from body"
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled()
-        }
-        "Bad Request for EORI does not exists in database" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 007, message: EORI does not exist in the database"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
-          )
-
-          val response = await(
-            wsClient
-              .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .get()
-          )
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
+                "errorNumber" -> 6
+              ),
               Json.obj(
-                "code"    -> "007",
-                "message" -> "EORI number does not have a TGP"
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled()
-        }
-        "Bad Request for invalid query parameter lastUpdatedDate" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 028, message: Invalid optional request parameter lastUpdatedDate"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
-          )
-
-          val response = await(
-            wsClient
-              .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .get()
-          )
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "EORI number does not have a TGP",
+                "errorNumber" -> 7
+              ),
               Json.obj(
-                "code"    -> "028",
-                "message" -> "The URL parameter lastUpdatedDate is in the wrong format"
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled()
-        }
-        "Bad Request for invalid query parameter page" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 029, message: Invalid optional request parameter page"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
-          )
-
-          val response = await(
-            wsClient
-              .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .get()
-          )
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "The URL parameter lastUpdatedDate is in the wrong format",
+                "errorNumber" -> 28
+              ),
               Json.obj(
-                "code"    -> "029",
-                "message" -> "The URL parameter page is in the wrong format"
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled()
-        }
-        "Bad Request for invalid query parameter size" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 030, message: Invalid optional request parameter size"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
-          )
-
-          val response = await(
-            wsClient
-              .url(fullUrl(s"/$eori"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .get()
-          )
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "The URL parameter page is in the wrong format",
+                "errorNumber" -> 29
+              ),
               Json.obj(
-                "code"    -> "030",
-                "message" -> "The URL parameter size is in the wrong format"
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "The URL parameter size is in the wrong format",
+                "errorNumber" -> 30
               )
             )
           )
 
           verifyThatDownstreamApiWasCalled()
         }
+
         "Bad Request with unexpected error" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori"))
@@ -709,8 +481,9 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "UNEXPECTED_ERROR",
-                "message" -> "Unexpected Error"
+                "code"        -> "UNEXPECTED_ERROR",
+                "message"     -> "Unrecognised error number",
+                "errorNumber" -> 40
               )
             )
           )
@@ -822,6 +595,43 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
       }
     }
   }
+
+  private def stubEisRequestForInvalidReqParam =
+    stubFor(
+      get(urlEqualTo(s"$connectorPath/null"))
+        .withHeader("Content-Type", equalTo("application/json"))
+        .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+        .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+        .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
+        .withHeader("Accept", equalTo("application/json"))
+        .withHeader("Authorization", equalTo("bearerToken"))
+        .withHeader("X-Client-ID", equalTo("tss"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(BAD_REQUEST)
+            .withBody(s"""
+                 |{
+                 |  "errorDetail": {
+                 |    "timestamp": "2023-09-14T11:29:18Z",
+                 |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
+                 |    "errorCode": "400",
+                 |    "errorMessage": "Invalid request parameter",
+                 |    "source": "BACKEND",
+                 |    "sourceFaultDetail": {
+                 |      "detail": [
+                 |      "error: 006, message: Missing or invalid mandatory request parameter EORI",
+                 |      "error: 007, message: EORI does not exist in the database",
+                 |      "error: 028, message: Invalid optional request parameter lastUpdatedDate",
+                 |      "error: 029, message: Invalid optional request parameter page",
+                 |      "error: 030, message: Invalid optional request parameter size"
+                 |      ]
+                 |    }
+                 |  }
+                 |}
+                 |""".stripMargin)
+        )
+    )
 
   private def stubForEis(
     httpStatus: Int,

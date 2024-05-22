@@ -40,15 +40,18 @@ object ApplicationConstants {
   val BadGatewayMessage                                    = "Bad Gateway"
   val UnknownCode                                          = "UNKNOWN"
   val UnknownMessage                                       = "Unknown Error"
-  val InvalidOrMissingEori                                 = "Mandatory field eori was missing from body"
+  val InvalidOrMissingEori                                 =
+    "Mandatory field eori was missing from body or is in the wrong format"
   val EoriDoesNotExists                                    = "EORI number does not have a TGP"
-  val InvalidOrMissingActorId                              = "Mandatory field actorId was missing from body"
-  val InvalidOrMissingTraderRef                            = "Mandatory field traderRef was missing from body"
+  val InvalidOrMissingActorId                              = "Mandatory field actorId was missing from body or is in the wrong format"
+  val InvalidOrMissingTraderRef                            = "Mandatory field traderRef was missing from body or is in the wrong format"
   val TraderRefIsNotUnique                                 = "Trying to create or update a record with a duplicate traderRef"
-  val InvalidOrMissingComcode                              = "Mandatory field comcode was missing from body"
-  val InvalidOrMissingGoodsDescription                     = "Mandatory field goodsDescription was missing from body"
-  val InvalidOrMissingCountryOfOrigin                      = "Mandatory field countryOfOrigin was missing from body"
-  val InvalidOrMissingCategory                             = "Mandatory field category was missing from body"
+  val InvalidOrMissingComcode                              = "Mandatory field comcode was missing from body or is in the wrong format"
+  val InvalidOrMissingGoodsDescription                     =
+    "Mandatory field goodsDescription was missing from body or is in the wrong format"
+  val InvalidOrMissingCountryOfOrigin                      =
+    "Mandatory field countryOfOrigin was missing from body or is in the wrong format"
+  val InvalidOrMissingCategory                             = "Mandatory field category was missing from body or is in the wrong format"
   val InvalidOrMissingAssessmentId                         = "Optional field assessmentId is in the wrong format"
   val InvalidAssessmentPrimaryCategory                     = "Optional field primaryCategory is in the wrong format"
   val InvalidAssessmentPrimaryCategoryConditionType        =
@@ -62,7 +65,7 @@ object ApplicationConstants {
   val InvalidOrMissingSupplementaryUnit                    = "Optional field supplementaryUnit is in the wrong format"
   val InvalidOrMissingMeasurementUnit                      = "Optional field measurementUnit is in the wrong format"
   val InvalidOrMissingComcodeEffectiveFromDate             =
-    "Mandatory field comcodeEffectiveFromDate was missing from body"
+    "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format"
   val InvalidOrMissingComcodeEffectiveToDate               = "Optional field comcodeEffectiveToDate is in the wrong format"
   val InvalidRecordId                                      = "The recordId has been provided in the wrong format"
   val RecordIdDoesNotExists                                = "The requested recordId to update doesn’t exist"
@@ -101,4 +104,5 @@ object ApplicationConstants {
   val InvalidPageCode                                          = "029"
   val InvalidSizeCode                                          = "030"
   val RecordRemovedAndCanNotBeUpdatedCode                      = "031"
+
 }

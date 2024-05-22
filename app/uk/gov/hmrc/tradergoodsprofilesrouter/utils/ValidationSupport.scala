@@ -39,7 +39,7 @@ object ValidationSupport {
     fieldsToErrorCode: Map[String, (String, String)]
   ): Seq[Error] =
     extractSimplePaths(errors)
-      .map(key => fieldsToErrorCode.get(key).map(res => Error(res._1, res._2)))
+      .map(key => fieldsToErrorCode.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt)))
       .toSeq
       .flatten
 

@@ -22,11 +22,12 @@ import play.api.mvc.Result
 import play.api.mvc.Results.{BadGateway, BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound, ServiceUnavailable}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ErrorDetail
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 trait EisHttpErrorHandler {
-  def handleErrorResponse(httpResponse: HttpResponse)(implicit correlationId: String): Result =
+  def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): Result =
     httpResponse.status match {
 
       case BAD_REQUEST =>
@@ -185,105 +186,105 @@ trait EisHttpErrorHandler {
       }
     )
 
-  private def parseFaultDetail(rawDetail: String, correlationId: String): Error = {
+  private def parseFaultDetail(rawDetail: String, correlationId: String) = {
     val regex = """error:\s*(\d+),\s*message:\s*(.*)""".r
 
     rawDetail match {
       case regex(code, _) =>
         code match {
           case InvalidOrMissingEoriCode                                 =>
-            Error(
-              InvalidOrMissingEoriCode,
-              InvalidOrMissingEori
+            invalidRequestParameterError(
+              InvalidOrMissingEori,
+              code.toInt
             )
           case EoriDoesNotExistsCode                                    =>
-            Error(EoriDoesNotExistsCode, EoriDoesNotExists)
+            invalidRequestParameterError(EoriDoesNotExists, code.toInt)
           case InvalidOrMissingActorIdCode                              =>
-            Error(InvalidOrMissingActorIdCode, InvalidOrMissingActorId)
+            invalidRequestParameterError(InvalidOrMissingActorId, code.toInt)
           case InvalidOrMissingTraderRefCode                            =>
-            Error(InvalidOrMissingTraderRefCode, InvalidOrMissingTraderRef)
+            invalidRequestParameterError(InvalidOrMissingTraderRef, code.toInt)
           case TraderRefIsNotUniqueCode                                 =>
-            Error(TraderRefIsNotUniqueCode, TraderRefIsNotUnique)
+            invalidRequestParameterError(TraderRefIsNotUnique, code.toInt)
           case InvalidOrMissingComcodeCode                              =>
-            Error(InvalidOrMissingComcodeCode, InvalidOrMissingComcode)
+            invalidRequestParameterError(InvalidOrMissingComcode, code.toInt)
           case InvalidOrMissingGoodsDescriptionCode                     =>
-            Error(
-              InvalidOrMissingGoodsDescriptionCode,
-              InvalidOrMissingGoodsDescription
+            invalidRequestParameterError(
+              InvalidOrMissingGoodsDescription,
+              code.toInt
             )
           case InvalidOrMissingCountryOfOriginCode                      =>
-            Error(
-              InvalidOrMissingCountryOfOriginCode,
-              InvalidOrMissingCountryOfOrigin
+            invalidRequestParameterError(
+              InvalidOrMissingCountryOfOrigin,
+              code.toInt
             )
           case InvalidOrMissingCategoryCode                             =>
-            Error(InvalidOrMissingCategoryCode, InvalidOrMissingCategory)
+            invalidRequestParameterError(InvalidOrMissingCategory, code.toInt)
           case InvalidOrMissingAssessmentIdCode                         =>
-            Error(
-              InvalidOrMissingAssessmentIdCode,
-              InvalidOrMissingAssessmentId
+            invalidRequestParameterError(
+              InvalidOrMissingAssessmentId,
+              code.toInt
             )
           case InvalidAssessmentPrimaryCategoryCode                     =>
-            Error(
-              InvalidAssessmentPrimaryCategoryCode,
-              InvalidAssessmentPrimaryCategory
+            invalidRequestParameterError(
+              InvalidAssessmentPrimaryCategory,
+              code.toInt
             )
           case InvalidAssessmentPrimaryCategoryConditionTypeCode        =>
-            Error(
-              InvalidAssessmentPrimaryCategoryConditionTypeCode,
-              InvalidAssessmentPrimaryCategoryConditionType
+            invalidRequestParameterError(
+              InvalidAssessmentPrimaryCategoryConditionType,
+              code.toInt
             )
           case InvalidAssessmentPrimaryCategoryConditionIdCode          =>
-            Error(
-              InvalidAssessmentPrimaryCategoryConditionIdCode,
-              InvalidAssessmentPrimaryCategoryConditionId
+            invalidRequestParameterError(
+              InvalidAssessmentPrimaryCategoryConditionId,
+              code.toInt
             )
           case InvalidAssessmentPrimaryCategoryConditionDescriptionCode =>
-            Error(
-              InvalidAssessmentPrimaryCategoryConditionDescriptionCode,
-              InvalidAssessmentPrimaryCategoryConditionDescription
+            invalidRequestParameterError(
+              InvalidAssessmentPrimaryCategoryConditionDescription,
+              code.toInt
             )
           case InvalidAssessmentPrimaryCategoryConditionTraderTextCode  =>
-            Error(
-              InvalidAssessmentPrimaryCategoryConditionTraderTextCode,
-              InvalidAssessmentPrimaryCategoryConditionTraderText
+            invalidRequestParameterError(
+              InvalidAssessmentPrimaryCategoryConditionTraderText,
+              code.toInt
             )
           case InvalidOrMissingSupplementaryUnitCode                    =>
-            Error(
-              InvalidOrMissingSupplementaryUnitCode,
-              InvalidOrMissingSupplementaryUnit
+            invalidRequestParameterError(
+              InvalidOrMissingSupplementaryUnit,
+              code.toInt
             )
           case InvalidOrMissingMeasurementUnitCode                      =>
-            Error(
-              InvalidOrMissingMeasurementUnitCode,
-              InvalidOrMissingMeasurementUnit
+            invalidRequestParameterError(
+              InvalidOrMissingMeasurementUnit,
+              code.toInt
             )
           case InvalidOrMissingComcodeEffectiveFromDateCode             =>
-            Error(
-              InvalidOrMissingComcodeEffectiveFromDateCode,
-              InvalidOrMissingComcodeEffectiveFromDate
+            invalidRequestParameterError(
+              InvalidOrMissingComcodeEffectiveFromDate,
+              code.toInt
             )
           case InvalidOrMissingComcodeEffectiveToDateCode               =>
-            Error(
-              InvalidOrMissingComcodeEffectiveToDateCode,
-              InvalidOrMissingComcodeEffectiveToDate
+            invalidRequestParameterError(
+              InvalidOrMissingComcodeEffectiveToDate,
+              code.toInt
             )
           case InvalidRecordIdCode                                      =>
-            Error(InvalidRecordIdCode, InvalidRecordId)
+            invalidRequestParameterError(InvalidRecordId, code.toInt)
           case RecordIdDoesNotExistsCode                                =>
-            Error(RecordIdDoesNotExistsCode, RecordIdDoesNotExists)
+            invalidRequestParameterError(RecordIdDoesNotExists, code.toInt)
           case InvalidLastUpdatedDateCode                               =>
-            Error(InvalidLastUpdatedDateCode, InvalidLastUpdatedDate)
+            invalidRequestParameterError(InvalidLastUpdatedDate, code.toInt)
           case InvalidPageCode                                          =>
-            Error(InvalidPageCode, InvalidPage)
+            invalidRequestParameterError(InvalidPage, code.toInt)
           case InvalidSizeCode                                          =>
-            Error(InvalidSizeCode, InvalidSize)
+            invalidRequestParameterError(InvalidSize, code.toInt)
           case AccreditationRequestInProgressCode                       =>
-            Error(AccreditationRequestInProgressCode, AccreditationRequestInProgressMessage)
+            invalidRequestParameterError(AccreditationRequestInProgressMessage, code.toInt)
           case RecordRemovedAndCanNotBeUpdatedCode                      =>
-            Error(RecordRemovedAndCanNotBeUpdatedCode, RecordRemovedAndCanNotBeUpdatedMessage)
+            invalidRequestParameterError(RecordRemovedAndCanNotBeUpdatedMessage, code.toInt)
 
-          case _ => Error(UnexpectedErrorCode, UnexpectedErrorMessage)
+          case _ => unexpectedError("Unrecognised error number", code.toInt)
         }
       case _              =>
         throw new IllegalArgumentException(s"Unable to parse fault detail for correlation Id: $correlationId")

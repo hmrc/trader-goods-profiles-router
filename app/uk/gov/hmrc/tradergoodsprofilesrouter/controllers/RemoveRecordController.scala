@@ -26,9 +26,10 @@ import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RemoveRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error.invalidRequestParameterError
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -64,13 +65,13 @@ class RemoveRecordController @Inject() (
           toJson(
             ErrorResponse(
               uuidService.uuid,
-              ApplicationConstants.BadRequestCode,
-              ApplicationConstants.BadRequestMessage,
+              BadRequestCode,
+              BadRequestMessage,
               Some(
                 Seq(
-                  Error(
-                    ApplicationConstants.InvalidOrMissingActorIdCode,
-                    ApplicationConstants.InvalidOrMissingActorId
+                  invalidRequestParameterError(
+                    InvalidOrMissingActorId,
+                    InvalidOrMissingActorIdCode.toInt
                   )
                 )
               )
