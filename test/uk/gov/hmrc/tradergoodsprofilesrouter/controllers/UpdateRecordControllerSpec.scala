@@ -79,8 +79,12 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
         ApplicationConstants.BadRequestMessage,
         Some(
           Seq(
-            Error("006", "Mandatory field eori was missing from body"),
-            Error("026", "The recordId has been provided in the wrong format")
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field eori was missing from body or is in the wrong format",
+              6
+            ),
+            Error("INVALID_REQUEST_PARAMETER", "The recordId has been provided in the wrong format", 26)
           )
         )
       )

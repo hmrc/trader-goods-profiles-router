@@ -322,8 +322,9 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "006",
-                "message" -> "Mandatory field eori was missing from body"
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field eori was missing from body or is in the wrong format",
+                "errorNumber" -> 6
               )
             )
           )
@@ -366,12 +367,14 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "025",
-                "message" -> "The recordId has been provided in the wrong format"
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "The recordId has been provided in the wrong format",
+                "errorNumber" -> 25
               ),
               Json.obj(
-                "code"    -> "026",
-                "message" -> "The requested recordId to update doesn’t exist"
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "The requested recordId to update doesn’t exist",
+                "errorNumber" -> 26
               )
             )
           )
@@ -413,8 +416,9 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "UNEXPECTED_ERROR",
-                "message" -> "Unexpected Error"
+                "code" -> "UNEXPECTED_ERROR",
+                "message" -> "Unrecognised error number",
+                "errorNumber" -> 40
               )
             )
           )
@@ -514,12 +518,14 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"    -> "006",
-                "message" -> "Mandatory field eori was missing from body"
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field eori was missing from body or is in the wrong format",
+                "errorNumber" -> 6
               ),
               Json.obj(
-                "code"    -> "026",
-                "message" -> "The recordId has been provided in the wrong format"
+                "code"    -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "The recordId has been provided in the wrong format",
+                "errorNumber" -> 26
               )
             )
           )

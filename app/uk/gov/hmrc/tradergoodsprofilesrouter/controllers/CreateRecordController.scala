@@ -28,8 +28,8 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderCl
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{HeaderNames, ValidationSupport}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -69,30 +69,11 @@ class CreateRecordController @Inject() (
               uuidService.uuid,
               BadRequestCode,
               BadRequestMessage,
-              Some(ValidationSupport.convertError(errors, fieldsToErrorCode))
+              Some(ValidationSupport.convertError(errors))
             )
           )
         ): Result
       }
       .toEitherT[Future]
 
-  private val fieldsToErrorCode: Map[String, (String, String)] = Map(
-    "/eori"                                                       -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
-    "/actorId"                                                    -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),
-    "/traderRef"                                                  -> (InvalidOrMissingTraderRefCode, InvalidOrMissingTraderRef),
-    "/comcode"                                                    -> (InvalidOrMissingComcodeCode, InvalidOrMissingComcode),
-    "/goodsDescription"                                           -> (InvalidOrMissingGoodsDescriptionCode, InvalidOrMissingGoodsDescription),
-    "/countryOfOrigin"                                            -> (InvalidOrMissingCountryOfOriginCode, InvalidOrMissingCountryOfOrigin),
-    "/category"                                                   -> (InvalidOrMissingCategoryCode, InvalidOrMissingCategory),
-    "/assessments"                                                -> (InvalidOrMissingAssessmentIdCode, InvalidOrMissingAssessmentId),
-    "/supplementaryUnit"                                          -> (InvalidAssessmentPrimaryCategoryCode, InvalidAssessmentPrimaryCategory),
-    "/assessments/primaryCategory/condition/type"                 -> (InvalidAssessmentPrimaryCategoryConditionTypeCode, InvalidAssessmentPrimaryCategoryConditionType),
-    "/assessments/primaryCategory/condition/conditionId"          -> (InvalidAssessmentPrimaryCategoryConditionIdCode, InvalidAssessmentPrimaryCategoryConditionId),
-    "/assessments/primaryCategory/condition/conditionDescription" -> (InvalidAssessmentPrimaryCategoryConditionDescriptionCode, InvalidAssessmentPrimaryCategoryConditionDescription),
-    "/assessments/primaryCategory/condition/conditionTraderText"  -> (InvalidAssessmentPrimaryCategoryConditionTraderTextCode, InvalidAssessmentPrimaryCategoryConditionTraderText),
-    "/supplementaryUnit"                                          -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
-    "/measurementUnit"                                            -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
-    "/comcodeEffectiveFromDate"                                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
-    "/comcodeEffectiveToDate"                                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate)
-  )
 }
