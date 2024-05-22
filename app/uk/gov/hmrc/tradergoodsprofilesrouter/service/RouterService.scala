@@ -102,8 +102,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       eisConnector
         .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
         .map {
-          case Right(response) => Right(response)
-          case Left(error)     => Left(error)
+          case response @ Right(_) => response
+          case error @ Left(_)     => error
         }
         .recover { case ex: Throwable =>
           logger.error(
@@ -155,8 +155,8 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       eisConnector
         .removeRecord(eori, recordId, actorId, correlationId)
         .map {
-          case Right(_)    => Right(OK)
-          case Left(error) => Left(error)
+          case Right(_)        => Right(OK)
+          case error @ Left(_) => error
         }
         .recover { case ex: Throwable =>
           logger.error(
