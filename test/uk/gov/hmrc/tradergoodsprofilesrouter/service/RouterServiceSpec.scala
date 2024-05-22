@@ -326,8 +326,8 @@ class RouterServiceSpec
           |  "ukimsNumber": "XIUKIM47699357400020231115081800",
           |  "nirmsNumber": "RMS-GB-123456",
           |  "niphlNumber": "6 S12345",
-          |  "createdDateTime": "2024-11-18T23->20->19Z",
-          |  "updatedDateTime": "2024-11-18T23->20->19Z",
+          |  "createdDateTime": "2024-11-18T23:20:19Z",
+          |  "updatedDateTime": "2024-11-18T23:20:19Z",
           |  "assessments": [
           |    {
           |      "assessmentId": "abc123",

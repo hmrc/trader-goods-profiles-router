@@ -25,6 +25,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
+import java.time.Instant
 import scala.Function.unlift
 
 case class CreateRecordRequest(
@@ -38,8 +39,8 @@ case class CreateRecordRequest(
   assessments: Option[Seq[Assessment]],
   supplementaryUnit: Option[Int],
   measurementUnit: Option[String],
-  comcodeEffectiveFromDate: String,
-  comcodeEffectiveToDate: Option[String]
+  comcodeEffectiveFromDate: Instant,
+  comcodeEffectiveToDate: Option[Instant]
 )
 
 object CreateRecordRequest {
@@ -55,9 +56,9 @@ object CreateRecordRequest {
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[Int] and
       (JsPath \ "measurementUnit").readNullable[String] and
-      (JsPath \ "comcodeEffectiveFromDate").read(verifying[String](ValidationSupport.isValidDate)) and
+      (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
       (JsPath \ "comcodeEffectiveToDate")
-        .readNullable(verifying[String](ValidationSupport.isValidDate)))(CreateRecordRequest.apply _)
+        .readNullable[Instant])(CreateRecordRequest.apply _)
 
   implicit lazy val writes: OWrites[CreateRecordRequest] =
     ((JsPath \ "eori").write[String] and
@@ -70,6 +71,6 @@ object CreateRecordRequest {
       (JsPath \ "assessments").writeNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").writeNullable[Int] and
       (JsPath \ "measurementUnit").writeNullable[String] and
-      (JsPath \ "comcodeEffectiveFromDate").write[String] and
-      (JsPath \ "comcodeEffectiveToDate").writeNullable[String])(unlift(CreateRecordRequest.unapply))
+      (JsPath \ "comcodeEffectiveFromDate").write[Instant] and
+      (JsPath \ "comcodeEffectiveToDate").writeNullable[Instant])(unlift(CreateRecordRequest.unapply))
 }
