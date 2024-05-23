@@ -31,6 +31,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsR
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 @ImplementedBy(classOf[RouterServiceImpl])
@@ -42,7 +43,7 @@ trait RouterService {
 
   def fetchRecords(
     eori: String,
-    lastUpdatedDate: Option[String] = None,
+    lastUpdatedDate: Option[Instant] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetEisRecordsResponse]
@@ -90,7 +91,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
 
   override def fetchRecords(
     eori: String,
-    lastUpdatedDate: Option[String] = None,
+    lastUpdatedDate: Option[Instant] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
   )(implicit

@@ -19,6 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
@@ -33,13 +34,14 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, Header
 
 import scala.concurrent.ExecutionContext
 
-class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecordsDataSupport {
+class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecordsDataSupport with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   private val mockRouterService = mock[RouterService]
   private val mockUuidService   = mock[UuidService]
   private val eoriNumber        = "GB123456789001"
+  private val correlationId     = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
 
   private val sut =
     new GetRecordsController(
@@ -52,7 +54,12 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     HeaderNames.ClientId -> "clientId"
   )
 
-  "GET /:eori/record/:recordId" should {
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    when(mockUuidService.uuid).thenReturn(correlationId)
+  }
+  "getTGPRecord" should {
 
     "return a successful JSON response for a single record" in {
 
@@ -70,7 +77,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val result = sut.getTGPRecord("eori", "12345")(
         FakeRequest()
       )
@@ -94,7 +100,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     }
   }
 
-  "GET /:eori?lastUpdatedDate=2021-12-17T09:30:47.456Z&page=1&size=1" should {
+  "getTGPRecords" should {
 
     "return a successful JSON response for a multiple records with optional query parameters" in {
 
@@ -126,7 +132,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val result = sut.getTGPRecords("eoriNumber")(
         FakeRequest()
       )
@@ -134,20 +139,39 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       contentAsJson(result) mustBe Json.toJson(createErrorResponse)
     }
 
-    "return an error if cannot fetch a records" in {
-      val errorResponseJson = Json.obj("error" -> "error")
+    "return an error" when {
+      "if cannot fetch a records" in {
+        val errorResponseJson = Json.obj("error" -> "error")
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any))
-        .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
+        when(mockRouterService.fetchRecords(any, any, any, any)(any))
+          .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
-      val result = sut.getTGPRecords(eoriNumber)(
-        FakeRequest().withHeaders(validHeaders: _*)
-      )
-      status(result) mustBe INTERNAL_SERVER_ERROR
-      withClue("should return json response") {
-        contentAsJson(result) mustBe errorResponseJson
+        val result = sut.getTGPRecords(eoriNumber)(
+          FakeRequest().withHeaders(validHeaders: _*)
+        )
+        status(result) mustBe INTERNAL_SERVER_ERROR
+        withClue("should return json response") {
+          contentAsJson(result) mustBe errorResponseJson
+        }
+      }
+
+      "lastUpdateDate is not a date" in {
+        when(mockRouterService.fetchRecords(any, any, any, any)(any))
+          .thenReturn(EitherT.rightT(getMultipleRecordResponseData()))
+
+        val result = sut.getTGPRecords(eoriNumber, Some("not-a-date"), Some(1), Some(1))(
+          FakeRequest().withHeaders(validHeaders: _*)
+        )
+        status(result) mustBe BAD_REQUEST
+        contentAsJson(result) mustBe Json.obj(
+          "correlationId" -> s"$correlationId",
+          "code"          -> "INVALID_QUERY_PARAMETER",
+          "message"       -> "Query parameter lastUpdateDate is not a date format"
+        )
+
       }
     }
+
   }
 
   private def createErrorResponse = {

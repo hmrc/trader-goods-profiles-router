@@ -24,10 +24,13 @@ import play.api.mvc._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.InvalidQueryParameter
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
+import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class GetRecordsController @Inject() (
   cc: ControllerComponents,
@@ -55,8 +58,9 @@ class GetRecordsController @Inject() (
     size: Option[Int] = None
   ): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val result = for {
-      _       <- validateClientId
-      records <- routerService.fetchRecords(eori, lastUpdatedDate, page, size)
+      _         <- validateClientId
+      validDate <- validateDate(lastUpdatedDate)
+      records   <- routerService.fetchRecords(eori, validDate, page, size)
     } yield Ok(Json.toJson(records))
 
     result.merge
@@ -71,6 +75,21 @@ class GetRecordsController @Inject() (
             uuidService.uuid,
             ApplicationConstants.BadRequestCode,
             ApplicationConstants.MissingHeaderClientId
+          )
+        )
+      )
+    )
+
+  private def validateDate(lastUpdateDate: Option[String]): EitherT[Future, Result, Option[Instant]] =
+    EitherT.fromEither(
+      Try(lastUpdateDate.map(Instant.parse(_))).toEither.left.map(_ =>
+        BadRequest(
+          Json.toJson(
+            ErrorResponse(
+              uuidService.uuid,
+              InvalidQueryParameter,
+              "Query parameter lastUpdateDate is not a date format"
+            )
           )
         )
       )

@@ -31,7 +31,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
   val eori                           = "GB123456789001"
   val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime                       = "2021-12-17T09:30:47.456Z"
+  val dateTime                       = Instant.parse("2021-12-17T09:30:47Z")
   val timestamp                      = "Fri, 17 Dec 2021 09:30:47 Z"
   override def connectorPath: String = s"/tgp/getrecords/v1"
   override def connectorName: String = "eis"
@@ -39,7 +39,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
   override def beforeEach: Unit = {
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
-    when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
+    when(dateTimeService.timestamp).thenReturn(dateTime)
   }
 
   "attempting to get records, when" - {
@@ -59,7 +59,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         verifyThatDownstreamApiWasCalled()
       }
       "valid with optional query parameter lastUpdatedDate, page and size" in {
-        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime), Some(1), Some(1))
+        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime.toString), Some(1), Some(1))
 
         val response = wsClient
           .url(fullUrl(s"/$eori?lastUpdatedDate=$dateTime&page=1&size=1"))
@@ -101,7 +101,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         verifyThatDownstreamApiWasCalled()
       }
       "valid with optional query parameter lastUpdatedDate" in {
-        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime))
+        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime.toString))
 
         val response = wsClient
           .url(fullUrl(s"/$eori?lastUpdatedDate=$dateTime"))
@@ -593,6 +593,24 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
         verifyThatDownstreamApiWasNotCalled()
       }
+    }
+
+    "should return an error if lastUpdateDate is not a date" in {
+      stubForEis(OK, Some(getMultipleRecordResponseData.toString()))
+
+      val response = wsClient
+        .url(fullUrl(s"/$eori?lastUpdatedDate=wrong-format"))
+        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+        .get()
+        .futureValue
+
+      response.status shouldBe BAD_REQUEST
+      response.json   shouldBe Json.obj(
+        "correlationId" -> s"$correlationId",
+        "code"          -> "INVALID_QUERY_PARAMETER",
+        "message"       -> "Query parameter lastUpdateDate is not a date format"
+      )
+
     }
   }
 

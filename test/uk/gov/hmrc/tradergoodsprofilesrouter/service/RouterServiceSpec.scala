@@ -33,6 +33,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecor
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 class RouterServiceSpec
@@ -110,7 +111,7 @@ class RouterServiceSpec
 
   "fetchRecords" should {
 
-    val lastUpdateDate = "2024-04-18T23:20:19Z"
+    val lastUpdateDate = Instant.parse("2024-04-18T23:20:19Z")
 
     "return a records" in {
       val eisResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]

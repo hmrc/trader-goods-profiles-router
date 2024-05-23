@@ -32,6 +32,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
+import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -48,7 +49,7 @@ trait EISConnector {
   def fetchRecords(
     eori: String,
     correlationId: String,
-    lastUpdatedDate: Option[String] = None,
+    lastUpdatedDate: Option[Instant] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
   )(implicit
@@ -98,12 +99,14 @@ class EISConnectorImpl @Inject() (
   override def fetchRecords(
     eori: String,
     correlationId: String,
-    lastUpdatedDate: Option[String] = None,
+    lastUpdatedDate: Option[Instant] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
   )(implicit hc: HeaderCarrier): Future[Either[Result, GetEisRecordsResponse]] = {
-    val uri =
-      uri"${appConfig.eisConfig.getRecordsUrl}/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
+
+    val formattedLastUpdateDate: Option[String] = lastUpdatedDate.map(_.asStringSeconds)
+    val uri                                     =
+      uri"${appConfig.eisConfig.getRecordsUrl}/$eori?lastUpdatedDate=$formattedLastUpdateDate&page=$page&size=$size"
 
     httpClientV2
       .get(url"$uri")
