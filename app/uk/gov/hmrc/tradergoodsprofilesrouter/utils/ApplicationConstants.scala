@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
 object ApplicationConstants {
+  val InvalidRequestParameters                             = "INVALID_REQUEST_PARAMETER"
+  val InvalidQueryParameter                                = "INVALID_QUERY_PARAMETER"
   val UnexpectedErrorCode                                  = "UNEXPECTED_ERROR"
   val UnexpectedErrorMessage                               = "Unexpected Error"
   val InternalErrorResponseCode                            = "INTERNAL_ERROR_RESPONSE"

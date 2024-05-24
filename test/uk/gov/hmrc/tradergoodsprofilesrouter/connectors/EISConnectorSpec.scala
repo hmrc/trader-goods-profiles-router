@@ -159,9 +159,11 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(eisConnector.fetchRecords(eori, correlationId, Some(timestamp.toString), Some(1), Some(1)))
+      await(eisConnector.fetchRecords(eori, correlationId, Some(timestamp), Some(1), Some(1)))
 
-      val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$timestamp&page=1&size=1"
+      val expectedLastUpdateDate = Instant.parse("2024-05-12T12:15:15Z")
+      val expectedUrl            =
+        s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
       verify(requestBuilder).setHeader(headers: _*)
       verifyExecuteWithParams
