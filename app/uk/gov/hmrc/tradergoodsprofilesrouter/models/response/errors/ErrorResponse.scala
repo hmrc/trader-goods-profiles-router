@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{InvalidRequestParameters, UnexpectedErrorCode}
 
 case class ErrorResponse(
   correlationId: String,
@@ -35,8 +36,8 @@ object Error {
   implicit val format: OFormat[Error] = Json.format[Error]
 
   def invalidRequestParameterError(message: String, errorNumber: Int) =
-    Error("INVALID_REQUEST_PARAMETER", message, errorNumber)
+    Error(InvalidRequestParameters, message, errorNumber)
 
   def unexpectedError(message: String, errorNumber: Int) =
-    Error("UNEXPECTED_ERROR", message, errorNumber)
+    Error(UnexpectedErrorCode, message, errorNumber)
 }
