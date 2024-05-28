@@ -64,7 +64,6 @@ curl --location 'http://localhost:10904/trader-goods-profiles-router/GB123456789
   "nirmsNumber": "RMS-GB-123456",
   "niphlNumber": "6 S12345",
   "locked": false,
-  "srcSystemName": "CDAP",
   "createdDateTime": "2024-11-18T23:20:19Z",
   "updatedDateTime": "2024-11-18T23:20:19Z"
 }
@@ -127,7 +126,6 @@ curl -X GET \
       "nirmsNumber": "RMS-GB-123456",
       "niphlNumber": "6 S12345",
       "locked": false,
-      "srcSystemName": "CDAP",
       "createdDateTime": "2024-11-18T23:20:19Z",
       "updatedDateTime": "2024-11-18T23:20:19Z"
     }

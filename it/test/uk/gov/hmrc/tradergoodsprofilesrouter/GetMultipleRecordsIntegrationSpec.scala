@@ -739,7 +739,6 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
     |    "nirmsNumber": "RMS-GB-123456",
     |    "niphlNumber": "6 S12345",
     |    "locked": false,
-    |    "srcSystemName": "CDAP",
     |    "createdDateTime": "2024-11-18T23:20:19Z",
     |    "updatedDateTime": "2024-11-18T23:20:19Z"
     |  },
@@ -778,7 +777,6 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
     |    "nirmsNumber": "RMS-GB-123456",
     |    "niphlNumber": "6 S12345",
     |    "locked": false,
-    |    "srcSystemName": "CDAP",
     |    "createdDateTime": "2024-11-18T23:20:19Z",
     |    "updatedDateTime": "2024-11-18T23:20:19Z"
     |  }
