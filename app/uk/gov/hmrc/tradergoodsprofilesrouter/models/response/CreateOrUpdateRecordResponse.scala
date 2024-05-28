@@ -41,7 +41,7 @@ case class CreateOrUpdateRecordResponse(
   toReview: Boolean,
   reviewReason: Option[String],
   declarable: String,
-  ukimsNumber: String,
+  ukimsNumber: Option[String],
   nirmsNumber: Option[String],
   niphlNumber: Option[String],
   createdDateTime: Instant,
@@ -50,7 +50,7 @@ case class CreateOrUpdateRecordResponse(
 
 object CreateOrUpdateRecordResponse {
 
-  implicit val writes: Reads[CreateOrUpdateRecordResponse] = (json: JsValue) =>
+  implicit val reads: Reads[CreateOrUpdateRecordResponse] = (json: JsValue) =>
     JsSuccess(
       CreateOrUpdateRecordResponse(
         (json \ "recordId").as[String],
@@ -72,7 +72,7 @@ object CreateOrUpdateRecordResponse {
         (json \ "toReview").as[Boolean],
         (json \ "reviewReason").asOpt[String],
         (json \ "declarable").as[String],
-        (json \ "ukimsNumber").as[String],
+        (json \ "ukimsNumber").asOpt[String],
         (json \ "nirmsNumber").asOpt[String],
         (json \ "niphlNumber").asOpt[String],
         (json \ "createdDateTime").as[Instant],
@@ -80,7 +80,7 @@ object CreateOrUpdateRecordResponse {
       )
     )
 
-  implicit val reads: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) =>
+  implicit val writes: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) =>
     Json.obj(
       "recordId"                 -> response.recordId,
       "eori"                     -> response.eori,

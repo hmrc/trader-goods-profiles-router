@@ -40,7 +40,7 @@ case class UpdateRecordRequest(
   assessments: Option[Seq[Assessment]],
   supplementaryUnit: Option[Int],
   measurementUnit: Option[String],
-  comcodeEffectiveFromDate: Instant,
+  comcodeEffectiveFromDate: Option[Instant],
   comcodeEffectiveToDate: Option[Instant]
 )
 
@@ -58,7 +58,7 @@ object UpdateRecordRequest {
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[Int] and
       (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 512)) and
-      (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
+      (JsPath \ "comcodeEffectiveFromDate").readNullable[Instant] and
       (JsPath \ "comcodeEffectiveToDate")
         .readNullable[Instant])(UpdateRecordRequest.apply _)
 
@@ -74,6 +74,6 @@ object UpdateRecordRequest {
       (JsPath \ "assessments").writeNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").writeNullable[Int] and
       (JsPath \ "measurementUnit").writeNullable[String] and
-      (JsPath \ "comcodeEffectiveFromDate").write[Instant] and
+      (JsPath \ "comcodeEffectiveFromDate").writeNullable[Instant] and
       (JsPath \ "comcodeEffectiveToDate").writeNullable[Instant])(unlift(UpdateRecordRequest.unapply))
 }
