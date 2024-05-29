@@ -21,8 +21,7 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId, validComcode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
 import java.time.Instant
@@ -49,15 +48,15 @@ object UpdateRecordRequest {
   implicit val reads: Reads[UpdateRecordRequest] =
     ((JsPath \ "eori").read(lengthBetween(14, 17)) and
       (JsPath \ "recordId").read(lengthBetween(36, 36)) and
-      (JsPath \ "actorId").read(lengthBetween(14, 17)) and
+      (JsPath \ "actorId").read(validActorId) and
       (JsPath \ "traderRef").readNullable(lengthBetween(1, 512)) and
-      (JsPath \ "comcode").readNullable(lengthBetween(6, 10)) and
+      (JsPath \ "comcode").readNullable(validComcode) and
       (JsPath \ "goodsDescription").readNullable(lengthBetween(1, 512)) and
       (JsPath \ "countryOfOrigin").readNullable(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
       (JsPath \ "category").readNullable[Int] and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[Int] and
-      (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 512)) and
+      (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
       (JsPath \ "comcodeEffectiveFromDate").readNullable[Instant] and
       (JsPath \ "comcodeEffectiveToDate")
         .readNullable[Instant])(UpdateRecordRequest.apply _)

@@ -16,7 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{JsPath, OWrites, Reads}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
+
+import scala.Function.unlift
 
 case class Condition(
   `type`: Option[String],
@@ -26,5 +30,16 @@ case class Condition(
 )
 
 object Condition {
-  implicit val format: Format[Condition] = Json.format[Condition]
+
+  implicit val reads: Reads[Condition] =
+    ((JsPath \ "type").readNullable(lengthBetween(1, 35)) and
+      (JsPath \ "conditionId").readNullable(lengthBetween(1, 10)) and
+      (JsPath \ "conditionDescription").readNullable(lengthBetween(1, 512)) and
+      (JsPath \ "conditionTraderText").readNullable(lengthBetween(1, 512)))(Condition.apply _)
+
+  implicit lazy val writes: OWrites[Condition] =
+    ((JsPath \ "type").write[Option[String]] and
+      (JsPath \ "conditionId").write[Option[String]] and
+      (JsPath \ "conditionDescription").write[Option[String]] and
+      (JsPath \ "conditionTraderText").write[Option[String]])(unlift(Condition.unapply))
 }

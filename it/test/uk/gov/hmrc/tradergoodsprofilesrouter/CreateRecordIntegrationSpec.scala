@@ -550,6 +550,77 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           verifyThatDownstreamApiWasNotCalled()
         }
+        "for optional fields" in {
+          val response = wsClient
+            .url(fullUrl(s"/records/"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .post(invalidOptionalRequestData)
+            .futureValue
+
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field type is in the wrong format",
+                "errorNumber" -> 17
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field conditionTraderText is in the wrong format",
+                "errorNumber" -> 20
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field conditionDescription is in the wrong format",
+                "errorNumber" -> 19
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field measurementUnit is in the wrong format",
+                "errorNumber" -> 22
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field conditionId is in the wrong format",
+                "errorNumber" -> 18
+              )
+            )
+          )
+
+          verifyThatDownstreamApiWasNotCalled()
+        }
+        "for mandatory fields actorId and comcode" in {
+          val response = wsClient
+            .url(fullUrl(s"/records/"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .post(invalidActorIdAndComcodeRequestData)
+            .futureValue
+
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field comcode was missing from body or is in the wrong format",
+                "errorNumber" -> 11
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
+                "errorNumber" -> 8
+              )
+            )
+          )
+
+          verifyThatDownstreamApiWasNotCalled()
+        }
       }
     }
   }
@@ -580,7 +651,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         |  "eori": "GB123456789012",
         |  "actorId": "GB098765432112",
         |  "traderRef": "BAN001001",
-        |  "comcode": "104101000",
+        |  "comcode": "10410100",
         |  "accreditationStatus": "Not Requested",
         |  "goodsDescription": "Organic bananas",
         |  "countryOfOrigin": "EC",
@@ -620,7 +691,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         |    "eori": "GB123456789012",
         |    "actorId": "GB098765432112",
         |    "traderRef": "BAN001001",
-        |    "comcode": "104101000",
+        |    "comcode": "10410100",
         |    "goodsDescription": "Organic bananas",
         |    "countryOfOrigin": "EC",
         |    "category": 1,
@@ -649,7 +720,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       |    "eori": "GB123456789012",
       |    "actorId": "GB098765432112",
       |    "traderRef": "BAN001001",
-      |    "comcode": "104101000",
+      |    "comcode": "10410100",
       |    "goodsDescription": "Organic bananas",
       |    "countryOfOrigin": "EC",
       |    "category": 1,
@@ -665,7 +736,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           |    "eori": "GB123456789012",
           |    "actorId": "GB098765432112",
           |    "traderRef": "BAN001001",
-          |    "comcode": "104101000",
+          |    "comcode": "10410100",
           |    "accreditationStatus": "Not Requested",
           |    "goodsDescription": "Organic bananas",
           |    "countryOfOrigin": "EC",
@@ -693,7 +764,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       |{
       |    "actorId": "GB098765432112",
       |    "traderRef": "BAN001001",
-      |    "comcode": "104101000",
+      |    "comcode": "10410100",
       |    "goodsDescription": "Organic bananas",
       |    "countryOfOrigin": "EC",
       |    "category": 1,
@@ -722,10 +793,68 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       |  "eori": "GB123456789012",
       |    "actorId": "GB098765432112",
       |    "traderRef": "BAN001001",
-      |    "comcode": "104101000",
+      |    "comcode": "10410100",
       |    "goodsDescription": "Organic bananas",
       |    "countryOfOrigin": "EC",
       |    "category": 24,
+      |    "assessments": [
+      |        {
+      |            "assessmentId": "abc123",
+      |            "primaryCategory": 1,
+      |            "condition": {
+      |                "type": "abc123",
+      |                "conditionId": "Y923",
+      |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+      |                "conditionTraderText": "Excluded product"
+      |            }
+      |        }
+      |    ],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "Square metre (m2)",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+      |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+      |}
+      |""".stripMargin
+
+  lazy val invalidOptionalRequestData: String =
+    """
+      |{
+      |  "eori": "GB123456789012",
+      |    "actorId": "GB098765432112",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "10410100",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 2,
+      |    "assessments": [
+      |        {
+      |            "assessmentId": "",
+      |            "primaryCategory": 1,
+      |            "condition": {
+      |                "type": "",
+      |                "conditionId": "",
+      |                "conditionDescription": "",
+      |                "conditionTraderText": ""
+      |            }
+      |        }
+      |    ],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+      |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+      |}
+      |""".stripMargin
+
+  lazy val invalidActorIdAndComcodeRequestData: String =
+    """
+      |{
+      |  "eori": "GB123456789012",
+      |    "actorId": "GB12",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "104101000",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 2,
       |    "assessments": [
       |        {
       |            "assessmentId": "abc123",

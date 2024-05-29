@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
 import play.api.libs.functional.syntax.toApplicativeOps
-import play.api.libs.json.Reads.{maxLength, minLength}
+import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
@@ -25,10 +25,13 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import java.text.SimpleDateFormat
 import java.util.{Locale, TimeZone}
 import scala.util.Try
+import scala.util.matching.Regex
 
 object ValidationSupport {
 
-  private val dateFormat = generateDateFormat()
+  private val dateFormat            = generateDateFormat()
+  private val actorIdPattern: Regex = raw"[A-Z]{2}\d{12,15}".r
+  private val comcodePattern: Regex = raw".{6}(.{2}(.{2})?)?".r
 
   def isValidCountryCode(rawCountryCode: String): Boolean =
     Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)
@@ -46,7 +49,15 @@ object ValidationSupport {
   object Reads {
     def lengthBetween(min: Int, max: Int): Reads[String] =
       minLength[String](min).keepAnd(maxLength[String](max))
+
+    val validActorId: Reads[String] = verifying(isValidActorId)
+
+    val validComcode: Reads[String] = verifying(isValidComcode)
   }
+
+  def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
+
+  def isValidComcode(comcode: String): Boolean = comcodePattern.matches(comcode)
 
   private def generateDateFormat(): SimpleDateFormat = {
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -63,24 +74,25 @@ object ValidationSupport {
       .map(_.path)
       .map(_.mkString)
 
+  //TODO to pass assessment index dynamically, at the moment it handle only first index field errors
   private val fieldsToErrorCode: Map[String, (String, String)] = Map(
-    "/eori"                                                       -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
-    "/recordId"                                                   -> (RecordIdDoesNotExistsCode, InvalidRecordId),
-    "/actorId"                                                    -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),
-    "/traderRef"                                                  -> (InvalidOrMissingTraderRefCode, InvalidOrMissingTraderRef),
-    "/comcode"                                                    -> (InvalidOrMissingComcodeCode, InvalidOrMissingComcode),
-    "/goodsDescription"                                           -> (InvalidOrMissingGoodsDescriptionCode, InvalidOrMissingGoodsDescription),
-    "/countryOfOrigin"                                            -> (InvalidOrMissingCountryOfOriginCode, InvalidOrMissingCountryOfOrigin),
-    "/category"                                                   -> (InvalidOrMissingCategoryCode, InvalidOrMissingCategory),
-    "/assessments"                                                -> (InvalidOrMissingAssessmentIdCode, InvalidOrMissingAssessmentId),
-    "/supplementaryUnit"                                          -> (InvalidAssessmentPrimaryCategoryCode, InvalidAssessmentPrimaryCategory),
-    "/assessments/primaryCategory/condition/type"                 -> (InvalidAssessmentPrimaryCategoryConditionTypeCode, InvalidAssessmentPrimaryCategoryConditionType),
-    "/assessments/primaryCategory/condition/conditionId"          -> (InvalidAssessmentPrimaryCategoryConditionIdCode, InvalidAssessmentPrimaryCategoryConditionId),
-    "/assessments/primaryCategory/condition/conditionDescription" -> (InvalidAssessmentPrimaryCategoryConditionDescriptionCode, InvalidAssessmentPrimaryCategoryConditionDescription),
-    "/assessments/primaryCategory/condition/conditionTraderText"  -> (InvalidAssessmentPrimaryCategoryConditionTraderTextCode, InvalidAssessmentPrimaryCategoryConditionTraderText),
-    "/supplementaryUnit"                                          -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
-    "/measurementUnit"                                            -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
-    "/comcodeEffectiveFromDate"                                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
-    "/comcodeEffectiveToDate"                                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate)
+    "/eori"                                          -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
+    "/recordId"                                      -> (RecordIdDoesNotExistsCode, InvalidRecordId),
+    "/actorId"                                       -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),
+    "/traderRef"                                     -> (InvalidOrMissingTraderRefCode, InvalidOrMissingTraderRef),
+    "/comcode"                                       -> (InvalidOrMissingComcodeCode, InvalidOrMissingComcode),
+    "/goodsDescription"                              -> (InvalidOrMissingGoodsDescriptionCode, InvalidOrMissingGoodsDescription),
+    "/countryOfOrigin"                               -> (InvalidOrMissingCountryOfOriginCode, InvalidOrMissingCountryOfOrigin),
+    "/category"                                      -> (InvalidOrMissingCategoryCode, InvalidOrMissingCategory),
+    "/assessments"                                   -> (InvalidOrMissingAssessmentIdCode, InvalidOrMissingAssessmentId),
+    "/supplementaryUnit"                             -> (InvalidAssessmentPrimaryCategoryCode, InvalidAssessmentPrimaryCategory),
+    "/assessments(0)/condition/type"                 -> (InvalidAssessmentPrimaryCategoryConditionTypeCode, InvalidAssessmentPrimaryCategoryConditionType),
+    "/assessments(0)/condition/conditionId"          -> (InvalidAssessmentPrimaryCategoryConditionIdCode, InvalidAssessmentPrimaryCategoryConditionId),
+    "/assessments(0)/condition/conditionDescription" -> (InvalidAssessmentPrimaryCategoryConditionDescriptionCode, InvalidAssessmentPrimaryCategoryConditionDescription),
+    "/assessments(0)/condition/conditionTraderText"  -> (InvalidAssessmentPrimaryCategoryConditionTraderTextCode, InvalidAssessmentPrimaryCategoryConditionTraderText),
+    "/supplementaryUnit"                             -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
+    "/measurementUnit"                               -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
+    "/comcodeEffectiveFromDate"                      -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
+    "/comcodeEffectiveToDate"                        -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate)
   )
 }

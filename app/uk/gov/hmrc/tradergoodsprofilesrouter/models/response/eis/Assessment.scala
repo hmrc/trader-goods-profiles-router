@@ -16,10 +16,23 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{JsPath, OWrites, Reads}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
+
+import scala.Function.unlift
 
 case class Assessment(assessmentId: Option[String], primaryCategory: Option[Int], condition: Option[Condition])
 
 object Assessment {
-  implicit val format: Format[Assessment] = Json.format[Assessment]
+
+  implicit val reads: Reads[Assessment] =
+    ((JsPath \ "assessmentId").readNullable(lengthBetween(1, 35)) and
+      (JsPath \ "primaryCategory").readNullable[Int] and
+      (JsPath \ "condition").readNullable[Condition])(Assessment.apply _)
+
+  implicit lazy val writes: OWrites[Assessment] =
+    ((JsPath \ "assessmentId").write[Option[String]] and
+      (JsPath \ "primaryCategory").write[Option[Int]] and
+      (JsPath \ "condition").write[Option[Condition]])(unlift(Assessment.unapply))
 }
