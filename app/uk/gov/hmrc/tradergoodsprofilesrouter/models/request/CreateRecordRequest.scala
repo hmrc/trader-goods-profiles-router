@@ -21,7 +21,6 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
@@ -52,7 +51,7 @@ object CreateRecordRequest {
       (JsPath \ "comcode").read(lengthBetween(6, 10)) and
       (JsPath \ "goodsDescription").read(lengthBetween(1, 512)) and
       (JsPath \ "countryOfOrigin").read(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
-      (JsPath \ "category").read[Int] and
+      (JsPath \ "category").read[Int](verifying[Int](category => category >= 1 && category <= 3)) and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[Int] and
       (JsPath \ "measurementUnit").readNullable[String] and

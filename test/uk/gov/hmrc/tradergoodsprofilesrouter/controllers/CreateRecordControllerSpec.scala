@@ -116,6 +116,35 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
+
+    "return 400 Bad request when category is out of range" in {
+
+      val errorResponse = ErrorResponse(
+        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        ApplicationConstants.BadRequestCode,
+        ApplicationConstants.BadRequestMessage,
+        Some(
+          Seq(
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field category was missing from body or is in the wrong format",
+              14
+            )
+          )
+        )
+      )
+
+      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      val result = sut.create(
+        FakeRequest().withBody(outOfRangeCategoryRequestData).withHeaders(validHeaders: _*)
+      )
+
+      status(result) mustBe BAD_REQUEST
+
+      withClue("should return json response") {
+        contentAsJson(result) mustBe Json.toJson(errorResponse)
+      }
+    }
   }
 
   lazy val createRecordResponseData: CreateOrUpdateRecordResponse = Json
@@ -216,4 +245,33 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
         |}
         |""".stripMargin)
+
+  lazy val outOfRangeCategoryRequestData: JsValue = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789012",
+             |    "actorId": "GB098765432112",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "104101000",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 24,
+             |    "assessments": [
+             |        {
+             |            "assessmentId": "abc123",
+             |            "primaryCategory": 1,
+             |            "condition": {
+             |                "type": "abc123",
+             |                "conditionId": "Y923",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        }
+             |    ],
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
 }
