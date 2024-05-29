@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsPath, JsonValidationError}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.{convertError, isValidCountryCode, isValidDate}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.{convertError, isValidActorId, isValidComcode, isValidCountryCode, isValidDate}
 
 class ValidationSupportSpec extends PlaySpec {
 
@@ -35,6 +35,21 @@ class ValidationSupportSpec extends PlaySpec {
     }
     "an invalid countryCode must return false" in {
       isValidCountryCode("GB098765112") mustBe false
+    }
+    "a valid comcode must return true" in {
+      isValidComcode("123456") mustBe true
+      isValidComcode("12345678") mustBe true
+      isValidComcode("1234567890") mustBe true
+    }
+    "an invalid comcode must return false" in {
+      isValidComcode("111") mustBe false
+    }
+    "a valid actorId must return true" in {
+      isValidActorId("GB123456789012") mustBe true
+      isValidActorId("GB123456789012456") mustBe true
+    }
+    "an invalid actorId must return false" in {
+      isValidActorId("111") mustBe false
     }
 
     "convertError" should {

@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
+package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
-import play.api.libs.json.{JsPath, Reads}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.validActorId
+import play.api.libs.json.{JsNull, JsObject}
 
-case class RemoveRecordRequest(
-  actorId: String
-)
+object ResponseModelSupport {
 
-object RemoveRecordRequest {
-  implicit val reads: Reads[RemoveRecordRequest] =
-    (JsPath \ "actorId").read(validActorId).map(RemoveRecordRequest(_))
+  def removeNulls(jsObject: JsObject): JsObject =
+    JsObject(jsObject.fields.collect {
+      case (s, j: JsObject)            =>
+        (s, removeNulls(j))
+      case other if other._2 != JsNull =>
+        other
+    })
 }

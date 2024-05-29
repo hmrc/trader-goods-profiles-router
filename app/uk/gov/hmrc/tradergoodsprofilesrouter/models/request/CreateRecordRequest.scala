@@ -21,7 +21,7 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId, validComcode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
 import java.time.Instant
@@ -46,15 +46,15 @@ object CreateRecordRequest {
 
   implicit val reads: Reads[CreateRecordRequest] =
     ((JsPath \ "eori").read(lengthBetween(14, 17)) and
-      (JsPath \ "actorId").read(lengthBetween(14, 17)) and
+      (JsPath \ "actorId").read(validActorId) and
       (JsPath \ "traderRef").read(lengthBetween(1, 512)) and
-      (JsPath \ "comcode").read(lengthBetween(6, 10)) and
+      (JsPath \ "comcode").read(validComcode) and
       (JsPath \ "goodsDescription").read(lengthBetween(1, 512)) and
       (JsPath \ "countryOfOrigin").read(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
       (JsPath \ "category").read[Int](verifying[Int](category => category >= 1 && category <= 3)) and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[Int] and
-      (JsPath \ "measurementUnit").readNullable[String] and
+      (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
       (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
       (JsPath \ "comcodeEffectiveToDate")
         .readNullable[Instant])(CreateRecordRequest.apply _)
