@@ -557,6 +557,11 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
               ),
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field assessmentId is in the wrong format",
+                "errorNumber" -> 15
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
                 "message"     -> "Optional field conditionDescription is in the wrong format",
                 "errorNumber" -> 19
               ),

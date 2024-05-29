@@ -84,7 +84,7 @@ object ValidationSupport {
     "/goodsDescription"                              -> (InvalidOrMissingGoodsDescriptionCode, InvalidOrMissingGoodsDescription),
     "/countryOfOrigin"                               -> (InvalidOrMissingCountryOfOriginCode, InvalidOrMissingCountryOfOrigin),
     "/category"                                      -> (InvalidOrMissingCategoryCode, InvalidOrMissingCategory),
-    "/assessments"                                   -> (InvalidOrMissingAssessmentIdCode, InvalidOrMissingAssessmentId),
+    "/assessments(0)/assessmentId"                   -> (InvalidOrMissingAssessmentIdCode, InvalidOrMissingAssessmentId),
     "/supplementaryUnit"                             -> (InvalidAssessmentPrimaryCategoryCode, InvalidAssessmentPrimaryCategory),
     "/assessments(0)/condition/type"                 -> (InvalidAssessmentPrimaryCategoryConditionTypeCode, InvalidAssessmentPrimaryCategoryConditionType),
     "/assessments(0)/condition/conditionId"          -> (InvalidAssessmentPrimaryCategoryConditionIdCode, InvalidAssessmentPrimaryCategoryConditionId),
