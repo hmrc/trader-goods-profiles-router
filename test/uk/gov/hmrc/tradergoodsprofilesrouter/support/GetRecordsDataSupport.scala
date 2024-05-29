@@ -58,7 +58,6 @@ trait GetRecordsDataSupport {
              |    "nirmsNumber": "RMS-GB-123456",
              |    "niphlNumber": "6 S12345",
              |    "locked": false,
-             |    "srcSystemName": "CDAP",
              |    "createdDateTime": "2024-11-18T23:20:19Z",
              |    "updatedDateTime": "2024-11-18T23:20:19Z"
              |  }
@@ -105,7 +104,6 @@ trait GetRecordsDataSupport {
               |    "nirmsNumber": "RMS-GB-123456",
               |    "niphlNumber": "6 S12345",
               |    "locked": false,
-              |    "srcSystemName": "CDAP",
               |    "createdDateTime": "2024-11-18T23:20:19Z",
               |    "updatedDateTime": "2024-11-18T23:20:19Z"
               |  },
@@ -144,7 +142,6 @@ trait GetRecordsDataSupport {
               |    "nirmsNumber": "RMS-GB-123456",
               |    "niphlNumber": "6 S12345",
               |    "locked": false,
-              |    "srcSystemName": "CDAP",
               |    "createdDateTime": "2024-11-18T23:20:19Z",
               |    "updatedDateTime": "2024-11-18T23:20:19Z"
               |  }
@@ -191,7 +188,7 @@ trait GetRecordsDataSupport {
                  |    "supplementaryUnit": 500,
                  |    "measurementUnit": "square meters(m^2)",
                  |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                 |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+                 |    "comcodeEffectiveToDate": null,
                  |    "version": 1,
                  |    "active": true,
                  |    "toReview": false,
@@ -201,7 +198,6 @@ trait GetRecordsDataSupport {
                  |    "nirmsNumber": "RMS-GB-123456",
                  |    "niphlNumber": "6 S12345",
                  |    "locked": false,
-                 |    "srcSystemName": "CDAP",
                  |    "createdDateTime": "2024-11-18T23:20:19Z",
                  |    "updatedDateTime": "2024-11-18T23:20:19Z"
                  |  }
