@@ -53,7 +53,9 @@ object CreateRecordRequest {
       (JsPath \ "countryOfOrigin").read(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
       (JsPath \ "category").read[Int](verifying[Int](category => category >= 1 && category <= 3)) and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
-      (JsPath \ "supplementaryUnit").readNullable[Int](verifying[Int](supplementaryUnit => supplementaryUnit >= -2147483648 && supplementaryUnit <= 2147483647)) and
+      (JsPath \ "supplementaryUnit").readNullable[Int](
+        verifying[Int](supplementaryUnit => supplementaryUnit >= -2147483648 && supplementaryUnit <= 2147483647)
+      ) and
       (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
       (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
       (JsPath \ "comcodeEffectiveToDate")
