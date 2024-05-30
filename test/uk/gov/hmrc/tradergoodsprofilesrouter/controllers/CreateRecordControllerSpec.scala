@@ -145,6 +145,33 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         contentAsJson(result) mustBe Json.toJson(errorResponse)
       }
     }
+
+    "return 400 Bad request when supplementaryUnit is out of range" in {
+
+      val errorResponse = ErrorResponse(
+        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        ApplicationConstants.BadRequestCode,
+        ApplicationConstants.BadRequestMessage,
+        Some(
+          Seq(
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Optional field supplementaryUnit is in the wrong format",
+              21
+            )
+          )
+        )
+      )
+
+      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      val result = sut.create(
+        FakeRequest().withBody(outOfRangeSupplementaryUnitRequestData).withHeaders(validHeaders: _*)
+      )
+
+      status(result) mustBe BAD_REQUEST
+
+      contentAsJson(result) mustBe Json.toJson(errorResponse)
+    }
   }
 
   lazy val createRecordResponseData: CreateOrUpdateRecordResponse = Json
@@ -269,6 +296,35 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
              |        }
              |    ],
              |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
+
+  lazy val outOfRangeSupplementaryUnitRequestData: JsValue = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789012",
+             |    "actorId": "GB098765432112",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "10410100",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 1,
+             |    "assessments": [
+             |        {
+             |            "assessmentId": "abc123",
+             |            "primaryCategory": 1,
+             |            "condition": {
+             |                "type": "abc123",
+             |                "conditionId": "Y923",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        }
+             |    ],
+             |    "supplementaryUnit": 2147483648,
              |    "measurementUnit": "Square metre (m2)",
              |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
              |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
