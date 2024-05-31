@@ -25,7 +25,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.accreditationrequests.RequestAccreditationRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
@@ -58,7 +58,7 @@ trait RouterService {
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse]
 
   def requestAccreditation(
-    request: RequestAccreditationRequest
+    request: TraderDetails
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int]
 
   def removeRecord(
@@ -167,7 +167,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
   }
 
   override def requestAccreditation(
-    request: RequestAccreditationRequest
+    request: TraderDetails
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] = {
     val correlationId = uuidService.uuid
     EitherT(

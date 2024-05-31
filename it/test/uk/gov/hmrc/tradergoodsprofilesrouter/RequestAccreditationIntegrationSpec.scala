@@ -38,7 +38,6 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
   }
 
-
   "attempting to create accreditation, when" - {
     "the request is" - {
       "valid, specifically" - {
@@ -47,9 +46,8 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-
             .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"))
-            .post(createAccreditationRequestData)
+            .post(createAccreditationRequestExternalApi)
             .futureValue
 
           response.status shouldBe CREATED
@@ -62,7 +60,7 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
             .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"))
-            .post(createAccreditationRequiredRequestData)
+            .post(createAccreditationRequestRequiredExternalApi)
             .futureValue
 
           response.status shouldBe CREATED
@@ -82,10 +80,10 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
             .futureValue
 
           response.status shouldBe FORBIDDEN
-          response.json shouldBe Json.obj(
+          response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code" -> "FORBIDDEN",
-            "message" -> "Forbidden"
+            "code"          -> "FORBIDDEN",
+            "message"       -> "Forbidden"
           )
 
           verifyThatDownstreamApiWasCalled()
@@ -169,7 +167,11 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error  with 401 errorCode" in {
-          stubForEis(INTERNAL_SERVER_ERROR, createAccreditationRequestData, Some(eisErrorResponse("401", "Unauthorised")))
+          stubForEis(
+            INTERNAL_SERVER_ERROR,
+            createAccreditationRequestData,
+            Some(eisErrorResponse("401", "Unauthorised"))
+          )
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
@@ -249,7 +251,11 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 502 errorCode" in {
-          stubForEis(INTERNAL_SERVER_ERROR, createAccreditationRequestData, Some(eisErrorResponse("502", "Bad Gateway")))
+          stubForEis(
+            INTERNAL_SERVER_ERROR,
+            createAccreditationRequestData,
+            Some(eisErrorResponse("502", "Bad Gateway"))
+          )
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
@@ -374,11 +380,11 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
   )
 
   lazy val createAccreditationRequiredRequestData: String =
-    """
+    s"""
       |{
       |   "accreditationRequest":{
       |      "requestCommon":{
-      |         "receiptDate":"2024-03-14T09:30:47Z"
+      |         "receiptDate":"$timestamp"
       |      },
       |      "requestDetail":{
       |         "traderDetails":{
@@ -401,12 +407,12 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
       |""".stripMargin
 
   lazy val createAccreditationRequestData: String =
-    """
+    s"""
       |{
       |   "accreditationRequest":{
       |      "requestCommon":{
       |         "clientID":"MDTP",
-      |         "receiptDate":"2024-03-14T09:30:47Z",
+      |         "receiptDate":"$timestamp",
       |         "boxID":"String"
       |      },
       |      "requestDetail":{
@@ -422,7 +428,7 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
       |                  "traderReference":"SKU123456",
       |                  "goodsDescription":"Strawberries",
       |                  "countryOfOrigin":"GB",
-      |                  "supplementaryUnit":12,
+      |                  "supplementaryUnit":123456,
       |                  "category":1,
       |                  "measurementUnitDescription":"Kilogram of nitrogen",
       |                  "commodityCode":"0810100000"
@@ -434,23 +440,45 @@ class RequestAccreditationIntegrationSpec extends BaseIntegrationWithConnectorSp
       |}
       |""".stripMargin
 
-  lazy val createAccreditationRequestDataForExternalApi: String =
+  lazy val createAccreditationRequestRequiredExternalApi: String =
     """
       |{
-      |   "traderDetails":{
-      |      "traderEORI":"GB123456789001",
-      |      "requestorName":"Mr.Phil Edwards",
-      |      "requestorEmail":"Phil.Edwards@gmail.com",
-      |      "ukimsAuthorisation":"UKIMSAUTH1234567",
-      |      "goodsItems":[
-      |         {
-      |            "publicRecordID":"GB1234567890011111111111111111111111",
-      |            "traderReference":"SKU123456",
-      |            "goodsDescription":"Strawberries",
-      |            "commodityCode":"0810100000"
-      |         }
-      |      ]
-      |   }
+      |   "traderEORI":"GB123456789001",
+      |   "requestorName":"Mr.Phil Edwards",
+      |   "requestorEmail":"Phil.Edwards@gmail.com",
+      |   "ukimsAuthorisation":"UKIMSAUTH1234567",
+      |   "goodsItems":[
+      |      {
+      |         "publicRecordID":"GB1234567890011111111111111111111111",
+      |         "traderReference":"SKU123456",
+      |         "goodsDescription":"Strawberries",
+      |         "commodityCode":"0810100000"
+      |      }
+      |   ]
       |}
       |""".stripMargin
+
+  lazy val createAccreditationRequestExternalApi: String =
+    """
+      |{
+      |   "traderEORI":"GB123456789001",
+      |   "requestorName":"Mr.Phil Edwards",
+      |   "requestorEORI":"XI123456789001",
+      |   "requestorEmail":"Phil.Edwards@gmail.com",
+      |   "ukimsAuthorisation":"UKIMSAUTH1234567",
+      |   "goodsItems":[
+      |      {
+      |         "publicRecordID":"GB1234567890011111111111111111111111",
+      |         "traderReference":"SKU123456",
+      |         "goodsDescription":"Strawberries",
+      |         "countryOfOrigin":"GB",
+      |         "supplementaryUnit":123456,
+      |         "category":1,
+      |         "measurementUnitDescription":"Kilogram of nitrogen",
+      |         "commodityCode":"0810100000"
+      |      }
+      |   ]
+      |}
+      |""".stripMargin
+
 }

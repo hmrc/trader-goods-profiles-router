@@ -24,9 +24,9 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, otherHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.accreditationrequests.RequestAccreditationRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -74,7 +74,7 @@ trait EISConnector {
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[Result, Int]]
 
-  def requestAccreditation(request: RequestAccreditationRequest, correlationId: String)(implicit hc: HeaderCarrier): Future[Either[Result, Int]]
+  def requestAccreditation(request: TraderDetails, correlationId: String)(implicit hc: HeaderCarrier): Future[Either[Result, Int]]
 }
 
 class EISConnectorImpl @Inject() (
@@ -143,13 +143,14 @@ class EISConnectorImpl @Inject() (
       .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 
-  override def requestAccreditation(request: RequestAccreditationRequest, correlationId: String)(implicit hc: HeaderCarrier): Future[Either[Result, Int]] = {
+  override def requestAccreditation(request: TraderDetails, correlationId: String)(implicit hc: HeaderCarrier): Future[Either[Result, Int]] = {
     val url = appConfig.eisConfig.createaccreditationUrl
 
+    val accreditationEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
     httpClientV2
       .post(url"$url")
       .setHeader(eisRequestHeadersAccreditation(correlationId): _*)
-      .withBody(toJson(request))
+      .withBody(toJson(accreditationEisRequest))
       .execute(otherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 

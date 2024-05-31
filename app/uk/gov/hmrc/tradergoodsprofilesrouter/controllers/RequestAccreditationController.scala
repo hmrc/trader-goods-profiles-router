@@ -24,7 +24,7 @@ import play.api.libs.json.Json.toJson
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.accreditationrequests.RequestAccreditationRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
@@ -53,9 +53,9 @@ class RequestAccreditationController @Inject() (
   }
 
 
-  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, RequestAccreditationRequest] =
+  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, TraderDetails] =
     request.body
-      .validate[RequestAccreditationRequest]
+      .validate[TraderDetails]
       .asEither
       .leftMap { errors =>
         logger.warn(
