@@ -83,6 +83,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         "/tgp/createrecord/v1",
         "/tgp/removerecord/v1",
         "/tgp/updaterecord/v1",
+        "/tgp/createaccreditation/v1",
         "MDTP",
         Headers("bearerToken")
       )

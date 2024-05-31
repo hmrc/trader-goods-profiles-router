@@ -93,6 +93,7 @@ object ValidationSupport {
     "/supplementaryUnit"                             -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
     "/measurementUnit"                               -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
     "/comcodeEffectiveFromDate"                      -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
-    "/comcodeEffectiveToDate"                        -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate)
+    "/comcodeEffectiveToDate"                        -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
+    "/accreditationRequest"                          -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
   )
 }

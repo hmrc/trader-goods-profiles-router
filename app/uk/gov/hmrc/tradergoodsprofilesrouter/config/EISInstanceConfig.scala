@@ -28,13 +28,15 @@ case class EISInstanceConfig(
   createRecord: String,
   removeRecord: String,
   updateRecord: String,
+  createAccreditation: String,
   forwardedHost: String,
   headers: Headers
 ) {
-  lazy val getRecordsUrl: String   = s"$protocol://$host:$port$getRecords"
-  lazy val createRecordUrl: String = s"$protocol://$host:$port$createRecord"
-  lazy val removeRecordUrl: String = s"$protocol://$host:$port$removeRecord"
-  lazy val updateRecordUrl: String = s"$protocol://$host:$port$updateRecord"
+  lazy val getRecordsUrl: String          = s"$protocol://$host:$port$getRecords"
+  lazy val createRecordUrl: String        = s"$protocol://$host:$port$createRecord"
+  lazy val removeRecordUrl: String        = s"$protocol://$host:$port$removeRecord"
+  lazy val updateRecordUrl: String        = s"$protocol://$host:$port$updateRecord"
+  lazy val createaccreditationUrl: String = s"$protocol://$host:$port$createAccreditation"
 }
 
 object EISInstanceConfig {
@@ -50,6 +52,7 @@ object EISInstanceConfig {
         config.get[String]("create-record"),
         config.get[String]("remove-record"),
         config.get[String]("update-record"),
+        config.get[String]("create-accreditation"),
         config.get[String]("forwarded-host"),
         headers = Headers(authorization = config.get[String]("headers.authorization"))
       )
