@@ -24,7 +24,8 @@ import play.api.libs.json.Json.toJson
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{GoodsItem, RequestAccreditation, TraderDetails}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
@@ -45,17 +46,30 @@ class RequestAccreditationController @Inject() (
     val result = for {
 
       requestAccreditationRequest <- validateRequestBody(request)
-
-      _  <- routerService.requestAccreditation(requestAccreditationRequest)
+      recordItem <- routerService.fetchRecord(requestAccreditationRequest.eori, requestAccreditationRequest.recordId)
+      newAccreditationRequest = createNewTraderDetails(recordItem,requestAccreditationRequest)
+      _ <- routerService.requestAccreditation( newAccreditationRequest)
     } yield Created
 
     result.merge
   }
 
 
-  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, TraderDetails] =
+
+  private def createNewTraderDetails(goodsItemRecords: GoodsItemRecords,request: RequestAccreditation) : TraderDetails = {
+
+    val goodsItem = GoodsItem(goodsItemRecords.recordId,goodsItemRecords.traderRef,goodsItemRecords.goodsDescription,
+      Some(goodsItemRecords.countryOfOrigin),goodsItemRecords.supplementaryUnit,Some(goodsItemRecords.category),
+      goodsItemRecords.measurementUnit,goodsItemRecords.comcode
+      )
+    val traderDetails = TraderDetails(request.eori,request.requestorName,Some(goodsItemRecords.actorId),request.requestorEmail,
+      goodsItemRecords.ukimsNumber,Seq(goodsItem))
+    traderDetails
+  }
+
+  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, RequestAccreditation] =
     request.body
-      .validate[TraderDetails]
+      .validate[RequestAccreditation]
       .asEither
       .leftMap { errors =>
         logger.warn(
