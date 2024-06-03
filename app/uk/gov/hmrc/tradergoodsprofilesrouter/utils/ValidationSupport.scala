@@ -22,21 +22,20 @@ import play.api.libs.json.{JsPath, JsonValidationError, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
-import java.text.SimpleDateFormat
-import java.util.{Locale, TimeZone}
-import scala.util.Try
+import java.time.Instant
+import java.util.Locale
 import scala.util.matching.Regex
 
 object ValidationSupport {
 
-  private val dateFormat            = generateDateFormat()
   private val actorIdPattern: Regex = raw"[A-Z]{2}\d{12,15}".r
   private val comcodePattern: Regex = raw".{6}(.{2}(.{2})?)?".r
 
   def isValidCountryCode(rawCountryCode: String): Boolean =
     Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)
 
-  def isValidDate(rawDate: String): Boolean = Try(dateFormat.parse(rawDate)).isSuccess
+  def isValidDate(instant: Instant): Boolean =
+    instant.getNano == 0
 
   def convertError(
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
@@ -53,18 +52,13 @@ object ValidationSupport {
     val validActorId: Reads[String] = verifying(isValidActorId)
 
     val validComcode: Reads[String] = verifying(isValidComcode)
+
+    val validDate: Reads[Instant] = verifying(isValidDate)
   }
 
   def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
 
   def isValidComcode(comcode: String): Boolean = comcodePattern.matches(comcode)
-
-  private def generateDateFormat(): SimpleDateFormat = {
-    val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-    dateFormat.setLenient(false)
-    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-    dateFormat
-  }
 
   private def extractSimplePaths(
     errors: scala.collection.Seq[(JsPath, collection.Seq[JsonValidationError])]
