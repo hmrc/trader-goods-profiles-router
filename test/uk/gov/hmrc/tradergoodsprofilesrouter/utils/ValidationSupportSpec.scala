@@ -21,14 +21,16 @@ import play.api.libs.json.{JsPath, JsonValidationError}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.{convertError, isValidActorId, isValidComcode, isValidCountryCode, isValidDate}
 
+import java.time.Instant
+
 class ValidationSupportSpec extends PlaySpec {
 
   "when validating" should {
     "a valid date must return true" in {
-      isValidDate("2024-11-18T23:20:19Z") mustBe true
+      isValidDate(Instant.parse("2024-06-01T12:34:56Z")) mustBe true
     }
-    "an invalid date must return false" in {
-      isValidDate("2024-32-03") mustBe false
+    "an invalid date with milliseconds must return false" in {
+      isValidDate(Instant.parse("2024-06-01T12:34:56.789Z")) mustBe false
     }
     "a valid countryCode must return true" in {
       isValidCountryCode("GB") mustBe true
