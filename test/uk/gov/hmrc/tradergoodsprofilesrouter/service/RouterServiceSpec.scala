@@ -55,7 +55,7 @@ class RouterServiceSpec
   private val eisConnector  = mock[EISConnector]
   private val uuidService   = mock[UuidService]
 
-  val routerService = new RouterServiceImpl(eisConnector, uuidService)
+  val routerService = new RouterService(eisConnector, uuidService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -302,7 +302,7 @@ class RouterServiceSpec
     }
   }
 
-  val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse =
+  lazy val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse =
     Json
       .parse("""
           |{
@@ -345,7 +345,7 @@ class RouterServiceSpec
           |""".stripMargin)
       .as[CreateOrUpdateRecordResponse]
 
-  val createRecordRequest: CreateRecordRequest = Json
+  lazy val createRecordRequest: CreateRecordRequest = Json
     .parse("""
         |{
         |    "eori": "GB123456789012",
@@ -375,7 +375,7 @@ class RouterServiceSpec
         |""".stripMargin)
     .as[CreateRecordRequest]
 
-  val updateRecordRequest: UpdateRecordRequest = Json
+  lazy val updateRecordRequest: UpdateRecordRequest = Json
     .parse("""
         |{
         |    "eori": "GB123456789001",

@@ -67,7 +67,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     "Authorization"    -> "bearerToken"
   )
 
-  private val eisConnector: EISConnectorImpl = new EISConnectorImpl(appConfig, httpClientV2, dateTimeService)
+  private val eisConnector: EISConnector = new EISConnector(appConfig, httpClientV2, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -83,6 +83,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         "/tgp/createrecord/v1",
         "/tgp/removerecord/v1",
         "/tgp/updaterecord/v1",
+        "/tgp/maintainprofile/v1",
         "MDTP",
         Headers("bearerToken")
       )
@@ -300,7 +301,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     httpReader.asInstanceOf[HttpReader[Either[Result, Any]]].correlationId mustBe correlationId
   }
 
-  val createOrUpdateRecordSampleJson: JsValue = Json
+  lazy val createOrUpdateRecordSampleJson: JsValue = Json
     .parse("""
         |{
         |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -341,7 +342,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |}
         |""".stripMargin)
 
-  val createRecordRequest: JsValue = Json
+  lazy val createRecordRequest: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789012",
@@ -370,7 +371,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |}
         |""".stripMargin)
 
-  val updateRecordRequest: JsValue = Json
+  lazy val updateRecordRequest: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789001",

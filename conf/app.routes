@@ -5,3 +5,4 @@ GET        /:eori                           uk.gov.hmrc.tradergoodsprofilesroute
 POST       /records                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateRecordController.create()
 PUT        /records                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.UpdateRecordController.update()
 PUT        /:eori/records/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RemoveRecordController.remove(eori: String, recordId: String)
+POST       /profile/maintain                uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain()

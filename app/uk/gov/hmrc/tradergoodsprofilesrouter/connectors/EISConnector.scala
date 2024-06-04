@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
-import com.google.inject.ImplementedBy
 import play.api.http.MimeTypes
 import play.api.libs.json.Json.toJson
 import play.api.mvc.Result
@@ -24,10 +23,10 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, RemoveRecordHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, MaintainProfileRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
@@ -36,53 +35,14 @@ import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[EISConnectorImpl])
-trait EISConnector {
-  def fetchRecord(
-    eori: String,
-    recordId: String,
-    correlationId: String
-  )(implicit
-    hc: HeaderCarrier
-  ): Future[Either[Result, GetEisRecordsResponse]]
-
-  def fetchRecords(
-    eori: String,
-    correlationId: String,
-    lastUpdatedDate: Option[Instant] = None,
-    page: Option[Int] = None,
-    size: Option[Int] = None
-  )(implicit
-    hc: HeaderCarrier
-  ): Future[Either[Result, GetEisRecordsResponse]]
-
-  def createRecord(
-    request: CreateRecordRequest,
-    correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]]
-
-  def updateRecord(
-    request: UpdateRecordRequest,
-    correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]]
-
-  def removeRecord(
-    eori: String,
-    recordId: String,
-    actorId: String,
-    correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, Int]]
-}
-
-class EISConnectorImpl @Inject() (
+class EISConnector @Inject() (
   appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
-    extends EISConnector
-    with EisHttpErrorHandler {
+    extends EisHttpErrorHandler {
 
-  override def fetchRecord(
+  def fetchRecord(
     eori: String,
     recordId: String,
     correlationId: String
@@ -96,7 +56,7 @@ class EISConnectorImpl @Inject() (
 
   }
 
-  override def fetchRecords(
+  def fetchRecords(
     eori: String,
     correlationId: String,
     lastUpdatedDate: Option[Instant] = None,
@@ -114,7 +74,7 @@ class EISConnectorImpl @Inject() (
       .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
   }
 
-  override def createRecord(
+  def createRecord(
     request: CreateRecordRequest,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
@@ -127,7 +87,7 @@ class EISConnectorImpl @Inject() (
       .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 
-  override def updateRecord(
+  def updateRecord(
     request: UpdateRecordRequest,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
@@ -140,7 +100,7 @@ class EISConnectorImpl @Inject() (
       .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 
-  override def removeRecord(
+  def removeRecord(
     eori: String,
     recordId: String,
     actorId: String,
@@ -152,6 +112,17 @@ class EISConnectorImpl @Inject() (
       .setHeader(eisRequestHeaders(correlationId): _*)
       .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
       .execute(RemoveRecordHttpReader[Int](correlationId, handleErrorResponse), ec)
+  }
+
+  def maintainProfile(request: MaintainProfileRequest, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Either[Result, MaintainProfileResponse]] = {
+    val url = appConfig.eisConfig.maintainProfileUrl
+    httpClientV2
+      .put(url"$url")
+      .setHeader(eisRequestHeaders(correlationId): _*)
+      .withBody(toJson(request))
+      .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
   }
 
   private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
