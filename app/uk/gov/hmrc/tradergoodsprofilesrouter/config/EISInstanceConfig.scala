@@ -29,19 +29,30 @@ case class EISInstanceConfig(
   removeRecord: String,
   updateRecord: String,
   forwardedHost: String,
-  headers: Headers
+  updateRecordToken: String,
+  recordGetToken: String,
+  recordCreateToken: String,
+  recordRemoveToken: String,
+  accreditationCreateToken: String
 ) {
   lazy val getRecordsUrl: String   = s"$protocol://$host:$port$getRecords"
   lazy val createRecordUrl: String = s"$protocol://$host:$port$createRecord"
   lazy val removeRecordUrl: String = s"$protocol://$host:$port$removeRecord"
   lazy val updateRecordUrl: String = s"$protocol://$host:$port$updateRecord"
+
+  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
+  lazy val recordGetToken    = s"Bearer $updateRecordToken"
+  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
+  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
+  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
+  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
 }
 
 object EISInstanceConfig {
 
   implicit lazy val configLoader: ConfigLoader[EISInstanceConfig] =
     ConfigLoader { rootConfig => path =>
-      val config = Configuration(rootConfig.getConfig(path))
+      val config: Configuration = Configuration(rootConfig.getConfig(path))
       EISInstanceConfig(
         config.get[String]("protocol"),
         config.get[String]("host"),
@@ -51,7 +62,11 @@ object EISInstanceConfig {
         config.get[String]("remove-record"),
         config.get[String]("update-record"),
         config.get[String]("forwarded-host"),
-        headers = Headers(authorization = config.get[String]("headers.authorization"))
+        config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),
+        config.getOptional[String]("record-get-token").getOrElse("recordGetBearerToke"),
+        config.getOptional[String]("record-create-token").getOrElse("recordCreateBearerToke"),
+        config.getOptional[String]("record-remove-token").getOrElse("recordRemoveToken"),
+        config.getOptional[String]("accreditation-create-token").getOrElse("accreditationCreateToken")
       )
     }
 }

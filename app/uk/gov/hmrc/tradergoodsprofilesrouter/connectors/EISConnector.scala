@@ -162,6 +162,6 @@ class EISConnectorImpl @Inject() (
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
       HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
-      HeaderNames.Authorization -> appConfig.eisConfig.headers.authorization
+      HeaderNames.Authorization -> appConfig.eisConfig.
     )
 }
