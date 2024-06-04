@@ -87,8 +87,7 @@ object ValidationSupport {
     "/measurementUnit"                            -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
     "/comcodeEffectiveFromDate"                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
     "/comcodeEffectiveToDate"                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
-    "/requestorName"                                 -> (InvalidOrMissingRequestorNameCode, InvalidOrMissingRequestorName),
-    "/requestorEmail"                                -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail)
-
+    "/requestorName"                              -> (InvalidOrMissingRequestorNameCode, InvalidOrMissingRequestorName),
+    "/requestorEmail"                             -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail)
   )
 }
