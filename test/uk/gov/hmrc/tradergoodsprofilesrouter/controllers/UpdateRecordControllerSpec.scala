@@ -101,6 +101,55 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
       }
     }
 
+    "return 400 Bad request when required request field is missing from assessment array" in {
+
+      val errorResponse = ErrorResponse(
+        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        ApplicationConstants.BadRequestCode,
+        ApplicationConstants.BadRequestMessage,
+        Some(
+          Seq(
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Optional field type is in the wrong format",
+              17
+            ),
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Optional field assessmentId is in the wrong format",
+              15
+            ),
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field eori was missing from body or is in the wrong format",
+              6
+            ),
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Optional field primaryCategory is in the wrong format",
+              16
+            ),
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Optional field conditionId is in the wrong format",
+              18
+            )
+          )
+        )
+      )
+
+      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      val result = sut.update(
+        FakeRequest().withBody(invalidUpdateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
+      )
+
+      status(result) mustBe BAD_REQUEST
+
+      withClue("should return json response") {
+        contentAsJson(result) mustBe Json.toJson(errorResponse)
+      }
+    }
+
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
       val errorResponse =
@@ -218,5 +267,44 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
         |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
         |}
         |""".stripMargin)
+
+  lazy val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
+    .parse("""
+             |{
+             |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+             |    "actorId": "GB098765432112",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "10410100",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 1,
+             |    "assessments": [
+             |        {
+             |            "assessmentId": "abc123",
+             |            "primaryCategory": 1,
+             |            "condition": {
+             |                "type": "abc123",
+             |                "conditionId": "Y923",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        },
+             |        {
+             |            "assessmentId": "",
+             |            "primaryCategory": "test",
+             |            "condition": {
+             |                "type": "",
+             |                "conditionId": "",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        }
+             |    ],
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
 
 }

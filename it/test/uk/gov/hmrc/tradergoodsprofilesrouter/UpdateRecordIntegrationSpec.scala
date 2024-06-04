@@ -580,6 +580,49 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           verifyThatDownstreamApiWasNotCalled()
         }
+        "for optional assessment array fields" in {
+          val response = wsClient
+            .url(fullUrl(s"/records/"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .put(invalidUpdateRecordRequestDataForAssessmentArray)
+            .futureValue
+
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field type is in the wrong format",
+                "errorNumber" -> 17
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field assessmentId is in the wrong format",
+                "errorNumber" -> 15
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
+                "errorNumber" -> 6
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field primaryCategory is in the wrong format",
+                "errorNumber" -> 16
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Optional field conditionId is in the wrong format",
+                "errorNumber" -> 18
+              )
+            )
+          )
+
+          verifyThatDownstreamApiWasNotCalled()
+        }
         "for mandatory fields actorId and comcode" in {
           val response = wsClient
             .url(fullUrl(s"/records/"))
@@ -805,6 +848,45 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
       |}
       |""".stripMargin
+
+  lazy val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
+    .parse("""
+             |{
+             |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+             |    "actorId": "GB098765432112",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "10410100",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 1,
+             |    "assessments": [
+             |        {
+             |            "assessmentId": "abc123",
+             |            "primaryCategory": 1,
+             |            "condition": {
+             |                "type": "abc123",
+             |                "conditionId": "Y923",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        },
+             |        {
+             |            "assessmentId": "",
+             |            "primaryCategory": "test",
+             |            "condition": {
+             |                "type": "",
+             |                "conditionId": "",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        }
+             |    ],
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
 
   lazy val invalidActorIdAndComcodeRequestData: String =
     """
