@@ -31,7 +31,7 @@ import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig, Headers}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
@@ -63,8 +63,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     "Content-Type"     -> MimeTypes.JSON,
     "Accept"           -> MimeTypes.JSON,
     "Date"             -> "Sun, 12 May 2024 12:15:15 Z",
-    "X-Client-ID"      -> "TSS",
-    "Authorization"    -> "bearerToken"
+    "X-Client-ID"      -> "TSS"
   )
 
   private val eisConnector: EISConnectorImpl = new EISConnectorImpl(appConfig, httpClientV2, dateTimeService)
@@ -84,7 +83,11 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         "/tgp/removerecord/v1",
         "/tgp/updaterecord/v1",
         "MDTP",
-        Headers("bearerToken")
+        "dummyRecordUpdateBearerToken",
+        "dummyRecordGetBearerToken",
+        "dummyRecordCreateBearerToken",
+        "dummyRecordRemoveBearerToken",
+        "dummyAccreditationCreateBearerToken"
       )
     )
     when(dateTimeService.timestamp).thenReturn(timestamp)
@@ -123,10 +126,9 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         .thenReturn(Future.successful(Right(response)))
 
       await(eisConnector.fetchRecord(eori, recordId, correlationId))
-
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-      verify(requestBuilder).setHeader(headers: _*)
+      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordGetBearerToken"): _*)
 
       verifyExecuteWithParams
     }
@@ -165,7 +167,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       val expectedUrl            =
         s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
-      verify(requestBuilder).setHeader(headers: _*)
+      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordGetBearerToken"): _*)
       verifyExecuteWithParams
 
     }
@@ -206,7 +208,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
 
       val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
       verify(httpClientV2).post(url"$expectedUrl")
-      verify(requestBuilder).setHeader(headers: _*)
+      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordCreateBearerToken"): _*)
       verify(requestBuilder).withBody(createRecordRequest)
       verify(requestBuilder).execute(any, any)
 
@@ -233,7 +235,8 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
 
       val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder, Mockito.atLeast(1)).setHeader(headers: _*)
+      verify(requestBuilder, Mockito.atLeast(1))
+        .setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordRemoveBearerToken"): _*)
       verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
 
       result.value mustBe OK
@@ -284,7 +287,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
 
       val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(headers: _*)
+      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordUpdateBearerToken"): _*)
       verify(requestBuilder).withBody(updateRecordRequest)
       verify(requestBuilder).execute(any, any)
 

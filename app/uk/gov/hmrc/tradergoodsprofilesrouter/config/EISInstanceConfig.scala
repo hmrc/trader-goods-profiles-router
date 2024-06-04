@@ -18,8 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.config
 
 import play.api.{ConfigLoader, Configuration}
 
-case class Headers(authorization: String)
-
 case class EISInstanceConfig(
   protocol: String,
   host: String,
@@ -40,12 +38,11 @@ case class EISInstanceConfig(
   lazy val removeRecordUrl: String = s"$protocol://$host:$port$removeRecord"
   lazy val updateRecordUrl: String = s"$protocol://$host:$port$updateRecord"
 
-  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
-  lazy val recordGetToken    = s"Bearer $updateRecordToken"
-  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
-  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
-  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
-  lazy val recordUpdateToken = s"Bearer $updateRecordToken"
+  lazy val updateRecordBearerToken        = s"Bearer $updateRecordToken"
+  lazy val getRecordBearerToken           = s"Bearer $recordGetToken"
+  lazy val createRecordBearerToken        = s"Bearer $recordCreateToken"
+  lazy val removeRecordBearerToken        = s"Bearer $recordRemoveToken"
+  lazy val createAccreditationBearerToken = s"Bearer $accreditationCreateToken"
 }
 
 object EISInstanceConfig {
@@ -63,10 +60,10 @@ object EISInstanceConfig {
         config.get[String]("update-record"),
         config.get[String]("forwarded-host"),
         config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),
-        config.getOptional[String]("record-get-token").getOrElse("recordGetBearerToke"),
-        config.getOptional[String]("record-create-token").getOrElse("recordCreateBearerToke"),
-        config.getOptional[String]("record-remove-token").getOrElse("recordRemoveToken"),
-        config.getOptional[String]("accreditation-create-token").getOrElse("accreditationCreateToken")
+        config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
+        config.getOptional[String]("record-create-token").getOrElse("dummyRecordCreateBearerToken"),
+        config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),
+        config.getOptional[String]("accreditation-create-token").getOrElse("dummyAccreditationCreateBearerToken")
       )
     }
 }

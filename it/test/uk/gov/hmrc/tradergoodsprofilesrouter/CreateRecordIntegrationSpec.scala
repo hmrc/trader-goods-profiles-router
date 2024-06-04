@@ -681,7 +681,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .withHeader("X-Correlation-ID", equalTo(correlationId))
       .withHeader("Date", equalTo(timestamp))
       .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("bearerToken"))
+      .withHeader("Authorization", equalTo("Bearer dummyRecordCreateBearerToken"))
       .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
