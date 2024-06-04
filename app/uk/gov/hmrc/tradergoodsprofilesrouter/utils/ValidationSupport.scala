@@ -89,5 +89,7 @@ object ValidationSupport {
     "/comcodeEffectiveFromDate"                      -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
     "/comcodeEffectiveToDate"                        -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
     "/accreditationRequest"                          -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
+    "/requestorName"                                 -> (InvalidOrMissingRequestorNameCode, InvalidOrMissingRequestorName),
+    "/requestorEmail"                                -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail)
   )
 }

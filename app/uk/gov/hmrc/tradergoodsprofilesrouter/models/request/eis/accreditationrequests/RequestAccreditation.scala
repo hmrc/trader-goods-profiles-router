@@ -16,7 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.{JsPath, OWrites, Reads}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
+import scala.Function.unlift
 
 case class RequestAccreditation(
   eori: String,
@@ -26,5 +29,17 @@ case class RequestAccreditation(
 )
 
 object RequestAccreditation {
-  implicit val format: OFormat[RequestAccreditation] = Json.format[RequestAccreditation]
+
+  implicit val reads: Reads[RequestAccreditation] =
+    ((JsPath \ "eori").read(lengthBetween(14, 17)) and
+      (JsPath \ "requestorName").read(lengthBetween(1, 70)) and
+      (JsPath \ "recordId").read(lengthBetween(36, 36)) and
+      (JsPath \ "requestorEmail")
+        .read(lengthBetween(3, 254)))(RequestAccreditation.apply _)
+
+  implicit lazy val writes: OWrites[RequestAccreditation] =
+    ((JsPath \ "eori").write[String] and
+      (JsPath \ "requestorName").write[String] and
+      (JsPath \ "recordId").write[String] and
+      (JsPath \ "requestorEmail").write[String])(unlift(RequestAccreditation.unapply))
 }

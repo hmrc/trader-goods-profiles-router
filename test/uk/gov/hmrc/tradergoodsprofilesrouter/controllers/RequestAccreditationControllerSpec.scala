@@ -21,15 +21,14 @@ import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.{BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR}
+import play.api.http.Status.{BAD_REQUEST, CREATED}
 import play.api.libs.json.Json
-import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import scala.concurrent.ExecutionContext
 
@@ -40,7 +39,7 @@ class RequestAccreditationControllerSpec extends PlaySpec with MockitoSugar with
   private val mockRouterService = mock[RouterService]
   private val mockUuidService   = mock[UuidService]
 
-  private val sut              =
+  private val sut =
     new RequestAccreditationController(
       stubControllerComponents(),
       mockRouterService,
@@ -53,7 +52,7 @@ class RequestAccreditationControllerSpec extends PlaySpec with MockitoSugar with
 
   "POST /createaccreditation" should {
 
-    "return a 200 Ok response on removing a record" in {
+    "return a 201 Ok response on creating accreditation" in {
       when(mockRouterService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.rightT(getSingleRecordResponseData))
       when(mockRouterService.requestAccreditation(any)(any))
@@ -66,27 +65,40 @@ class RequestAccreditationControllerSpec extends PlaySpec with MockitoSugar with
       status(result) mustBe CREATED
     }
 
-//    "return 400 Bad request when mandatory request header Accept" in {
-//      when(mockRouterService.fetchRecord(any, any)(any))
-//        .thenReturn(EitherT.rightT(getSingleRecordResponseData))
-//      when(mockRouterService.requestAccreditation(any)(any, any))
-//        .thenReturn(EitherT.leftT(createErrorResponse))
-//
-//      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-//      val result = sut.requestAccreditation()(
-//        FakeRequest().withBody(requestAccreditationData)
-//      )
-//      status(result) mustBe BAD_REQUEST
-//      contentAsJson(result) mustBe Json.toJson(createErrorResponse)
-//    }
+    "return 400 Bad request when required request field is missing" in {
+      when(mockRouterService.fetchRecord(any, any)(any))
+        .thenReturn(EitherT.rightT(getSingleRecordResponseData))
+
+      val errorResponse = ErrorResponse(
+        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        ApplicationConstants.BadRequestCode,
+        ApplicationConstants.BadRequestMessage,
+        Some(
+          Seq(
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field RequestorEmail was missing from body or is in the wrong format",
+              0
+            ),
+            Error("INVALID_REQUEST_PARAMETER", "The recordId has been provided in the wrong format", 26)
+          )
+        )
+      )
+
+      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      val result = sut.requestAccreditation(
+        FakeRequest().withBody(invalidRequestAccreditationData).withHeaders(validHeaders: _*)
+      )
+
+      status(result) mustBe BAD_REQUEST
+
+      withClue("should return json response") {
+        contentAsJson(result) mustBe Json.toJson(errorResponse)
+      }
+    }
 
   }
-  private def createErrorResponse =
-    ErrorResponse(
-      "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      "BAD_REQUEST",
-      "Missing mandatory header Accept"
-    )
+
   lazy val requestAccreditationData = Json
     .parse("""
              |{
@@ -97,20 +109,14 @@ class RequestAccreditationControllerSpec extends PlaySpec with MockitoSugar with
              |}
              |""".stripMargin)
 
-
-
-  lazy val removeRecordRequestData = Json
+  lazy val invalidRequestAccreditationData = Json
     .parse("""
              |{
-             |    "actorId": "GB098765432112"
+             |    "eori": "GB987654321098",
+             |    "requestorName": "Mr. Phil Edwards",
+             |    "recordId": "",
+             |    "requestorEmail": ""
              |}
              |""".stripMargin)
 
-  lazy val invalidRemoveRecordRequestData = Json
-    .parse("""
-             |{
-             |    "actorId": "1234"
-             |}
-             |""".stripMargin)
 }
-

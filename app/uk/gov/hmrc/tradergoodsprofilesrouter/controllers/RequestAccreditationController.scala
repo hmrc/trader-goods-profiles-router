@@ -46,24 +46,37 @@ class RequestAccreditationController @Inject() (
     val result = for {
 
       requestAccreditationRequest <- validateRequestBody(request)
-      recordItem <- routerService.fetchRecord(requestAccreditationRequest.eori, requestAccreditationRequest.recordId)
-      newAccreditationRequest = createNewTraderDetails(recordItem,requestAccreditationRequest)
-      _ <- routerService.requestAccreditation( newAccreditationRequest)
+      recordItem                  <- routerService.fetchRecord(requestAccreditationRequest.eori, requestAccreditationRequest.recordId)
+      newAccreditationRequest      = createNewTraderDetails(recordItem, requestAccreditationRequest)
+      _                           <- routerService.requestAccreditation(newAccreditationRequest)
     } yield Created
 
     result.merge
   }
 
+  private def createNewTraderDetails(
+    goodsItemRecords: GoodsItemRecords,
+    request: RequestAccreditation
+  ): TraderDetails = {
 
-
-  private def createNewTraderDetails(goodsItemRecords: GoodsItemRecords,request: RequestAccreditation) : TraderDetails = {
-
-    val goodsItem = GoodsItem(goodsItemRecords.recordId,goodsItemRecords.traderRef,goodsItemRecords.goodsDescription,
-      Some(goodsItemRecords.countryOfOrigin),goodsItemRecords.supplementaryUnit,Some(goodsItemRecords.category),
-      goodsItemRecords.measurementUnit,goodsItemRecords.comcode
-      )
-    val traderDetails = TraderDetails(request.eori,request.requestorName,Some(goodsItemRecords.actorId),request.requestorEmail,
-      goodsItemRecords.ukimsNumber,Seq(goodsItem))
+    val goodsItem     = GoodsItem(
+      goodsItemRecords.recordId,
+      goodsItemRecords.traderRef,
+      goodsItemRecords.goodsDescription,
+      Some(goodsItemRecords.countryOfOrigin),
+      goodsItemRecords.supplementaryUnit,
+      Some(goodsItemRecords.category),
+      goodsItemRecords.measurementUnit,
+      goodsItemRecords.comcode
+    )
+    val traderDetails = TraderDetails(
+      request.eori,
+      request.requestorName,
+      Some(goodsItemRecords.actorId),
+      request.requestorEmail,
+      goodsItemRecords.ukimsNumber,
+      Seq(goodsItem)
+    )
     traderDetails
   }
 
@@ -81,7 +94,7 @@ class RequestAccreditationController @Inject() (
               uuidService.uuid,
               BadRequestCode,
               BadRequestMessage,
-              //Some(ValidationSupport.convertError(errors))
+              Some(ValidationSupport.convertError(errors))
             )
           )
         ): Result

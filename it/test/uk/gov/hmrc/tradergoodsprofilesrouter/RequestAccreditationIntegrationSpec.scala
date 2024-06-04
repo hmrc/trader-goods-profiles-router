@@ -54,7 +54,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -71,7 +75,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -91,7 +99,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -110,7 +122,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -123,13 +139,42 @@ class RequestAccreditationIntegrationSpec
 
           verifyThatMultipleDownstreamApiWasCalled()
         }
+
+        "Service Unavailable for fetch records" in {
+          val errorResponseJson = Json.obj("error" -> "error")
+          stubForEisFetchRecords(SERVICE_UNAVAILABLE, Some(errorResponseJson.toString()))
+          stubForEis(SERVICE_UNAVAILABLE, createAccreditationRequestData)
+
+          val response = wsClient
+            .url(fullUrl(s"/createaccreditation/"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
+            .post(requestAccreditationData)
+            .futureValue
+
+          response.status shouldBe SERVICE_UNAVAILABLE
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "SERVICE_UNAVAILABLE",
+            "message"       -> "Service Unavailable"
+          )
+
+          verifyThatDownstreamApiWasNotCalled()
+        }
         "Service Unavailable" in {
           stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
           stubForEis(SERVICE_UNAVAILABLE, createAccreditationRequestData)
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -153,7 +198,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -176,7 +225,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -199,7 +252,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -218,7 +275,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -241,7 +302,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -264,7 +329,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -287,7 +356,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -325,7 +398,11 @@ class RequestAccreditationIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/json"),("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
+            )
             .post(requestAccreditationData)
             .futureValue
 
@@ -345,6 +422,39 @@ class RequestAccreditationIntegrationSpec
 
           verifyThatMultipleDownstreamApiWasCalled()
         }
+      }
+      "invalid, specifically" - {
+
+        "missing required request field" in {
+          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          val response = wsClient
+            .url(fullUrl(s"/createaccreditation/"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .post(invalidRequestAccreditationData)
+            .futureValue
+
+          response.status shouldBe BAD_REQUEST
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field RequestorEmail was missing from body or is in the wrong format",
+                "errorNumber" -> 0
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "The recordId has been provided in the wrong format",
+                "errorNumber" -> 26
+              )
+            )
+          )
+
+          verifyThatDownstreamApiWasNotCalled()
+        }
+
       }
     }
   }
@@ -403,7 +513,6 @@ class RequestAccreditationIntegrationSpec
       )
   )
 
-
   lazy val createAccreditationRequestData: String =
     s"""
       |{
@@ -436,7 +545,6 @@ class RequestAccreditationIntegrationSpec
       |}
       |""".stripMargin
 
-
   lazy val requestAccreditationData: String =
     s"""
              |{
@@ -452,10 +560,9 @@ class RequestAccreditationIntegrationSpec
        |{
        |    "eori": "$eori",
        |    "requestorName": "Mr.Phil Edwards",
-       |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-       |    "requestorEmail": "Phil.Edwards@gmail.com"
+       |    "recordId": "",
+       |    "requestorEmail": ""
        |}
        |""".stripMargin
-
 
 }
