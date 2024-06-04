@@ -18,7 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationre
 
 import play.api.libs.json.{Json, OFormat}
 
-
 case class RequestEisAccreditationRequest(
   accreditationRequest: AccreditationRequest
 )
@@ -28,7 +27,7 @@ object RequestEisAccreditationRequest {
 
   def apply(traderDetails: TraderDetails, dateTime: String): RequestEisAccreditationRequest = {
 
-    val defaultRequest      =
+    val defaultRequest       =
       RequestCommon(clientID = None, receiptDate = dateTime, boxID = None)
     val requestDetail        = RequestDetail(traderDetails)
     val accreditationRequest = AccreditationRequest(requestCommon = defaultRequest, requestDetail = requestDetail)

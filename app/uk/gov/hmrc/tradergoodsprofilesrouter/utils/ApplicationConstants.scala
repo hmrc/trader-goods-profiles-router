@@ -78,9 +78,9 @@ object ApplicationConstants {
     "There is an ongoing accreditation request and the record can not be updated"
   val RecordRemovedAndCanNotBeUpdatedMessage               = "This record has been removed and cannot be updated"
 
-  val InvalidOrMissingRequestorName                                 =
+  val InvalidOrMissingRequestorName  =
     "Mandatory field RequestorName was missing from body or is in the wrong format"
-  val InvalidOrMissingRequestorEmail                                 =
+  val InvalidOrMissingRequestorEmail =
     "Mandatory field RequestorEmail was missing from body or is in the wrong format"
 
   val InternalServerErrorCode                                  = "INTERNAL_SERVER_ERROR"
@@ -112,7 +112,7 @@ object ApplicationConstants {
   val InvalidSizeCode                                          = "030"
   val RecordRemovedAndCanNotBeUpdatedCode                      = "031"
 
-  val InvalidOrMissingRequestorNameCode                                 = "000"
-  val InvalidOrMissingRequestorEmailCode                                 = "000"
+  val InvalidOrMissingRequestorNameCode  = "000"
+  val InvalidOrMissingRequestorEmailCode = "000"
 
 }

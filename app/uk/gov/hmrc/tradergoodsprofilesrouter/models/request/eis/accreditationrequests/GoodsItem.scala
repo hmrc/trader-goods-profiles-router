@@ -26,7 +26,7 @@ case class GoodsItem(
   supplementaryUnit: Option[Int],
   category: Option[Int],
   measurementUnitDescription: Option[String],
-  commodityCode: String,
+  commodityCode: String
 )
 
 object GoodsItem {

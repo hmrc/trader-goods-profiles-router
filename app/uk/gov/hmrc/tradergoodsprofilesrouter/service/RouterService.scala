@@ -188,7 +188,6 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
-
   override def updateRecord(
     request: UpdateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {

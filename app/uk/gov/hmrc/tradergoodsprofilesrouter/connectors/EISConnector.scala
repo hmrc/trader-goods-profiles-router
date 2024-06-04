@@ -74,7 +74,9 @@ trait EISConnector {
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[Result, Int]]
 
-  def requestAccreditation(request: TraderDetails, correlationId: String)(implicit hc: HeaderCarrier): Future[Either[Result, Int]]
+  def requestAccreditation(request: TraderDetails, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Either[Result, Int]]
 }
 
 class EISConnectorImpl @Inject() (
@@ -143,7 +145,9 @@ class EISConnectorImpl @Inject() (
       .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 
-  override def requestAccreditation(request: TraderDetails, correlationId: String)(implicit hc: HeaderCarrier): Future[Either[Result, Int]] = {
+  override def requestAccreditation(request: TraderDetails, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Either[Result, Int]] = {
     val url = appConfig.eisConfig.createaccreditationUrl
 
     val accreditationEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
@@ -179,7 +183,7 @@ class EISConnectorImpl @Inject() (
       HeaderNames.Authorization -> appConfig.eisConfig.headers.authorization
     )
 
-  private def eisRequestHeadersAccreditation(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+  private def eisRequestHeadersAccreditation(correlationId: String): Seq[(String, String)] =
     Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> appConfig.eisConfig.forwardedHost,
