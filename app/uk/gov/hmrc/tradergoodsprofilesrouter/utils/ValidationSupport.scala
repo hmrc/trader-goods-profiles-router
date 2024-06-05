@@ -21,6 +21,7 @@ import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
+import org.apache.commons.validator.routines.EmailValidator
 
 import java.time.Instant
 import java.util.Locale
@@ -55,7 +56,18 @@ object ValidationSupport {
 
     val validDate: Reads[Instant] = verifying(isValidDate)
   }
+  object ValidationSupport {
 
+    private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
+
+    def isValidEmailAddress(emailAddress: String): Boolean = emailValidator.isValid(emailAddress)
+
+    object Reads {
+
+      val validEmailAddress: Reads[String] = verifying(isValidEmailAddress)
+    }
+
+  }
   def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
 
   def isValidComcode(comcode: String): Boolean = comcodePattern.matches(comcode)

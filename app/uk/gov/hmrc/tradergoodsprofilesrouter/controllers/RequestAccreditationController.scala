@@ -24,7 +24,8 @@ import play.api.libs.json.Json.toJson
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{GoodsItem, RequestAccreditation, TraderDetails}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAccreditation
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}

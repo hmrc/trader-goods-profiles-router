@@ -24,7 +24,7 @@ import play.api.http.Status.OK
 import play.api.mvc.Result
 import play.api.mvc.Results.Ok
 import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, otherHttpReader}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, OtherHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
@@ -79,7 +79,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
     "remove a record item" in {
 
       val eisResponse = HttpResponse(200, "")
-      val result      = otherHttpReader(correlationId, successErrorHandler).read("PUT", "any-url", eisResponse)
+      val result      = OtherHttpReader(correlationId, successErrorHandler).read("PUT", "any-url", eisResponse)
 
       result.value mustBe OK
     }
@@ -88,7 +88,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       val eisResponse     = HttpResponse(400, "")
       val errorHandlerSpy = spyOnHandlerErrorFn
 
-      otherHttpReader[Int](correlationId, errorHandlerSpy.handleErrorResponse)
+      OtherHttpReader[Int](correlationId, errorHandlerSpy.handleErrorResponse)
         .read("GET", "any-url", eisResponse)
 
       verify(errorHandlerSpy).handleErrorResponse(eisResponse, correlationId)

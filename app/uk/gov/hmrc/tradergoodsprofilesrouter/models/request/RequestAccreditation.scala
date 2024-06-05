@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps}
 import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.ValidationSupport.Reads.validEmailAddress
+
 import scala.Function.unlift
 
 case class RequestAccreditation(
@@ -35,7 +37,7 @@ object RequestAccreditation {
       (JsPath \ "requestorName").read(lengthBetween(1, 70)) and
       (JsPath \ "recordId").read(lengthBetween(36, 36)) and
       (JsPath \ "requestorEmail")
-        .read(lengthBetween(3, 254)))(RequestAccreditation.apply _)
+        .read(lengthBetween(3, 254).keepAnd(validEmailAddress)))(RequestAccreditation.apply _)
 
   implicit lazy val writes: OWrites[RequestAccreditation] =
     ((JsPath \ "eori").write[String] and

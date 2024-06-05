@@ -23,7 +23,7 @@ import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, otherHttpReader}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, OtherHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
@@ -155,7 +155,7 @@ class EISConnectorImpl @Inject() (
       .post(url"$url")
       .setHeader(eisRequestHeadersAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
       .withBody(toJson(accreditationEisRequest))
-      .execute(otherHttpReader[Int](correlationId, handleErrorResponse), ec)
+      .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
   override def removeRecord(
@@ -169,7 +169,7 @@ class EISConnectorImpl @Inject() (
       .put(url"$url")
       .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
       .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
-      .execute(otherHttpReader[Int](correlationId, handleErrorResponse), ec)
+      .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
   private def eisRequestHeaders(correlationId: String, bearerToken: String)(implicit
