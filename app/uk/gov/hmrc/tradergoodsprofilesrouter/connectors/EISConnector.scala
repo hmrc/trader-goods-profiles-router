@@ -183,14 +183,8 @@ class EISConnectorImpl @Inject() (
       HeaderNames.Authorization -> appConfig.eisConfig.headers.authorization
     )
 
-  private def eisRequestHeadersAccreditation(correlationId: String): Seq[(String, String)] =
-    Seq(
-      HeaderNames.CorrelationId -> correlationId,
-      HeaderNames.ForwardedHost -> appConfig.eisConfig.forwardedHost,
-      HeaderNames.ContentType   -> MimeTypes.JSON,
-      HeaderNames.Accept        -> MimeTypes.JSON,
-      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.Authorization -> appConfig.eisConfig.headers.authorization
+  private def eisRequestHeadersAccreditation(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    eisRequestHeaders(correlationId).filterNot(elm =>
+      elm == HeaderNames.ClientId -> hc.headers(Seq(HeaderNames.ClientId)).head._2
     )
-
 }
