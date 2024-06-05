@@ -87,7 +87,8 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         "dummyRecordGetBearerToken",
         "dummyRecordCreateBearerToken",
         "dummyRecordRemoveBearerToken",
-        "dummyAccreditationCreateBearerToken"
+        "dummyAccreditationCreateBearerToken",
+        "dummyMaintainProfileBearerToken"
       )
     )
     when(dateTimeService.timestamp).thenReturn(timestamp)
