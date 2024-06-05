@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.MockitoSugar.when
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status.OK
+import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
@@ -45,7 +45,7 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
   "when trying to maintain a profile" - {
     "it should return a 200 ok when the request is successful" in {
-      stubForEis(OK, maintainProfileRequest, Some(maintainProfileResponse.toString()))
+      stubForEis(OK, maintainProfileEisRequest, Some(maintainProfileResponse.toString()))
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori"))
@@ -55,6 +55,48 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
       response.status shouldBe OK
       response.json   shouldBe toJson(maintainProfileResponse.as[MaintainProfileResponse])
+
+      verifyThatDownstreamApiWasCalled()
+    }
+
+    "it should return a 500 internal server error if EIS is unavailable" in {
+      stubForEis(
+        INTERNAL_SERVER_ERROR,
+        maintainProfileEisRequest,
+        Some(eisErrorResponse("500", "Internal Server Error"))
+      )
+
+      val response = wsClient
+        .url(fullUrl(s"/traders/$eori"))
+        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+        .put(maintainProfileRequest)
+        .futureValue
+
+      response.status shouldBe INTERNAL_SERVER_ERROR
+      response.json   shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "INTERNAL_SERVER_ERROR",
+        "message"       -> "Internal Server Error"
+      )
+
+      verifyThatDownstreamApiWasCalled()
+    }
+
+    "it should return a 403 forbidden if the request is valid but EIS reject the request" in {
+      stubForEis(FORBIDDEN, maintainProfileEisRequest)
+
+      val response = wsClient
+        .url(fullUrl(s"/traders/$eori"))
+        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+        .put(maintainProfileRequest)
+        .futureValue
+
+      response.status shouldBe FORBIDDEN
+      response.json   shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "FORBIDDEN",
+        "message"       -> "Forbidden"
+      )
 
       verifyThatDownstreamApiWasCalled()
     }
@@ -80,6 +122,16 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
   lazy val maintainProfileRequest: String =
     """
+      |{
+      |"actorId":"GB098765432112",
+      |"ukimsNumber":"XIUKIM47699357400020231115081800",
+      |"nirmsNumber":"RMS-GB-123456",
+      |"niphlNumber": "6S123456"
+      |}
+      |""".stripMargin
+
+  lazy val maintainProfileEisRequest: String =
+    """
         |{
         |"eori" : "GB123456789001",
         |"actorId":"GB098765432112",
@@ -88,15 +140,6 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         |"niphlNumber": "6S123456"
         |}
         |""".stripMargin
-
-  lazy val invalidMaintainProfileRequest: JsValue =
-    Json.parse("""
-        |{
-        |"ukimsNumber":"XIUKIM47699357400020231115081800",
-        |"nirmsNumber":"RMS-GB-123456",
-        |"niphlNumber": "6S123456"
-        |}
-        |""".stripMargin)
 
   lazy val maintainProfileResponse: JsValue =
     Json.parse("""
@@ -108,4 +151,24 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         |"niphlNumber": "6S123456"
         |}
         |""".stripMargin)
+
+  private def eisErrorResponse(errorCode: String, errorMessage: String): String =
+    Json
+      .parse(
+        s"""
+           |{
+           |  "errorDetail": {
+           |    "timestamp": "2023-09-14T11:29:18Z",
+           |    "correlationId": "$correlationId",
+           |    "errorCode": "$errorCode",
+           |    "errorMessage": "$errorMessage",
+           |    "source": "BACKEND",
+           |    "sourceFaultDetail": {
+           |      "detail": null
+           |    }
+           |  }
+           |}
+           |""".stripMargin
+      )
+      .toString()
 }

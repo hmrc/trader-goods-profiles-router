@@ -36,12 +36,12 @@ case class EISInstanceConfig(
   accreditationCreateToken: String,
   maintainProfileToken: String
 ) {
-  lazy val getRecordsUrl: String      = s"$protocol://$host:$port$getRecords"
-  lazy val createRecordUrl: String    = s"$protocol://$host:$port$createRecord"
-  lazy val removeRecordUrl: String    = s"$protocol://$host:$port$removeRecord"
-  lazy val updateRecordUrl: String    = s"$protocol://$host:$port$updateRecord"
-  lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
-  lazy val createaccreditationUrl: String = s"$protocol://$host:$port$createAccreditation"
+  lazy val getRecordsUrl: String          = s"$protocol://$host:$port$getRecords"
+  lazy val createRecordUrl: String        = s"$protocol://$host:$port$createRecord"
+  lazy val removeRecordUrl: String        = s"$protocol://$host:$port$removeRecord"
+  lazy val updateRecordUrl: String        = s"$protocol://$host:$port$updateRecord"
+  lazy val maintainProfileUrl: String     = s"$protocol://$host:$port$maintainProfile"
+  lazy val createAccreditationUrl: String = s"$protocol://$host:$port$createAccreditation"
 
   lazy val updateRecordBearerToken        = s"Bearer $updateRecordToken"
   lazy val getRecordBearerToken           = s"Bearer $recordGetToken"

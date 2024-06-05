@@ -33,9 +33,10 @@ import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
@@ -298,6 +299,36 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     }
   }
 
+  "maintain Profile" should {
+    "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
+      when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
+        .thenReturn(Future.successful(Right(maintainProfileResponse)))
+
+      val result =
+        await(eisConnector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
+
+      val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
+      verify(httpClientV2).put(url"$expectedUrl")
+      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyMaintainProfileBearerToken"): _*)
+      verify(requestBuilder).withBody(maintainProfileEisRequest)
+      verify(requestBuilder).execute(any, any)
+      verifyExecuteWithParams
+
+      result.value mustBe maintainProfileResponse
+    }
+
+    "return an error if EIS returns one" in {
+      when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
+        .thenReturn(Future.successful(Left(BadRequest("error"))))
+
+      val result =
+        await(eisConnector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
+
+      result.left.value mustBe BadRequest("error")
+    }
+
+  }
+
   private def verifyExecuteWithParams = {
     val captor = ArgCaptor[HttpReads[Either[Result, GetEisRecordsResponse]]]
     verify(requestBuilder).execute(captor.capture, any)
@@ -406,4 +437,28 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |}
         |""".stripMargin)
 
+  lazy val maintainProfileEisRequest: JsValue =
+    Json
+      .parse("""
+          |{
+          |"eori": "GB123456789012",
+          |"actorId":"GB098765432112",
+          |"ukimsNumber":"XIUKIM47699357400020231115081800",
+          |"nirmsNumber":"RMS-GB-123456",
+          |"niphlNumber": "6S123456"
+          |}
+          |""".stripMargin)
+
+  lazy val maintainProfileResponse: MaintainProfileResponse =
+    Json
+      .parse("""
+          |{
+          |"eori": "GB123456789012",
+          |"actorId":"GB098765432112",
+          |"ukimsNumber":"XIUKIM47699357400020231115081800",
+          |"nirmsNumber":"RMS-GB-123456",
+          |"niphlNumber": "6S123456"
+          |}
+          |""".stripMargin)
+      .as[MaintainProfileResponse]
 }
