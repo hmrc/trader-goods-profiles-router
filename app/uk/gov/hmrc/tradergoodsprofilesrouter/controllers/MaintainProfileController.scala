@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
 
@@ -36,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class MaintainProfileController @Inject() (
   cc: ControllerComponents,
   validateHeaderClientId: ValidateHeaderClientId,
-  routerService: RouterService,
+  maintainProfileService: MaintainProfileService,
   uuidService: UuidService
 )(implicit executionContext: ExecutionContext)
     extends BackendController(cc)
@@ -46,7 +46,7 @@ class MaintainProfileController @Inject() (
     val result = for {
       _                      <- validateHeaderClientId.validateClientId(request)
       maintainProfileRequest <- validateRequestBody(request)
-      response               <- routerService.maintainProfile(maintainProfileRequest)
+      response               <- maintainProfileService.maintainProfile(maintainProfileRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge

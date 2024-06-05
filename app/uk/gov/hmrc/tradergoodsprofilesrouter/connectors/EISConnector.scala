@@ -29,7 +29,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecor
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames._
 
 import java.time.Instant
 import javax.inject.Inject
@@ -127,12 +127,12 @@ class EISConnector @Inject() (
 
   private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
     Seq(
-      HeaderNames.CorrelationId -> correlationId,
-      HeaderNames.ForwardedHost -> appConfig.eisConfig.forwardedHost,
-      HeaderNames.ContentType   -> MimeTypes.JSON,
-      HeaderNames.Accept        -> MimeTypes.JSON,
-      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
-      HeaderNames.Authorization -> appConfig.eisConfig.headers.authorization
+      CorrelationId -> correlationId,
+      ForwardedHost -> appConfig.eisConfig.forwardedHost,
+      ContentType   -> MimeTypes.JSON,
+      Accept        -> MimeTypes.JSON,
+      Date          -> dateTimeService.timestamp.asStringHttp,
+      ClientId      -> hc.headers(Seq(ClientId)).head._2,
+      Authorization -> appConfig.eisConfig.headers.authorization
     )
 }

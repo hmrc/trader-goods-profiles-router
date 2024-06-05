@@ -28,7 +28,7 @@ import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubCo
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
@@ -38,15 +38,15 @@ class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val mockRouterService: RouterService = mock[RouterService]
-  val mockUuidService: UuidService     = mock[UuidService]
+  val mockMaintainProfileService: MaintainProfileService = mock[MaintainProfileService]
+  val mockUuidService: UuidService                       = mock[UuidService]
 
   private val validateClientId = new ValidateHeaderClientId(mockUuidService)
   private val sut              =
     new MaintainProfileController(
       stubControllerComponents(),
       validateClientId,
-      mockRouterService,
+      mockMaintainProfileService,
       mockUuidService
     )
 
@@ -56,7 +56,7 @@ class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
 
   "PUT /profile/maintain " should {
     "return a 200 ok when the call to EIS is successful to maintain a record" in {
-      when(mockRouterService.maintainProfile(any)(any))
+      when(mockMaintainProfileService.maintainProfile(any)(any))
         .thenReturn(EitherT.rightT(maintainProfileResponse))
 
       val result = sut.maintain(FakeRequest().withBody(maintainProfileRequest).withHeaders(validHeaders: _*))

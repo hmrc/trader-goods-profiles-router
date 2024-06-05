@@ -25,9 +25,9 @@ import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, MaintainProfileRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords, MaintainProfileResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
@@ -147,28 +147,6 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
             correlationId,
             ex,
             s"""[RouterService] - Error when updating records for Eori Number: ${request.eori},
-            s"correlationId: $correlationId, message: ${ex.getMessage}"""
-          )
-        }
-    )
-  }
-
-  def maintainProfile(request: MaintainProfileRequest)(implicit
-    hc: HeaderCarrier
-  ): EitherT[Future, Result, MaintainProfileResponse] = {
-    val correlationId = uuidService.uuid
-    EitherT(
-      eisConnector
-        .maintainProfile(request, correlationId)
-        .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
-        }
-        .recover { case ex: Throwable =>
-          logMessageAndReturnError(
-            correlationId,
-            ex,
-            s"""[RouterService] - Error when maintaining profile for ActorId: ${request.actorId},
             s"correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
