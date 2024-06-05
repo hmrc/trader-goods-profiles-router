@@ -38,6 +38,8 @@ object ValidationSupport {
   def isValidDate(instant: Instant): Boolean =
     instant.getNano == 0
 
+  private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
+
   def convertError(
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
   ): Seq[Error] =
@@ -54,20 +56,12 @@ object ValidationSupport {
 
     val validComcode: Reads[String] = verifying(isValidComcode)
 
-    val validDate: Reads[Instant] = verifying(isValidDate)
+    val validDate: Reads[Instant]        = verifying(isValidDate)
+    val validEmailAddress: Reads[String] = verifying(isValidEmailAddress)
   }
-  object ValidationSupport {
 
-    private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
+  def isValidEmailAddress(emailAddress: String): Boolean = emailValidator.isValid(emailAddress)
 
-    def isValidEmailAddress(emailAddress: String): Boolean = emailValidator.isValid(emailAddress)
-
-    object Reads {
-
-      val validEmailAddress: Reads[String] = verifying(isValidEmailAddress)
-    }
-
-  }
   def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
 
   def isValidComcode(comcode: String): Boolean = comcodePattern.matches(comcode)
