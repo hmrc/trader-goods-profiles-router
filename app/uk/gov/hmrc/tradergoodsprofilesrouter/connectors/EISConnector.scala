@@ -96,7 +96,7 @@ class EISConnectorImpl @Inject() (
 
     httpClientV2
       .get(url"$url")
-      .setHeader(eisRequestHeaders(correlationId): _*)
+      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
       .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
 
   }
@@ -115,7 +115,7 @@ class EISConnectorImpl @Inject() (
 
     httpClientV2
       .get(url"$uri")
-      .setHeader(eisRequestHeaders(correlationId): _*)
+      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
       .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
   }
 
@@ -127,7 +127,7 @@ class EISConnectorImpl @Inject() (
 
     httpClientV2
       .post(url"$url")
-      .setHeader(eisRequestHeaders(correlationId): _*)
+      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
       .withBody(toJson(request))
       .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
@@ -140,7 +140,7 @@ class EISConnectorImpl @Inject() (
 
     httpClientV2
       .put(url"$url")
-      .setHeader(eisRequestHeaders(correlationId): _*)
+      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.updateRecordBearerToken): _*)
       .withBody(toJson(request))
       .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
@@ -167,12 +167,14 @@ class EISConnectorImpl @Inject() (
     val url = appConfig.eisConfig.removeRecordUrl
     httpClientV2
       .put(url"$url")
-      .setHeader(eisRequestHeaders(correlationId): _*)
+      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
       .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
       .execute(otherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
-  private def eisRequestHeaders(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
+  private def eisRequestHeaders(correlationId: String, bearerToken: String)(implicit
+    hc: HeaderCarrier
+  ): Seq[(String, String)] =
     Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> appConfig.eisConfig.forwardedHost,
@@ -180,7 +182,7 @@ class EISConnectorImpl @Inject() (
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
       HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
-      HeaderNames.Authorization -> appConfig.eisConfig.headers.authorization
+      HeaderNames.Authorization -> bearerToken
     )
 
   private def eisRequestHeadersAccreditation(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
