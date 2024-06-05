@@ -1,29 +1,11 @@
-/*
- * Copyright 2024 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action
 
 import play.api.Logging
-import play.api.libs.json.Json
-import play.api.mvc._
-import uk.gov.hmrc.auth.core._
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, BodyParser, ControllerComponents, Request, Result}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisationException, AuthorisedFunctions, Enrolment, Enrolments}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.play.http.HeaderCarrierConverter
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.AuthAction.{EnrolmentKey, IdentifierKey}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
@@ -33,46 +15,47 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class AuthAction @Inject() (
+class AuthActionX @Inject() (
   override val authConnector: AuthConnector,
-  val bodyParser: BodyParsers.Default,
   uuidService: UuidService,
   cc: ControllerComponents
-)(implicit val ec: ExecutionContext)
+)(implicit ec: ExecutionContext)
     extends BackendController(cc)
     with AuthorisedFunctions
     with Logging {
 
-  def apply(
-    eori: String
-  ): ActionBuilder[Request, AnyContent] with ActionFunction[Request, Request] =
-    new ActionBuilder[Request, AnyContent] with ActionFunction[Request, Request] {
-
-      override val parser = bodyParser
-
-      protected def executionContext: ExecutionContext = ec
-
-      override def invokeBlock[A](
-        request: Request[A],
-        block: Request[A] => Future[Result]
-      ): Future[Result] = {
-
-        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
-        implicit val req: Request[A]   = request
-
-        authorised(Enrolment(EnrolmentKey))
-          .retrieve(Retrievals.authorisedEnrolments) { enrolments: Enrolments =>
-            getEoriNumber(enrolments) match {
-              case Some(identifier) if identifier.equals(eori) => block(request)
-              case _                                           => createForbiddenError
-            }
+  def authorisedActionWithEori[A](bodyParser: BodyParser[A], eori: String)(block: Request[A] => Future[Result]): Action[A] =
+    Action.async(bodyParser) { implicit request =>
+      authorised(Enrolment(EnrolmentKey))
+        .retrieve(Retrievals.authorisedEnrolments) { enrolments: Enrolments =>
+          getEoriNumber(enrolments) match {
+            case Some(identifier) if identifier.equals(eori) => block(request)
+            case _                                           => createForbiddenError
           }
-          .recover {
-            case error: AuthorisationException => handleUnauthorisedError(error.reason)
-            case ex: Throwable                 => handleException(request, ex)
-          }
+        }
+        .recover {
+          case error: AuthorisationException => handleUnauthorisedError(error.reason)
+          case ex: Throwable                 => handleException(request, ex)
+        }
+    }
+
+  def authorisedAction[A](bodyParser: BodyParser[A])(block: Request[A] => Future[Result]): Action[A] =
+    Action.async(bodyParser) { implicit request =>
+
+      request.body match {
       }
     }
+      authorised(Enrolment(EnrolmentKey))
+        .retrieve(Retrievals.authorisedEnrolments) { enrolments: Enrolments =>
+          getEoriNumber(enrolments) match {
+            case Some(identifier) if identifier.equals(eori) => block(request)
+            case _                                           => createForbiddenError
+          }
+        }
+        .recover {
+          case error: AuthorisationException => handleUnauthorisedError(error.reason)
+          case ex: Throwable                 => handleException(request, ex)
+        }
 
   def getEoriNumber(enrolments: Enrolments): Option[String] =
     for {
@@ -123,9 +106,4 @@ class AuthAction @Inject() (
         )
       )
     )
-}
-
-object AuthAction {
-  val EnrolmentKey  = "HMRC-CUS-ORG"
-  val IdentifierKey = "EORINumber"
 }

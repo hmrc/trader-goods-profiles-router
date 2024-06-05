@@ -1,31 +1,16 @@
-/*
- * Copyright 2024 HM Revenue & Customs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED}
 import play.api.libs.json.Json
 import play.api.mvc.{BodyParsers, Request, Result, Results}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{await, contentAsJson, defaultAwaitTimeout, status}
+import play.api.test.Helpers.{GET, contentAsJson, defaultAwaitTimeout, status}
 import uk.gov.hmrc.auth.core.{Enrolment, InsufficientEnrolments}
 import uk.gov.hmrc.play.bootstrap.tools.Stubs.stubMessagesControllerComponents
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
@@ -34,16 +19,16 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuthActionSpec extends PlaySpec with AuthTestSupport with BeforeAndAfterEach {
+class AuthActionXSpec extends PlaySpec with AuthTestSupport with ScalaFutures with BeforeAndAfterEach {
 
   implicit private val ec: ExecutionContext = ExecutionContext.global
 
   private val correlationId = UUID.randomUUID().toString
   private val uuidService   = mock[UuidService]
+  private val bodyParsers   = mock[BodyParsers.Default]
 
-  private val sut = new AuthAction(
+  private val sut = new AuthActionX(
     authConnector,
-    mock[BodyParsers.Default],
     uuidService,
     stubMessagesControllerComponents()
   )
@@ -63,11 +48,10 @@ class AuthActionSpec extends PlaySpec with AuthTestSupport with BeforeAndAfterEa
       "enrolment is valid" in {
         withAuthorizedTrader()
 
-        val result = await(sut.apply(eoriNumber).invokeBlock(FakeRequest(), block))
+        val result = sut.authorisedActionWithEori(bodyParsers, eoriNumber)(block).apply(FakeRequest())
 
-        result.header.status mustBe OK
-        verify(authConnector)
-          .authorise(eqTo(Enrolment("HMRC-CUS-ORG")), any)(any, any)
+        status(result) mustBe OK
+        verify(authConnector).authorise(eqTo(Enrolment("HMRC-CUS-ORG")), any)(any, any)
       }
     }
 
@@ -75,7 +59,7 @@ class AuthActionSpec extends PlaySpec with AuthTestSupport with BeforeAndAfterEa
       "enrolment is invalid" in {
         withUnauthorizedTrader(InsufficientEnrolments())
 
-        val result = sut.apply(eoriNumber).invokeBlock(FakeRequest(), block)
+        val result = sut.authorisedActionWithEori(bodyParsers, eoriNumber)(block).apply(FakeRequest())
 
         status(result) mustBe UNAUTHORIZED
         contentAsJson(result) mustBe Json.obj(
@@ -89,7 +73,7 @@ class AuthActionSpec extends PlaySpec with AuthTestSupport with BeforeAndAfterEa
 
         withUnauthorizedTrader(new RuntimeException("unauthorised error"))
 
-        val result = sut.apply(eoriNumber).invokeBlock(FakeRequest("GET", "/get"), block)
+        val result = sut.authorisedActionWithEori(bodyParsers, eoriNumber)(block).apply(FakeRequest(GET, "/get"))
 
         status(result) mustBe INTERNAL_SERVER_ERROR
         contentAsJson(result) mustBe Json.obj(
@@ -102,7 +86,7 @@ class AuthActionSpec extends PlaySpec with AuthTestSupport with BeforeAndAfterEa
       "identifier is not found" in {
         withUnauthorizedEmptyIdentifier()
 
-        val result: Future[Result] = sut.apply(eoriNumber).invokeBlock(FakeRequest(), block)
+        val result = sut.authorisedActionWithEori(bodyParsers, eoriNumber)(block).apply(FakeRequest())
 
         status(result) mustBe FORBIDDEN
         contentAsJson(result) mustBe Json.obj(
@@ -115,7 +99,7 @@ class AuthActionSpec extends PlaySpec with AuthTestSupport with BeforeAndAfterEa
       "return forbidden if identifier is unauthorized" in {
         withAuthorizedTrader()
 
-        val result = sut.apply("any-roi").invokeBlock(FakeRequest(), block)
+        val result = sut.authorisedActionWithEori(bodyParsers, "any-roi")(block).apply(FakeRequest())
 
         status(result) mustBe FORBIDDEN
         contentAsJson(result) mustBe Json.obj(
