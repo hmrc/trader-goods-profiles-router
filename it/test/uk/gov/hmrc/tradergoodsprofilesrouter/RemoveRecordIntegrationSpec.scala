@@ -546,7 +546,7 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .withHeader("X-Correlation-ID", equalTo(correlationId))
       .withHeader("Date", equalTo(timestamp))
       .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("bearerToken"))
+      .withHeader("Authorization", equalTo("Bearer dummyRecordRemoveBearerToken"))
       .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
@@ -556,10 +556,6 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       )
   )
 
-  private def stubForEisNew() = stubFor(
-    put(urlEqualTo(connectorPath))
-      .willReturn(status(418))
-  );
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

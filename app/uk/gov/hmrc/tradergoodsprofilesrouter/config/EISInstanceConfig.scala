@@ -18,8 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.config
 
 import play.api.{ConfigLoader, Configuration}
 
-case class Headers(authorization: String)
-
 case class EISInstanceConfig(
   protocol: String,
   host: String,
@@ -29,21 +27,36 @@ case class EISInstanceConfig(
   removeRecord: String,
   updateRecord: String,
   maintainProfile: String,
+  createAccreditation: String,
   forwardedHost: String,
-  headers: Headers
+  updateRecordToken: String,
+  recordGetToken: String,
+  recordCreateToken: String,
+  recordRemoveToken: String,
+  accreditationCreateToken: String,
+  maintainProfileToken: String
 ) {
   lazy val getRecordsUrl: String      = s"$protocol://$host:$port$getRecords"
   lazy val createRecordUrl: String    = s"$protocol://$host:$port$createRecord"
   lazy val removeRecordUrl: String    = s"$protocol://$host:$port$removeRecord"
   lazy val updateRecordUrl: String    = s"$protocol://$host:$port$updateRecord"
   lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
+  lazy val createaccreditationUrl: String = s"$protocol://$host:$port$createAccreditation"
+
+  lazy val updateRecordBearerToken        = s"Bearer $updateRecordToken"
+  lazy val getRecordBearerToken           = s"Bearer $recordGetToken"
+  lazy val createRecordBearerToken        = s"Bearer $recordCreateToken"
+  lazy val removeRecordBearerToken        = s"Bearer $recordRemoveToken"
+  lazy val createAccreditationBearerToken = s"Bearer $accreditationCreateToken"
+  lazy val maintainProfileBearerToken     = s"Bearer $maintainProfileToken"
+
 }
 
 object EISInstanceConfig {
 
   implicit lazy val configLoader: ConfigLoader[EISInstanceConfig] =
     ConfigLoader { rootConfig => path =>
-      val config = Configuration(rootConfig.getConfig(path))
+      val config: Configuration = Configuration(rootConfig.getConfig(path))
       EISInstanceConfig(
         config.get[String]("protocol"),
         config.get[String]("host"),
@@ -53,8 +66,14 @@ object EISInstanceConfig {
         config.get[String]("remove-record"),
         config.get[String]("update-record"),
         config.get[String]("maintain-profile"),
+        config.get[String]("create-accreditation"),
         config.get[String]("forwarded-host"),
-        headers = Headers(authorization = config.get[String]("headers.authorization"))
+        config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),
+        config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
+        config.getOptional[String]("record-create-token").getOrElse("dummyRecordCreateBearerToken"),
+        config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),
+        config.getOptional[String]("accreditation-create-token").getOrElse("dummyAccreditationCreateBearerToken"),
+        config.getOptional[String]("maintain-profile-token").getOrElse("dummyMaintainProfileBearerToken")
       )
     }
 }

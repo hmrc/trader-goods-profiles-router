@@ -342,7 +342,7 @@ class GetSingleRecordIntegrationSpec
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
@@ -398,7 +398,7 @@ class GetSingleRecordIntegrationSpec
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
@@ -454,7 +454,7 @@ class GetSingleRecordIntegrationSpec
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
@@ -516,7 +516,7 @@ class GetSingleRecordIntegrationSpec
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
@@ -572,7 +572,7 @@ class GetSingleRecordIntegrationSpec
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
@@ -619,7 +619,7 @@ class GetSingleRecordIntegrationSpec
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
               .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("bearerToken"))
+              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
@@ -677,7 +677,7 @@ class GetSingleRecordIntegrationSpec
       .withHeader("X-Correlation-ID", equalTo(correlationId))
       .withHeader("Date", equalTo(timestamp))
       .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("bearerToken"))
+      .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
       .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
