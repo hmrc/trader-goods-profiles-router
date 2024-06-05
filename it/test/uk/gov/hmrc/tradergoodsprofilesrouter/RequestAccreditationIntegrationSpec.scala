@@ -487,7 +487,7 @@ class RequestAccreditationIntegrationSpec
       .withHeader("X-Correlation-ID", equalTo(correlationId))
       .withHeader("Date", equalTo(timestamp))
       .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("bearerToken"))
+      .withHeader("Authorization", equalTo("Bearer dummyAccreditationCreateBearerToken"))
       .willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -503,7 +503,7 @@ class RequestAccreditationIntegrationSpec
       .withHeader("X-Correlation-ID", equalTo(correlationId))
       .withHeader("Date", equalTo(timestamp))
       .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("bearerToken"))
+      .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
       .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()

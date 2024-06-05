@@ -35,10 +35,10 @@ case class EISInstanceConfig(
   accreditationCreateToken: String,
   maintainProfileToken: String
 ) {
-  lazy val getRecordsUrl: String   = s"$protocol://$host:$port$getRecords"
-  lazy val createRecordUrl: String = s"$protocol://$host:$port$createRecord"
-  lazy val removeRecordUrl: String = s"$protocol://$host:$port$removeRecord"
-  lazy val updateRecordUrl: String = s"$protocol://$host:$port$updateRecord"
+  lazy val getRecordsUrl: String          = s"$protocol://$host:$port$getRecords"
+  lazy val createRecordUrl: String        = s"$protocol://$host:$port$createRecord"
+  lazy val removeRecordUrl: String        = s"$protocol://$host:$port$removeRecord"
+  lazy val updateRecordUrl: String        = s"$protocol://$host:$port$updateRecord"
   lazy val createaccreditationUrl: String = s"$protocol://$host:$port$createAccreditation"
 
   lazy val updateRecordBearerToken        = s"Bearer $updateRecordToken"
@@ -70,7 +70,7 @@ object EISInstanceConfig {
         config.getOptional[String]("record-create-token").getOrElse("dummyRecordCreateBearerToken"),
         config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),
         config.getOptional[String]("accreditation-create-token").getOrElse("dummyAccreditationCreateBearerToken"),
-        config.getOptional[String]("accreditation-create-token").getOrElse("dummyAccreditationCreateBearerToken")
+        config.getOptional[String]("maintain-profile-token").getOrElse("dummyMaintainProfileBearerToken")
       )
     }
 }

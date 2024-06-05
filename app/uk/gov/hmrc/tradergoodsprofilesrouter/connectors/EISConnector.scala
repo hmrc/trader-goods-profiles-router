@@ -153,7 +153,7 @@ class EISConnectorImpl @Inject() (
     val accreditationEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
     httpClientV2
       .post(url"$url")
-      .setHeader(eisRequestHeadersAccreditation(correlationId): _*)
+      .setHeader(eisRequestHeadersAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
       .withBody(toJson(accreditationEisRequest))
       .execute(otherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
@@ -185,8 +185,10 @@ class EISConnectorImpl @Inject() (
       HeaderNames.Authorization -> bearerToken
     )
 
-  private def eisRequestHeadersAccreditation(correlationId: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    eisRequestHeaders(correlationId).filterNot(elm =>
+  private def eisRequestHeadersAccreditation(correlationId: String, bearerToken: String)(implicit
+    hc: HeaderCarrier
+  ): Seq[(String, String)] =
+    eisRequestHeaders(correlationId, bearerToken).filterNot(elm =>
       elm == HeaderNames.ClientId -> hc.headers(Seq(HeaderNames.ClientId)).head._2
     )
 }

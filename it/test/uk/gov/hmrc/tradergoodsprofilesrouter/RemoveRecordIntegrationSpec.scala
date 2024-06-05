@@ -556,10 +556,6 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       )
   )
 
-  private def stubForEisNew() = stubFor(
-    put(urlEqualTo(connectorPath))
-      .willReturn(status(418))
-  );
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json
