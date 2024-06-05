@@ -35,7 +35,10 @@ abstract class BaseIntegrationWithConnectorSpec extends BaseIntegrationSpec {
     withClue("We expected a single downstream API (stub) to be called, but it wasn't.") {
       getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 1
     }
-
+  def verifyThatMultipleDownstreamApiWasCalled(): Unit =
+    withClue("We expected a multiple downstream API (stub) to be called, but it wasn't.") {
+      getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 2
+    }
   def verifyThatDownstreamApiWasNotCalled(): Unit =
     verify(0, postRequestedFor(urlEqualTo(connectorPath)))
 }

@@ -21,6 +21,7 @@ import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
+import org.apache.commons.validator.routines.EmailValidator
 
 import java.time.Instant
 import java.util.Locale
@@ -36,6 +37,8 @@ object ValidationSupport {
 
   def isValidDate(instant: Instant): Boolean =
     instant.getNano == 0
+
+  private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
 
   def convertError(
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
@@ -53,8 +56,11 @@ object ValidationSupport {
 
     val validComcode: Reads[String] = verifying(isValidComcode)
 
-    val validDate: Reads[Instant] = verifying(isValidDate)
+    val validDate: Reads[Instant]        = verifying(isValidDate)
+    val validEmailAddress: Reads[String] = verifying(isValidEmailAddress)
   }
+
+  def isValidEmailAddress(emailAddress: String): Boolean = emailValidator.isValid(emailAddress)
 
   def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
 
@@ -86,6 +92,8 @@ object ValidationSupport {
     "/supplementaryUnit"                          -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
     "/measurementUnit"                            -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
     "/comcodeEffectiveFromDate"                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
-    "/comcodeEffectiveToDate"                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate)
+    "/comcodeEffectiveToDate"                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
+    "/requestorName"                              -> (InvalidOrMissingRequestorNameCode, InvalidOrMissingRequestorName),
+    "/requestorEmail"                             -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail)
   )
 }

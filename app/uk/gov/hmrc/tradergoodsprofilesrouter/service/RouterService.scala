@@ -19,12 +19,13 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.{ImplementedBy, Inject}
 import play.api.Logging
-import play.api.http.Status.OK
+import play.api.http.Status.{CREATED, OK}
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
@@ -55,6 +56,10 @@ trait RouterService {
   def updateRecord(
     request: UpdateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse]
+
+  def requestAccreditation(
+    request: TraderDetails
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int]
 
   def removeRecord(
     eori: String,
@@ -161,6 +166,28 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
+  override def requestAccreditation(
+    request: TraderDetails
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] = {
+    val correlationId = uuidService.uuid
+    EitherT(
+      eisConnector
+        .requestAccreditation(request, correlationId)
+        .map {
+          case Right(_)        => Right(CREATED)
+          case error @ Left(_) => error
+        }
+        .recover { case ex: Throwable =>
+          logMessageAndReturnError(
+            correlationId,
+            ex,
+            s"""[RouterService] - Error when creating accreditation for
+            correlationId: $correlationId, message: ${ex.getMessage}"""
+          )
+        }
+    )
+  }
+
   override def updateRecord(
     request: UpdateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
@@ -191,4 +218,5 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
       )
     )
   }
+
 }
