@@ -32,7 +32,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
   val eori                           = "GB123456789001"
   val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
   val dateTime                       = Instant.parse("2021-12-17T09:30:47Z")
-  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 Z"
+  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
   override def connectorPath: String = s"/tgp/getrecords/v1"
   override def connectorName: String = "eis"
 
@@ -440,7 +440,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
@@ -496,7 +496,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
@@ -543,7 +543,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
               .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
               .withHeader("Accept", equalTo("application/json"))
               .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
               .withHeader("X-Client-ID", equalTo("tss"))
@@ -620,7 +620,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         .withHeader("Content-Type", equalTo("application/json"))
         .withHeader("X-Forwarded-Host", equalTo("MDTP"))
         .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-        .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 Z"))
+        .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
         .withHeader("Accept", equalTo("application/json"))
         .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
         .withHeader("X-Client-ID", equalTo("tss"))

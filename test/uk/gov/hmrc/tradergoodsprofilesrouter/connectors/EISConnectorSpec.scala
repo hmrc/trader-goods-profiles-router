@@ -62,7 +62,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
     "X-Forwarded-Host" -> "MDTP",
     "Content-Type"     -> MimeTypes.JSON,
     "Accept"           -> MimeTypes.JSON,
-    "Date"             -> "Sun, 12 May 2024 12:15:15 Z",
+    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
     "X-Client-ID"      -> "TSS"
   )
 

@@ -26,7 +26,7 @@ class DateTimeServiceSpec extends PlaySpec {
   "asStringHttp" should {
     "return date and time in specified format" in {
       val dateTime = Instant.parse("2021-12-17T09:30:47Z")
-      dateTime.asStringHttp mustBe "Fri, 17 Dec 2021 09:30:47 Z"
+      dateTime.asStringHttp mustBe "Fri, 17 Dec 2021 09:30:47 GMT"
     }
   }
 
