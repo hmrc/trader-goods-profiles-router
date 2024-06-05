@@ -56,17 +56,17 @@ class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
 
   "PUT /profile/maintain " should {
     "return a 200 ok when the call to EIS is successful to maintain a record" in {
-      when(mockMaintainProfileService.maintainProfile(any)(any))
+      when(mockMaintainProfileService.maintainProfile(any, any)(any))
         .thenReturn(EitherT.rightT(maintainProfileResponse))
 
-      val result = sut.maintain(FakeRequest().withBody(maintainProfileRequest).withHeaders(validHeaders: _*))
+      val result = sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders(validHeaders: _*))
 
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.toJson(maintainProfileResponse)
     }
 
     "return a 400 when the client id header is missing" in {
-      val result = sut.maintain(FakeRequest().withBody(maintainProfileRequest).withHeaders())
+      val result = sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders())
 
       status(result) mustBe BAD_REQUEST
     }
@@ -80,11 +80,6 @@ class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
           Seq(
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Mandatory field eori was missing from body or is in the wrong format",
-              6
-            ),
-            Error(
-              "INVALID_REQUEST_PARAMETER",
               "Mandatory field actorId was missing from body or is in the wrong format",
               8
             )
@@ -94,7 +89,8 @@ class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
 
-      val result = sut.maintain(FakeRequest().withBody(invalidMaintainProfileRequest).withHeaders(validHeaders: _*))
+      val result =
+        sut.maintain("123456")(FakeRequest().withBody(invalidMaintainProfileRequest).withHeaders(validHeaders: _*))
 
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(errorResponse)
@@ -104,7 +100,6 @@ class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
   lazy val maintainProfileRequest: JsValue =
     Json.parse("""
         |{
-        |"eori": "GB123456789012",
         |"actorId":"GB098765432112",
         |"ukimsNumber":"XIUKIM47699357400020231115081800",
         |"nirmsNumber":"RMS-GB-123456",

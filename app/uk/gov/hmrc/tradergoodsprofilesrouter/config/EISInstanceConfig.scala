@@ -36,7 +36,7 @@ case class EISInstanceConfig(
   lazy val createRecordUrl: String    = s"$protocol://$host:$port$createRecord"
   lazy val removeRecordUrl: String    = s"$protocol://$host:$port$removeRecord"
   lazy val updateRecordUrl: String    = s"$protocol://$host:$port$updateRecord"
-  lazy val maintainProfileUrl: String = s"$protocol://$host:$port$updateRecord"
+  lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
 }
 
 object EISInstanceConfig {

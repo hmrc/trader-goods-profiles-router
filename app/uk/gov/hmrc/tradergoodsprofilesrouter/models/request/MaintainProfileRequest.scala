@@ -22,7 +22,6 @@ import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId}
 
 case class MaintainProfileRequest(
-  eori: String,
   actorId: String,
   ukimsNumber: Option[String],
   nirmsNumber: Option[String],
@@ -32,16 +31,14 @@ case class MaintainProfileRequest(
 object MaintainProfileRequest {
 
   implicit val reads: Reads[MaintainProfileRequest] =
-    ((JsPath \ "eori").read(lengthBetween(14, 17)) and
-      (JsPath \ "actorId").read(validActorId) and
+    ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "ukimsNumber").readNullable(lengthBetween(32, 32)) and
       (JsPath \ "nirmsNumber").readNullable(lengthBetween(13, 13)) and
       (JsPath \ "niphlNumber")
         .readNullable(lengthBetween(8, 8)))(MaintainProfileRequest.apply _)
 
   implicit lazy val writes: OWrites[MaintainProfileRequest] =
-    ((JsPath \ "eori").write[String] and
-      (JsPath \ "actorId").write[String] and
+    ((JsPath \ "actorId").write[String] and
       (JsPath \ "ukimsNumber").writeNullable[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
       (JsPath \ "niphlsNumber").writeNullable[String])(unlift(MaintainProfileRequest.unapply))

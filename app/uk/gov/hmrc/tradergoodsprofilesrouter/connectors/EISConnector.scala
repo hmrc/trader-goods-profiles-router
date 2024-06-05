@@ -23,8 +23,8 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, RemoveRecordHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, MaintainProfileRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.{MaintainProfileEisRequest, RemoveEisRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -114,7 +114,7 @@ class EISConnector @Inject() (
       .execute(RemoveRecordHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
-  def maintainProfile(request: MaintainProfileRequest, correlationId: String)(implicit
+  def maintainProfile(request: MaintainProfileEisRequest, correlationId: String)(implicit
     hc: HeaderCarrier
   ): Future[Either[Result, MaintainProfileResponse]] = {
     val url = appConfig.eisConfig.maintainProfileUrl

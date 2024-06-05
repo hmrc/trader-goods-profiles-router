@@ -39,17 +39,16 @@ object MaintainProfileResponse {
       )
     )
 
-  implicit val writes: Writes[MaintainProfileResponse] =
-    (maintainProfileResponse: MaintainProfileResponse) =>
-      removeNulls(
-        Json.obj(
-          "eori"        -> maintainProfileResponse.eori,
-          "actorId"     -> maintainProfileResponse.actorId,
-          "ukimsNumber" -> maintainProfileResponse.ukimsNumber,
-          "nirmsNumber" -> maintainProfileResponse.nirmsNumber,
-          "niphlNumber" -> maintainProfileResponse.niphlNumber
-        )
+  implicit val writes: Writes[MaintainProfileResponse] = (response: MaintainProfileResponse) =>
+    removeNulls(
+      Json.obj(
+        "eori"        -> response.eori,
+        "actorId"     -> response.actorId,
+        "ukimsNumber" -> response.ukimsNumber,
+        "nirmsNumber" -> response.nirmsNumber,
+        "niphlNumber" -> response.niphlNumber
       )
+    )
 
   private def removeNulls(jsObject: JsObject): JsValue =
     JsObject(jsObject.fields.collect {

@@ -42,15 +42,16 @@ class MaintainProfileController @Inject() (
     extends BackendController(cc)
     with Logging {
 
-  def maintain: Action[JsValue]                                                                                        = Action.async(parse.json) { implicit request =>
+  def maintain(eori: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
       _                      <- validateHeaderClientId.validateClientId(request)
       maintainProfileRequest <- validateRequestBody(request)
-      response               <- maintainProfileService.maintainProfile(maintainProfileRequest)
+      response               <- maintainProfileService.maintainProfile(eori, maintainProfileRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge
   }
+
   private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, MaintainProfileRequest] =
     request.body
       .validate[MaintainProfileRequest]
