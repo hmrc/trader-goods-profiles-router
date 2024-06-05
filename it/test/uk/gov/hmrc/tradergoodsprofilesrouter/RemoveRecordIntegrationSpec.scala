@@ -32,7 +32,7 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   val recordId                       = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
   val dateTime                       = "2021-12-17T09:30:47.456Z"
-  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 Z"
+  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
   override def connectorPath: String = s"/tgp/removerecord/v1"
   override def connectorName: String = "eis"
 
@@ -555,7 +555,6 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           .withBody(responseBody.orNull)
       )
   )
-
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

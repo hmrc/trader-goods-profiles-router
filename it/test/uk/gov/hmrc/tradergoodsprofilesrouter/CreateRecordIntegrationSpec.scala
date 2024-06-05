@@ -30,7 +30,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
   val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
   val dateTime                       = "2021-12-17T09:30:47.456Z"
-  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 Z"
+  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
   override def connectorPath: String = "/tgp/createrecord/v1"
   override def connectorName: String = "eis"
 

@@ -37,7 +37,7 @@ object DateTimeService {
     implicit def asStringHttp: String =
       ZonedDateTime
         .ofInstant(dateTime, ZoneOffset.UTC)
-        .format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz"))
+        .format(DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'"))
 
     implicit def asStringSeconds: String =
       ZonedDateTime
