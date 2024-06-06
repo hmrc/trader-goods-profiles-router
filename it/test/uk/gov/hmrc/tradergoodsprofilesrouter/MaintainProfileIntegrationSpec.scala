@@ -63,7 +63,7 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
       stubForEis(
         INTERNAL_SERVER_ERROR,
         maintainProfileEisRequest,
-        Some(eisErrorResponse("500", "Internal Server Error"))
+        Some(eisErrorResponse())
       )
 
       val response = wsClient
@@ -152,7 +152,7 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         |}
         |""".stripMargin)
 
-  private def eisErrorResponse(errorCode: String, errorMessage: String): String =
+  private def eisErrorResponse(): String =
     Json
       .parse(
         s"""
@@ -160,8 +160,8 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
            |  "errorDetail": {
            |    "timestamp": "2023-09-14T11:29:18Z",
            |    "correlationId": "$correlationId",
-           |    "errorCode": "$errorCode",
-           |    "errorMessage": "$errorMessage",
+           |    "errorCode": "500",
+           |    "errorMessage": "Internal Server Error",
            |    "source": "BACKEND",
            |    "sourceFaultDetail": {
            |      "detail": null
