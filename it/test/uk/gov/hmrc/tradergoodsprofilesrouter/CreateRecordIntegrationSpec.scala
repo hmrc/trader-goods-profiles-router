@@ -28,9 +28,9 @@ import java.time.Instant
 
 class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
 
-  val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime                       = "2021-12-17T09:30:47.456Z"
-  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val url           = fullUrl("/traders/GB123456789012/records")
+
   override def connectorPath: String = "/tgp/createrecord/v1"
   override def connectorName: String = "eis"
 
@@ -44,10 +44,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
     "the request is" - {
       "valid, specifically" - {
         "with all request fields" in {
-          stubForEis(CREATED, createRecordRequestData, Some(createRecordResponseData.toString()))
+          stubForEis(CREATED, Some(createRecordResponseData.toString()))
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -58,10 +58,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           verifyThatDownstreamApiWasCalled()
         }
         "with only required fields" in {
-          stubForEis(CREATED, createRecordRequiredRequestData, Some(createRecordRequiredResponseData.toString()))
+          stubForEis(CREATED, Some(createRecordRequiredResponseData.toString()))
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequiredRequestData)
             .futureValue
@@ -74,10 +74,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       }
       "valid but the integration call fails with response:" - {
         "Forbidden" in {
-          stubForEis(FORBIDDEN, createRecordRequestData)
+          stubForEis(FORBIDDEN)
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -92,10 +92,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           verifyThatDownstreamApiWasCalled()
         }
         "Not Found" in {
-          stubForEis(NOT_FOUND, createRecordRequestData)
+          stubForEis(NOT_FOUND)
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -110,10 +110,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           verifyThatDownstreamApiWasCalled()
         }
         "Bad Gateway" in {
-          stubForEis(BAD_GATEWAY, createRecordRequestData)
+          stubForEis(BAD_GATEWAY)
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -128,10 +128,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           verifyThatDownstreamApiWasCalled()
         }
         "Service Unavailable" in {
-          stubForEis(SERVICE_UNAVAILABLE, createRecordRequestData)
+          stubForEis(SERVICE_UNAVAILABLE)
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -148,12 +148,11 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Internal Server Error  with 201 errorCode" in {
           stubForEis(
             INTERNAL_SERVER_ERROR,
-            createRecordRequestData,
             Some(eisErrorResponse("201", "Internal Server Error"))
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -168,10 +167,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error  with 401 errorCode" in {
-          stubForEis(INTERNAL_SERVER_ERROR, createRecordRequestData, Some(eisErrorResponse("401", "Unauthorised")))
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -188,12 +187,11 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Internal Server Error  with 500 errorCode" in {
           stubForEis(
             INTERNAL_SERVER_ERROR,
-            createRecordRequestData,
             Some(eisErrorResponse("500", "Internal Server Error"))
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -208,10 +206,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 404 errorCode" in {
-          stubForEis(INTERNAL_SERVER_ERROR, createRecordRequestData, Some(eisErrorResponse("404", "Not Found")))
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -228,12 +226,11 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Internal Server Error with 405 errorCode" in {
           stubForEis(
             INTERNAL_SERVER_ERROR,
-            createRecordRequestData,
             Some(eisErrorResponse("405", "Method Not Allowed"))
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -248,10 +245,10 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 502 errorCode" in {
-          stubForEis(INTERNAL_SERVER_ERROR, createRecordRequestData, Some(eisErrorResponse("502", "Bad Gateway")))
+          stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -268,12 +265,11 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Internal Server Error with 503 errorCode" in {
           stubForEis(
             INTERNAL_SERVER_ERROR,
-            createRecordRequestData,
             Some(eisErrorResponse("503", "Service Unavailable"))
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -290,7 +286,6 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Bad Request with one error detail" in {
           stubForEis(
             BAD_REQUEST,
-            createRecordRequestData,
             Some(s"""
                  |{
                  |  "errorDetail": {
@@ -310,7 +305,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -334,7 +329,6 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Bad Request with more than one error details" in {
           stubForEis(
             BAD_REQUEST,
-            createRecordRequestData,
             Some(s"""
                  |{
                  |  "errorDetail": {
@@ -355,7 +349,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -384,7 +378,6 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Bad Request with unexpected error" in {
           stubForEis(
             BAD_REQUEST,
-            createRecordRequestData,
             Some(s"""
                  |{
                  |  "errorDetail": {
@@ -404,7 +397,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -428,7 +421,6 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Bad Request with unable to parse the detail" in {
           stubForEis(
             BAD_REQUEST,
-            createRecordRequestData,
             Some(s"""
                  |{
                  |  "errorDetail": {
@@ -446,7 +438,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -463,7 +455,6 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "Bad Request with invalid json" in {
           stubForEis(
             BAD_REQUEST,
-            createRecordRequestData,
             Some(s"""
                  | {
                  |    "invalid": "error"
@@ -472,7 +463,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(createRecordRequestData)
             .futureValue
@@ -490,7 +481,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       "invalid, specifically" - {
         "missing required header" in {
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"))
             .post(createRecordRequestData)
             .futureValue
@@ -506,7 +497,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         }
         "missing required request field" in {
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(invalidRequestData)
             .futureValue
@@ -519,8 +510,8 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
-                "errorNumber" -> 6
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
+                "errorNumber" -> 8
               )
             )
           )
@@ -529,7 +520,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         }
         "category field is out of range" in {
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(invalidCategoryRequestData)
             .futureValue
@@ -552,7 +543,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         }
         "for optional fields" in {
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(invalidOptionalRequestData)
             .futureValue
@@ -600,7 +591,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         }
         "for optional assessment array fields" in {
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(invalidCreateRecordRequestDataForAssessmentArray)
             .futureValue
@@ -623,11 +614,6 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
               ),
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
-                "errorNumber" -> 6
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
                 "message"     -> "Optional field primaryCategory is in the wrong format",
                 "errorNumber" -> 16
               ),
@@ -635,6 +621,11 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
                 "code"        -> "INVALID_REQUEST_PARAMETER",
                 "message"     -> "Optional field conditionId is in the wrong format",
                 "errorNumber" -> 18
+              ),
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
+                "errorNumber" -> 8
               )
             )
           )
@@ -643,7 +634,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         }
         "for mandatory fields actorId and comcode" in {
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .post(invalidActorIdAndComcodeRequestData)
             .futureValue
@@ -673,16 +664,8 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
     }
   }
 
-  private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) = stubFor(
+  private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) = stubFor(
     post(urlEqualTo(s"$connectorPath"))
-      .withRequestBody(equalToJson(requestBody))
-      .withHeader("Content-Type", equalTo("application/json"))
-      .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-      .withHeader("X-Correlation-ID", equalTo(correlationId))
-      .withHeader("Date", equalTo(timestamp))
-      .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("Bearer dummyRecordCreateBearerToken"))
-      .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -736,7 +719,6 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   lazy val createRecordRequestData: String =
     """
         |{
-        |    "eori": "GB123456789012",
         |    "actorId": "GB098765432112",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
@@ -809,8 +791,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
   lazy val invalidRequestData: String =
     """
-      |{
-      |    "actorId": "GB098765432112",
+      |{    
       |    "traderRef": "BAN001001",
       |    "comcode": "10410100",
       |    "goodsDescription": "Organic bananas",
@@ -896,7 +877,6 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   lazy val invalidCreateRecordRequestDataForAssessmentArray: JsValue = Json
     .parse("""
              |{
-             |    "actorId": "GB098765432112",
              |    "traderRef": "BAN001001",
              |    "comcode": "10410100",
              |    "goodsDescription": "Organic bananas",

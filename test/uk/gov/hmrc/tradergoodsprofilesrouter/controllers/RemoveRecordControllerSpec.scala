@@ -57,7 +57,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
 
     "return a 200 Ok response on removing a record" in {
 
-      when(mockRouterService.removeRecord(any, any, any)(any, any))
+      when(mockRouterService.removeRecord(any, any, any)(any))
         .thenReturn(EitherT.rightT(OK))
 
       val result = sut.remove("GB123456789001", "12345")(
@@ -105,7 +105,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     "return an error if cannot remove a record" in {
       val errorResponseJson = Json.obj("error" -> "error")
 
-      when(mockRouterService.removeRecord(any, any, any)(any, any))
+      when(mockRouterService.removeRecord(any, any, any)(any))
         .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
       val result = sut.remove("GB123456789001", "12345")(

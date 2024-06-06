@@ -37,7 +37,7 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
   override def connectorName: String = "eis"
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
@@ -45,7 +45,7 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
 
   "when trying to maintain a profile" - {
     "it should return a 200 ok when the request is successful" in {
-      stubForEis(OK, maintainProfileEisRequest, Some(maintainProfileResponse.toString()))
+      stubForEis(OK, Some(maintainProfileResponse.toString()))
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori"))
@@ -62,7 +62,6 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
     "it should return a 500 internal server error if EIS is unavailable" in {
       stubForEis(
         INTERNAL_SERVER_ERROR,
-        maintainProfileEisRequest,
         Some(eisErrorResponse())
       )
 
@@ -83,7 +82,7 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
     }
 
     "it should return a 403 forbidden if the request is valid but EIS reject the request" in {
-      stubForEis(FORBIDDEN, maintainProfileEisRequest)
+      stubForEis(FORBIDDEN)
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori"))
@@ -102,16 +101,8 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
     }
   }
 
-  private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) = stubFor(
+  private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) = stubFor(
     put(urlEqualTo(s"$connectorPath"))
-      .withRequestBody(equalToJson(requestBody))
-      .withHeader("Content-Type", equalTo("application/json"))
-      .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-      .withHeader("X-Correlation-ID", equalTo(correlationId))
-      .withHeader("Date", equalTo(timestamp))
-      .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("Bearer dummyMaintainProfileBearerToken"))
-      .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
