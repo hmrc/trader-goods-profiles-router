@@ -20,17 +20,16 @@ import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.Mockito
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
-import org.scalatestplus.play.PlaySpec
-import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -232,7 +231,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
 
       val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
       verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyMaintainProfileBearerToken"): _*)
+      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyMaintainProfileBearerToken"): _*)
       verify(requestBuilder).withBody(maintainProfileEisRequest)
       verify(requestBuilder).execute(any, any)
       verifyExecuteWithParams

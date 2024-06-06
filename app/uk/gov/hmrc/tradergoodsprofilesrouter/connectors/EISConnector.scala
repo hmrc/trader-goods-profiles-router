@@ -17,16 +17,15 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import play.api.http.MimeTypes
 import play.api.libs.json.Json
-import play.api.libs.json.Json.toJson
 import play.api.mvc.Result
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, OtherHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.{MaintainProfileEisRequest, RemoveEisRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.{MaintainProfileEisRequest, RemoveEisRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -86,7 +85,7 @@ class EISConnector @Inject() (
     httpClientV2
       .put(url"$url")
       .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.updateRecordBearerToken): _*)
-      .withBody(toJson(request))
+      .withBody(Json.toJson(request))
       .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 
@@ -99,7 +98,7 @@ class EISConnector @Inject() (
     httpClientV2
       .post(url"$url")
       .setHeader(eisRequestHeadersAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
-      .withBody(toJson(accreditationEisRequest))
+      .withBody(Json.toJson(accreditationEisRequest))
       .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
@@ -113,7 +112,7 @@ class EISConnector @Inject() (
     httpClientV2
       .put(url"$url")
       .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
-      .withBody(toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
+      .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
       .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
@@ -124,7 +123,7 @@ class EISConnector @Inject() (
     httpClientV2
       .put(url"$url")
       .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
-      .withBody(toJson(request))
+      .withBody(Json.toJson(request))
       .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
   }
 
