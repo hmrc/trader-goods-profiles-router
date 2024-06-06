@@ -5,5 +5,6 @@ GET        /:eori                           uk.gov.hmrc.tradergoodsprofilesroute
 POST       /records                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateRecordController.create()
 PUT        /records                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.UpdateRecordController.update()
 PUT        /:eori/records/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RemoveRecordController.remove(eori: String, recordId: String)
+PUT        /traders/:eori                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)
 
 POST       /createaccreditation             uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RequestAccreditationController.requestAccreditation()

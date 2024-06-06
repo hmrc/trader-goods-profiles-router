@@ -92,6 +92,10 @@ object ApplicationConstants {
   val InvalidOrMissingRequestorEmail =
     "Mandatory field RequestorEmail was missing from body or is in the wrong format"
 
+  val InvalidOrMissingUkimsNumberMessage = "Mandatory field ukimsNumber was missing from body or is in the wrong format"
+  val InvalidOrMissingNirmsNumberMessage = "Optional field nirmsNumber is in the wrong format"
+  val InvalidOrMissingNiphlNumberMessage = "Optional field niphlNumber is in the wrong format"
+
   val InternalServerErrorCode                                  = "INTERNAL_SERVER_ERROR"
   val InternalServerErrorMessage                               = "Internal Server Error"
   val InvalidOrMissingEoriCode                                 = "006"
@@ -120,6 +124,9 @@ object ApplicationConstants {
   val InvalidPageCode                                          = "029"
   val InvalidSizeCode                                          = "030"
   val RecordRemovedAndCanNotBeUpdatedCode                      = "031"
+  val InvalidOrMissingUkimsNumberCode                          = "033"
+  val InvalidOrMissingNirmsNumberCode                          = "034"
+  val InvalidOrMissingNiphlNumberCode                          = "035"
 
   val InvalidOrMissingRequestorNameCode  = "000"
   val InvalidOrMissingRequestorEmailCode = "000"

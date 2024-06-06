@@ -26,6 +26,7 @@ case class EISInstanceConfig(
   createRecord: String,
   removeRecord: String,
   updateRecord: String,
+  maintainProfile: String,
   createAccreditation: String,
   forwardedHost: String,
   updateRecordToken: String,
@@ -39,7 +40,8 @@ case class EISInstanceConfig(
   lazy val createRecordUrl: String        = s"$protocol://$host:$port$createRecord"
   lazy val removeRecordUrl: String        = s"$protocol://$host:$port$removeRecord"
   lazy val updateRecordUrl: String        = s"$protocol://$host:$port$updateRecord"
-  lazy val createaccreditationUrl: String = s"$protocol://$host:$port$createAccreditation"
+  lazy val maintainProfileUrl: String     = s"$protocol://$host:$port$maintainProfile"
+  lazy val createAccreditationUrl: String = s"$protocol://$host:$port$createAccreditation"
 
   lazy val updateRecordBearerToken        = s"Bearer $updateRecordToken"
   lazy val getRecordBearerToken           = s"Bearer $recordGetToken"
@@ -63,6 +65,7 @@ object EISInstanceConfig {
         config.get[String]("create-record"),
         config.get[String]("remove-record"),
         config.get[String]("update-record"),
+        config.get[String]("maintain-profile"),
         config.get[String]("create-accreditation"),
         config.get[String]("forwarded-host"),
         config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),

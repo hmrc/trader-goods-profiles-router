@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import cats.data.EitherT
-import com.google.inject.{ImplementedBy, Inject}
+import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.{CREATED, OK}
 import play.api.libs.json.Json
@@ -35,44 +35,10 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.Unexpect
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-@ImplementedBy(classOf[RouterServiceImpl])
-trait RouterService {
-  def fetchRecord(
-    eori: String,
-    recordId: String
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords]
+class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidService)(implicit ec: ExecutionContext)
+    extends Logging {
 
-  def fetchRecords(
-    eori: String,
-    lastUpdatedDate: Option[Instant] = None,
-    page: Option[Int] = None,
-    size: Option[Int] = None
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetEisRecordsResponse]
-
-  def createRecord(
-    request: CreateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse]
-
-  def updateRecord(
-    request: UpdateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse]
-
-  def requestAccreditation(
-    request: TraderDetails
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int]
-
-  def removeRecord(
-    eori: String,
-    recordId: String,
-    actorId: String
-  )(implicit ec: ExecutionContext, hc: HeaderCarrier): EitherT[Future, Result, Int]
-}
-
-class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: UuidService)(implicit ec: ExecutionContext)
-    extends RouterService
-    with Logging {
-
-  override def fetchRecord(eori: String, recordId: String)(implicit
+  def fetchRecord(eori: String, recordId: String)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, Result, GoodsItemRecords] = {
     val correlationId: String = uuidService.uuid
@@ -94,7 +60,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
-  override def fetchRecords(
+  def fetchRecords(
     eori: String,
     lastUpdatedDate: Option[Instant] = None,
     page: Option[Int] = None,
@@ -121,7 +87,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
-  override def createRecord(
+  def createRecord(
     request: CreateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
     val correlationId = uuidService.uuid
@@ -143,7 +109,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
-  override def removeRecord(eori: String, recordId: String, actorId: String)(implicit
+  def removeRecord(eori: String, recordId: String, actorId: String)(implicit
     ec: ExecutionContext,
     hc: HeaderCarrier
   ): EitherT[Future, Result, Int] = {
@@ -166,7 +132,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
-  override def requestAccreditation(
+  def requestAccreditation(
     request: TraderDetails
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] = {
     val correlationId = uuidService.uuid
@@ -188,7 +154,7 @@ class RouterServiceImpl @Inject() (eisConnector: EISConnector, uuidService: Uuid
     )
   }
 
-  override def updateRecord(
+  def updateRecord(
     request: UpdateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
     val correlationId = uuidService.uuid
