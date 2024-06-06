@@ -195,32 +195,47 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
             "BAD_REQUEST",
             "Bad Request",
             Seq(
-              "6"  -> "Mandatory field eori was missing from body or is in the wrong format",
-              "7"  -> "EORI number does not have a TGP",
-              "8"  -> "Mandatory field actorId was missing from body or is in the wrong format",
-              "9"  -> "Mandatory field traderRef was missing from body or is in the wrong format",
-              "10" -> "Trying to create or update a record with a duplicate traderRef",
-              "11" -> "Mandatory field comcode was missing from body or is in the wrong format",
-              "12" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
-              "13" -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
-              "14" -> "Mandatory field category was missing from body or is in the wrong format",
-              "15" -> "Optional field assessmentId is in the wrong format",
-              "16" -> "Optional field primaryCategory is in the wrong format",
-              "17" -> "Optional field type is in the wrong format",
-              "18" -> "Optional field conditionId is in the wrong format",
-              "19" -> "Optional field conditionDescription is in the wrong format",
-              "20" -> "Optional field conditionTraderText is in the wrong format",
-              "21" -> "Optional field supplementaryUnit is in the wrong format",
-              "22" -> "Optional field measurementUnit is in the wrong format",
-              "23" -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
-              "24" -> "Optional field comcodeEffectiveToDate is in the wrong format",
-              "25" -> "The recordId has been provided in the wrong format",
-              "26" -> "The requested recordId to update doesn’t exist",
-              "27" -> "There is an ongoing accreditation request and the record can not be updated",
-              "28" -> "The URL parameter lastUpdatedDate is in the wrong format",
-              "29" -> "The URL parameter page is in the wrong format",
-              "30" -> "The URL parameter size is in the wrong format",
-              "31" -> "This record has been removed and cannot be updated"
+              "6"    -> "Mandatory field eori was missing from body or is in the wrong format",
+              "7"    -> "EORI number does not have a TGP",
+              "8"    -> "Mandatory field actorId was missing from body or is in the wrong format",
+              "9"    -> "Mandatory field traderRef was missing from body or is in the wrong format",
+              "10"   -> "Trying to create or update a record with a duplicate traderRef",
+              "11"   -> "Mandatory field comcode was missing from body or is in the wrong format",
+              "12"   -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
+              "13"   -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
+              "14"   -> "Mandatory field category was missing from body or is in the wrong format",
+              "15"   -> "Optional field assessmentId is in the wrong format",
+              "16"   -> "Optional field primaryCategory is in the wrong format",
+              "17"   -> "Optional field type is in the wrong format",
+              "18"   -> "Optional field conditionId is in the wrong format",
+              "19"   -> "Optional field conditionDescription is in the wrong format",
+              "20"   -> "Optional field conditionTraderText is in the wrong format",
+              "21"   -> "Optional field supplementaryUnit is in the wrong format",
+              "22"   -> "Optional field measurementUnit is in the wrong format",
+              "23"   -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
+              "24"   -> "Optional field comcodeEffectiveToDate is in the wrong format",
+              "25"   -> "The recordId has been provided in the wrong format",
+              "26"   -> "The requested recordId to update doesn’t exist",
+              "27"   -> "There is an ongoing accreditation request and the record can not be updated",
+              "28"   -> "The URL parameter lastUpdatedDate is in the wrong format",
+              "29"   -> "The URL parameter page is in the wrong format",
+              "30"   -> "The URL parameter size is in the wrong format",
+              "31"   -> "This record has been removed and cannot be updated",
+              "E001" -> "X-Correlation-ID was missing from Header or is in the wrong format",
+              "E002" -> "Request Date was missing from Header or is in the wrong format",
+              "E003" -> "X-Forwarded-Host was missing from Header or is in the wrong format",
+              "E004" -> "Content-Type was missing from Header or is in the wrong format",
+              "E005" -> "Accept was missing from Header or is in the wrong format",
+              "E006" -> "Mandatory field receiptDate was missing from body",
+              "E007" -> "The eori has been provided in the wrong format",
+              "E008" -> "Mandatory field RequestorName was missing from body or is in the wrong format",
+              "E009" -> "Mandatory field RequestorEmail was missing from body or is in the wrong format",
+              "E010" -> "Mandatory field ukimsNumber was missing from body or in the wrong format",
+              "E011" -> "Mandatory field goodsItems was missing from body",
+              "E012" -> "The recordId has been provided in the wrong format",
+              "E013" -> "Mandatory field traderReference was missing from body",
+              "E014" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
+              "E015" -> "Mandatory field commodityCode was missing from body"
             ): _*
           )
         )
@@ -314,7 +329,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
     code: String,
     message: String,
     errors: (String, String)*
-  ): JsValue                                                                                               =
+  ): JsValue =
     Json.toJson(
       ErrorResponse(
         correlationId,
@@ -327,15 +342,22 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
     code: String,
     message: String,
     errors: (String, String)*
-  ): JsValue                                                                                               =
+  ): JsValue =
     Json.toJson(
       ErrorResponse(
         correlationId,
         code,
         message,
-        Some(errors.map(e => Error("INVALID_REQUEST_PARAMETER", e._2, e._1.toInt)))
+        Some(errors.map(e => Error("INVALID_REQUEST_PARAMETER", e._2, convertCode(e._1))))
       )
     )
+
+  def convertCode(code: String): Int                                                                       =
+    if (code.startsWith("E")) {
+      code.drop(1).toInt + 1000
+    } else {
+      code.toInt
+    }
   private def createEisErrorResponseWithDetailsAsJson(errorCode: String, message: String, detail: String*) =
     s"""
        |{
@@ -370,9 +392,18 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
   private def createErrorResponseAsJson(code: String, message: String): JsValue =
     Json.toJson(ErrorResponse(correlationId, code, message))
 
-  private def generateErrorCodes =
-    (6 to 31).map { o =>
+  private def generateErrorCodes = {
+
+    val numericCodes      = (6 to 31).map { o =>
       val code = s"00$o".takeRight(3)
       s"error: $code, message: whatever"
     }
+    val alphanumericCodes = (1 to 15).map { o =>
+      val code = s"E${"%03d".format(o)}"
+      s"error: $code, message: whatever"
+    }
+
+    numericCodes ++ alphanumericCodes
+  }
+
 }

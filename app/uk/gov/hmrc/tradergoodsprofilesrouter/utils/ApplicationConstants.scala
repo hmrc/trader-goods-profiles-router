@@ -83,14 +83,38 @@ object ApplicationConstants {
   val InvalidLastUpdatedDate                               = "The URL parameter lastUpdatedDate is in the wrong format"
   val InvalidPage                                          = "The URL parameter page is in the wrong format"
   val InvalidSize                                          = "The URL parameter size is in the wrong format"
+  val RecordRemovedAndCanNotBeUpdatedMessage               = "This record has been removed and cannot be updated"
   val AccreditationRequestInProgressMessage                =
     "There is an ongoing accreditation request and the record can not be updated"
-  val RecordRemovedAndCanNotBeUpdatedMessage               = "This record has been removed and cannot be updated"
 
-  val InvalidOrMissingRequestorName  =
+  val InvalidOrMissingCorrelationID      =
+    "X-Correlation-ID was missing from Header or is in the wrong format"
+  val InvalidOrMissingRequestDate        =
+    "Request Date was missing from Header or is in the wrong format"
+  val InvalidOrMissingForwardedHost      =
+    "X-Forwarded-Host was missing from Header or is in the wrong format"
+  val InvalidOrMissingContentType        =
+    "Content-Type was missing from Header or is in the wrong format"
+  val InvalidOrMissingAccept             =
+    "Accept was missing from Header or is in the wrong format"
+  val InvalidOrMissingReceiptDate        =
+    "Mandatory field receiptDate was missing from body"
+  val InvalidOrMissingTraderEORI         =
+    "The eori has been provided in the wrong format"
+  val InvalidOrMissingRequestorName      =
     "Mandatory field RequestorName was missing from body or is in the wrong format"
-  val InvalidOrMissingRequestorEmail =
+  val InvalidOrMissingRequestorEmail     =
     "Mandatory field RequestorEmail was missing from body or is in the wrong format"
+  val InvalidOrMissingUkimsAuthorisation =
+    "Mandatory field ukimsNumber was missing from body or in the wrong format"
+  val InvalidOrMissingGoodsItems         =
+    "Mandatory field goodsItems was missing from body"
+  val InvalidOrMissingPublicRecordID     =
+    "The recordId has been provided in the wrong format"
+  val InvalidOrMissingTraderReference    =
+    "Mandatory field traderReference was missing from body"
+  val InvalidOrMissingCommodityCode      =
+    "Mandatory field commodityCode was missing from body"
 
   val InvalidOrMissingUkimsNumberMessage = "Mandatory field ukimsNumber was missing from body or is in the wrong format"
   val InvalidOrMissingNirmsNumberMessage = "Optional field nirmsNumber is in the wrong format"
@@ -124,11 +148,26 @@ object ApplicationConstants {
   val InvalidPageCode                                          = "029"
   val InvalidSizeCode                                          = "030"
   val RecordRemovedAndCanNotBeUpdatedCode                      = "031"
+  val InvalidMissingRequestorNameCode                          = "037"
+  val InvalidMissingRequestorEmailCode                         = "038"
   val InvalidOrMissingUkimsNumberCode                          = "033"
   val InvalidOrMissingNirmsNumberCode                          = "034"
   val InvalidOrMissingNiphlNumberCode                          = "035"
 
-  val InvalidOrMissingRequestorNameCode  = "000"
-  val InvalidOrMissingRequestorEmailCode = "000"
+  val InvalidOrMissingCorrelationIdCode      = "E001"
+  val InvalidOrMissingRequestDateCode        = "E002"
+  val InvalidOrMissingForwardedHostCode      = "E003"
+  val InvalidOrMissingContentTypeCode        = "E004"
+  val InvalidOrMissingAcceptCode             = "E005"
+  val InvalidOrMissingReceiptDateCode        = "E006"
+  val InvalidOrMissingTraderEORICode         = "E007"
+  val InvalidOrMissingRequestorNameCode      = "E008"
+  val InvalidOrMissingRequestorEmailCode     = "E009"
+  val InvalidOrMissingUkimsAuthorisationCode = "E010"
+  val InvalidOrMissingGoodsItemsCode         = "E011"
+  val InvalidOrMissingPublicRecordIDCode     = "E012"
+  val InvalidOrMissingTraderReferenceCode    = "E013"
+  val InvalidOrMissinggoodsDescriptionCode   = "E014"
+  val InvalidOrMissingCommodityCodeCode      = "E015"
 
 }

@@ -442,7 +442,7 @@ class RequestAccreditationIntegrationSpec
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
                 "message"     -> "Mandatory field RequestorEmail was missing from body or is in the wrong format",
-                "errorNumber" -> 0
+                "errorNumber" -> 38
               ),
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
