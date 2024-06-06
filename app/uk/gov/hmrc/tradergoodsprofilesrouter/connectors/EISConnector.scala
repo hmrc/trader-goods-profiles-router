@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import play.api.http.MimeTypes
+import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
 import play.api.mvc.Result
 import sttp.model.Uri.UriContext
@@ -74,19 +75,6 @@ class EISConnector @Inject() (
       .get(url"$uri")
       .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
       .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
-  }
-
-  def createRecord(
-    payload: CreateRecordPayload,
-    correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
-    val url = appConfig.eisConfig.createRecordUrl
-
-    httpClientV2
-      .post(url"$url")
-      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
-      .withBody(Json.toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 
   def updateRecord(

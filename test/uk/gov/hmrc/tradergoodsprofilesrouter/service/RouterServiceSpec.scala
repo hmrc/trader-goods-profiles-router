@@ -28,7 +28,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
@@ -169,52 +169,6 @@ class RouterServiceSpec
     }
   }
 
-  "createRecord" should {
-    "create a record item" in {
-      val eisResponse = createOrUpdateRecordResponseData
-      when(eisConnector.createRecord(any, any)(any))
-        .thenReturn(Future.successful(Right(eisResponse)))
-
-      val result = routerService.createRecord(eoriNumber, createRecordRequest)
-
-      whenReady(result.value) {
-        _.value shouldBe eisResponse
-      }
-    }
-
-    "return an internal server error" when {
-
-      "EIS return an error" in {
-        when(eisConnector.createRecord(any, any)(any))
-          .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-        val result = routerService.createRecord(eoriNumber, createRecordRequest)
-
-        whenReady(result.value) {
-          _.left.value shouldBe BadRequest("error")
-        }
-      }
-
-      "error when an exception is thrown" in {
-        when(eisConnector.createRecord(any, any)(any))
-          .thenReturn(Future.failed(new RuntimeException("error")))
-
-        val result = routerService.createRecord(eoriNumber, createRecordRequest)
-
-        whenReady(result.value) {
-          _.left.value shouldBe InternalServerError(
-            Json.obj(
-              "correlationId" -> correlationId,
-              "code"          -> "UNEXPECTED_ERROR",
-              "message"       -> "error"
-            )
-          )
-        }
-      }
-
-    }
-  }
-
   "removeRecord" should {
     "remove a record item" in {
       when(eisConnector.removeRecord(any, any, any, any)(any))
@@ -302,7 +256,7 @@ class RouterServiceSpec
     }
   }
 
-  lazy val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse =
+  val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse =
     Json
       .parse("""
           |{
@@ -345,37 +299,7 @@ class RouterServiceSpec
           |""".stripMargin)
       .as[CreateOrUpdateRecordResponse]
 
-  lazy val createRecordRequest: CreateRecordRequest = Json
-    .parse("""
-        |{
-        |    "eori": "GB123456789012",
-        |    "actorId": "GB098765432112",
-        |    "traderRef": "BAN001001",
-        |    "comcode": "10410100",
-        |    "goodsDescription": "Organic bananas",
-        |    "countryOfOrigin": "EC",
-        |    "category": 1,
-        |    "assessments": [
-        |        {
-        |            "assessmentId": "abc123",
-        |            "primaryCategory": 1,
-        |            "condition": {
-        |                "type": "abc123",
-        |                "conditionId": "Y923",
-        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-        |                "conditionTraderText": "Excluded product"
-        |            }
-        |        }
-        |    ],
-        |    "supplementaryUnit": 500,
-        |    "measurementUnit": "Square metre (m2)",
-        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-        |}
-        |""".stripMargin)
-    .as[CreateRecordRequest]
-
-  lazy val updateRecordRequest: UpdateRecordRequest = Json
+  val updateRecordRequest: UpdateRecordRequest = Json
     .parse("""
         |{
         |    "eori": "GB123456789001",

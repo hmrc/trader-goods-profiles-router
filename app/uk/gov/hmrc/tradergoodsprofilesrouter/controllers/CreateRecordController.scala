@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
 
@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CreateRecordController @Inject() (
   cc: ControllerComponents,
-  routerService: RouterService,
+  createRecordService: CreateRecordService,
   uuidService: UuidService,
   validateHeaderClientId: ValidateHeaderClientId
 )(implicit
@@ -49,7 +49,7 @@ class CreateRecordController @Inject() (
 
       createRecordRequest <- validateRequestBody(request)
 
-      response <- routerService.createRecord(eori, createRecordRequest)
+      response <- createRecordService.createRecord(eori, createRecordRequest)
     } yield Created(Json.toJson(response))
 
     result.merge

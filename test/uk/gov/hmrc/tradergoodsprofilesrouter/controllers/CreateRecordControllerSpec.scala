@@ -28,7 +28,7 @@ import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubCo
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import scala.concurrent.ExecutionContext
@@ -37,15 +37,15 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val mockRouterService: RouterService = mock[RouterService]
-  val mockUuidService: UuidService     = mock[UuidService]
+  val createRecordService      = mock[CreateRecordService]
+  val uuidService: UuidService = mock[UuidService]
 
-  private val validateClientId = new ValidateHeaderClientId(mockUuidService)
+  private val validateClientId = new ValidateHeaderClientId(uuidService)
   private val sut              =
     new CreateRecordController(
       stubControllerComponents(),
-      mockRouterService,
-      mockUuidService,
+      createRecordService,
+      uuidService,
       validateClientId
     )
 
@@ -57,7 +57,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
     "return a 201 with JSON response when creating a record" in {
 
-      when(mockRouterService.createRecord(any, any)(any))
+      when(createRecordService.createRecord(any, any)(any))
         .thenReturn(EitherT.rightT(createRecordResponseData))
 
       val request = FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
@@ -87,7 +87,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
       )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request = FakeRequest().withBody(invalidCreateRecordRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
 
@@ -135,7 +135,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
       )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request =
         FakeRequest().withBody(invalidCreateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
@@ -156,7 +156,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
           ApplicationConstants.MissingHeaderClientId
         )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request = FakeRequest().withBody(createRecordRequestData)
       val result  = sut.create("eori")(request)
 
@@ -181,7 +181,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
       )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request = FakeRequest().withBody(outOfRangeCategoryRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
 
@@ -209,7 +209,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
       )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request = FakeRequest().withBody(outOfRangeSupplementaryUnitRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
 

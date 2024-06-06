@@ -25,9 +25,8 @@ import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
@@ -88,31 +87,7 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
     )
   }
 
-  def createRecord(
-    request: CreateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
-    val correlationId = uuidService.uuid
-
-    EitherT(
-      eisConnector
-        .createRecord(CreateRecordPayload(eori, request), correlationId)
-        .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
-        }
-        .recover { case ex: Throwable =>
-          logMessageAndReturnError(
-            correlationId,
-            ex,
-            s"""[RouterService] - Error when creating records for Eori Number: $eori,
-            correlationId: $correlationId, message: ${ex.getMessage}"""
-          )
-        }
-    )
-  }
-
   def removeRecord(eori: String, recordId: String, actorId: String)(implicit
-    ec: ExecutionContext,
     hc: HeaderCarrier
   ): EitherT[Future, Result, Int] = {
     val correlationId = uuidService.uuid
