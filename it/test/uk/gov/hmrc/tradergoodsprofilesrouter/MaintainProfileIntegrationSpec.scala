@@ -110,7 +110,7 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
       .withHeader("X-Correlation-ID", equalTo(correlationId))
       .withHeader("Date", equalTo(timestamp))
       .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("bearerToken"))
+      .withHeader("Authorization", equalTo("Bearer dummyMaintainProfileBearerToken"))
       .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
