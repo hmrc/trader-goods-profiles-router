@@ -69,7 +69,7 @@ class CreateRecordController @Inject() (
               uuidService.uuid,
               BadRequestCode,
               BadRequestMessage,
-              Some(ValidationSupport.convertError(errors))
+              Some(ValidationSupport.convertError[CreateRecordRequest](errors))
             )
           )
         ): Result

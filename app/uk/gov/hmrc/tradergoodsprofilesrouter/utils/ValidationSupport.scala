@@ -16,15 +16,17 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
+import org.apache.commons.validator.routines.EmailValidator
 import play.api.libs.functional.syntax.toApplicativeOps
 import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode, Reads}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
-import org.apache.commons.validator.routines.EmailValidator
 
 import java.time.Instant
 import java.util.Locale
+import scala.reflect.runtime.universe.{TypeTag, typeOf}
 import scala.util.matching.Regex
 
 object ValidationSupport {
@@ -40,11 +42,18 @@ object ValidationSupport {
 
   private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
 
-  def convertError(
+  def convertError[T](
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
-  ): Seq[Error] =
+  )(implicit tt: TypeTag[T]): Seq[Error] =
     extractSimplePaths(errors)
-      .map(key => fieldsToErrorCode.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt)))
+      .map(key =>
+        tt.tpe match {
+          case t if t =:= typeOf[UpdateRecordRequest] =>
+            optionalFieldsToErrorCode.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt))
+          case _                                      =>
+            fieldsToErrorCode.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt))
+        }
+      )
       .toSeq
       .flatten
 
@@ -92,6 +101,29 @@ object ValidationSupport {
     "/supplementaryUnit"                          -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
     "/measurementUnit"                            -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
     "/comcodeEffectiveFromDate"                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
+    "/comcodeEffectiveToDate"                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
+    "/requestorName"                              -> (InvalidOrMissingRequestorNameCode, InvalidOrMissingRequestorName),
+    "/requestorEmail"                             -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail)
+  )
+
+  private val optionalFieldsToErrorCode: Map[String, (String, String)] = Map(
+    "/eori"                                       -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
+    "/recordId"                                   -> (RecordIdDoesNotExistsCode, InvalidRecordId),
+    "/actorId"                                    -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),
+    "/traderRef"                                  -> (InvalidOrMissingTraderRefCode, InvalidOrMissingOptionalTraderRef),
+    "/comcode"                                    -> (InvalidOrMissingComcodeCode, InvalidOrMissingOptionalComcode),
+    "/goodsDescription"                           -> (InvalidOrMissingGoodsDescriptionCode, InvalidOrMissingOptionalGoodsDescription),
+    "/countryOfOrigin"                            -> (InvalidOrMissingCountryOfOriginCode, InvalidOrMissingOptionalCountryOfOrigin),
+    "/category"                                   -> (InvalidOrMissingCategoryCode, InvalidOrMissingOptionalCategory),
+    "/assessments/assessmentId"                   -> (InvalidOrMissingAssessmentIdCode, InvalidOrMissingAssessmentId),
+    "/assessments/primaryCategory"                -> (InvalidAssessmentPrimaryCategoryCode, InvalidAssessmentPrimaryCategory),
+    "/assessments/condition/type"                 -> (InvalidAssessmentPrimaryCategoryConditionTypeCode, InvalidAssessmentPrimaryCategoryConditionType),
+    "/assessments/condition/conditionId"          -> (InvalidAssessmentPrimaryCategoryConditionIdCode, InvalidAssessmentPrimaryCategoryConditionId),
+    "/assessments/condition/conditionDescription" -> (InvalidAssessmentPrimaryCategoryConditionDescriptionCode, InvalidAssessmentPrimaryCategoryConditionDescription),
+    "/assessments/condition/conditionTraderText"  -> (InvalidAssessmentPrimaryCategoryConditionTraderTextCode, InvalidAssessmentPrimaryCategoryConditionTraderText),
+    "/supplementaryUnit"                          -> (InvalidOrMissingSupplementaryUnitCode, InvalidOrMissingSupplementaryUnit),
+    "/measurementUnit"                            -> (InvalidOrMissingMeasurementUnitCode, InvalidOrMissingMeasurementUnit),
+    "/comcodeEffectiveFromDate"                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingOptionalComcodeEffectiveFromDate),
     "/comcodeEffectiveToDate"                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
     "/requestorName"                              -> (InvalidOrMissingRequestorNameCode, InvalidOrMissingRequestorName),
     "/requestorEmail"                             -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail)
