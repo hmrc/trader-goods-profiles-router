@@ -57,12 +57,11 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
     "return a 201 with JSON response when creating a record" in {
 
-      when(mockRouterService.createRecord(any)(any))
+      when(mockRouterService.createRecord(any, any)(any))
         .thenReturn(EitherT.rightT(createRecordResponseData))
 
-      val result = sut.create(
-        FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
-      )
+      val request = FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
+      val result  = sut.create("eori")(request)
 
       status(result) mustBe CREATED
 
@@ -81,17 +80,16 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
           Seq(
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Mandatory field eori was missing from body or is in the wrong format",
-              6
+              "Mandatory field traderRef was missing from body or is in the wrong format",
+              9
             )
           )
         )
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.create(
-        FakeRequest().withBody(invalidCreateRecordRequestData).withHeaders(validHeaders: _*)
-      )
+      val request = FakeRequest().withBody(invalidCreateRecordRequestData).withHeaders(validHeaders: _*)
+      val result  = sut.create("eori")(request)
 
       status(result) mustBe BAD_REQUEST
 
@@ -120,11 +118,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
             ),
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Mandatory field eori was missing from body or is in the wrong format",
-              6
-            ),
-            Error(
-              "INVALID_REQUEST_PARAMETER",
               "Optional field primaryCategory is in the wrong format",
               16
             ),
@@ -132,15 +125,20 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
               "INVALID_REQUEST_PARAMETER",
               "Optional field conditionId is in the wrong format",
               18
+            ),
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field actorId was missing from body or is in the wrong format",
+              8
             )
           )
         )
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.create(
+      val request =
         FakeRequest().withBody(invalidCreateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
-      )
+      val result  = sut.create("eori")(request)
 
       status(result) mustBe BAD_REQUEST
 
@@ -159,9 +157,9 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.create(
-        FakeRequest().withBody(createRecordRequestData)
-      )
+      val request = FakeRequest().withBody(createRecordRequestData)
+      val result  = sut.create("eori")(request)
+
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
@@ -184,9 +182,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.create(
-        FakeRequest().withBody(outOfRangeCategoryRequestData).withHeaders(validHeaders: _*)
-      )
+      val request = FakeRequest().withBody(outOfRangeCategoryRequestData).withHeaders(validHeaders: _*)
+      val result  = sut.create("eori")(request)
 
       status(result) mustBe BAD_REQUEST
 
@@ -213,9 +210,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.create(
-        FakeRequest().withBody(outOfRangeSupplementaryUnitRequestData).withHeaders(validHeaders: _*)
-      )
+      val request = FakeRequest().withBody(outOfRangeSupplementaryUnitRequestData).withHeaders(validHeaders: _*)
+      val result  = sut.create("eori")(request)
 
       status(result) mustBe BAD_REQUEST
 
@@ -298,7 +294,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
     .parse("""
         |{
         |    "actorId": "GB098765432112",
-        |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
         |    "goodsDescription": "Organic bananas",
         |    "countryOfOrigin": "EC",
@@ -324,8 +319,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
   lazy val invalidCreateRecordRequestDataForAssessmentArray: JsValue = Json
     .parse("""
-             |{
-             |    "actorId": "GB098765432112",
+             |{    
              |    "traderRef": "BAN001001",
              |    "comcode": "10410100",
              |    "goodsDescription": "Organic bananas",

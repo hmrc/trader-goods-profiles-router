@@ -43,13 +43,13 @@ class CreateRecordController @Inject() (
 ) extends BackendController(cc)
     with Logging {
 
-  def create: Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def create(eori: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
       _ <- validateHeaderClientId.validateClientId(request)
 
       createRecordRequest <- validateRequestBody(request)
 
-      response <- routerService.createRecord(createRecordRequest)
+      response <- routerService.createRecord(eori, createRecordRequest)
     } yield Created(Json.toJson(response))
 
     result.merge

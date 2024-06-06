@@ -77,7 +77,7 @@ class EISConnector @Inject() (
   }
 
   def createRecord(
-    request: CreateRecordRequest,
+    payload: CreateRecordPayload,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
     val url = appConfig.eisConfig.createRecordUrl
@@ -85,7 +85,7 @@ class EISConnector @Inject() (
     httpClientV2
       .post(url"$url")
       .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
-      .withBody(toJson(request))
+      .withBody(Json.toJson(payload))
       .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 

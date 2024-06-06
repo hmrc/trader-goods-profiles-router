@@ -28,7 +28,6 @@ import java.time.Instant
 import scala.Function.unlift
 
 case class CreateRecordRequest(
-  eori: String,
   actorId: String,
   traderRef: String,
   comcode: String,
@@ -45,8 +44,7 @@ case class CreateRecordRequest(
 object CreateRecordRequest {
 
   implicit val reads: Reads[CreateRecordRequest] =
-    ((JsPath \ "eori").read(lengthBetween(14, 17)) and
-      (JsPath \ "actorId").read(validActorId) and
+    ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "traderRef").read(lengthBetween(1, 512)) and
       (JsPath \ "comcode").read(validComcode) and
       (JsPath \ "goodsDescription").read(lengthBetween(1, 512)) and
@@ -60,8 +58,7 @@ object CreateRecordRequest {
         .readNullable[Instant])(CreateRecordRequest.apply _)
 
   implicit lazy val writes: OWrites[CreateRecordRequest] =
-    ((JsPath \ "eori").write[String] and
-      (JsPath \ "actorId").write[String] and
+    ((JsPath \ "actorId").write[String] and
       (JsPath \ "traderRef").write[String] and
       (JsPath \ "comcode").write[String] and
       (JsPath \ "goodsDescription").write[String] and

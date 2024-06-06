@@ -25,6 +25,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
@@ -91,9 +92,10 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
     request: CreateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
     val correlationId = uuidService.uuid
+
     EitherT(
       eisConnector
-        .createRecord(request, correlationId)
+        .createRecord(CreateRecordPayload(eori, request), correlationId)
         .map {
           case response @ Right(_) => response
           case error @ Left(_)     => error
@@ -102,7 +104,7 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
           logMessageAndReturnError(
             correlationId,
             ex,
-            s"""[RouterService] - Error when creating records for Eori Number: ${request.eori},
+            s"""[RouterService] - Error when creating records for Eori Number: $eori,
             correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }

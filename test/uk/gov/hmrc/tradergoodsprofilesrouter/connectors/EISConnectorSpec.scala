@@ -185,8 +185,8 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
-      val result                       = await(eisConnector.createRecord(request, correlationId))
+      val request = createRecordEisPayload.as[CreateRecordPayload]
+      val result  = await(eisConnector.createRecord(request, correlationId))
 
       result.value mustBe expectedResponse
     }
@@ -195,8 +195,8 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
-      val result                       = await(eisConnector.createRecord(request, correlationId))
+      val request = createRecordEisPayload.as[CreateRecordPayload]
+      val result  = await(eisConnector.createRecord(request, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -208,12 +208,12 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      await(eisConnector.createRecord(createRecordRequest.as[CreateRecordRequest], correlationId))
+      await(eisConnector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
       verify(httpClientV2).post(url"$expectedUrl")
       verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordCreateBearerToken"): _*)
-      verify(requestBuilder).withBody(createRecordRequest)
+      verify(requestBuilder).withBody(createRecordEisPayload)
       verify(requestBuilder).execute(any, any)
 
       verifyExecuteWithParams
@@ -378,7 +378,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |}
         |""".stripMargin)
 
-  lazy val createRecordRequest: JsValue = Json
+  val createRecordEisPayload: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789012",
@@ -407,7 +407,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |}
         |""".stripMargin)
 
-  lazy val updateRecordRequest: JsValue = Json
+  val updateRecordRequest: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789001",
@@ -437,7 +437,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |}
         |""".stripMargin)
 
-  lazy val maintainProfileEisRequest: JsValue =
+  val maintainProfileEisRequest: JsValue =
     Json
       .parse("""
           |{
@@ -449,7 +449,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
           |}
           |""".stripMargin)
 
-  lazy val maintainProfileResponse: MaintainProfileResponse =
+  val maintainProfileResponse: MaintainProfileResponse =
     Json
       .parse("""
           |{
