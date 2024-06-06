@@ -188,7 +188,6 @@ trait EisHttpErrorHandler {
 
   private def parseFaultDetail(rawDetail: String, correlationId: String) = {
     val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r
-    println(rawDetail)
     rawDetail match {
       case regex(code, _) =>
         code match {
