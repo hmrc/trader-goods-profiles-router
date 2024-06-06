@@ -2,7 +2,7 @@
 
 GET        /:eori/records/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecord(eori: String, recordId: String)
 GET        /:eori                           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecords(eori: String, lastUpdatedDate:Option[String] ?= None, page: Option[Int] ?= None, size: Option[Int] ?= None)
-POST       /records                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateRecordController.create()
+POST       /traders/:eori/records                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateRecordController.create(eori: String)
 PUT        /records                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.UpdateRecordController.update()
 PUT        /:eori/records/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RemoveRecordController.remove(eori: String, recordId: String)
 PUT        /traders/:eori                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)

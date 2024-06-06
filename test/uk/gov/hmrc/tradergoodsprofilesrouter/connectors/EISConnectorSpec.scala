@@ -20,52 +20,36 @@ import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.Mockito
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
-import org.scalatestplus.play.PlaySpec
-import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValues with GetRecordsDataSupport {
+class EISConnectorSpec extends BaseConnectorSpec {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
 
-  private val appConfig: AppConfig             = mock[AppConfig]
-  private val httpClientV2: HttpClientV2       = mock[HttpClientV2]
-  private val requestBuilder: RequestBuilder   = mock[RequestBuilder]
   private val dateTimeService: DateTimeService = mock[DateTimeService]
   private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val eori                             = "GB123456789011"
   private val actorId                          = "GB123456789011"
   private val recordId                         = "12345"
   implicit val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
-  private val headers                          = Seq(
-    "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> "MDTP",
-    "Content-Type"     -> MimeTypes.JSON,
-    "Accept"           -> MimeTypes.JSON,
-    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-    "X-Client-ID"      -> "TSS"
-  )
 
   private val eisConnector: EISConnector = new EISConnector(appConfig, httpClientV2, dateTimeService)
 
@@ -74,26 +58,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
 
     reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
-    when(appConfig.eisConfig).thenReturn(
-      new EISInstanceConfig(
-        "http",
-        "localhost",
-        1234,
-        "/tgp/getrecords/v1",
-        "/tgp/createrecord/v1",
-        "/tgp/removerecord/v1",
-        "/tgp/updaterecord/v1",
-        "/tgp/maintainprofile/v1",
-        "/tgp/createaccreditation/v1",
-        "MDTP",
-        "dummyRecordUpdateBearerToken",
-        "dummyRecordGetBearerToken",
-        "dummyRecordCreateBearerToken",
-        "dummyRecordRemoveBearerToken",
-        "dummyAccreditationCreateBearerToken",
-        "dummyMaintainProfileBearerToken"
-      )
-    )
+    setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
@@ -132,9 +97,9 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       await(eisConnector.fetchRecord(eori, recordId, correlationId))
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordGetBearerToken"): _*)
+      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordGetBearerToken"): _*)
 
-      verifyExecuteWithParams
+      verifyExecuteWithParams(correlationId)
     }
   }
 
@@ -171,52 +136,9 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       val expectedUrl            =
         s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
-      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordGetBearerToken"): _*)
-      verifyExecuteWithParams
+      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordGetBearerToken"): _*)
+      verifyExecuteWithParams(correlationId)
 
-    }
-  }
-
-  "createRecord" should {
-    "create a record successfully" in {
-      val expectedResponse: CreateOrUpdateRecordResponse =
-        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
-
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Right(expectedResponse)))
-
-      val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
-      val result                       = await(eisConnector.createRecord(request, correlationId))
-
-      result.value mustBe expectedResponse
-    }
-
-    "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val request: CreateRecordRequest = createRecordRequest.as[CreateRecordRequest]
-      val result                       = await(eisConnector.createRecord(request, correlationId))
-
-      result.left.value mustBe BadRequest("error")
-    }
-
-    "send a request with the right url" in {
-
-      val expectedResponse: CreateOrUpdateRecordResponse =
-        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Right(expectedResponse)))
-
-      await(eisConnector.createRecord(createRecordRequest.as[CreateRecordRequest], correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
-      verify(httpClientV2).post(url"$expectedUrl")
-      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordCreateBearerToken"): _*)
-      verify(requestBuilder).withBody(createRecordRequest)
-      verify(requestBuilder).execute(any, any)
-
-      verifyExecuteWithParams
     }
   }
 
@@ -240,7 +162,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
       val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
       verify(requestBuilder, Mockito.atLeast(1))
-        .setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordRemoveBearerToken"): _*)
+        .setHeader(buildHeaders(correlationId, "dummyRecordRemoveBearerToken"): _*)
       verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
 
       result.value mustBe OK
@@ -291,11 +213,11 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
 
       val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyRecordUpdateBearerToken"): _*)
+      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordUpdateBearerToken"): _*)
       verify(requestBuilder).withBody(updateRecordRequest)
       verify(requestBuilder).execute(any, any)
 
-      verifyExecuteWithParams
+      verifyExecuteWithParams(correlationId)
     }
   }
 
@@ -309,7 +231,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
 
       val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
       verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(headers :+ ("Authorization" -> "Bearer dummyMaintainProfileBearerToken"): _*)
+      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyMaintainProfileBearerToken"): _*)
       verify(requestBuilder).withBody(maintainProfileEisRequest)
       verify(requestBuilder).execute(any, any)
       verifyExecuteWithParams
@@ -378,36 +300,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |}
         |""".stripMargin)
 
-  lazy val createRecordRequest: JsValue = Json
-    .parse("""
-        |{
-        |    "eori": "GB123456789012",
-        |    "actorId": "GB098765432112",
-        |    "traderRef": "BAN001001",
-        |    "comcode": "10410100",
-        |    "goodsDescription": "Organic bananas",
-        |    "countryOfOrigin": "EC",
-        |    "category": 1,
-        |    "assessments": [
-        |        {
-        |            "assessmentId": "abc123",
-        |            "primaryCategory": 1,
-        |            "condition": {
-        |                "type": "abc123",
-        |                "conditionId": "Y923",
-        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-        |                "conditionTraderText": "Excluded product"
-        |            }
-        |        }
-        |    ],
-        |    "supplementaryUnit": 500,
-        |    "measurementUnit": "Square metre (m2)",
-        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-        |}
-        |""".stripMargin)
-
-  lazy val updateRecordRequest: JsValue = Json
+  val updateRecordRequest: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789001",
@@ -437,7 +330,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
         |}
         |""".stripMargin)
 
-  lazy val maintainProfileEisRequest: JsValue =
+  val maintainProfileEisRequest: JsValue =
     Json
       .parse("""
           |{
@@ -449,7 +342,7 @@ class EISConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValue
           |}
           |""".stripMargin)
 
-  lazy val maintainProfileResponse: MaintainProfileResponse =
+  val maintainProfileResponse: MaintainProfileResponse =
     Json
       .parse("""
           |{
