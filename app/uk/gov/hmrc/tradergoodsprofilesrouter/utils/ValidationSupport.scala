@@ -94,6 +94,9 @@ object ValidationSupport {
     "/comcodeEffectiveFromDate"                   -> (InvalidOrMissingComcodeEffectiveFromDateCode, InvalidOrMissingComcodeEffectiveFromDate),
     "/comcodeEffectiveToDate"                     -> (InvalidOrMissingComcodeEffectiveToDateCode, InvalidOrMissingComcodeEffectiveToDate),
     "/requestorName"                              -> (InvalidOrMissingRequestorNameCode, InvalidOrMissingRequestorName),
-    "/requestorEmail"                             -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail)
+    "/requestorEmail"                             -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail),
+    "/ukimsNumber"                                -> (InvalidOrMissingUkimsNumberCode, InvalidOrMissingUkimsNumberMessage),
+    "/nirmsNumber"                                -> (InvalidOrMissingNirmsNumberCode, InvalidOrMissingNirmsNumberMessage),
+    "/niphlNumber"                                -> (InvalidOrMissingNiphlNumberCode, InvalidOrMissingNiphlNumberMessage)
   )
 }

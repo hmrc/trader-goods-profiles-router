@@ -71,13 +71,28 @@ class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
       status(result) mustBe BAD_REQUEST
     }
 
-    "return a 400 when all mandatory fields are missing" in {
+    "return a 400 when mandatory fields are missing or optional fields are invalid" in {
       val errorResponse = ErrorResponse(
         "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         BadRequestCode,
         BadRequestMessage,
         Some(
           Seq(
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Optional field niphlNumber is in the wrong format",
+              35
+            ),
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Optional field nirmsNumber is in the wrong format",
+              34
+            ),
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field ukimsNumber was missing from body or is in the wrong format",
+              33
+            ),
             Error(
               "INVALID_REQUEST_PARAMETER",
               "Mandatory field actorId was missing from body or is in the wrong format",
@@ -110,9 +125,9 @@ class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
   lazy val invalidMaintainProfileRequest: JsValue =
     Json.parse("""
         |{
-        |"ukimsNumber":"XIUKIM47699357400020231115081800",
-        |"nirmsNumber":"RMS-GB-123456",
-        |"niphlNumber": "6S123456"
+        |"ukimsNumber":"",
+        |"nirmsNumber":"RMS-GB-12345612312312312312321",
+        |"niphlNumber": "6S6"
         |}
         |""".stripMargin)
 

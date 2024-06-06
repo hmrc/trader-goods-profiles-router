@@ -23,7 +23,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{leng
 
 case class MaintainProfileRequest(
   actorId: String,
-  ukimsNumber: Option[String],
+  ukimsNumber: String,
   nirmsNumber: Option[String],
   niphlNumber: Option[String]
 )
@@ -32,14 +32,14 @@ object MaintainProfileRequest {
 
   implicit val reads: Reads[MaintainProfileRequest] =
     ((JsPath \ "actorId").read(validActorId) and
-      (JsPath \ "ukimsNumber").readNullable(lengthBetween(32, 32)) and
+      (JsPath \ "ukimsNumber").read(lengthBetween(32, 32)) and
       (JsPath \ "nirmsNumber").readNullable(lengthBetween(13, 13)) and
       (JsPath \ "niphlNumber")
         .readNullable(lengthBetween(8, 8)))(MaintainProfileRequest.apply _)
 
   implicit lazy val writes: OWrites[MaintainProfileRequest] =
     ((JsPath \ "actorId").write[String] and
-      (JsPath \ "ukimsNumber").writeNullable[String] and
+      (JsPath \ "ukimsNumber").write[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
       (JsPath \ "niphlsNumber").writeNullable[String])(unlift(MaintainProfileRequest.unapply))
 }
