@@ -187,8 +187,7 @@ trait EisHttpErrorHandler {
     )
 
   private def parseFaultDetail(rawDetail: String, correlationId: String) = {
-    val regex = """error:\s*(\d+),\s*message:\s*(.*)""".r
-
+    val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r
     rawDetail match {
       case regex(code, _) =>
         code match {
@@ -283,6 +282,36 @@ trait EisHttpErrorHandler {
             invalidRequestParameterError(AccreditationRequestInProgressMessage, code.toInt)
           case RecordRemovedAndCanNotBeUpdatedCode                      =>
             invalidRequestParameterError(RecordRemovedAndCanNotBeUpdatedMessage, code.toInt)
+          case InvalidOrMissingCorrelationIdCode                        =>
+            invalidRequestParameterError(InvalidOrMissingCorrelationID, 1001)
+          case InvalidOrMissingRequestDateCode                          =>
+            invalidRequestParameterError(InvalidOrMissingRequestDate, 1002)
+          case InvalidOrMissingForwardedHostCode                        =>
+            invalidRequestParameterError(InvalidOrMissingForwardedHost, 1003)
+          case InvalidOrMissingContentTypeCode                          =>
+            invalidRequestParameterError(InvalidOrMissingContentType, 1004)
+          case InvalidOrMissingAcceptCode                               =>
+            invalidRequestParameterError(InvalidOrMissingAccept, 1005)
+          case InvalidOrMissingReceiptDateCode                          =>
+            invalidRequestParameterError(InvalidOrMissingReceiptDate, 1006)
+          case InvalidOrMissingTraderEORICode                           =>
+            invalidRequestParameterError(InvalidOrMissingTraderEORI, 1007)
+          case InvalidOrMissingRequestorNameCode                        =>
+            invalidRequestParameterError(InvalidOrMissingRequestorName, 1008)
+          case InvalidOrMissingRequestorEmailCode                       =>
+            invalidRequestParameterError(InvalidOrMissingRequestorEmail, 1009)
+          case InvalidOrMissingUkimsAuthorisationCode                   =>
+            invalidRequestParameterError(InvalidOrMissingUkimsAuthorisation, 1010)
+          case InvalidOrMissingGoodsItemsCode                           =>
+            invalidRequestParameterError(InvalidOrMissingGoodsItems, 1011)
+          case InvalidOrMissingPublicRecordIDCode                       =>
+            invalidRequestParameterError(InvalidOrMissingPublicRecordID, 1012)
+          case InvalidOrMissingTraderReferenceCode                      =>
+            invalidRequestParameterError(InvalidOrMissingTraderReference, 1013)
+          case InvalidOrMissinggoodsDescriptionCode                     =>
+            invalidRequestParameterError(InvalidOrMissingGoodsDescription, 1014)
+          case InvalidOrMissingCommodityCodeCode                        =>
+            invalidRequestParameterError(InvalidOrMissingCommodityCode, 1015)
 
           case _ => unexpectedError("Unrecognised error number", code.toInt)
         }

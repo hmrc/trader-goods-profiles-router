@@ -78,7 +78,7 @@ class RequestAccreditationControllerSpec extends PlaySpec with MockitoSugar with
             Error(
               "INVALID_REQUEST_PARAMETER",
               "Mandatory field RequestorEmail was missing from body or is in the wrong format",
-              0
+              38
             ),
             Error("INVALID_REQUEST_PARAMETER", "The recordId has been provided in the wrong format", 26)
           )
