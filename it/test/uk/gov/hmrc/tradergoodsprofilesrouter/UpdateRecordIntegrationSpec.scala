@@ -623,7 +623,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           verifyThatDownstreamApiWasNotCalled()
         }
-        "for mandatory fields actorId and comcode" in {
+        "for a mandatory field actorId and an optional filed comcode" in {
           val response = wsClient
             .url(fullUrl(s"/records/"))
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
@@ -638,7 +638,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field comcode was missing from body or is in the wrong format",
+                "message"     -> "Optional field comcode was missing from body or is in the wrong format",
                 "errorNumber" -> 11
               ),
               Json.obj(

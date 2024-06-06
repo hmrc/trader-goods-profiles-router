@@ -69,7 +69,7 @@ class UpdateRecordController @Inject() (
               uuidService.uuid,
               BadRequestCode,
               BadRequestMessage,
-              Some(ValidationSupport.convertError(errors))
+              Some(ValidationSupport.convertError[UpdateRecordRequest](errors))
             )
           )
         ): Result
