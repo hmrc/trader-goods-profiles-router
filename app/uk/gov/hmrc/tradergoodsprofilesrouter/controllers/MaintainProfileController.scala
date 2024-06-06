@@ -69,7 +69,7 @@ class MaintainProfileController @Inject() (
               Some(ValidationSupport.convertError(errors))
             )
           )
-        ): Result
+        )
       }
       .toEitherT[Future]
 
