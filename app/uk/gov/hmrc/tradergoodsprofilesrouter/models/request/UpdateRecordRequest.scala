@@ -29,8 +29,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCoun
 import java.time.Instant
 
 case class UpdateRecordRequest(
-  eori: String,
-  recordId: String,
   actorId: String,
   traderRef: Option[String],
   comcode: Option[String],
@@ -47,9 +45,7 @@ case class UpdateRecordRequest(
 object UpdateRecordRequest {
 
   implicit val reads: Reads[UpdateRecordRequest] =
-    ((JsPath \ "eori").read(lengthBetween(14, 17)) and
-      (JsPath \ "recordId").read(lengthBetween(36, 36)) and
-      (JsPath \ "actorId").read(validActorId) and
+    ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "traderRef").readNullable(lengthBetween(1, 512)) and
       (JsPath \ "comcode").readNullable(validComcode) and
       (JsPath \ "goodsDescription").readNullable(lengthBetween(1, 512)) and
@@ -65,8 +61,6 @@ object UpdateRecordRequest {
   implicit lazy val writes: Writes[UpdateRecordRequest] = (updateRecordRequest: UpdateRecordRequest) =>
     removeNulls(
       Json.obj(
-        "eori"                     -> updateRecordRequest.eori,
-        "recordId"                 -> updateRecordRequest.recordId,
         "actorId"                  -> updateRecordRequest.actorId,
         "traderRef"                -> updateRecordRequest.traderRef,
         "comcode"                  -> updateRecordRequest.comcode,

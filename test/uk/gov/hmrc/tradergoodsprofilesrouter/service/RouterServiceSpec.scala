@@ -216,7 +216,7 @@ class RouterServiceSpec
       when(eisConnector.updateRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
-      val result = routerService.updateRecord(updateRecordRequest)
+      val result = routerService.updateRecord(eoriNumber, "recordId", updateRecordRequest)
 
       whenReady(result.value) {
         _.value shouldBe eisResponse
@@ -229,7 +229,7 @@ class RouterServiceSpec
         when(eisConnector.updateRecord(any, any)(any))
           .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-        val result = routerService.updateRecord(updateRecordRequest)
+        val result = routerService.updateRecord(eoriNumber, "recordId", updateRecordRequest)
 
         whenReady(result.value) {
           _.left.value shouldBe BadRequest("error")
@@ -240,7 +240,7 @@ class RouterServiceSpec
         when(eisConnector.updateRecord(any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = routerService.updateRecord(updateRecordRequest)
+        val result = routerService.updateRecord(eoriNumber, "recordId", updateRecordRequest)
 
         whenReady(result.value) {
           _.left.value shouldBe InternalServerError(

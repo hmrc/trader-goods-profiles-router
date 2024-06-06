@@ -34,6 +34,8 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
@@ -188,8 +190,8 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      val request: UpdateRecordRequest = updateRecordRequest.as[UpdateRecordRequest]
-      val result                       = await(eisConnector.updateRecord(request, correlationId))
+      val request = updateRecordPayload.as[UpdateRecordPayload]
+      val result  = await(eisConnector.updateRecord(request, correlationId))
 
       result.value mustBe expectedResponse
     }
@@ -198,8 +200,8 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val request: UpdateRecordRequest = updateRecordRequest.as[UpdateRecordRequest]
-      val result                       = await(eisConnector.updateRecord(request, correlationId))
+      val request = updateRecordPayload.as[UpdateRecordPayload]
+      val result  = await(eisConnector.updateRecord(request, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -211,12 +213,12 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      await(eisConnector.updateRecord(updateRecordRequest.as[UpdateRecordRequest], correlationId))
+      await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
       verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordUpdateBearerToken"): _*)
-      verify(requestBuilder).withBody(updateRecordRequest)
+      verify(requestBuilder).withBody(updateRecordPayload)
       verify(requestBuilder).execute(any, any)
 
       verifyExecuteWithParams(correlationId)
@@ -302,7 +304,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
         |}
         |""".stripMargin)
 
-  val createRecordEisPayload: JsValue = Json
+  val updateRecordRequest: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789001",

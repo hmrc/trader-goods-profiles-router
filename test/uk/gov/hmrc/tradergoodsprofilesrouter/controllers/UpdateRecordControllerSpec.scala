@@ -37,8 +37,10 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val mockRouterService: RouterService = mock[RouterService]
-  val mockUuidService: UuidService     = mock[UuidService]
+  private val eoriNumber                       = "eori"
+  private val recordId                         = "recordId"
+  private val mockRouterService: RouterService = mock[RouterService]
+  private val mockUuidService: UuidService     = mock[UuidService]
 
   private val validateClientId = new ValidateHeaderClientId(mockUuidService)
   private val sut              =
@@ -57,12 +59,11 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
     "return a 200 with JSON response when updating a record" in {
 
-      when(mockRouterService.updateRecord(any)(any))
+      when(mockRouterService.updateRecord(any, any, any)(any))
         .thenReturn(EitherT.rightT(updateRecordResponseData))
 
-      val result = sut.update(
-        FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
-      )
+      val result =
+        sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
 
       status(result) mustBe OK
 
@@ -81,16 +82,15 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
           Seq(
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Mandatory field eori was missing from body or is in the wrong format",
-              6
-            ),
-            Error("INVALID_REQUEST_PARAMETER", "The recordId has been provided in the wrong format", 26)
+              "Mandatory field actorId was missing from body or is in the wrong format",
+              8
+            )
           )
         )
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.update(
+      val result = sut.update(eoriNumber, recordId)(
         FakeRequest().withBody(invalidUpdateRecordRequestData).withHeaders(validHeaders: _*)
       )
 
@@ -111,18 +111,13 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
           Seq(
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Optional field type is in the wrong format",
-              17
-            ),
-            Error(
-              "INVALID_REQUEST_PARAMETER",
               "Optional field assessmentId is in the wrong format",
               15
             ),
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Mandatory field eori was missing from body or is in the wrong format",
-              6
+              "Optional field conditionId is in the wrong format",
+              18
             ),
             Error(
               "INVALID_REQUEST_PARAMETER",
@@ -131,15 +126,15 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
             ),
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Optional field conditionId is in the wrong format",
-              18
+              "Optional field type is in the wrong format",
+              17
             )
           )
         )
       )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.update(
+      val result = sut.update(eoriNumber, recordId)(
         FakeRequest().withBody(invalidUpdateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
       )
 
@@ -160,7 +155,7 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.update(
+      val result = sut.update(eoriNumber, recordId)(
         FakeRequest().withBody(updateRecordRequestData)
       )
       status(result) mustBe BAD_REQUEST
@@ -243,7 +238,6 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
   lazy val invalidUpdateRecordRequestData: JsValue = Json
     .parse("""
         |{
-        |    "actorId": "GB098765432112",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
         |    "goodsDescription": "Organic bananas",

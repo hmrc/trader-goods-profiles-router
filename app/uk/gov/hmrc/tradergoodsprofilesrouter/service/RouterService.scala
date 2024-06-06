@@ -28,6 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -132,12 +133,15 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
   }
 
   def updateRecord(
+    eori: String,
+    recordId: String,
     request: UpdateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
     val correlationId = uuidService.uuid
+    val payload       = UpdateRecordPayload(eori, recordId, request)
     EitherT(
       eisConnector
-        .updateRecord(request, correlationId)
+        .updateRecord(payload, correlationId)
         .map {
           case response @ Right(_) => response
           case error @ Left(_)     => error
@@ -146,7 +150,7 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
           logMessageAndReturnError(
             correlationId,
             ex,
-            s"""[RouterService] - Error when updating records for Eori Number: ${request.eori},
+            s"""[RouterService] - Error when updating records for Eori Number: $eori,
             s"correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }

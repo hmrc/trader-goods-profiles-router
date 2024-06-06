@@ -43,13 +43,14 @@ class UpdateRecordController @Inject() (
 ) extends BackendController(cc)
     with Logging {
 
-  def update: Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def update(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    //todo: validate eori and recordId
     val result = for {
       _ <- validateHeaderClientId.validateClientId(request)
 
       updateRecordRequest <- validateRequestBody(request)
 
-      response <- routerService.updateRecord(updateRecordRequest)
+      response <- routerService.updateRecord(eori, recordId, updateRecordRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge
