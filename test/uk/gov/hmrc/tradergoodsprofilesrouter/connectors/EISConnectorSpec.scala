@@ -30,6 +30,8 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -300,7 +302,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
         |}
         |""".stripMargin)
 
-  val updateRecordRequest: JsValue = Json
+  val createRecordEisPayload: JsValue = Json
     .parse("""
         |{
         |    "eori": "GB123456789001",
