@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsPath, JsonValidationError}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.{convertError, isValidActorId, isValidComcode, isValidCountryCode, isValidDate}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport._
 
 import java.time.Instant
 
@@ -70,7 +70,7 @@ class ValidationSupportSpec extends PlaySpec {
           )
         )
 
-        val result = convertError(errors)
+        val result = convertError(errors, fieldsToErrorCode)
 
         result mustBe expectedErrors
       }
@@ -97,7 +97,7 @@ class ValidationSupportSpec extends PlaySpec {
           )
         )
 
-        val result = convertError(errors)
+        val result = convertError(errors, fieldsToErrorCode)
 
         result mustBe expectedErrors
       }

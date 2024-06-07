@@ -30,6 +30,7 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
+//todo: we may want to unify ValidationSupport and this one.
 trait ValidationRules {
   this: BaseController =>
 
@@ -77,7 +78,7 @@ trait ValidationRules {
       .validate[A]
       .asEither
       .leftMap { errors =>
-        ValidationSupport.convertError1[A](errors, fieldToErrorCodeTable)
+        ValidationSupport.convertError[A](errors, fieldToErrorCodeTable)
       }
 
   def validateQueryParameters(actorId: String, recordId: String) =

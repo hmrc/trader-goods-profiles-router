@@ -30,6 +30,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorRespons
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.fieldsToErrorCode
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -69,7 +70,7 @@ class CreateRecordController @Inject() (
               uuidService.uuid,
               BadRequestCode,
               BadRequestMessage,
-              Some(ValidationSupport.convertError[CreateRecordRequest](errors))
+              Some(ValidationSupport.convertError[CreateRecordRequest](errors, fieldsToErrorCode))
             )
           )
         ): Result

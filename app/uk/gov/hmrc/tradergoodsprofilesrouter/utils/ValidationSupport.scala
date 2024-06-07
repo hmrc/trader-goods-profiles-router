@@ -20,13 +20,11 @@ import org.apache.commons.validator.routines.EmailValidator
 import play.api.libs.functional.syntax.toApplicativeOps
 import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json.{JsPath, JsonValidationError, KeyPathNode, Reads}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 import java.time.Instant
 import java.util.Locale
-import scala.reflect.runtime.universe.{TypeTag, typeOf}
 import scala.util.matching.Regex
 
 object ValidationSupport {
@@ -42,27 +40,12 @@ object ValidationSupport {
 
   private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
 
-  def convertError1[T](
+  def convertError[T](
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
     fieldToErrorCodeTable: Map[String, (String, String)]
   ): Seq[Error] =
     extractSimplePaths(errors)
       .map(key => fieldToErrorCodeTable.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt)))
-      .toSeq
-      .flatten
-
-  def convertError[T](
-    errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
-  )(implicit tt: TypeTag[T]): Seq[Error] =
-    extractSimplePaths(errors)
-      .map(key =>
-        tt.tpe match {
-          case t if t =:= typeOf[UpdateRecordRequest] =>
-            optionalFieldsToErrorCode.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt))
-          case _                                      =>
-            fieldsToErrorCode.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt))
-        }
-      )
       .toSeq
       .flatten
 
