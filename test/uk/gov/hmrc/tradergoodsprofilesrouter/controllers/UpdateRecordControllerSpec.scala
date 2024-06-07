@@ -28,7 +28,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
@@ -43,15 +43,15 @@ class UpdateRecordControllerSpec
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  private val eoriNumber                       = "eori"
-  private val recordId                         = UUID.randomUUID().toString
-  private val mockRouterService: RouterService = mock[RouterService]
-  private val mockUuidService: UuidService     = mock[UuidService]
+  private val eoriNumber                   = "eori"
+  private val recordId                     = UUID.randomUUID().toString
+  private val updateRecordService          = mock[UpdateRecordService]
+  private val mockUuidService: UuidService = mock[UuidService]
 
   private val sut =
     new UpdateRecordController(
       stubControllerComponents(),
-      mockRouterService,
+      updateRecordService,
       mockUuidService
     )
 
@@ -61,7 +61,7 @@ class UpdateRecordControllerSpec
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(mockUuidService, mockRouterService)
+    reset(mockUuidService, updateRecordService)
 
     when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
   }
@@ -69,7 +69,7 @@ class UpdateRecordControllerSpec
 
     "return a 200 with JSON response when updating a record" in {
 
-      when(mockRouterService.updateRecord(any, any, any)(any))
+      when(updateRecordService.updateRecord(any, any, any)(any))
         .thenReturn(EitherT.rightT(createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]))
 
       val result =
@@ -171,7 +171,7 @@ class UpdateRecordControllerSpec
     }
 
     "return a Bad Request if actorId is invalid" in {
-      when(mockRouterService.updateRecord(any, any, any)(any))
+      when(updateRecordService.updateRecord(any, any, any)(any))
         .thenReturn(EitherT.rightT(createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]))
 
       val result = sut.update(eoriNumber, "invalid-actorId")(

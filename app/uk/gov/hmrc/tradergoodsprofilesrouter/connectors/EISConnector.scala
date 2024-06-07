@@ -23,28 +23,26 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, OtherHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.{MaintainProfileEisRequest, RemoveEisRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames._
 
 import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class EISConnector @Inject() (
-  appConfig: AppConfig,
+  override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
-    extends EisHttpErrorHandler {
+    extends BaseConnector
+    with EisHttpErrorHandler {
 
   def fetchRecord(
     eori: String,
@@ -55,7 +53,7 @@ class EISConnector @Inject() (
 
     httpClientV2
       .get(url"$url")
-      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
+      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
       .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
 
   }
@@ -74,21 +72,8 @@ class EISConnector @Inject() (
 
     httpClientV2
       .get(url"$uri")
-      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
+      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
       .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
-  }
-
-  def updateRecord(
-    request: UpdateRecordRequest,
-    correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
-    val url = appConfig.eisConfig.updateRecordUrl
-
-    httpClientV2
-      .put(url"$url")
-      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.updateRecordBearerToken): _*)
-      .withBody(Json.toJson(request))
-      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 
   def requestAccreditation(request: TraderDetails, correlationId: String)(implicit
@@ -99,7 +84,7 @@ class EISConnector @Inject() (
     val accreditationEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
     httpClientV2
       .post(url"$url")
-      .setHeader(eisRequestHeadersAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
+      .setHeader(buildHeadersForAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
       .withBody(Json.toJson(accreditationEisRequest))
       .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
@@ -113,7 +98,7 @@ class EISConnector @Inject() (
     val url = appConfig.eisConfig.removeRecordUrl
     httpClientV2
       .put(url"$url")
-      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
+      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
       .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
       .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
@@ -128,24 +113,4 @@ class EISConnector @Inject() (
       .withBody(Json.toJson(request))
       .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
   }
-
-  private def eisRequestHeaders(correlationId: String, bearerToken: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] =
-    Seq(
-      CorrelationId -> correlationId,
-      ForwardedHost -> appConfig.eisConfig.forwardedHost,
-      ContentType   -> MimeTypes.JSON,
-      Accept        -> MimeTypes.JSON,
-      Date          -> dateTimeService.timestamp.asStringHttp,
-      ClientId      -> hc.headers(Seq(ClientId)).head._2,
-      Authorization -> bearerToken
-    )
-
-  private def eisRequestHeadersAccreditation(correlationId: String, bearerToken: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] =
-    eisRequestHeaders(correlationId, bearerToken).filterNot(elm =>
-      elm == HeaderNames.ClientId -> hc.headers(Seq(HeaderNames.ClientId)).head._2
-    )
 }

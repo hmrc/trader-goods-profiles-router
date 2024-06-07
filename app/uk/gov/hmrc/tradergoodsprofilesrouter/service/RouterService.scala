@@ -25,10 +25,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -127,31 +124,6 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
             ex,
             s"""[RouterService] - Error when creating accreditation for
             correlationId: $correlationId, message: ${ex.getMessage}"""
-          )
-        }
-    )
-  }
-
-  def updateRecord(
-    eori: String,
-    recordId: String,
-    request: UpdateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
-    val correlationId = uuidService.uuid
-    val payload       = UpdateRecordPayload(eori, recordId, request)
-    EitherT(
-      eisConnector
-        .updateRecord(payload, correlationId)
-        .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
-        }
-        .recover { case ex: Throwable =>
-          logMessageAndReturnError(
-            correlationId,
-            ex,
-            s"""[RouterService] - Error when updating records for Eori Number: $eori,
-            s"correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
     )

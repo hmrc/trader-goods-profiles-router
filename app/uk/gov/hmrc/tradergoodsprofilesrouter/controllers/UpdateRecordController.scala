@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.optionalFieldsToErrorCode
 
@@ -35,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class UpdateRecordController @Inject() (
   override val controllerComponents: ControllerComponents,
-  routerService: RouterService,
+  updateRecordService: UpdateRecordService,
   override val uuidService: UuidService
 )(implicit override val ec: ExecutionContext)
     extends BackendBaseController
@@ -47,7 +47,7 @@ class UpdateRecordController @Inject() (
       _                   <- EitherT.fromEither[Future](validateClientId).leftMap(e => badRequest(Seq(e)))
       _                   <- EitherT.fromEither[Future](validateRecordId(recordId)).leftMap(e => badRequest(Seq(e)))
       updateRecordRequest <- validateRequestBody
-      response            <- routerService.updateRecord(eori, recordId, updateRecordRequest)
+      response            <- updateRecordService.updateRecord(eori, recordId, updateRecordRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge

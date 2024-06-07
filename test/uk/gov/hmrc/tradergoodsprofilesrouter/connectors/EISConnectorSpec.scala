@@ -22,7 +22,6 @@ import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.OK
-import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -34,26 +33,22 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
+import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport}
 
 import java.time.Instant
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class EISConnectorSpec extends BaseConnectorSpec {
-
-  implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
+class EISConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
 
   private val dateTimeService: DateTimeService = mock[DateTimeService]
   private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val eori                             = "GB123456789011"
   private val actorId                          = "GB123456789011"
   private val recordId                         = "12345"
-  implicit val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  private val correlationId: String            = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val eisConnector: EISConnector = new EISConnector(appConfig, httpClientV2, dateTimeService)
 
@@ -182,49 +177,6 @@ class EISConnectorSpec extends BaseConnectorSpec {
     }
   }
 
-  "updateRecord" should {
-    "update a record successfully" in {
-      val expectedResponse: CreateOrUpdateRecordResponse =
-        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
-
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Right(expectedResponse)))
-
-      val request = updateRecordPayload.as[UpdateRecordPayload]
-      val result  = await(eisConnector.updateRecord(request, correlationId))
-
-      result.value mustBe expectedResponse
-    }
-
-    "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val request = updateRecordPayload.as[UpdateRecordPayload]
-      val result  = await(eisConnector.updateRecord(request, correlationId))
-
-      result.left.value mustBe BadRequest("error")
-    }
-
-    "send a request with the right url" in {
-
-      val expectedResponse: CreateOrUpdateRecordResponse =
-        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Right(expectedResponse)))
-
-      await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordUpdateBearerToken"): _*)
-      verify(requestBuilder).withBody(updateRecordPayload)
-      verify(requestBuilder).execute(any, any)
-
-      verifyExecuteWithParams(correlationId)
-    }
-  }
-
   "maintain Profile" should {
     "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
       when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
@@ -262,77 +214,6 @@ class EISConnectorSpec extends BaseConnectorSpec {
     val httpReader = captor.value
     httpReader.asInstanceOf[HttpReader[Either[Result, Any]]].correlationId mustBe correlationId
   }
-
-  lazy val createOrUpdateRecordSampleJson: JsValue = Json
-    .parse("""
-        |{
-        |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-        |  "eori": "GB123456789012",
-        |  "actorId": "GB098765432112",
-        |  "traderRef": "BAN001001",
-        |  "comcode": "104101000",
-        |  "accreditationStatus": "Not Requested",
-        |  "goodsDescription": "Organic bananas",
-        |  "countryOfOrigin": "EC",
-        |  "category": 1,
-        |  "supplementaryUnit": 500,
-        |  "measurementUnit": "Square metre (m2)",
-        |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-        |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
-        |  "version": 1,
-        |  "active": true,
-        |  "toReview": false,
-        |  "reviewReason": "Commodity code change",
-        |  "declarable": "SPIMM",
-        |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-        |  "nirmsNumber": "RMS-GB-123456",
-        |  "niphlNumber": "6 S12345",
-        |  "createdDateTime": "2024-11-18T23:20:19Z",
-        |  "updatedDateTime": "2024-11-18T23:20:19Z",
-        |  "assessments": [
-        |    {
-        |      "assessmentId": "abc123",
-        |      "primaryCategory": 1,
-        |      "condition": {
-        |        "type": "abc123",
-        |        "conditionId": "Y923",
-        |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-        |        "conditionTraderText": "Excluded product"
-        |      }
-        |    }
-        |  ]
-        |}
-        |""".stripMargin)
-
-  val updateRecordRequest: JsValue = Json
-    .parse("""
-        |{
-        |    "eori": "GB123456789001",
-        |    "actorId": "GB098765432112",
-        |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        |    "traderRef": "BAN001001",
-        |    "comcode": "10410100",
-        |    "goodsDescription": "Organic bananas",
-        |    "countryOfOrigin": "EC",
-        |    "category": 1,
-        |    "assessments": [
-        |        {
-        |            "assessmentId": "abc123",
-        |            "primaryCategory": 1,
-        |            "condition": {
-        |                "type": "abc123",
-        |                "conditionId": "Y923",
-        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-        |                "conditionTraderText": "Excluded product"
-        |            }
-        |        }
-        |    ],
-        |    "supplementaryUnit": 500,
-        |    "measurementUnit": "Square metre (m2)",
-        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-        |}
-        |""".stripMargin)
 
   val maintainProfileEisRequest: JsValue =
     Json
