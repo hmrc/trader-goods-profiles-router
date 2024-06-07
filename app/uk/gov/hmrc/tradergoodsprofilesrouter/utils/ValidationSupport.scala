@@ -42,6 +42,15 @@ object ValidationSupport {
 
   private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
 
+  def convertError1[T](
+    errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
+    fieldToErrorCodeTable: Map[String, (String, String)]
+  ): Seq[Error] =
+    extractSimplePaths(errors)
+      .map(key => fieldToErrorCodeTable.get(key).map(res => Error.invalidRequestParameterError(res._2, res._1.toInt)))
+      .toSeq
+      .flatten
+
   def convertError[T](
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])]
   )(implicit tt: TypeTag[T]): Seq[Error] =
@@ -83,7 +92,7 @@ object ValidationSupport {
       .map(_.path.filter(_.isInstanceOf[KeyPathNode]))
       .map(_.mkString)
 
-  private val fieldsToErrorCode: Map[String, (String, String)] = Map(
+  val fieldsToErrorCode: Map[String, (String, String)] = Map(
     "/eori"                                       -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
     "/recordId"                                   -> (RecordIdDoesNotExistsCode, InvalidRecordId),
     "/actorId"                                    -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),
@@ -109,7 +118,7 @@ object ValidationSupport {
     "/niphlNumber"                                -> (InvalidOrMissingNiphlNumberCode, InvalidOrMissingNiphlNumberMessage)
   )
 
-  private val optionalFieldsToErrorCode: Map[String, (String, String)] = Map(
+  val optionalFieldsToErrorCode: Map[String, (String, String)] = Map(
     "/eori"                                       -> (InvalidOrMissingEoriCode, InvalidOrMissingEori),
     "/recordId"                                   -> (RecordIdDoesNotExistsCode, InvalidRecordId),
     "/actorId"                                    -> (InvalidOrMissingActorIdCode, InvalidOrMissingActorId),

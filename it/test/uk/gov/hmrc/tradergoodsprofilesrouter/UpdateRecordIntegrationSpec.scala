@@ -29,11 +29,11 @@ import java.time.Instant
 class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
 
   private val eoriNumber             = "GB123456789001"
-  private val actorId                = "GB098765432112"
+  private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
   val dateTime                       = "2021-12-17T09:30:47.456Z"
   val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
-  private val url                    = fullUrl(s"/traders/$eoriNumber/records/$actorId")
+  private val url                    = fullUrl(s"/traders/$eoriNumber/records/$recordId")
   override def connectorPath: String = "/tgp/updaterecord/v1"
   override def connectorName: String = "eis"
 
@@ -547,7 +547,14 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
             "code"          -> "BAD_REQUEST",
-            "message"       -> "Missing mandatory header X-Client-ID"
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_HEADER",
+                "message"     -> "Missing mandatory header X-Client-ID",
+                "errorNumber" -> 6000
+              )
+            )
           )
 
           verifyThatDownstreamApiWasNotCalled()
@@ -928,8 +935,8 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
     s"""
         |{
         |    "eori": "$eoriNumber",
-        |    "actorId": "$actorId",
-        |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        |    "actorId": "GB098765432112",
+        |    "recordId": "$recordId",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
         |    "goodsDescription": "Organic bananas",
