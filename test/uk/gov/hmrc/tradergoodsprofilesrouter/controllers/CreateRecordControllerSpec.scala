@@ -18,14 +18,14 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.when
+import org.mockito.MockitoSugar.{reset, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
@@ -33,26 +33,30 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, Header
 
 import scala.concurrent.ExecutionContext
 
-class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
+class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   val createRecordService      = mock[CreateRecordService]
   val uuidService: UuidService = mock[UuidService]
 
-  private val validateClientId = new ValidateHeaderClientId(uuidService)
-  private val sut              =
+  private val sut =
     new CreateRecordController(
       stubControllerComponents(),
       createRecordService,
-      uuidService,
-      validateClientId
+      uuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
     HeaderNames.ClientId -> "clientId"
   )
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    reset(uuidService, createRecordService)
+    when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+  }
   "POST /records" should {
 
     "return a 201 with JSON response when creating a record" in {
@@ -87,7 +91,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
       )
 
-      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request = FakeRequest().withBody(invalidCreateRecordRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
 
@@ -135,7 +138,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
       )
 
-      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request =
         FakeRequest().withBody(invalidCreateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
@@ -149,19 +151,27 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
-      val errorResponse =
+      val expectedErrorResponse =
         ErrorResponse(
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          ApplicationConstants.BadRequestCode,
-          ApplicationConstants.MissingHeaderClientId
+          "BAD_REQUEST",
+          "Bad Request",
+          Some(
+            Seq(
+              Error(
+                "INVALID_HEADER",
+                "Missing mandatory header X-Client-ID",
+                6000
+              )
+            )
+          )
         )
 
-      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request = FakeRequest().withBody(createRecordRequestData)
       val result  = sut.create("eori")(request)
 
       status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(errorResponse)
+      contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)
     }
 
     "return 400 Bad request when category is out of range" in {
@@ -181,7 +191,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
       )
 
-      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request = FakeRequest().withBody(outOfRangeCategoryRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
 
@@ -209,7 +218,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar {
         )
       )
 
-      when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val request = FakeRequest().withBody(outOfRangeSupplementaryUnitRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
 

@@ -20,15 +20,13 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.optionalFieldsToErrorCode
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,8 +42,12 @@ class UpdateRecordController @Inject() (
 
   def update(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _                   <- EitherT.fromEither[Future](validateClientId).leftMap(e => badRequest(Seq(e)))
-      _                   <- EitherT.fromEither[Future](validateRecordId(recordId)).leftMap(e => badRequest(Seq(e)))
+      _                   <- EitherT
+                               .fromEither[Future](validateClientId)
+                               .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
+      _                   <- EitherT
+                               .fromEither[Future](validateRecordId(recordId))
+                               .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
       updateRecordRequest <- validateRequestBody
       response            <- updateRecordService.updateRecord(eori, recordId, updateRecordRequest)
     } yield Ok(Json.toJson(response))
@@ -53,20 +55,9 @@ class UpdateRecordController @Inject() (
     result.merge
   }
 
-  def badRequest(errors: Seq[Error])                                                                                =
-    BadRequest(
-      toJson(
-        ErrorResponse(
-          uuidService.uuid,
-          BadRequestCode,
-          BadRequestMessage,
-          Some(errors)
-        )
-      )
-    )
   private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, UpdateRecordRequest] =
     EitherT
       .fromEither[Future](validateRequestBody[UpdateRecordRequest](optionalFieldsToErrorCode))
-      .leftMap(e => badRequest(e))
+      .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
 
 }
