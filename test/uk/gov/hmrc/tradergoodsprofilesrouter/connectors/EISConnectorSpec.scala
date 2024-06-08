@@ -22,19 +22,14 @@ import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.OK
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, StringContextOps}
+import uk.gov.hmrc.http.{HttpReads, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
-import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport}
 
@@ -216,8 +211,7 @@ class EISConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
   }
 
   val maintainProfileEisRequest: JsValue =
-    Json
-      .parse("""
+    Json.parse("""
           |{
           |"eori": "GB123456789012",
           |"actorId":"GB098765432112",

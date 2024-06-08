@@ -15,7 +15,6 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
-import play.api.http.MimeTypes
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import sttp.model.Uri.UriContext
@@ -23,14 +22,11 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, OtherHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.{MaintainProfileEisRequest, RemoveEisRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.time.Instant
 import javax.inject.Inject
@@ -109,7 +105,7 @@ class EISConnector @Inject() (
     val url = appConfig.eisConfig.maintainProfileUrl
     httpClientV2
       .put(url"$url")
-      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
+      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
       .withBody(Json.toJson(request))
       .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
   }
