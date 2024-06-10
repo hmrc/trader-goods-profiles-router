@@ -23,33 +23,33 @@ import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.OtherHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateRecordConnector @Inject() (
+class RemoveRecordConnector @Inject() (
   appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends EisHttpErrorHandler {
 
-  def createRecord(
-    payload: CreateRecordPayload,
+  def removeRecord(
+    eori: String,
+    recordId: String,
+    actorId: String,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
-    val url = appConfig.eisConfig.createRecordUrl
-
+  )(implicit hc: HeaderCarrier): Future[Either[Result, Int]] = {
+    val url = appConfig.eisConfig.removeRecordUrl
     httpClientV2
-      .post(url"$url")
-      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
-      .withBody(Json.toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
+      .put(url"$url")
+      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
+      .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
+      .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
   private def eisRequestHeaders(correlationId: String, bearerToken: String)(implicit

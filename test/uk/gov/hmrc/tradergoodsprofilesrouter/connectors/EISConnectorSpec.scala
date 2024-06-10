@@ -17,11 +17,9 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.Mockito
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
 import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -139,42 +137,6 @@ class EISConnectorSpec extends BaseConnectorSpec {
       verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordGetBearerToken"): _*)
       verifyExecuteWithParams(correlationId)
 
-    }
-  }
-
-  "removeRecord" should {
-    "remove a record successfully" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
-        .thenReturn(Future.successful(Right(OK)))
-
-      val result = await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
-
-      result.value mustBe OK
-    }
-
-    "send a request with the right url for remove record" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
-        .thenReturn(Future.successful(Right(OK)))
-
-      val result =
-        await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder, Mockito.atLeast(1))
-        .setHeader(buildHeaders(correlationId, "dummyRecordRemoveBearerToken"): _*)
-      verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
-
-      result.value mustBe OK
-    }
-
-    "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val result = await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
-
-      result.left.value mustBe BadRequest("error")
     }
   }
 

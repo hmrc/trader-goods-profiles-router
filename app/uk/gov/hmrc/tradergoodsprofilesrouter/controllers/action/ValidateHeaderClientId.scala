@@ -20,9 +20,10 @@ import cats.data.EitherT
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJson
 import play.api.mvc.Results.BadRequest
-import play.api.mvc.{Request, Result}
+import play.api.mvc.{AnyContent, Request, Result}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, MissingHeaderClientId}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import javax.inject.Inject
@@ -43,4 +44,19 @@ class ValidateHeaderClientId @Inject() (uuidService: UuidService)(implicit ec: E
         )
       )
     )
+
+  def validateClientIdFromAnyContent(request: Request[AnyContent]): EitherT[Future, Result, String] =
+    EitherT.fromOption(
+      request.headers.get(HeaderNames.ClientId),
+      BadRequest(
+        toJson(
+          ErrorResponse(
+            uuidService.uuid,
+            BadRequestCode,
+            MissingHeaderClientId
+          )
+        )
+      )
+    )
+
 }

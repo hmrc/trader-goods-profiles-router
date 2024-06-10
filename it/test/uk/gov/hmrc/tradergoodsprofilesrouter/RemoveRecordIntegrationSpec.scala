@@ -20,19 +20,20 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 
 import java.time.Instant
 
 class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
 
-  val eori                           = "GB123456789001"
-  val actorId                        = "GB123456789001"
-  val recordId                       = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime                       = "2021-12-17T09:30:47.456Z"
-  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val eori                   = "GB123456789001"
+  private val actorId                = "GB123456789001"
+  private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val dateTime               = "2021-12-17T09:30:47.456Z"
+  private val timestamp              = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val url                    = fullUrl(s"/traders/$eori/records/$recordId?actorId=$actorId")
   override def connectorPath: String = s"/tgp/removerecord/v1"
   override def connectorName: String = "eis"
 
@@ -48,24 +49,25 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         stubForEis(OK, removeEisRecordRequest)
 
         val response = wsClient
-          .url(fullUrl(s"/$eori/records/$recordId"))
+          .url(url)
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-          .put(removeRecordRequest)
+          .delete
           .futureValue
 
         response.status shouldBe OK
 
         verifyThatDownstreamApiWasCalled()
       }
+
       "valid but the integration call fails with response:" - {
         "Forbidden" in {
           stubForEis(FORBIDDEN, removeEisRecordRequest)
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .put(removeRecordRequest)
+              .delete()
           )
 
           response.status shouldBe FORBIDDEN
@@ -81,9 +83,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           stubForEis(NOT_FOUND, removeEisRecordRequest)
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe NOT_FOUND
@@ -99,9 +101,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           stubForEis(BAD_GATEWAY, removeEisRecordRequest)
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe BAD_GATEWAY
@@ -117,9 +119,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           stubForEis(SERVICE_UNAVAILABLE, removeEisRecordRequest)
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe SERVICE_UNAVAILABLE
@@ -135,9 +137,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           stubForEis(INTERNAL_SERVER_ERROR, removeEisRecordRequest, Some(eisErrorResponse("401", "Unauthorised")))
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -157,9 +159,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -179,9 +181,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -201,9 +203,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -223,9 +225,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -245,9 +247,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -282,9 +284,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -329,9 +331,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -388,9 +390,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -430,9 +432,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -456,9 +458,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           )
 
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -474,9 +476,9 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       "invalid, specifically" - {
         "missing required header" in {
           val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"))
-            .put(removeRecordRequest)
+            .delete()
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -484,52 +486,6 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
             "correlationId" -> correlationId,
             "code"          -> "BAD_REQUEST",
             "message"       -> "Missing mandatory header X-Client-ID"
-          )
-
-          verifyThatDownstreamApiWasNotCalled()
-        }
-        "missing required request field" in {
-          val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(invalidRemoveRecordRequest)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
-                "errorNumber" -> 8
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasNotCalled()
-        }
-        "actorId is less than 14 characters" in {
-          val response = wsClient
-            .url(fullUrl(s"/$eori/records/$recordId"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(invalidActorIdLengthRequest)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
-                "errorNumber" -> 8
-              )
-            )
           )
 
           verifyThatDownstreamApiWasNotCalled()
@@ -585,24 +541,4 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         |}
         |""".stripMargin
 
-  lazy val removeRecordRequest: JsValue = Json
-    .parse("""
-             |{
-             |  "actorId": "GB123456789001"
-             |}
-             |""".stripMargin)
-
-  lazy val invalidRemoveRecordRequest: JsValue = Json
-    .parse("""
-             |{
-             |  "test": "GB123456789001"
-             |}
-             |""".stripMargin)
-
-  lazy val invalidActorIdLengthRequest: JsValue = Json
-    .parse("""
-             |{
-             |  "actorId": "test"
-             |}
-             |""".stripMargin)
 }

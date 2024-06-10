@@ -50,9 +50,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
-    when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
-    when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
   }

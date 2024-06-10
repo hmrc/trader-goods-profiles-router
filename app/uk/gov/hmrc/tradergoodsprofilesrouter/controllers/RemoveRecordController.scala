@@ -16,68 +16,34 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.JsValue
-import play.api.libs.json.Json.toJson
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
+import play.api.mvc._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RemoveRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error.invalidRequestParameterError
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.RemoveRecordService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class RemoveRecordController @Inject() (
   cc: ControllerComponents,
-  routerService: RouterService,
-  uuidService: UuidService,
+  service: RemoveRecordService,
   validateHeaderClientId: ValidateHeaderClientId
 )(implicit
   executionContext: ExecutionContext
 ) extends BackendController(cc)
     with Logging {
 
-  def remove(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    val result = for {
-      _                   <- validateHeaderClientId.validateClientId(request)
-      removeRecordRequest <- validateRemoveRecordRequest(request)
-      _                   <- routerService.removeRecord(eori, recordId, removeRecordRequest.actorId)
-    } yield Ok
+  def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = Action.async {
+    implicit request: Request[AnyContent] =>
+      val result = for {
+        _ <- validateHeaderClientId.validateClientIdFromAnyContent(request)
+        _ <- service.removeRecord(eori, recordId, actorId)
+      } yield Ok
 
-    result.merge
+      result.merge
   }
 
-  private def validateRemoveRecordRequest(request: Request[JsValue]): EitherT[Future, Result, RemoveRecordRequest] =
-    request.body
-      .validate[RemoveRecordRequest]
-      .asEither
-      .leftMap { _ =>
-        logger.warn(
-          "[RemoveRecordController] - Remove Record Validation JsError in RemoveRecordController.remove"
-        )
-        BadRequest(
-          toJson(
-            ErrorResponse(
-              uuidService.uuid,
-              BadRequestCode,
-              BadRequestMessage,
-              Some(
-                Seq(
-                  invalidRequestParameterError(
-                    InvalidOrMissingActorId,
-                    InvalidOrMissingActorIdCode.toInt
-                  )
-                )
-              )
-            )
-          )
-        ): Result
-      }
-      .toEitherT[Future]
 }
