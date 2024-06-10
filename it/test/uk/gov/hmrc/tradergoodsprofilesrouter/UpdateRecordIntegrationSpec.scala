@@ -57,6 +57,60 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           verifyThatDownstreamApiWasCalled()
         }
+        "with optional null request fields" in {
+          stubForEis(
+            OK,
+            updateEisRecordRequestData,
+            Some(updateEisRecordResponseDataWithOptionalFields.toString())
+          )
+
+          val response = wsClient
+            .url(fullUrl(s"/records/"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .put(updateRecordRequestDataWithOptionalNullFields)
+            .futureValue
+
+          response.status shouldBe OK
+          response.json   shouldBe toJson(updateRecordResponseDataWithOptionalFields.as[CreateOrUpdateRecordResponse])
+
+          verifyThatDownstreamApiWasCalled()
+        }
+        "with optional condition null request fields" in {
+          stubForEis(
+            OK,
+            updateEisRecordRequestData,
+            Some(updateEisRecordResponseDataWithConditionOptionalFields.toString())
+          )
+
+          val response = wsClient
+            .url(fullUrl(s"/records/"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .put(updateRecordRequestDataWithConditionOptionalNullFields)
+            .futureValue
+
+          response.status shouldBe OK
+          response.json   shouldBe toJson(updateRecordResponseDataWithOptionalFields.as[CreateOrUpdateRecordResponse])
+
+          verifyThatDownstreamApiWasCalled()
+        }
+        "with optional some optional null request fields" in {
+          stubForEis(
+            OK,
+            updateEisRecordRequestDataWithSomeOptionalFields,
+            Some(updateEisRecordResponseDataWithSomeOptionalFields.toString())
+          )
+
+          val response = wsClient
+            .url(fullUrl(s"/records/"))
+            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .put(updateRecordRequestDataWithSomeOptionalNullFields)
+            .futureValue
+
+          response.status shouldBe OK
+          response.json   shouldBe toJson(updateRecordResponseDataWithSomeOptionalFields.as[CreateOrUpdateRecordResponse])
+
+          verifyThatDownstreamApiWasCalled()
+        }
         "with only required fields" in {
           stubForEis(OK, updateRecordRequiredRequestData, Some(updateRecordRequiredResponseData.toString()))
 
@@ -715,6 +769,185 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         |}
         |""".stripMargin)
 
+  lazy val updateEisRecordResponseDataWithOptionalFields: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "accreditationStatus": "Not Requested",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "assessments": [
+               |        {
+               |            "assessmentId": null,
+               |            "primaryCategory": null,
+               |            "condition": {
+               |                "type": null,
+               |                "conditionId": null,
+               |                "conditionDescription": null,
+               |                "conditionTraderText": null
+               |            }
+               |        }
+               |    ],
+               |  "supplementaryUnit": 500,
+               |  "measurementUnit": "Square metre (m2)",
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": null,
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "6 S12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z"
+               |}
+               |""".stripMargin)
+
+  lazy val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "accreditationStatus": "Not Requested",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "assessments": [
+               |        {
+               |            "assessmentId": null,
+               |            "primaryCategory": null,
+               |            "condition": null
+               |        }
+               |    ],
+               |  "supplementaryUnit": 500,
+               |  "measurementUnit": "Square metre (m2)",
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": null,
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "6 S12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z"
+               |}
+               |""".stripMargin)
+
+  lazy val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "accreditationStatus": "Not Requested",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "assessments": [
+               |        {
+               |            "assessmentId": null,
+               |            "primaryCategory": 1
+               |        }
+               |    ],
+               |  "supplementaryUnit": 500,
+               |  "measurementUnit": "Square metre (m2)",
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": null,
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "6 S12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z"
+               |}
+               |""".stripMargin)
+
+  lazy val updateRecordResponseDataWithOptionalFields: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "accreditationStatus": "Not Requested",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "assessments": [],
+               |  "supplementaryUnit": 500,
+               |  "measurementUnit": "Square metre (m2)",
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "6 S12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z"
+               |}
+               |""".stripMargin)
+
+  lazy val updateRecordResponseDataWithSomeOptionalFields: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "accreditationStatus": "Not Requested",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "assessments": [
+               |        {
+               |            "primaryCategory": 1
+               |        }
+               |    ],
+               |  "supplementaryUnit": 500,
+               |  "measurementUnit": "Square metre (m2)",
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "6 S12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z"
+               |}
+               |""".stripMargin)
+
   lazy val updateRecordRequestData: String =
     """
         |{
@@ -744,6 +977,125 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
         |}
         |""".stripMargin
+
+  lazy val updateEisRecordRequestData: String =
+    """
+      |{
+      |    "eori": "GB123456789001",
+      |    "actorId": "GB098765432112",
+      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "10410100",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 1,
+      |    "assessments": [],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "Square metre (m2)",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
+      |}
+      |""".stripMargin
+
+  lazy val updateEisRecordRequestDataWithSomeOptionalFields: String =
+    """
+      |{
+      |    "eori": "GB123456789001",
+      |    "actorId": "GB098765432112",
+      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "10410100",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 1,
+      |    "assessments": [
+      |        {
+      |            "primaryCategory": 1
+      |        }
+      |    ],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "Square metre (m2)",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
+      |}
+      |""".stripMargin
+
+  lazy val updateRecordRequestDataWithOptionalNullFields: String =
+    """
+      |{
+      |    "eori": "GB123456789001",
+      |    "actorId": "GB098765432112",
+      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "10410100",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 1,
+      |    "assessments": [
+      |        {
+      |            "assessmentId": null,
+      |            "primaryCategory": null,
+      |            "condition": {
+      |                "type": null,
+      |                "conditionId": null,
+      |                "conditionDescription": null,
+      |                "conditionTraderText": null
+      |            }
+      |        }
+      |    ],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "Square metre (m2)",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+      |    "comcodeEffectiveToDate": null
+      |}
+      |""".stripMargin
+
+  lazy val updateRecordRequestDataWithConditionOptionalNullFields: String =
+    """
+      |{
+      |    "eori": "GB123456789001",
+      |    "actorId": "GB098765432112",
+      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "10410100",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 1,
+      |    "assessments": [
+      |        {
+      |            "assessmentId": null,
+      |            "primaryCategory": null,
+      |            "condition": null
+      |        }
+      |    ],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "Square metre (m2)",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+      |    "comcodeEffectiveToDate": null
+      |}
+      |""".stripMargin
+
+  lazy val updateRecordRequestDataWithSomeOptionalNullFields: String =
+    """
+      |{
+      |    "eori": "GB123456789001",
+      |    "actorId": "GB098765432112",
+      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "10410100",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 1,
+      |    "assessments": [
+      |        {
+      |            "assessmentId": null,
+      |            "primaryCategory": 1
+      |        }
+      |    ],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "Square metre (m2)",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+      |    "comcodeEffectiveToDate": null
+      |}
+      |""".stripMargin
 
   lazy val updateRecordRequiredRequestData: String =
     """

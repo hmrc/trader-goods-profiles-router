@@ -16,10 +16,12 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId}
+
+import scala.Function.unlift
 
 case class MaintainProfileRequest(
   actorId: String,
