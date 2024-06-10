@@ -17,8 +17,9 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models
 
 import play.api.libs.json._
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
 import java.time.Instant
 
@@ -40,14 +41,7 @@ case class CreateRecordPayload(
 object CreateRecordPayload {
   implicit val format: OFormat[CreateRecordPayload] = Json.format[CreateRecordPayload]
 
-  def apply(eori: String, incomingRequest: CreateRecordRequest): CreateRecordPayload = {
-    //TODO see if we have any better solution to below
-    val assessments = incomingRequest.assessments match {
-      case Some(Seq(Assessment(None, None, Some(Condition(None, None, None, None))))) => Some(Seq.empty)
-      case Some(Seq(Assessment(None, None, None)))                                    => Some(Seq.empty)
-      case _                                                                          => incomingRequest.assessments
-    }
-
+  def apply(eori: String, incomingRequest: CreateRecordRequest): CreateRecordPayload =
     CreateRecordPayload(
       eori = eori,
       actorId = incomingRequest.actorId,
@@ -56,11 +50,10 @@ object CreateRecordPayload {
       goodsDescription = incomingRequest.goodsDescription,
       countryOfOrigin = incomingRequest.countryOfOrigin,
       category = incomingRequest.category,
-      assessments = assessments,
+      assessments = removeEmptyAssessment(incomingRequest.assessments),
       supplementaryUnit = incomingRequest.supplementaryUnit,
       measurementUnit = incomingRequest.measurementUnit,
       comcodeEffectiveFromDate = incomingRequest.comcodeEffectiveFromDate,
       comcodeEffectiveToDate = incomingRequest.comcodeEffectiveToDate
     )
-  }
 }

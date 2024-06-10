@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.json._
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
+import play.api.libs.json.Format.GenericFormat
+import play.api.libs.json.{JsPath, OWrites, Reads}
+
+import scala.Function.unlift
 
 case class MaintainProfileResponse(
   eori: String,
@@ -29,25 +32,17 @@ case class MaintainProfileResponse(
 
 object MaintainProfileResponse {
 
-  implicit val reads: Reads[MaintainProfileResponse] = (json: JsValue) =>
-    JsSuccess(
-      MaintainProfileResponse(
-        (json \ "eori").as[String],
-        (json \ "actorId").as[String],
-        (json \ "ukimsNumber").asOpt[String],
-        (json \ "nirmsNumber").asOpt[String],
-        (json \ "niphlNumber").asOpt[String]
-      )
-    )
+  implicit val reads: Reads[MaintainProfileResponse] =
+    ((JsPath \ "eori").read[String] and
+      (JsPath \ "actorId").read[String] and
+      (JsPath \ "ukimsNumber").readNullable[String] and
+      (JsPath \ "nirmsNumber").readNullable[String] and
+      (JsPath \ "niphlsNumber").readNullable[String])(MaintainProfileResponse.apply _)
 
-  implicit val writes: Writes[MaintainProfileResponse] = (response: MaintainProfileResponse) =>
-    removeNulls(
-      Json.obj(
-        "eori"        -> response.eori,
-        "actorId"     -> response.actorId,
-        "ukimsNumber" -> response.ukimsNumber,
-        "nirmsNumber" -> response.nirmsNumber,
-        "niphlNumber" -> response.niphlNumber
-      )
-    )
+  implicit lazy val writes: OWrites[MaintainProfileResponse] =
+    ((JsPath \ "eori").write[String] and
+      (JsPath \ "actorId").write[String] and
+      (JsPath \ "ukimsNumber").writeNullable[String] and
+      (JsPath \ "nirmsNumber").writeNullable[String] and
+      (JsPath \ "niphlsNumber").writeNullable[String])(unlift(MaintainProfileResponse.unapply))
 }

@@ -20,8 +20,9 @@ import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId, validComcode, validDate}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
@@ -61,13 +62,7 @@ object UpdateRecordRequest {
       (JsPath \ "comcodeEffectiveToDate")
         .readNullable[Instant](validDate))(UpdateRecordRequest.apply _)
 
-  implicit lazy val writes: Writes[UpdateRecordRequest] = (updateRecordRequest: UpdateRecordRequest) => {
-    val assessments = updateRecordRequest.assessments match {
-      case Some(Seq(Assessment(None, None, Some(Condition(None, None, None, None))))) => Some(Seq.empty)
-      case Some(Seq(Assessment(None, None, None)))                                    => Some(Seq.empty)
-      case _                                                                          => updateRecordRequest.assessments
-    }
-
+  implicit lazy val writes: Writes[UpdateRecordRequest] = (updateRecordRequest: UpdateRecordRequest) =>
     removeNulls(
       Json.obj(
         "eori"                     -> updateRecordRequest.eori,
@@ -78,12 +73,11 @@ object UpdateRecordRequest {
         "goodsDescription"         -> updateRecordRequest.goodsDescription,
         "countryOfOrigin"          -> updateRecordRequest.countryOfOrigin,
         "category"                 -> updateRecordRequest.category,
-        "assessments"              -> assessments,
+        "assessments"              -> removeEmptyAssessment(updateRecordRequest.assessments),
         "supplementaryUnit"        -> updateRecordRequest.supplementaryUnit,
         "measurementUnit"          -> updateRecordRequest.measurementUnit,
         "comcodeEffectiveFromDate" -> updateRecordRequest.comcodeEffectiveFromDate,
         "comcodeEffectiveToDate"   -> updateRecordRequest.comcodeEffectiveToDate
       )
     )
-  }
 }

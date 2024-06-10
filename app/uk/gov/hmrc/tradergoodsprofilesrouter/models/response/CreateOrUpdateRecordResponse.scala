@@ -17,8 +17,9 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 
 import play.api.libs.json._
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
 import java.time.Instant
 
@@ -81,13 +82,7 @@ object CreateOrUpdateRecordResponse {
       )
     )
 
-  implicit val writes: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) => {
-    val assessments = response.assessments match {
-      case Some(Seq(Assessment(None, None, Some(Condition(None, None, None, None))))) => Some(Seq.empty)
-      case Some(Seq(Assessment(None, None, None)))                                    => Some(Seq.empty)
-      case _                                                                          => response.assessments
-    }
-
+  implicit val writes: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) =>
     removeNulls(
       Json.obj(
         "recordId"                 -> response.recordId,
@@ -99,7 +94,7 @@ object CreateOrUpdateRecordResponse {
         "goodsDescription"         -> response.goodsDescription,
         "countryOfOrigin"          -> response.countryOfOrigin,
         "category"                 -> response.category,
-        "assessments"              -> assessments,
+        "assessments"              -> removeEmptyAssessment(response.assessments),
         "supplementaryUnit"        -> response.supplementaryUnit,
         "measurementUnit"          -> response.measurementUnit,
         "comcodeEffectiveFromDate" -> response.comcodeEffectiveFromDate,
@@ -116,5 +111,4 @@ object CreateOrUpdateRecordResponse {
         "updatedDateTime"          -> response.updatedDateTime
       )
     )
-  }
 }

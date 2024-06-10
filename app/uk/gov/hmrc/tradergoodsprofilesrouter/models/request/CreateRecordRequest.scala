@@ -21,7 +21,7 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId, validComcode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
