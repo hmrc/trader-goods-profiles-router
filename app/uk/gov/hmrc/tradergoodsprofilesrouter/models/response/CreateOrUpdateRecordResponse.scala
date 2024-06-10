@@ -60,7 +60,7 @@ object CreateOrUpdateRecordResponse {
         (json \ "actorId").as[String],
         (json \ "traderRef").as[String],
         (json \ "comcode").as[String],
-        (json \ "accreditationStatus").as[String],
+        (json \ "adviceStatus").as[String],
         (json \ "goodsDescription").as[String],
         (json \ "countryOfOrigin").as[String],
         (json \ "category").as[Int],
