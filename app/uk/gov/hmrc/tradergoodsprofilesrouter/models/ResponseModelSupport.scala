@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.utils
+package uk.gov.hmrc.tradergoodsprofilesrouter.models
 
 import play.api.libs.json.{JsNull, JsObject}
 

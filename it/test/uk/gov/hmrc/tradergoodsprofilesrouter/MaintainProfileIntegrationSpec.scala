@@ -59,6 +59,21 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
       verifyThatDownstreamApiWasCalled()
     }
 
+    "it should return a 200 ok when the request is successful with optional null fields" in {
+      stubForEis(OK, Some(maintainProfileResponseWithOptionalNullFields.toString()))
+
+      val response = wsClient
+        .url(fullUrl(s"/traders/$eori"))
+        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+        .put(maintainProfileRequestWithOptionalNullFields)
+        .futureValue
+
+      response.status shouldBe OK
+      response.json   shouldBe toJson(maintainProfileResponseWithoutOptionalNullFields.as[MaintainProfileResponse])
+
+      verifyThatDownstreamApiWasCalled()
+    }
+
     "it should return a 500 internal server error if EIS is unavailable" in {
       stubForEis(
         INTERNAL_SERVER_ERROR,
@@ -121,6 +136,16 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
       |}
       |""".stripMargin
 
+  lazy val maintainProfileRequestWithOptionalNullFields: String =
+    """
+      |{
+      |"actorId":"GB098765432112",
+      |"ukimsNumber":"XIUKIM47699357400020231115081800",
+      |"nirmsNumber": null,
+      |"niphlNumber": null
+      |}
+      |""".stripMargin
+
   lazy val maintainProfileEisRequest: String =
     """
         |{
@@ -142,6 +167,25 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
         |"niphlNumber": "6S123456"
         |}
         |""".stripMargin)
+
+  lazy val maintainProfileResponseWithoutOptionalNullFields: JsValue =
+    Json.parse("""
+                 |{
+                 |"eori": "GB123456789012",
+                 |"actorId":"GB098765432112"
+                 |}
+                 |""".stripMargin)
+
+  lazy val maintainProfileResponseWithOptionalNullFields: JsValue =
+    Json.parse("""
+                 |{
+                 |"eori": "GB123456789012",
+                 |"actorId":"GB098765432112",
+                 |"ukimsNumber": null,
+                 |"nirmsNumber": null,
+                 |"niphlNumber": null
+                 |}
+                 |""".stripMargin)
 
   private def eisErrorResponse(): String =
     Json

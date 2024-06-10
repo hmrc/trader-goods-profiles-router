@@ -19,13 +19,14 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
-import play.api.libs.json.{JsPath, OWrites, Reads}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
+import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId, validComcode, validDate}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
 import java.time.Instant
-import scala.Function.unlift
 
 case class UpdateRecordRequest(
   eori: String,
@@ -61,18 +62,22 @@ object UpdateRecordRequest {
       (JsPath \ "comcodeEffectiveToDate")
         .readNullable[Instant](validDate))(UpdateRecordRequest.apply _)
 
-  implicit lazy val writes: OWrites[UpdateRecordRequest] =
-    ((JsPath \ "eori").write[String] and
-      (JsPath \ "recordId").write[String] and
-      (JsPath \ "actorId").write[String] and
-      (JsPath \ "traderRef").writeNullable[String] and
-      (JsPath \ "comcode").writeNullable[String] and
-      (JsPath \ "goodsDescription").writeNullable[String] and
-      (JsPath \ "countryOfOrigin").writeNullable[String] and
-      (JsPath \ "category").writeNullable[Int] and
-      (JsPath \ "assessments").writeNullable[Seq[Assessment]] and
-      (JsPath \ "supplementaryUnit").writeNullable[Int] and
-      (JsPath \ "measurementUnit").writeNullable[String] and
-      (JsPath \ "comcodeEffectiveFromDate").writeNullable[Instant] and
-      (JsPath \ "comcodeEffectiveToDate").writeNullable[Instant])(unlift(UpdateRecordRequest.unapply))
+  implicit lazy val writes: Writes[UpdateRecordRequest] = (updateRecordRequest: UpdateRecordRequest) =>
+    removeNulls(
+      Json.obj(
+        "eori"                     -> updateRecordRequest.eori,
+        "recordId"                 -> updateRecordRequest.recordId,
+        "actorId"                  -> updateRecordRequest.actorId,
+        "traderRef"                -> updateRecordRequest.traderRef,
+        "comcode"                  -> updateRecordRequest.comcode,
+        "goodsDescription"         -> updateRecordRequest.goodsDescription,
+        "countryOfOrigin"          -> updateRecordRequest.countryOfOrigin,
+        "category"                 -> updateRecordRequest.category,
+        "assessments"              -> removeEmptyAssessment(updateRecordRequest.assessments),
+        "supplementaryUnit"        -> updateRecordRequest.supplementaryUnit,
+        "measurementUnit"          -> updateRecordRequest.measurementUnit,
+        "comcodeEffectiveFromDate" -> updateRecordRequest.comcodeEffectiveFromDate,
+        "comcodeEffectiveToDate"   -> updateRecordRequest.comcodeEffectiveToDate
+      )
+    )
 }
