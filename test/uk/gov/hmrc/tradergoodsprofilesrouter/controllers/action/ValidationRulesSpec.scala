@@ -25,10 +25,11 @@ import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.ValidatedQueryParameters
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{ValidatedQueryParameters, isValidActorId, isValidComcode, isValidCountryCode, isValidDate}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 
+import java.time.Instant
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 
@@ -201,6 +202,48 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
       whenReady(result.value) {
         _.value mustBe TestClass("any-name")
       }
+    }
+  }
+
+  "isValidDate" should {
+    "return true when date is valid" in {
+      isValidDate(Instant.parse("2024-06-01T12:34:56Z")) mustBe true
+    }
+
+    //todo: do we really want to fail teh validation if date is in millisecond? why do not just format
+    // the date to Seconds instead of failing?
+    "return false when date is millisecond" in {
+      isValidDate(Instant.parse("2024-06-01T12:34:56.789Z")) mustBe false
+    }
+  }
+
+  "isValidCountryCode" should {
+    "return true if countryCode is valid" in {
+      isValidCountryCode("GB") mustBe true
+    }
+    "return false if countryCode is not valid" in {
+      isValidCountryCode("GB098765112") mustBe false
+    }
+  }
+
+  "isValidComcode" should {
+    "return true for a valid comcode" in {
+      isValidComcode("123456") mustBe true
+      isValidComcode("12345678") mustBe true
+      isValidComcode("1234567890") mustBe true
+    }
+    "return false if comcode is not valid" in {
+      isValidComcode("111") mustBe false
+    }
+  }
+
+  "isValidActorId" should {
+    "return true if actorId is valid" in {
+      isValidActorId("GB123456789012") mustBe true
+      isValidActorId("GB123456789012456") mustBe true
+    }
+    "return false if actorId is not valid " in {
+      isValidActorId("111") mustBe false
     }
   }
 }

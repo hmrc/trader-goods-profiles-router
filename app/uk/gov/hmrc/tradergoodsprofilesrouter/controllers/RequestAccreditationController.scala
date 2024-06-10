@@ -16,38 +16,35 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.Json.toJson
 import play.api.libs.json.JsValue
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.fieldsToErrorCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAccreditation
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.fieldsToErrorCode
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class RequestAccreditationController @Inject() (
-  cc: ControllerComponents,
+  override val controllerComponents: ControllerComponents,
   routerService: RouterService,
-  uuidService: UuidService
+  override val uuidService: UuidService
 )(implicit
-  executionContext: ExecutionContext
-) extends BackendController(cc)
+  val ec: ExecutionContext
+) extends BackendBaseController
+    with ValidationRules
     with Logging {
 
   def requestAccreditation: Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
 
-      requestAccreditationRequest <- validateRequestBody(request)
+      requestAccreditationRequest <- validateRequestBody[RequestAccreditation](fieldsToErrorCode)
       recordItem                  <- routerService.fetchRecord(requestAccreditationRequest.eori, requestAccreditationRequest.recordId)
       newAccreditationRequest      = createNewTraderDetails(recordItem, requestAccreditationRequest)
       _                           <- routerService.requestAccreditation(newAccreditationRequest)
@@ -81,26 +78,5 @@ class RequestAccreditationController @Inject() (
     )
     traderDetails
   }
-
-  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, RequestAccreditation] =
-    request.body
-      .validate[RequestAccreditation]
-      .asEither
-      .leftMap { errors =>
-        logger.warn(
-          "[RequestAccreditationController] - requestAccreditation Validation JsError in RequestAccreditationController.requestAccreditation"
-        )
-        BadRequest(
-          toJson(
-            ErrorResponse(
-              uuidService.uuid,
-              BadRequestCode,
-              BadRequestMessage,
-              Some(ValidationSupport.convertError[RequestAccreditation](errors, fieldsToErrorCode))
-            )
-          )
-        ): Result
-      }
-      .toEitherT[Future]
 
 }

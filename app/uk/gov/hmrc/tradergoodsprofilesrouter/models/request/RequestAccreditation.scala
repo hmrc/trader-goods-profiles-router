@@ -18,7 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
 import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps}
 import play.api.libs.json.{JsPath, OWrites, Reads}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validEmailAddress}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validEmailAddress}
 
 import scala.Function.unlift
 
