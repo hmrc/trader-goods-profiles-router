@@ -17,7 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 
 import play.api.libs.json._
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
 
 import java.time.Instant
 
@@ -80,31 +81,40 @@ object CreateOrUpdateRecordResponse {
       )
     )
 
-  implicit val writes: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) =>
-    Json.obj(
-      "recordId"                 -> response.recordId,
-      "eori"                     -> response.eori,
-      "actorId"                  -> response.actorId,
-      "traderRef"                -> response.traderRef,
-      "comcode"                  -> response.comcode,
-      "accreditationStatus"      -> response.accreditationStatus,
-      "goodsDescription"         -> response.goodsDescription,
-      "countryOfOrigin"          -> response.countryOfOrigin,
-      "category"                 -> response.category,
-      "assessments"              -> response.assessments,
-      "supplementaryUnit"        -> response.supplementaryUnit,
-      "measurementUnit"          -> response.measurementUnit,
-      "comcodeEffectiveFromDate" -> response.comcodeEffectiveFromDate,
-      "comcodeEffectiveToDate"   -> response.comcodeEffectiveToDate,
-      "version"                  -> response.version,
-      "active"                   -> response.active,
-      "toReview"                 -> response.toReview,
-      "reviewReason"             -> response.reviewReason,
-      "declarable"               -> response.declarable,
-      "ukimsNumber"              -> response.ukimsNumber,
-      "nirmsNumber"              -> response.nirmsNumber,
-      "niphlNumber"              -> response.niphlNumber,
-      "createdDateTime"          -> response.createdDateTime,
-      "updatedDateTime"          -> response.updatedDateTime
+  implicit val writes: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) => {
+    val assessments = response.assessments match {
+      case Some(Seq(Assessment(None, None, Some(Condition(None, None, None, None))))) => Some(Seq.empty)
+      case Some(Seq(Assessment(None, None, None)))                                    => Some(Seq.empty)
+      case _                                                                          => response.assessments
+    }
+
+    removeNulls(
+      Json.obj(
+        "recordId"                 -> response.recordId,
+        "eori"                     -> response.eori,
+        "actorId"                  -> response.actorId,
+        "traderRef"                -> response.traderRef,
+        "comcode"                  -> response.comcode,
+        "accreditationStatus"      -> response.accreditationStatus,
+        "goodsDescription"         -> response.goodsDescription,
+        "countryOfOrigin"          -> response.countryOfOrigin,
+        "category"                 -> response.category,
+        "assessments"              -> assessments,
+        "supplementaryUnit"        -> response.supplementaryUnit,
+        "measurementUnit"          -> response.measurementUnit,
+        "comcodeEffectiveFromDate" -> response.comcodeEffectiveFromDate,
+        "comcodeEffectiveToDate"   -> response.comcodeEffectiveToDate,
+        "version"                  -> response.version,
+        "active"                   -> response.active,
+        "toReview"                 -> response.toReview,
+        "reviewReason"             -> response.reviewReason,
+        "declarable"               -> response.declarable,
+        "ukimsNumber"              -> response.ukimsNumber,
+        "nirmsNumber"              -> response.nirmsNumber,
+        "niphlNumber"              -> response.niphlNumber,
+        "createdDateTime"          -> response.createdDateTime,
+        "updatedDateTime"          -> response.updatedDateTime
+      )
     )
+  }
 }

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import play.api.libs.json._
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
 
 case class MaintainProfileResponse(
   eori: String,
@@ -49,13 +50,4 @@ object MaintainProfileResponse {
         "niphlNumber" -> response.niphlNumber
       )
     )
-
-  private def removeNulls(jsObject: JsObject): JsValue =
-    JsObject(jsObject.fields.collect {
-      case (s, j: JsObject)            =>
-        (s, removeNulls(j))
-      case other if other._2 != JsNull =>
-        other
-    })
-
 }

@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
-import play.api.libs.functional.syntax.{toFunctionalBuilderOps, unlift}
+import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.{JsPath, OWrites, Reads}
+import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId}
 
 case class MaintainProfileRequest(
@@ -37,9 +38,13 @@ object MaintainProfileRequest {
       (JsPath \ "niphlNumber")
         .readNullable(lengthBetween(8, 8)))(MaintainProfileRequest.apply _)
 
-  implicit lazy val writes: OWrites[MaintainProfileRequest] =
-    ((JsPath \ "actorId").write[String] and
-      (JsPath \ "ukimsNumber").write[String] and
-      (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlsNumber").writeNullable[String])(unlift(MaintainProfileRequest.unapply))
+  implicit lazy val writes: Writes[MaintainProfileRequest] = (maintainProfileRequest: MaintainProfileRequest) =>
+    removeNulls(
+      Json.obj(
+        "actorId"      -> maintainProfileRequest.actorId,
+        "ukimsNumber"  -> maintainProfileRequest.ukimsNumber,
+        "nirmsNumber"  -> maintainProfileRequest.nirmsNumber,
+        "niphlsNumber" -> maintainProfileRequest.niphlNumber
+      )
+    )
 }

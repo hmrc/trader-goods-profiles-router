@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
 
 import java.time.Instant
 
@@ -30,17 +30,23 @@ case class CreateRecordPayload(
   goodsDescription: String,
   countryOfOrigin: String,
   category: Int,
-  assessments: Option[Seq[Assessment]],
-  supplementaryUnit: Option[Int],
-  measurementUnit: Option[String],
+  assessments: Option[Seq[Assessment]] = None,
+  supplementaryUnit: Option[Int] = None,
+  measurementUnit: Option[String] = None,
   comcodeEffectiveFromDate: Instant,
-  comcodeEffectiveToDate: Option[Instant]
+  comcodeEffectiveToDate: Option[Instant] = None
 )
 
 object CreateRecordPayload {
   implicit val format: OFormat[CreateRecordPayload] = Json.format[CreateRecordPayload]
 
-  def apply(eori: String, incomingRequest: CreateRecordRequest): CreateRecordPayload =
+  def apply(eori: String, incomingRequest: CreateRecordRequest): CreateRecordPayload = {
+    val assessments = incomingRequest.assessments match {
+      case Some(Seq(Assessment(None, None, Some(Condition(None, None, None, None))))) => Some(Seq.empty)
+      case Some(Seq(Assessment(None, None, None)))                                    => Some(Seq.empty)
+      case _                                                                          => incomingRequest.assessments
+    }
+
     CreateRecordPayload(
       eori = eori,
       actorId = incomingRequest.actorId,
@@ -49,10 +55,11 @@ object CreateRecordPayload {
       goodsDescription = incomingRequest.goodsDescription,
       countryOfOrigin = incomingRequest.countryOfOrigin,
       category = incomingRequest.category,
-      assessments = incomingRequest.assessments,
+      assessments = assessments,
       supplementaryUnit = incomingRequest.supplementaryUnit,
       measurementUnit = incomingRequest.measurementUnit,
       comcodeEffectiveFromDate = incomingRequest.comcodeEffectiveFromDate,
       comcodeEffectiveToDate = incomingRequest.comcodeEffectiveToDate
     )
+  }
 }

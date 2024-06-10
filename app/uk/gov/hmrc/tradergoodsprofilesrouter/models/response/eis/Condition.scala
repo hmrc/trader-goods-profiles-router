@@ -17,10 +17,9 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{JsPath, OWrites, Reads}
+import play.api.libs.json.{JsNull, JsPath, Json, Reads, Writes}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
-
-import scala.Function.unlift
 
 case class Condition(
   `type`: Option[String],
@@ -37,9 +36,15 @@ object Condition {
       (JsPath \ "conditionDescription").readNullable(lengthBetween(1, 512)) and
       (JsPath \ "conditionTraderText").readNullable(lengthBetween(1, 512)))(Condition.apply _)
 
-  implicit lazy val writes: OWrites[Condition] =
-    ((JsPath \ "type").write[Option[String]] and
-      (JsPath \ "conditionId").write[Option[String]] and
-      (JsPath \ "conditionDescription").write[Option[String]] and
-      (JsPath \ "conditionTraderText").write[Option[String]])(unlift(Condition.unapply))
+  implicit lazy val writes: Writes[Condition] = (condition: Condition) => {
+    val jsonObj = removeNulls(
+      Json.obj(
+        "type"                 -> condition.`type`,
+        "conditionId"          -> condition.conditionId,
+        "conditionDescription" -> condition.conditionDescription,
+        "conditionTraderText"  -> condition.conditionTraderText
+      )
+    )
+    if (jsonObj.value.isEmpty) JsNull else jsonObj
+  }
 }

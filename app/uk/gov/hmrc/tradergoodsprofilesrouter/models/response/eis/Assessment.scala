@@ -17,12 +17,15 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{JsPath, OWrites, Reads}
+import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
 
-import scala.Function.unlift
-
-case class Assessment(assessmentId: Option[String], primaryCategory: Option[Int], condition: Option[Condition])
+case class Assessment(
+  assessmentId: Option[String] = None,
+  primaryCategory: Option[Int] = None,
+  condition: Option[Condition] = None
+)
 
 object Assessment {
 
@@ -31,8 +34,12 @@ object Assessment {
       (JsPath \ "primaryCategory").readNullable[Int] and
       (JsPath \ "condition").readNullable[Condition])(Assessment.apply _)
 
-  implicit lazy val writes: OWrites[Assessment] =
-    ((JsPath \ "assessmentId").write[Option[String]] and
-      (JsPath \ "primaryCategory").write[Option[Int]] and
-      (JsPath \ "condition").write[Option[Condition]])(unlift(Assessment.unapply))
+  implicit lazy val writes: Writes[Assessment] = (assessment: Assessment) =>
+    removeNulls(
+      Json.obj(
+        "assessmentId"    -> assessment.assessmentId,
+        "primaryCategory" -> assessment.primaryCategory,
+        "condition"       -> assessment.condition
+      )
+    )
 }
