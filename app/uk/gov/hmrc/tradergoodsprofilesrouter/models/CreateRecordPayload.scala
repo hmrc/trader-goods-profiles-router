@@ -41,6 +41,7 @@ object CreateRecordPayload {
   implicit val format: OFormat[CreateRecordPayload] = Json.format[CreateRecordPayload]
 
   def apply(eori: String, incomingRequest: CreateRecordRequest): CreateRecordPayload = {
+    //TODO see if we have any better solution to below
     val assessments = incomingRequest.assessments match {
       case Some(Seq(Assessment(None, None, Some(Condition(None, None, None, None))))) => Some(Seq.empty)
       case Some(Seq(Assessment(None, None, None)))                                    => Some(Seq.empty)
