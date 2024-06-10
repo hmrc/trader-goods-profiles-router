@@ -176,7 +176,7 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
         |  "actorId": "GB098765432112",
         |  "traderRef": "BAN001001",
         |  "comcode": "10410100",
-        |  "accreditationStatus": "Not Requested",
+        |  "adviceStatus": "Not Requested",
         |  "goodsDescription": "Organic bananas",
         |  "countryOfOrigin": "EC",
         |  "category": 1,
