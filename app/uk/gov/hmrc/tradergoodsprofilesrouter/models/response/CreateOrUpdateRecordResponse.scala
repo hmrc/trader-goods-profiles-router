@@ -60,7 +60,8 @@ object CreateOrUpdateRecordResponse {
         (json \ "actorId").as[String],
         (json \ "traderRef").as[String],
         (json \ "comcode").as[String],
-        (json \ "adviceStatus").as[String],
+        (json \ "accreditationStatus")
+          .as[String], //TODO change this back to adviceStatus after EIS does the changes from their end
         (json \ "goodsDescription").as[String],
         (json \ "countryOfOrigin").as[String],
         (json \ "category").as[Int],

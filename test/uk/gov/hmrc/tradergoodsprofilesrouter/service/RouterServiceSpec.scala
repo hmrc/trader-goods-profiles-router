@@ -265,7 +265,7 @@ class RouterServiceSpec
           |  "actorId": "GB098765432112",
           |  "traderRef": "BAN001001",
           |  "comcode": "10410100",
-          |  "adviceStatus": "Not Requested",
+          |  "accreditationStatus": "Not Requested",
           |  "goodsDescription": "Organic bananas",
           |  "countryOfOrigin": "EC",
           |  "category": 1,
