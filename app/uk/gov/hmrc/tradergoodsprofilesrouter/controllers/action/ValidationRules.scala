@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action
 
+import cats.data.EitherT
 import cats.implicits.catsSyntaxTuple2Parallel
 import cats.syntax.all._
 import play.api.libs.json.{JsValue, Reads}
-import play.api.mvc.{BaseController, Request}
+import play.api.mvc.{BaseController, Request, Result}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.ValidatedQueryParameters
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{BadRequestErrorResponse, Error}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{HeaderNames, ValidationSupport}
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 //todo: we may want to unify ValidationSupport and this one.
@@ -38,18 +39,15 @@ trait ValidationRules {
 
   implicit def ec: ExecutionContext
 
-  def validateClientId(implicit request: Request[_]): Either[Error, String] =
-    request.headers
-      .get(HeaderNames.ClientId)
-      .toRight(
-        Error(
-          InvalidHeader,
-          MissingHeaderClientId,
-          6000
-        )
+  protected def validateClientId(implicit request: Request[_]): EitherT[Future, Result, String] =
+    EitherT
+      .fromOption[Future](
+        request.headers.get(HeaderNames.ClientId),
+        Error(InvalidHeader, MissingHeaderClientId, 6000)
       )
+      .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
 
-  def validateRecordId(recordId: String): Either[Error, String] =
+  protected def validateRecordId(recordId: String): Either[Error, String] =
     Try(UUID.fromString(recordId).toString).toOption.toRight(
       Error(
         InvalidQueryParameter,
@@ -58,7 +56,7 @@ trait ValidationRules {
       )
     )
 
-  def validateActorId(actorId: String): Either[Error, String] = {
+  protected def validateActorId(actorId: String): Either[Error, String] = {
     val pattern = "^[A-Z]{2}\\d{12,15}$".r
     pattern
       .findFirstIn(actorId)
@@ -73,12 +71,18 @@ trait ValidationRules {
 
   protected def validateRequestBody[A: Reads](
     fieldToErrorCodeTable: Map[String, (String, String)]
-  )(implicit request: Request[JsValue]): Either[Seq[Error], A] =
-    request.body
-      .validate[A]
-      .asEither
+  )(implicit request: Request[JsValue]): EitherT[Future, Result, A] =
+    EitherT
+      .fromEither[Future](
+        request.body
+          .validate[A]
+          .asEither
+      )
       .leftMap { errors =>
-        ValidationSupport.convertError[A](errors, fieldToErrorCodeTable)
+        BadRequestErrorResponse(
+          uuidService.uuid,
+          ValidationSupport.convertError[A](errors, fieldToErrorCodeTable)
+        ).asPresentation
       }
 
   def validateQueryParameters(actorId: String, recordId: String) =

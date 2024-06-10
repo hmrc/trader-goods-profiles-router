@@ -15,8 +15,12 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action
+import org.mockito.MockitoSugar.when
 import org.scalatest.EitherValues
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.{JsValue, Json, OFormat}
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
@@ -28,12 +32,13 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 
-class ValidationRulesSpec extends PlaySpec with EitherValues {
+class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues with IntegrationPatience {
 
-  val recordId = UUID.randomUUID().toString
+  private val recordId                 = UUID.randomUUID().toString
+  private val correlationId            = UUID.randomUUID().toString
+  private val uuidService: UuidService = mock[UuidService]
 
-  class TestValidationRules extends BackendBaseController with ValidationRules {
-    override def uuidService: UuidService = new UuidService
+  class TestValidationRules(override val uuidService: UuidService) extends BackendBaseController with ValidationRules {
 
     override implicit def ec: ExecutionContext = ExecutionContext.global
 
@@ -41,29 +46,51 @@ class ValidationRulesSpec extends PlaySpec with EitherValues {
   }
 
   "validateClientId" should {
-    "return a client id if present" in new TestValidationRules() { validator =>
+
+    when(uuidService.uuid).thenReturn(correlationId)
+    "return a client id if present" in new TestValidationRules(uuidService) { validator =>
       val result = validator.validateClientId(FakeRequest().withHeaders("X-Client-ID" -> "any-client-id"))
 
-      result.value mustBe "any-client-id"
+      whenReady(result.value) {
+        _.value mustBe "any-client-id"
+      }
+
     }
 
-    "return an error if X-Client-ID is missing" in new TestValidationRules() { validator =>
+    "return an error if X-Client-ID is missing" in new TestValidationRules(uuidService) { validator =>
       val result = validator.validateClientId(FakeRequest())
 
-      result.left.value mustBe Error("INVALID_HEADER", "Missing mandatory header X-Client-ID", 6000)
+      whenReady(result.value) {
+
+        _.left.value mustBe BadRequest(
+          Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_HEADER",
+                "message"     -> "Missing mandatory header X-Client-ID",
+                "errorNumber" -> 6000
+              )
+            )
+          )
+        )
+      }
+
     }
   }
 
   "validateRecordId" should {
 
-    "return a recordId if valid" in new TestValidationRules() { validator =>
+    "return a recordId if valid" in new TestValidationRules(uuidService) { validator =>
       val result = validator.validateRecordId(recordId)
 
       result.value mustBe recordId
     }
 
     "return an error" when {
-      "recordID is an invalid UUID" in new TestValidationRules() { validator =>
+      "recordID is an invalid UUID" in new TestValidationRules(uuidService) { validator =>
         val result = validator.validateRecordId("invalid-uuid")
 
         result.left.value mustBe Error(
@@ -73,7 +100,7 @@ class ValidationRulesSpec extends PlaySpec with EitherValues {
         )
       }
 
-      "recordID is empty" in new TestValidationRules() { validator =>
+      "recordID is empty" in new TestValidationRules(uuidService) { validator =>
         val result = validator.validateRecordId("")
 
         result.left.value mustBe Error(
@@ -86,14 +113,14 @@ class ValidationRulesSpec extends PlaySpec with EitherValues {
   }
 
   "validateQueryParameter" should {
-    "return the validated parameters" in new TestValidationRules() { validator =>
+    "return the validated parameters" in new TestValidationRules(uuidService) { validator =>
       val result = validator.validateQueryParameters("GB124567897897", recordId)
 
       result.value mustBe ValidatedQueryParameters("GB124567897897", recordId)
     }
     "return an error" when {
       "actorId is invalid" in
-        new TestValidationRules() { validator =>
+        new TestValidationRules(uuidService) { validator =>
           val result = validator.validateQueryParameters("GB1245678", recordId)
 
           result.left.value.length mustBe 1
@@ -105,7 +132,7 @@ class ValidationRulesSpec extends PlaySpec with EitherValues {
         }
 
       "recordId is invalid" in
-        new TestValidationRules() { validator =>
+        new TestValidationRules(uuidService) { validator =>
           val result = validator.validateQueryParameters("GB124567897897", "invalid-record-id")
 
           result.left.value.length mustBe 1
@@ -117,7 +144,7 @@ class ValidationRulesSpec extends PlaySpec with EitherValues {
         }
 
       "recordId and actorId are invalid" in
-        new TestValidationRules() { validator =>
+        new TestValidationRules(uuidService) { validator =>
           val result = validator.validateQueryParameters("GB1245", "invalid-record-id")
 
           result.left.value.length mustBe 2
@@ -136,4 +163,50 @@ class ValidationRulesSpec extends PlaySpec with EitherValues {
         }
     }
   }
+
+  "validateRequestBody" should {
+    "return bad request error if find an error" in new TestValidationRules(uuidService) {
+      validator =>
+      implicit val request: FakeRequest[JsValue] =
+        FakeRequest().withBody[JsValue](Json.parse("""{"surname": "any-name"}"""))
+
+      val result = validator.validateRequestBody[TestClass](Map("/name" -> ("01", "message-error")))
+
+      whenReady(result.value) {
+
+        _.left.value mustBe BadRequest(
+          Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "message-error",
+                "errorNumber" -> 1
+              )
+            )
+          )
+        )
+      }
+    }
+
+    "return the Deserialised object" in new TestValidationRules(uuidService) {
+      validator =>
+      implicit val request: FakeRequest[JsValue] =
+        FakeRequest().withBody[JsValue](Json.parse("""{"name": "any-name"}"""))
+
+      val result = validator.validateRequestBody[TestClass](Map("/name" -> ("01", "message-error")))
+
+      whenReady(result.value) {
+        _.value mustBe TestClass("any-name")
+      }
+    }
+  }
+}
+
+case class TestClass(name: String)
+
+object TestClass {
+  implicit val format: OFormat[TestClass] = Json.format[TestClass]
 }

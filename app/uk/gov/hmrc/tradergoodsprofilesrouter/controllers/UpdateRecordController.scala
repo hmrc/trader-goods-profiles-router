@@ -42,22 +42,15 @@ class UpdateRecordController @Inject() (
 
   def update(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _                   <- EitherT
-                               .fromEither[Future](validateClientId)
-                               .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
+      _                   <- validateClientId
       _                   <- EitherT
                                .fromEither[Future](validateRecordId(recordId))
                                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-      updateRecordRequest <- validateRequestBody
+      updateRecordRequest <- validateRequestBody[UpdateRecordRequest](optionalFieldsToErrorCode)
       response            <- updateRecordService.updateRecord(eori, recordId, updateRecordRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge
   }
-
-  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, UpdateRecordRequest] =
-    EitherT
-      .fromEither[Future](validateRequestBody[UpdateRecordRequest](optionalFieldsToErrorCode))
-      .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
 
 }

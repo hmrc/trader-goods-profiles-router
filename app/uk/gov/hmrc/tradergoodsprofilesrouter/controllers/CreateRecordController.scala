@@ -16,20 +16,18 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.fieldsToErrorCode
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class CreateRecordController @Inject() (
   override val controllerComponents: ControllerComponents,
@@ -42,19 +40,11 @@ class CreateRecordController @Inject() (
 
   def create(eori: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _                   <- EitherT
-                               .fromEither[Future](validateClientId)
-                               .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-      createRecordRequest <- validateRequest(request)
+      _                   <- validateClientId
+      createRecordRequest <- validateRequestBody[CreateRecordRequest](fieldsToErrorCode)
       response            <- createRecordService.createRecord(eori, createRecordRequest)
     } yield Created(Json.toJson(response))
 
     result.merge
   }
-
-  private def validateRequest(implicit request: Request[JsValue]): EitherT[Future, Result, CreateRecordRequest] =
-    EitherT
-      .fromEither[Future](validateRequestBody[CreateRecordRequest](fieldsToErrorCode))
-      .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
-
 }
