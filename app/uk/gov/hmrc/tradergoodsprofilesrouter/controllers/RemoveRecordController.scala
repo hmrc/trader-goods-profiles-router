@@ -16,29 +16,34 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
+import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.mvc._
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.RemoveRecordService
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.BadRequestErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordController @Inject() (
-  cc: ControllerComponents,
+  override val controllerComponents: ControllerComponents,
   service: RemoveRecordService,
-  validateHeaderClientId: ValidateHeaderClientId
-)(implicit
-  executionContext: ExecutionContext
-) extends BackendController(cc)
+  override val uuidService: UuidService
+)(implicit override val ec: ExecutionContext)
+    extends BackendBaseController
+    with ValidationRules
     with Logging {
 
   def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- validateHeaderClientId.validateClientIdFromAnyContent(request)
+        _ <- validateClientId
+        _ <- EitherT
+               .fromEither[Future](validateQueryParameters(actorId, recordId))
+               .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
         _ <- service.removeRecord(eori, recordId, actorId)
       } yield NoContent
 

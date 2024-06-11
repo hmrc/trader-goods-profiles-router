@@ -34,8 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordConnectorTest extends BaseConnectorSpec with CreateRecordDataSupport {
 
-  implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
+  override implicit val ec: ExecutionContext = ExecutionContext.global
+  override implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
 
   private val dateTimeService: DateTimeService = mock[DateTimeService]
   private val eori                             = "GB123456789011"

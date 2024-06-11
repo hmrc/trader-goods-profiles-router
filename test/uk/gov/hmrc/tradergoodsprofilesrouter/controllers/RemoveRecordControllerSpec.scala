@@ -26,9 +26,9 @@ import play.api.libs.json.Json
 import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.ExecutionContext
@@ -40,16 +40,15 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
   private val mockService     = mock[RemoveRecordService]
   private val mockUuidService = mock[UuidService]
 
-  private val eori             = "GB123456789011"
-  private val actorId          = "GB123456789011"
-  private val recordId         = "12345"
-  private val validateClientId = new ValidateHeaderClientId(mockUuidService)
+  private val eori     = "GB123456789011"
+  private val actorId  = "GB123456789011"
+  private val recordId = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
 
   private val controller =
     new RemoveRecordController(
       stubControllerComponents(),
       mockService,
-      validateClientId
+      mockUuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
@@ -70,13 +69,20 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
       status(result) mustBe NO_CONTENT
     }
     "return 400 Bad request when mandatory request header X-Client-ID" in {
+      val expectedErrorResponse =
+        ErrorResponse(
+          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+          BadRequestCode,
+          BadRequestMessage,
+          Some(Seq(Error("INVALID_HEADER", "Missing mandatory header X-Client-ID", 6000)))
+        )
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val result = controller.remove(eori, recordId, actorId)(
         FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(createErrorResponse)
+      contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)
     }
 
     "return an error if cannot remove a record" in {
@@ -95,12 +101,5 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
       }
     }
   }
-
-  private def createErrorResponse =
-    ErrorResponse(
-      "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      "BAD_REQUEST",
-      "Missing mandatory header X-Client-ID"
-    )
 
 }
