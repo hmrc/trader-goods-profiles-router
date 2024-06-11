@@ -267,7 +267,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
         |  "actorId": "GB098765432112",
         |  "traderRef": "BAN001001",
         |  "comcode": "104101000",
-        |  "adviceStatus": "Not Requested",
+        |  "accreditationStatus": "Not Requested",
         |  "goodsDescription": "Organic bananas",
         |  "countryOfOrigin": "EC",
         |  "category": 1,
