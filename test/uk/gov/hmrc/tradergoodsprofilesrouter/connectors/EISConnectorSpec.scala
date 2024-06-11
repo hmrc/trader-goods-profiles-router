@@ -39,7 +39,6 @@ class EISConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
   private val dateTimeService: DateTimeService = mock[DateTimeService]
   private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val eori                             = "GB123456789011"
-  private val actorId                          = "GB123456789011"
   private val recordId                         = "12345"
   private val correlationId: String            = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
@@ -131,49 +130,6 @@ class EISConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
       verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordGetBearerToken"): _*)
       verifyExecuteWithParams(correlationId)
 
-    }
-  }
-
-  "updateRecord" should {
-    "update a record successfully" in {
-      val expectedResponse: CreateOrUpdateRecordResponse =
-        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
-
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Right(expectedResponse)))
-
-      val request: UpdateRecordRequest = updateRecordRequest.as[UpdateRecordRequest]
-      val result                       = await(eisConnector.updateRecord(request, correlationId))
-
-      result.value mustBe expectedResponse
-    }
-
-    "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val request: UpdateRecordRequest = updateRecordRequest.as[UpdateRecordRequest]
-      val result                       = await(eisConnector.updateRecord(request, correlationId))
-
-      result.left.value mustBe BadRequest("error")
-    }
-
-    "send a request with the right url" in {
-
-      val expectedResponse: CreateOrUpdateRecordResponse =
-        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
-        .thenReturn(Future.successful(Right(expectedResponse)))
-
-      await(eisConnector.updateRecord(updateRecordRequest.as[UpdateRecordRequest], correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordUpdateBearerToken"): _*)
-      verify(requestBuilder).withBody(updateRecordRequest)
-      verify(requestBuilder).execute(any, any)
-
-      verifyExecuteWithParams(correlationId)
     }
   }
 

@@ -46,7 +46,6 @@ class RouterServiceSpec
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
   private val eoriNumber    = "GB123456789011"
-  private val actorId       = "GB123456789011"
   private val recordId      = "recordId"
   private val correlationId = "1234-5678-9012"
   private val eisConnector  = mock[EISConnector]
