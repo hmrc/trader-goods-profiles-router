@@ -19,13 +19,13 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
-import play.api.libs.json.{JsPath, OWrites, Reads}
+import play.api.libs.json._
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validComcode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.isValidCountryCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId, validComcode}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 
 import java.time.Instant
-import scala.Function.unlift
 
 case class CreateRecordRequest(
   actorId: String,
@@ -57,16 +57,20 @@ object CreateRecordRequest {
       (JsPath \ "comcodeEffectiveToDate")
         .readNullable[Instant])(CreateRecordRequest.apply _)
 
-  implicit lazy val writes: OWrites[CreateRecordRequest] =
-    ((JsPath \ "actorId").write[String] and
-      (JsPath \ "traderRef").write[String] and
-      (JsPath \ "comcode").write[String] and
-      (JsPath \ "goodsDescription").write[String] and
-      (JsPath \ "countryOfOrigin").write[String] and
-      (JsPath \ "category").write[Int] and
-      (JsPath \ "assessments").writeNullable[Seq[Assessment]] and
-      (JsPath \ "supplementaryUnit").writeNullable[Int] and
-      (JsPath \ "measurementUnit").writeNullable[String] and
-      (JsPath \ "comcodeEffectiveFromDate").write[Instant] and
-      (JsPath \ "comcodeEffectiveToDate").writeNullable[Instant])(unlift(CreateRecordRequest.unapply))
+  implicit lazy val writes: Writes[CreateRecordRequest] = (createRecordRequest: CreateRecordRequest) =>
+    removeNulls(
+      Json.obj(
+        "actorId"                  -> createRecordRequest.actorId,
+        "traderRef"                -> createRecordRequest.traderRef,
+        "comcode"                  -> createRecordRequest.comcode,
+        "goodsDescription"         -> createRecordRequest.goodsDescription,
+        "countryOfOrigin"          -> createRecordRequest.countryOfOrigin,
+        "category"                 -> createRecordRequest.category,
+        "assessments"              -> createRecordRequest.assessments,
+        "supplementaryUnit"        -> createRecordRequest.supplementaryUnit,
+        "measurementUnit"          -> createRecordRequest.measurementUnit,
+        "comcodeEffectiveFromDate" -> createRecordRequest.comcodeEffectiveFromDate,
+        "comcodeEffectiveToDate"   -> createRecordRequest.comcodeEffectiveToDate
+      )
+    )
 }

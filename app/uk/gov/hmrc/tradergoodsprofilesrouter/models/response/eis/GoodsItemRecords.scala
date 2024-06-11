@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import play.api.libs.json._
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 
 import java.time.Instant
 case class GoodsItemRecords(
@@ -25,7 +26,7 @@ case class GoodsItemRecords(
   recordId: String,
   traderRef: String,
   comcode: String,
-  accreditationStatus: String,
+  adviceStatus: String,
   goodsDescription: String,
   countryOfOrigin: String,
   category: Int,
@@ -57,7 +58,8 @@ object GoodsItemRecords {
         (json \ "recordId").as[String],
         (json \ "traderRef").as[String],
         (json \ "comcode").as[String],
-        (json \ "accreditationStatus").as[String],
+        (json \ "accreditationStatus")
+          .as[String], //TODO change this back to adviceStatus after EIS does the changes from their end
         (json \ "goodsDescription").as[String],
         (json \ "countryOfOrigin").as[String],
         (json \ "category").as[Int],
@@ -88,7 +90,7 @@ object GoodsItemRecords {
         "recordId"                 -> goodsItemRecords.recordId,
         "traderRef"                -> goodsItemRecords.traderRef,
         "comcode"                  -> goodsItemRecords.comcode,
-        "accreditationStatus"      -> goodsItemRecords.accreditationStatus,
+        "adviceStatus"             -> goodsItemRecords.adviceStatus,
         "goodsDescription"         -> goodsItemRecords.goodsDescription,
         "countryOfOrigin"          -> goodsItemRecords.countryOfOrigin,
         "category"                 -> goodsItemRecords.category,
@@ -110,12 +112,4 @@ object GoodsItemRecords {
         "updatedDateTime"          -> goodsItemRecords.updatedDateTime
       )
     )
-
-  private def removeNulls(jsObject: JsObject): JsValue =
-    JsObject(jsObject.fields.collect {
-      case (s, j: JsObject)            =>
-        (s, removeNulls(j))
-      case other if other._2 != JsNull =>
-        other
-    })
 }

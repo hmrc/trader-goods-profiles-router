@@ -19,25 +19,24 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataSupport {
+class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataSupport {
 
   private val dateTimeService: DateTimeService = mock[DateTimeService]
   private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
-  implicit val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
-
-  private val connector = new CreateRecordConnector(appConfig, httpClientV2, dateTimeService)
+  private val correlationId: String            = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -46,21 +45,25 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
+    when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
+    when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
 
-  "createRecord" should {
-    "create a record successfully" in {
+  private val eisConnector = new UpdateRecordConnector(appConfig, httpClientV2, dateTimeService)
+
+  "updateRecord" should {
+    "update a record successfully" in {
       val expectedResponse: CreateOrUpdateRecordResponse =
         createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
 
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      val request = createRecordEisPayload.as[CreateRecordPayload]
-      val result  = await(connector.createRecord(request, correlationId))
+      val request = updateRecordPayload.as[UpdateRecordPayload]
+      val result  = await(eisConnector.updateRecord(request, correlationId))
 
       result.value mustBe expectedResponse
     }
@@ -69,8 +72,8 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val request = createRecordEisPayload.as[CreateRecordPayload]
-      val result  = await(connector.createRecord(request, correlationId))
+      val request = updateRecordPayload.as[UpdateRecordPayload]
+      val result  = await(eisConnector.updateRecord(request, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -82,16 +85,45 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
+      await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
-      val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
-      verify(httpClientV2).post(url"$expectedUrl")
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordCreateBearerToken"): _*)
-      verify(requestBuilder).withBody(createRecordEisPayload)
+      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
+      verify(httpClientV2).put(url"$expectedUrl")
+      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordUpdateBearerToken"): _*)
+      verify(requestBuilder).withBody(updateRecordPayload)
       verify(requestBuilder).execute(any, any)
 
       verifyExecuteWithParams(correlationId)
     }
   }
 
+  val updateRecordPayload: JsValue = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789001",
+             |    "actorId": "GB098765432112",
+             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "10410100",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 1,
+             |    "assessments": [
+             |        {
+             |            "assessmentId": "abc123",
+             |            "primaryCategory": 1,
+             |            "condition": {
+             |                "type": "abc123",
+             |                "conditionId": "Y923",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        }
+             |    ],
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
 }

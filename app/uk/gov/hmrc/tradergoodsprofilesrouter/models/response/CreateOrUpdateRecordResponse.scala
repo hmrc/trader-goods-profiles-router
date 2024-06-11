@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 
 import play.api.libs.json._
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
 import java.time.Instant
@@ -27,7 +29,7 @@ case class CreateOrUpdateRecordResponse(
   actorId: String,
   traderRef: String,
   comcode: String,
-  accreditationStatus: String,
+  adviceStatus: String,
   goodsDescription: String,
   countryOfOrigin: String,
   category: Int,
@@ -58,7 +60,8 @@ object CreateOrUpdateRecordResponse {
         (json \ "actorId").as[String],
         (json \ "traderRef").as[String],
         (json \ "comcode").as[String],
-        (json \ "accreditationStatus").as[String],
+        (json \ "accreditationStatus")
+          .as[String], //TODO change this back to adviceStatus after EIS does the changes from their end
         (json \ "goodsDescription").as[String],
         (json \ "countryOfOrigin").as[String],
         (json \ "category").as[Int],
@@ -81,30 +84,32 @@ object CreateOrUpdateRecordResponse {
     )
 
   implicit val writes: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) =>
-    Json.obj(
-      "recordId"                 -> response.recordId,
-      "eori"                     -> response.eori,
-      "actorId"                  -> response.actorId,
-      "traderRef"                -> response.traderRef,
-      "comcode"                  -> response.comcode,
-      "accreditationStatus"      -> response.accreditationStatus,
-      "goodsDescription"         -> response.goodsDescription,
-      "countryOfOrigin"          -> response.countryOfOrigin,
-      "category"                 -> response.category,
-      "assessments"              -> response.assessments,
-      "supplementaryUnit"        -> response.supplementaryUnit,
-      "measurementUnit"          -> response.measurementUnit,
-      "comcodeEffectiveFromDate" -> response.comcodeEffectiveFromDate,
-      "comcodeEffectiveToDate"   -> response.comcodeEffectiveToDate,
-      "version"                  -> response.version,
-      "active"                   -> response.active,
-      "toReview"                 -> response.toReview,
-      "reviewReason"             -> response.reviewReason,
-      "declarable"               -> response.declarable,
-      "ukimsNumber"              -> response.ukimsNumber,
-      "nirmsNumber"              -> response.nirmsNumber,
-      "niphlNumber"              -> response.niphlNumber,
-      "createdDateTime"          -> response.createdDateTime,
-      "updatedDateTime"          -> response.updatedDateTime
+    removeNulls(
+      Json.obj(
+        "recordId"                 -> response.recordId,
+        "eori"                     -> response.eori,
+        "actorId"                  -> response.actorId,
+        "traderRef"                -> response.traderRef,
+        "comcode"                  -> response.comcode,
+        "adviceStatus"             -> response.adviceStatus,
+        "goodsDescription"         -> response.goodsDescription,
+        "countryOfOrigin"          -> response.countryOfOrigin,
+        "category"                 -> response.category,
+        "assessments"              -> removeEmptyAssessment(response.assessments),
+        "supplementaryUnit"        -> response.supplementaryUnit,
+        "measurementUnit"          -> response.measurementUnit,
+        "comcodeEffectiveFromDate" -> response.comcodeEffectiveFromDate,
+        "comcodeEffectiveToDate"   -> response.comcodeEffectiveToDate,
+        "version"                  -> response.version,
+        "active"                   -> response.active,
+        "toReview"                 -> response.toReview,
+        "reviewReason"             -> response.reviewReason,
+        "declarable"               -> response.declarable,
+        "ukimsNumber"              -> response.ukimsNumber,
+        "nirmsNumber"              -> response.nirmsNumber,
+        "niphlNumber"              -> response.niphlNumber,
+        "createdDateTime"          -> response.createdDateTime,
+        "updatedDateTime"          -> response.updatedDateTime
+      )
     )
 }

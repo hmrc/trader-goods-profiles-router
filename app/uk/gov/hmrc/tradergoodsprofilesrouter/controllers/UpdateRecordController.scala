@@ -20,60 +20,37 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
+import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.optionalFieldsToErrorCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.BadRequestErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class UpdateRecordController @Inject() (
-  cc: ControllerComponents,
-  routerService: RouterService,
-  uuidService: UuidService,
-  validateHeaderClientId: ValidateHeaderClientId
-)(implicit
-  executionContext: ExecutionContext
-) extends BackendController(cc)
+  override val controllerComponents: ControllerComponents,
+  updateRecordService: UpdateRecordService,
+  override val uuidService: UuidService
+)(implicit override val ec: ExecutionContext)
+    extends BackendBaseController
+    with ValidationRules
     with Logging {
 
-  def update: Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def update(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _ <- validateHeaderClientId.validateClientId(request)
-
-      updateRecordRequest <- validateRequestBody(request)
-
-      response <- routerService.updateRecord(updateRecordRequest)
+      _                   <- validateClientId
+      _                   <- EitherT
+                               .fromEither[Future](validateRecordId(recordId))
+                               .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
+      updateRecordRequest <- validateRequestBody[UpdateRecordRequest](optionalFieldsToErrorCode)
+      response            <- updateRecordService.updateRecord(eori, recordId, updateRecordRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge
   }
-
-  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, UpdateRecordRequest] =
-    request.body
-      .validate[UpdateRecordRequest]
-      .asEither
-      .leftMap { errors =>
-        logger.warn(
-          "[UpdateRecordController] - Update Record Validation JsError in UpdateRecordController.create"
-        )
-        BadRequest(
-          toJson(
-            ErrorResponse(
-              uuidService.uuid,
-              BadRequestCode,
-              BadRequestMessage,
-              Some(ValidationSupport.convertError[UpdateRecordRequest](errors))
-            )
-          )
-        ): Result
-      }
-      .toEitherT[Future]
 
 }

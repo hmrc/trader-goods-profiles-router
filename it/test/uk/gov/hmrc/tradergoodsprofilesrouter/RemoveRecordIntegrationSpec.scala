@@ -37,7 +37,7 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   override def connectorPath: String = s"/tgp/removerecord/v1"
   override def connectorName: String = "eis"
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
