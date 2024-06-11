@@ -39,7 +39,7 @@ class RequestAccreditationIntegrationSpec
   def connectorPathGetRecord: String = "/tgp/getrecords/v1"
   override def connectorName: String = "eis"
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
@@ -49,7 +49,7 @@ class RequestAccreditationIntegrationSpec
     "the request is" - {
       "valid, specifically" - {
         "with all request fields" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(CREATED, createAccreditationRequestData)
 
           val response = wsClient
@@ -70,7 +70,7 @@ class RequestAccreditationIntegrationSpec
       }
       "valid but the integration call fails with response:" - {
         "Forbidden" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(FORBIDDEN, createAccreditationRequestData)
 
           val response = wsClient
@@ -94,7 +94,7 @@ class RequestAccreditationIntegrationSpec
         }
 
         "Not Found" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(NOT_FOUND, createAccreditationRequestData)
 
           val response = wsClient
@@ -117,7 +117,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatMultipleDownstreamApiWasCalled()
         }
         "Bad Gateway" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(BAD_GATEWAY, createAccreditationRequestData)
 
           val response = wsClient
@@ -142,7 +142,7 @@ class RequestAccreditationIntegrationSpec
 
         "Service Unavailable for fetch records" in {
           val errorResponseJson = Json.obj("error" -> "error")
-          stubForEisFetchRecords(SERVICE_UNAVAILABLE, Some(errorResponseJson.toString()))
+          stubForEisFetchRecords(SERVICE_UNAVAILABLE, errorResponseJson.toString())
           stubForEis(SERVICE_UNAVAILABLE, createAccreditationRequestData)
 
           val response = wsClient
@@ -165,7 +165,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatDownstreamApiWasNotCalled()
         }
         "Service Unavailable" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(SERVICE_UNAVAILABLE, createAccreditationRequestData)
 
           val response = wsClient
@@ -189,7 +189,7 @@ class RequestAccreditationIntegrationSpec
         }
 
         "Internal Server Error  with 201 errorCode" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(
             INTERNAL_SERVER_ERROR,
             createAccreditationRequestData,
@@ -216,7 +216,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatMultipleDownstreamApiWasCalled()
         }
         "Internal Server Error  with 401 errorCode" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(
             INTERNAL_SERVER_ERROR,
             createAccreditationRequestData,
@@ -243,7 +243,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatMultipleDownstreamApiWasCalled()
         }
         "Internal Server Error  with 500 errorCode" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(
             INTERNAL_SERVER_ERROR,
             createAccreditationRequestData,
@@ -270,7 +270,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatMultipleDownstreamApiWasCalled()
         }
         "Internal Server Error with 404 errorCode" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(INTERNAL_SERVER_ERROR, createAccreditationRequestData, Some(eisErrorResponse("404", "Not Found")))
 
           val response = wsClient
@@ -293,7 +293,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatMultipleDownstreamApiWasCalled()
         }
         "Internal Server Error with 405 errorCode" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(
             INTERNAL_SERVER_ERROR,
             createAccreditationRequestData,
@@ -320,7 +320,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatMultipleDownstreamApiWasCalled()
         }
         "Internal Server Error with 502 errorCode" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(
             INTERNAL_SERVER_ERROR,
             createAccreditationRequestData,
@@ -347,7 +347,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatMultipleDownstreamApiWasCalled()
         }
         "Internal Server Error with 503 errorCode" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(
             INTERNAL_SERVER_ERROR,
             createAccreditationRequestData,
@@ -374,7 +374,7 @@ class RequestAccreditationIntegrationSpec
           verifyThatMultipleDownstreamApiWasCalled()
         }
         "Bad Request with one error detail" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(
             BAD_REQUEST,
             createAccreditationRequestData,
@@ -426,7 +426,7 @@ class RequestAccreditationIntegrationSpec
       "invalid, specifically" - {
 
         "missing required request field" in {
-          stubForEisFetchRecords(OK, Some(getEisRecordsResponseData.toString()))
+          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           val response = wsClient
             .url(fullUrl(s"/createaccreditation/"))
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
@@ -496,20 +496,13 @@ class RequestAccreditationIntegrationSpec
       )
   )
 
-  private def stubForEisFetchRecords(httpStatus: Int, body: Option[String] = None) = stubFor(
+  private def stubForEisFetchRecords(httpStatus: Int, body: String) = stubFor(
     get(urlEqualTo(s"$connectorPathGetRecord/$eori/$recordId"))
-      .withHeader("Content-Type", equalTo("application/json"))
-      .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-      .withHeader("X-Correlation-ID", equalTo(correlationId))
-      .withHeader("Date", equalTo(timestamp))
-      .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-      .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
           .withStatus(httpStatus)
-          .withBody(body.orNull)
+          .withBody(body)
       )
   )
 

@@ -18,8 +18,8 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.{JsNull, JsPath, Json, Reads, Writes}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.lengthBetween
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.lengthBetween
 
 case class Condition(
   `type`: Option[String],

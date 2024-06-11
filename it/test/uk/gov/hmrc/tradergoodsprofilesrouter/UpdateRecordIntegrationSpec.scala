@@ -37,7 +37,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   override def connectorPath: String = "/tgp/updaterecord/v1"
   override def connectorName: String = "eis"
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
@@ -63,12 +63,11 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "with optional null request fields" in {
           stubForEis(
             OK,
-            updateEisRecordRequestData,
             Some(updateEisRecordResponseDataWithOptionalFields.toString())
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestDataWithOptionalNullFields)
             .futureValue
@@ -81,12 +80,11 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "with optional condition null request fields" in {
           stubForEis(
             OK,
-            updateEisRecordRequestData,
             Some(updateEisRecordResponseDataWithConditionOptionalFields.toString())
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestDataWithConditionOptionalNullFields)
             .futureValue
@@ -99,12 +97,11 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
         "with optional some optional null request fields" in {
           stubForEis(
             OK,
-            updateEisRecordRequestDataWithSomeOptionalFields,
             Some(updateEisRecordResponseDataWithSomeOptionalFields.toString())
           )
 
           val response = wsClient
-            .url(fullUrl(s"/records/"))
+            .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .put(updateRecordRequestDataWithSomeOptionalNullFields)
             .futureValue
