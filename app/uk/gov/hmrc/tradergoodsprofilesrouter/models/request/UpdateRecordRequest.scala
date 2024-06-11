@@ -20,17 +20,15 @@ import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validComcode, validDate}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.isValidCountryCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.{lengthBetween, validActorId, validComcode, validDate}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.isValidCountryCode
 
 import java.time.Instant
 
 case class UpdateRecordRequest(
-  eori: String,
-  recordId: String,
   actorId: String,
   traderRef: Option[String],
   comcode: Option[String],
@@ -47,9 +45,7 @@ case class UpdateRecordRequest(
 object UpdateRecordRequest {
 
   implicit val reads: Reads[UpdateRecordRequest] =
-    ((JsPath \ "eori").read(lengthBetween(14, 17)) and
-      (JsPath \ "recordId").read(lengthBetween(36, 36)) and
-      (JsPath \ "actorId").read(validActorId) and
+    ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "traderRef").readNullable(lengthBetween(1, 512)) and
       (JsPath \ "comcode").readNullable(validComcode) and
       (JsPath \ "goodsDescription").readNullable(lengthBetween(1, 512)) and
@@ -65,8 +61,6 @@ object UpdateRecordRequest {
   implicit lazy val writes: Writes[UpdateRecordRequest] = (updateRecordRequest: UpdateRecordRequest) =>
     removeNulls(
       Json.obj(
-        "eori"                     -> updateRecordRequest.eori,
-        "recordId"                 -> updateRecordRequest.recordId,
         "actorId"                  -> updateRecordRequest.actorId,
         "traderRef"                -> updateRecordRequest.traderRef,
         "comcode"                  -> updateRecordRequest.comcode,

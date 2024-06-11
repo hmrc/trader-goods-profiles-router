@@ -17,6 +17,9 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
 object ApplicationConstants {
+  val InvalidHeader                                        = "INVALID_HEADER"
+  val InvalidRecordIdQueryParameter                        = "Query parameter recordId is in the wrong format"
+  val InvalidActorIdQueryParameter                         = "Query parameter actorId is in the wrong format"
   val InvalidRequestParameters                             = "INVALID_REQUEST_PARAMETER"
   val InvalidQueryParameter                                = "INVALID_QUERY_PARAMETER"
   val UnexpectedErrorCode                                  = "UNEXPECTED_ERROR"

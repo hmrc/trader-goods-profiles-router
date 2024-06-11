@@ -18,57 +18,64 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.when
+import org.mockito.MockitoSugar.{reset, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext
 
-class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
+class UpdateRecordControllerSpec
+    extends PlaySpec
+    with CreateRecordDataSupport
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val mockRouterService: RouterService = mock[RouterService]
-  val mockUuidService: UuidService     = mock[UuidService]
+  private val eoriNumber                   = "eori"
+  private val recordId                     = UUID.randomUUID().toString
+  private val updateRecordService          = mock[UpdateRecordService]
+  private val mockUuidService: UuidService = mock[UuidService]
 
-  private val validateClientId = new ValidateHeaderClientId(mockUuidService)
-  private val sut              =
+  private val sut =
     new UpdateRecordController(
       stubControllerComponents(),
-      mockRouterService,
-      mockUuidService,
-      validateClientId
+      updateRecordService,
+      mockUuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
     HeaderNames.ClientId -> "clientId"
   )
 
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(mockUuidService, updateRecordService)
+
+    when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+  }
   "PUT /records" should {
 
     "return a 200 with JSON response when updating a record" in {
 
-      when(mockRouterService.updateRecord(any)(any))
-        .thenReturn(EitherT.rightT(updateRecordResponseData))
+      when(updateRecordService.updateRecord(any, any, any)(any))
+        .thenReturn(EitherT.rightT(createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]))
 
-      val result = sut.update(
-        FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
-      )
+      val result =
+        sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
 
       status(result) mustBe OK
-
-      withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(updateRecordResponseData)
-      }
     }
 
     "return 400 Bad request when required request field is missing" in {
@@ -81,16 +88,14 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
           Seq(
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Mandatory field eori was missing from body or is in the wrong format",
-              6
-            ),
-            Error("INVALID_REQUEST_PARAMETER", "The recordId has been provided in the wrong format", 26)
+              "Mandatory field actorId was missing from body or is in the wrong format",
+              8
+            )
           )
         )
       )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.update(
+      val result = sut.update(eoriNumber, recordId)(
         FakeRequest().withBody(invalidUpdateRecordRequestData).withHeaders(validHeaders: _*)
       )
 
@@ -111,18 +116,13 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
           Seq(
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Optional field type is in the wrong format",
-              17
-            ),
-            Error(
-              "INVALID_REQUEST_PARAMETER",
               "Optional field assessmentId is in the wrong format",
               15
             ),
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Mandatory field eori was missing from body or is in the wrong format",
-              6
+              "Optional field conditionId is in the wrong format",
+              18
             ),
             Error(
               "INVALID_REQUEST_PARAMETER",
@@ -131,15 +131,14 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
             ),
             Error(
               "INVALID_REQUEST_PARAMETER",
-              "Optional field conditionId is in the wrong format",
-              18
+              "Optional field type is in the wrong format",
+              17
             )
           )
         )
       )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.update(
+      val result = sut.update(eoriNumber, recordId)(
         FakeRequest().withBody(invalidUpdateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
       )
 
@@ -156,62 +155,39 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
         ErrorResponse(
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
           ApplicationConstants.BadRequestCode,
-          ApplicationConstants.MissingHeaderClientId
+          ApplicationConstants.BadRequestMessage,
+          Some(Seq(Error("INVALID_HEADER", "Missing mandatory header X-Client-ID", 6000)))
         )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = sut.update(
+      val result = sut.update(eoriNumber, recordId)(
         FakeRequest().withBody(updateRecordRequestData)
       )
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
+
+    "return a Bad Request if actorId is invalid" in {
+      when(updateRecordService.updateRecord(any, any, any)(any))
+        .thenReturn(EitherT.rightT(createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]))
+
+      val result = sut.update(eoriNumber, "invalid-actorId")(
+        FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
+      )
+
+      status(result) mustBe BAD_REQUEST
+      contentAsJson(result) mustBe Json.toJson(
+        ErrorResponse(
+          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+          ApplicationConstants.BadRequestCode,
+          ApplicationConstants.BadRequestMessage,
+          Some(Seq(Error("INVALID_QUERY_PARAMETER", "Query parameter recordId is in the wrong format", 25)))
+        )
+      )
+    }
   }
 
-  lazy val updateRecordResponseData: CreateOrUpdateRecordResponse = Json
-    .parse("""
-        |{
-        |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-        |  "eori": "GB123456789012",
-        |  "actorId": "GB098765432112",
-        |  "traderRef": "BAN001001",
-        |  "comcode": "10410100",
-        |  "accreditationStatus": "Not Requested",
-        |  "goodsDescription": "Organic bananas",
-        |  "countryOfOrigin": "EC",
-        |  "category": 1,
-        |  "supplementaryUnit": 500,
-        |  "measurementUnit": "Square metre (m2)",
-        |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-        |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
-        |  "version": 1,
-        |  "active": true,
-        |  "toReview": false,
-        |  "reviewReason": "Commodity code change",
-        |  "declarable": "SPIMM",
-        |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-        |  "nirmsNumber": "RMS-GB-123456",
-        |  "niphlNumber": "6 S12345",
-        |  "createdDateTime": "2024-11-18T23:20:19Z",
-        |  "updatedDateTime": "2024-11-18T23:20:19Z",
-        |  "assessments": [
-        |    {
-        |      "assessmentId": "abc123",
-        |      "primaryCategory": 1,
-        |      "condition": {
-        |        "type": "abc123",
-        |        "conditionId": "Y923",
-        |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-        |        "conditionTraderText": "Excluded product"
-        |      }
-        |    }
-        |  ]
-        |}
-        |""".stripMargin)
-    .as[CreateOrUpdateRecordResponse]
-
-  lazy val updateRecordRequestData: JsValue = Json
-    .parse("""
+  val updateRecordRequestData: JsValue =
+    Json.parse("""
         |{
         |    "eori": "GB123456789001",
         |    "actorId": "GB098765432112",
@@ -243,7 +219,6 @@ class UpdateRecordControllerSpec extends PlaySpec with MockitoSugar {
   lazy val invalidUpdateRecordRequestData: JsValue = Json
     .parse("""
         |{
-        |    "actorId": "GB098765432112",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
         |    "goodsDescription": "Organic bananas",

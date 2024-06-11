@@ -24,13 +24,19 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.MimeTypes
 import play.api.mvc.Result
-import uk.gov.hmrc.http.HttpReads
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
 
-trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValues with GetRecordsDataSupport {
+import scala.concurrent.ExecutionContext
+
+trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValues {
+
+  implicit val ec: ExecutionContext = ExecutionContext.global
+  implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
 
   val appConfig: AppConfig           = mock[AppConfig]
   val httpClientV2: HttpClientV2     = mock[HttpClientV2]

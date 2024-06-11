@@ -34,7 +34,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   override def connectorPath: String = "/tgp/createrecord/v1"
   override def connectorName: String = "eis"
 
-  override def beforeEach: Unit = {
+  override def beforeEach(): Unit = {
     super.beforeEach()
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
@@ -540,7 +540,14 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
             "code"          -> "BAD_REQUEST",
-            "message"       -> "Missing mandatory header X-Client-ID"
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_HEADER",
+                "message"     -> "Missing mandatory header X-Client-ID",
+                "errorNumber" -> 6000
+              )
+            )
           )
 
           verifyThatDownstreamApiWasNotCalled()

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
 import play.api.libs.json.{JsPath, Reads}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport.Reads.validActorId
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.validActorId
 
 case class RemoveRecordRequest(
   actorId: String

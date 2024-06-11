@@ -16,61 +16,36 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
+import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.fieldsToErrorCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{BadRequestCode, BadRequestMessage}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ValidationSupport
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class MaintainProfileController @Inject() (
-  cc: ControllerComponents,
-  validateHeaderClientId: ValidateHeaderClientId,
+  override val controllerComponents: ControllerComponents,
   maintainProfileService: MaintainProfileService,
-  uuidService: UuidService
-)(implicit executionContext: ExecutionContext)
-    extends BackendController(cc)
+  override val uuidService: UuidService
+)(implicit val ec: ExecutionContext)
+    extends BackendBaseController
+    with ValidationRules
     with Logging {
 
   def maintain(eori: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _                      <- validateHeaderClientId.validateClientId(request)
-      maintainProfileRequest <- validateRequestBody(request)
+      _                      <- validateClientId(request)
+      maintainProfileRequest <- validateRequestBody[MaintainProfileRequest](fieldsToErrorCode)
       response               <- maintainProfileService.maintainProfile(eori, maintainProfileRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge
   }
-
-  private def validateRequestBody(implicit request: Request[JsValue]): EitherT[Future, Result, MaintainProfileRequest] =
-    request.body
-      .validate[MaintainProfileRequest]
-      .asEither
-      .leftMap { errors =>
-        logger.warn(
-          "[MaintainProfileController] - Maintain profile Validation JsError in MaintainProfileController.maintain"
-        )
-        BadRequest(
-          toJson(
-            ErrorResponse(
-              uuidService.uuid,
-              BadRequestCode,
-              BadRequestMessage,
-              Some(ValidationSupport.convertError(errors))
-            )
-          )
-        )
-      }
-      .toEitherT[Future]
 
 }
