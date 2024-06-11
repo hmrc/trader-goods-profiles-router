@@ -23,7 +23,6 @@ import play.api.mvc._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidateHeaderClientId
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.RemoveRecordService
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 import scala.concurrent.ExecutionContext
 
@@ -41,7 +40,7 @@ class RemoveRecordController @Inject() (
       val result = for {
         _ <- validateHeaderClientId.validateClientIdFromAnyContent(request)
         _ <- service.removeRecord(eori, recordId, actorId)
-      } yield Ok
+      } yield NoContent
 
       result.merge
   }

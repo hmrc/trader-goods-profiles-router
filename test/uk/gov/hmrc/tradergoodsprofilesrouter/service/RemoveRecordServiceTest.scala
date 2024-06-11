@@ -23,7 +23,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.OK
+import play.api.http.Status.{NO_CONTENT, OK}
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -66,7 +66,7 @@ class RemoveRecordServiceTest
     val result = service.removeRecord(eori, recordId, actorId)
 
     whenReady(result.value) {
-      _.value shouldBe OK
+      _.value shouldBe NO_CONTENT
     }
   }
 

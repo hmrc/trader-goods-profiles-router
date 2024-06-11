@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.OK
+import play.api.http.Status.NO_CONTENT
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
@@ -43,7 +43,7 @@ class RemoveRecordService @Inject() (
       connector
         .removeRecord(eori, recordId, actorId, correlationId)
         .map {
-          case Right(_)        => Right(OK)
+          case Right(_)        => Right(NO_CONTENT)
           case error @ Left(_) => error
         }
         .recover { case ex: Throwable =>

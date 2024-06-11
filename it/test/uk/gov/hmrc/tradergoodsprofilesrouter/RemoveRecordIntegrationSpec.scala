@@ -54,7 +54,7 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           .delete
           .futureValue
 
-        response.status shouldBe OK
+        response.status shouldBe NO_CONTENT
 
         verifyThatDownstreamApiWasCalled()
       }

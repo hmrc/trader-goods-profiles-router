@@ -21,7 +21,7 @@ import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.Json
 import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
@@ -61,13 +61,13 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     "return a 200 Ok response on removing a record" in {
 
       when(mockService.removeRecord(any, any, any)(any))
-        .thenReturn(EitherT.rightT(OK))
+        .thenReturn(EitherT.rightT(NO_CONTENT))
 
       val result = controller.remove(eori, recordId, actorId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
 
-      status(result) mustBe OK
+      status(result) mustBe NO_CONTENT
     }
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
