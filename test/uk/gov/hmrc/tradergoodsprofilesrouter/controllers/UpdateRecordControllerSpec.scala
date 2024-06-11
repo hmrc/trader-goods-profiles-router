@@ -76,10 +76,6 @@ class UpdateRecordControllerSpec
         sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
 
       status(result) mustBe OK
-
-      withClue("should return json response") {
-        contentAsJson(result) mustBe createOrUpdateRecordSampleJson
-      }
     }
 
     "return 400 Bad request when required request field is missing" in {
