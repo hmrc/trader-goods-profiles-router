@@ -29,7 +29,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 import java.time.Instant
 import scala.concurrent.Future
 
-class RemoveRecordConnectorTest extends BaseConnectorSpec {
+class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
   private val eori                  = "GB123456789011"
   private val actorId               = "GB123456789011"

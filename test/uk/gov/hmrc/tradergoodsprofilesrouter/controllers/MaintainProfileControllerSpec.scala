@@ -33,7 +33,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.ExecutionContext
 
-class MaintainProfileControllerTest extends PlaySpec with MockitoSugar {
+class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 

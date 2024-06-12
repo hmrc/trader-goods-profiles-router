@@ -32,7 +32,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RemoveRecordServiceTest
+class RemoveRecordServiceSpec
     extends PlaySpec
     with CreateRecordDataSupport
     with EitherValues
