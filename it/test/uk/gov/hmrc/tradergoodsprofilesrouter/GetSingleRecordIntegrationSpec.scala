@@ -31,11 +31,12 @@ class GetSingleRecordIntegrationSpec
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
 
-  val eori                           = "GB123456789001"
-  val recordId                       = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime                       = "2021-12-17T09:30:47.456Z"
-  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val eori                   = "GB123456789001"
+  private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val dateTime               = "2021-12-17T09:30:47.456Z"
+  private val timestamp              = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val url                    = fullUrl(s"/traders/$eori/records/$recordId")
   override def connectorPath: String = s"/tgp/getrecords/v1"
   override def connectorName: String = "eis"
 
@@ -47,11 +48,12 @@ class GetSingleRecordIntegrationSpec
 
   "attempting to get records, when" - {
     "the request is" - {
+
       "valid" in {
         stubForEis(OK, Some(getEisRecordsResponseData.toString()))
 
         val response = wsClient
-          .url(fullUrl(s"/$eori/records/$recordId"))
+          .url(url)
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
@@ -67,7 +69,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -86,7 +88,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -105,7 +107,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -124,7 +126,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -143,7 +145,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -162,7 +164,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -181,7 +183,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -200,7 +202,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -219,7 +221,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -238,7 +240,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -257,7 +259,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -276,7 +278,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -295,7 +297,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -320,7 +322,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -334,16 +336,13 @@ class GetSingleRecordIntegrationSpec
 
           verifyThatDownstreamApiWasCalled()
         }
+
+        //Todo: this test may be delete when the Authentication on EORI is done, as
+        // we will never be in the situation of sending a null or invalid EORI to EIS,
+        // as the EORI will be validate bu the Auth and fail before that if invalid.
         "Bad Request for invalid or missing EORI" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/null/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -369,7 +368,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl("/null/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
+              .url(fullUrl("/traders/null/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -390,72 +389,10 @@ class GetSingleRecordIntegrationSpec
 
           verifyThatDownstreamApiWasCalled()
         }
-        "Bad Request for EORI does not exists in database" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 007, message: EORI does not exist in the database"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
-          )
 
-          val response = await(
-            wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .get()
-          )
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "EORI number does not have a TGP",
-                "errorNumber" -> 7
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled()
-        }
         "Bad Request for recordId does not exists in database and Invalid/Missing recordId" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori/null"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -482,7 +419,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl("/GB123456789001/records/null"))
+              .url(fullUrl(s"/traders/GB123456789001/records/null"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -508,16 +445,9 @@ class GetSingleRecordIntegrationSpec
 
           verifyThatDownstreamApiWasCalled()
         }
-        "Bad Request with unexpected error" in {
+        "Bad Request with unexpected error if error code is ot supported" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -543,7 +473,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -567,13 +497,6 @@ class GetSingleRecordIntegrationSpec
         "Bad Request with unable to parse the detail" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -597,7 +520,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -614,13 +537,6 @@ class GetSingleRecordIntegrationSpec
         "Bad Request with invalid json" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-              .withHeader("Content-Type", equalTo("application/json"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -635,7 +551,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/$eori/records/$recordId"))
+              .url(url)
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -653,7 +569,7 @@ class GetSingleRecordIntegrationSpec
       "invalid with missing mandatory header" in {
 
         val response = wsClient
-          .url(fullUrl(s"/$eori/records/$recordId"))
+          .url(url)
           .withHttpHeaders(("Content-Type", "application/json"))
           .get()
           .futureValue
@@ -672,13 +588,6 @@ class GetSingleRecordIntegrationSpec
 
   private def stubForEis(httpStatus: Int, body: Option[String] = None) = stubFor(
     get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
-      .withHeader("Content-Type", equalTo("application/json"))
-      .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-      .withHeader("X-Correlation-ID", equalTo(correlationId))
-      .withHeader("Date", equalTo(timestamp))
-      .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-      .withHeader("X-Client-ID", equalTo("tss"))
       .willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")

@@ -1,10 +1,10 @@
 # microservice specific routes
 
-GET        /:eori/records/:recordId             uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecord(eori: String, recordId: String)
-GET        /:eori                               uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecords(eori: String, lastUpdatedDate:Option[String] ?= None, page: Option[Int] ?= None, size: Option[Int] ?= None)
-POST       /traders/:eori/records               uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateRecordController.create(eori: String)
-PUT        /traders/:eori/records/:recordId     uk.gov.hmrc.tradergoodsprofilesrouter.controllers.UpdateRecordController.update(eori: String, recordId: String)
-DELETE     /traders/:eori/records/:recordId     uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RemoveRecordController.remove(eori: String, recordId: String, actorId: String)
-PUT        /traders/:eori                       uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)
+GET        /traders/:eori/records/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecord(eori: String, recordId: String)
+GET        /traders/:eori                           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecords(eori: String, lastUpdatedDate:Option[String] ?= None, page: Option[Int] ?= None, size: Option[Int] ?= None)
+POST       /traders/:eori/records                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateRecordController.create(eori: String)
+PUT        /traders/:eori/records/:recordId                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.UpdateRecordController.update(eori: String, recordId: String)
+PUT        /:eori/records/:recordId         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RemoveRecordController.remove(eori: String, recordId: String)
+PUT        /traders/:eori                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)
 
-POST       /createaccreditation                 uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RequestAccreditationController.requestAccreditation()
+POST       /createaccreditation             uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RequestAccreditationController.requestAccreditation()
