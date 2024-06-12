@@ -23,7 +23,7 @@ import play.api.libs.json.Json.toJson
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.MaintainProfileConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
@@ -32,7 +32,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.Unexpect
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class MaintainProfileService @Inject() (eisConnector: EISConnector, uuidService: UuidService)(implicit
+class MaintainProfileService @Inject() (connector: MaintainProfileConnector, uuidService: UuidService)(implicit
   ec: ExecutionContext
 ) extends Logging {
 
@@ -44,7 +44,7 @@ class MaintainProfileService @Inject() (eisConnector: EISConnector, uuidService:
     val correlationId = uuidService.uuid
 
     EitherT(
-      eisConnector
+      connector
         .maintainProfile(eisRequest, correlationId)
         .map {
           case response @ Right(_) => response

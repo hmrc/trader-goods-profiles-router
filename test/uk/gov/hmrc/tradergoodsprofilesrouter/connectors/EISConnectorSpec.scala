@@ -18,15 +18,11 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
-import org.mockito.captor.ArgCaptor
-import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HttpReads, StringContextOps}
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
+import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport}
 
 import java.time.Instant
@@ -130,65 +126,4 @@ class EISConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
     }
   }
 
-  "maintain Profile" should {
-    "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
-      when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
-        .thenReturn(Future.successful(Right(maintainProfileResponse)))
-
-      val result =
-        await(eisConnector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyMaintainProfileBearerToken"): _*)
-      verify(requestBuilder).withBody(maintainProfileEisRequest)
-      verify(requestBuilder).execute(any, any)
-      verifyExecuteWithParams
-
-      result.value mustBe maintainProfileResponse
-    }
-
-    "return an error if EIS returns one" in {
-      when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val result =
-        await(eisConnector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
-
-      result.left.value mustBe BadRequest("error")
-    }
-
-  }
-
-  private def verifyExecuteWithParams = {
-    val captor = ArgCaptor[HttpReads[Either[Result, GetEisRecordsResponse]]]
-    verify(requestBuilder).execute(captor.capture, any)
-
-    val httpReader = captor.value
-    httpReader.asInstanceOf[HttpReader[Either[Result, Any]]].correlationId mustBe correlationId
-  }
-
-  val maintainProfileEisRequest: JsValue =
-    Json.parse("""
-          |{
-          |"eori": "GB123456789012",
-          |"actorId":"GB098765432112",
-          |"ukimsNumber":"XIUKIM47699357400020231115081800",
-          |"nirmsNumber":"RMS-GB-123456",
-          |"niphlNumber": "6S123456"
-          |}
-          |""".stripMargin)
-
-  val maintainProfileResponse: MaintainProfileResponse =
-    Json
-      .parse("""
-          |{
-          |"eori": "GB123456789012",
-          |"actorId":"GB098765432112",
-          |"ukimsNumber":"XIUKIM47699357400020231115081800",
-          |"nirmsNumber":"RMS-GB-123456",
-          |"niphlNumber": "6S123456"
-          |}
-          |""".stripMargin)
-      .as[MaintainProfileResponse]
 }

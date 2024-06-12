@@ -22,9 +22,8 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, OtherHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 
@@ -85,14 +84,4 @@ class EISConnector @Inject() (
       .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
-  def maintainProfile(request: MaintainProfileEisRequest, correlationId: String)(implicit
-    hc: HeaderCarrier
-  ): Future[Either[Result, MaintainProfileResponse]] = {
-    val url = appConfig.eisConfig.maintainProfileUrl
-    httpClientV2
-      .put(url"$url")
-      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
-      .withBody(Json.toJson(request))
-      .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
-  }
 }
