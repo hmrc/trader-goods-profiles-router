@@ -23,7 +23,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.GetRecordsConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -31,8 +31,9 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.Unexpect
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetRecordsService @Inject() (eisConnector: EISConnector, uuidService: UuidService)(implicit ec: ExecutionContext)
-    extends Logging {
+class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidService: UuidService)(implicit
+  ec: ExecutionContext
+) extends Logging {
 
   def fetchRecord(eori: String, recordId: String)(implicit
     hc: HeaderCarrier

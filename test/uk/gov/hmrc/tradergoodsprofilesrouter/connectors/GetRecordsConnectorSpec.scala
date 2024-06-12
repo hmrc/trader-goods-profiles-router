@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -24,23 +24,19 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport}
-import uk.gov.hmrc.http.{HttpReads, StringContextOps}
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class EISConnectorSpec extends BaseConnectorSpec {
+class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
 
-  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val eori                  = "GB123456789011"
-  private val recordId              = "12345"
+  private val actorId               = "GB123456789011"
+  private val recordId              = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val eisConnector: EISConnector = new EISConnector(appConfig, httpClientV2, dateTimeService)
+  private val connector = new GetRecordsConnector(appConfig, httpClientV2, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -50,73 +46,9 @@ class EISConnectorSpec extends BaseConnectorSpec {
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
-    when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
-    when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
 
-  "maintain Profile" should {
-    "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
-      when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
-        .thenReturn(Future.successful(Right(maintainProfileResponse)))
-
-      val result =
-        await(eisConnector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyMaintainProfileBearerToken"): _*)
-      verify(requestBuilder).withBody(maintainProfileEisRequest)
-      verify(requestBuilder).execute(any, any)
-      verifyExecuteWithParams
-
-      result.value mustBe maintainProfileResponse
-    }
-
-    "return an error if EIS returns one" in {
-      when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val result =
-        await(eisConnector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
-
-      result.left.value mustBe BadRequest("error")
-    }
-
-  }
-
-  private def verifyExecuteWithParams = {
-    val captor = ArgCaptor[HttpReads[Either[Result, GetEisRecordsResponse]]]
-    verify(requestBuilder).execute(captor.capture, any)
-
-    val httpReader = captor.value
-    httpReader.asInstanceOf[HttpReader[Either[Result, Any]]].correlationId mustBe correlationId
-  }
-
-  val maintainProfileEisRequest: JsValue =
-    Json.parse("""
-          |{
-          |"eori": "GB123456789012",
-          |"actorId":"GB098765432112",
-          |"ukimsNumber":"XIUKIM47699357400020231115081800",
-          |"nirmsNumber":"RMS-GB-123456",
-          |"niphlNumber": "6S123456"
-          |}
-          |""".stripMargin)
-
-  val maintainProfileResponse: MaintainProfileResponse =
-    Json
-      .parse("""
-          |{
-          |"eori": "GB123456789012",
-          |"actorId":"GB098765432112",
-          |"ukimsNumber":"XIUKIM47699357400020231115081800",
-          |"nirmsNumber":"RMS-GB-123456",
-          |"niphlNumber": "6S123456"
-          |}
-          |""".stripMargin)
-      .as[MaintainProfileResponse]
   "fetchRecord" should {
     "fetch a record successfully" in {
       val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
@@ -124,7 +56,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      val result = await(eisConnector.fetchRecord(eori, recordId, correlationId))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId))
 
       result.value mustBe response
     }
@@ -133,7 +65,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(eisConnector.fetchRecord(eori, recordId, correlationId))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -144,7 +76,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Any](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(eisConnector.fetchRecord(eori, recordId, correlationId))
+      await(connector.fetchRecord(eori, recordId, correlationId))
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
       verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordGetBearerToken"): _*)
@@ -160,7 +92,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      val result = await(eisConnector.fetchRecords(eori, correlationId))
+      val result = await(connector.fetchRecords(eori, correlationId))
 
       result.value mustBe response
     }
@@ -169,7 +101,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(eisConnector.fetchRecord(eori, recordId, correlationId))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -180,7 +112,7 @@ class EISConnectorSpec extends BaseConnectorSpec {
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(eisConnector.fetchRecords(eori, correlationId, Some(timestamp), Some(1), Some(1)))
+      await(connector.fetchRecords(eori, correlationId, Some(timestamp), Some(1), Some(1)))
 
       val expectedLastUpdateDate = Instant.parse("2024-05-12T12:15:15Z")
       val expectedUrl            =
@@ -191,5 +123,4 @@ class EISConnectorSpec extends BaseConnectorSpec {
 
     }
   }
-
 }

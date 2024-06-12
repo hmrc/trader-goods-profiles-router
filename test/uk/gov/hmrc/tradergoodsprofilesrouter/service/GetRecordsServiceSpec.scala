@@ -18,15 +18,15 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.GetRecordsConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
@@ -45,24 +45,24 @@ class GetRecordsServiceSpec
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  private val eoriNumber    = "GB123456789011"
-  private val recordId      = "recordId"
-  private val correlationId = "1234-5678-9012"
-  private val eisConnector  = mock[EISConnector]
-  private val uuidService   = mock[UuidService]
+  private val eoriNumber          = "GB123456789011"
+  private val recordId            = "recordId"
+  private val correlationId       = "1234-5678-9012"
+  private val getRecordsConnector = mock[GetRecordsConnector]
+  private val uuidService         = mock[UuidService]
 
-  val sut = new GetRecordsService(eisConnector, uuidService)
+  val sut = new GetRecordsService(getRecordsConnector, uuidService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(eisConnector, uuidService)
+    reset(getRecordsConnector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
   }
 
   "fetchRecord" should {
     "return a record item" in {
-      when(eisConnector.fetchRecord(any, any, any)(any))
+      when(getRecordsConnector.fetchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
 
       val result = sut.fetchRecord(eoriNumber, recordId)
@@ -74,7 +74,7 @@ class GetRecordsServiceSpec
 
     "return an error" when {
       "EIS return an error" in {
-        when(eisConnector.fetchRecord(any, any, any)(any))
+        when(getRecordsConnector.fetchRecord(any, any, any)(any))
           .thenReturn(Future.successful(Left(BadRequest("error"))))
 
         val result = sut.fetchRecord(eoriNumber, recordId)
@@ -85,7 +85,7 @@ class GetRecordsServiceSpec
       }
 
       "error when an exception is thrown" in {
-        when(eisConnector.fetchRecord(any, any, any)(any))
+        when(getRecordsConnector.fetchRecord(any, any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
         val result = sut.fetchRecord(eoriNumber, recordId)
@@ -111,7 +111,7 @@ class GetRecordsServiceSpec
 
     "return a records" in {
       val eisResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
-      when(eisConnector.fetchRecords(any, any, any, any, any)(any))
+      when(getRecordsConnector.fetchRecords(any, any, any, any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
       val result = sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))
@@ -120,8 +120,8 @@ class GetRecordsServiceSpec
         _.value shouldBe eisResponse
       }
 
-      withClue("should call the eisConnector with teh right parameters") {
-        verify(eisConnector)
+      withClue("should call the getRecordsConnector with teh right parameters") {
+        verify(getRecordsConnector)
           .fetchRecords(
             eqTo(eoriNumber),
             eqTo(correlationId),
@@ -135,7 +135,7 @@ class GetRecordsServiceSpec
     "return an error" when {
 
       "EIS return an error" in {
-        when(eisConnector.fetchRecords(any, any, any, any, any)(any))
+        when(getRecordsConnector.fetchRecords(any, any, any, any, any)(any))
           .thenReturn(Future.successful(Left(BadRequest("error"))))
 
         val result = sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))
@@ -146,7 +146,7 @@ class GetRecordsServiceSpec
       }
 
       "error when an exception is thrown" in {
-        when(eisConnector.fetchRecords(any, any, any, any, any)(any))
+        when(getRecordsConnector.fetchRecords(any, any, any, any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
         val result = sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))
