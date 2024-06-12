@@ -53,6 +53,7 @@ trait ValidationRules {
       .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
 
   protected def validateRecordId(recordId: String): Either[Error, String] =
+    //todo: should this be a path parameter error instead?
     Try(UUID.fromString(recordId).toString).toOption.toRight(
       Error(
         InvalidQueryParameter,

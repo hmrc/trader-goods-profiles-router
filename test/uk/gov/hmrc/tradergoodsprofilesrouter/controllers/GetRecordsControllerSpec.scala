@@ -27,11 +27,11 @@ import play.api.libs.json.Json
 import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecordsDataSupport with BeforeAndAfterEach {
@@ -42,6 +42,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
   private val mockUuidService   = mock[UuidService]
   private val eoriNumber        = "GB123456789001"
   private val correlationId     = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val recordId          = UUID.randomUUID().toString
 
   private val sut =
     new GetRecordsController(
@@ -66,7 +67,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       when(mockRouterService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.rightT(getSingleRecordResponseData))
 
-      val result = sut.getTGPRecord("GB123456789001", "12345")(
+      val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
@@ -77,11 +78,11 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
-      val result = sut.getTGPRecord("eori", "12345")(
+      val result = sut.getTGPRecord("eori", recordId)(
         FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(createErrorResponse)
+      contentAsJson(result) mustBe createMissingHeaderErrorResponse
     }
 
     "return an error if cannot fetch a record" in {
@@ -90,7 +91,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       when(mockRouterService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
-      val result = sut.getTGPRecord("GB123456789001", "12345")(
+      val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe INTERNAL_SERVER_ERROR
@@ -136,7 +137,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
         FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(createErrorResponse)
+      contentAsJson(result) mustBe createMissingHeaderErrorResponse
     }
 
     "return an error" when {
@@ -174,14 +175,18 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
   }
 
-  private def createErrorResponse = {
-    val errorResponse =
-      ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.MissingHeaderClientId
+  private def createMissingHeaderErrorResponse =
+    Json.obj(
+      "correlationId" -> correlationId,
+      "code"          -> "BAD_REQUEST",
+      "message"       -> "Bad Request",
+      "errors"        -> Json.arr(
+        Json.obj(
+          "code"        -> "INVALID_HEADER",
+          "message"     -> "Missing mandatory header X-Client-ID",
+          "errorNumber" -> 6000
+        )
       )
-    errorResponse
-  }
+    )
 
 }

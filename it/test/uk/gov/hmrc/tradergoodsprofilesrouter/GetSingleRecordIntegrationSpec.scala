@@ -390,36 +390,11 @@ class GetSingleRecordIntegrationSpec
           verifyThatDownstreamApiWasCalled()
         }
 
-        "Bad Request for recordId does not exists in database and Invalid/Missing recordId" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori/null"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 025, message: Invalid request parameter recordId",
-                               |      "error: 026, message: recordId doesn’t exist in the database"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
-          )
+        "Bad Request if recordId is invalid" in {
 
           val response = await(
             wsClient
-              .url(fullUrl(s"/traders/GB123456789001/records/null"))
+              .url(fullUrl(s"/traders/GB123456789001/records/invalid-recordId"))
               .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
               .get()
           )
@@ -431,19 +406,14 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The recordId has been provided in the wrong format",
+                "code"        -> "INVALID_QUERY_PARAMETER",
+                "message"     -> "Query parameter recordId is in the wrong format",
                 "errorNumber" -> 25
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The requested recordId to update doesn’t exist",
-                "errorNumber" -> 26
               )
             )
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasNotCalled()
         }
         "Bad Request with unexpected error if error code is ot supported" in {
           stubFor(
@@ -578,7 +548,14 @@ class GetSingleRecordIntegrationSpec
         response.json   shouldBe Json.obj(
           "correlationId" -> correlationId,
           "code"          -> "BAD_REQUEST",
-          "message"       -> "Missing mandatory header X-Client-ID"
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
+            Json.obj(
+              "code"        -> "INVALID_HEADER",
+              "message"     -> "Missing mandatory header X-Client-ID",
+              "errorNumber" -> 6000
+            )
+          )
         )
 
         verifyThatDownstreamApiWasNotCalled()

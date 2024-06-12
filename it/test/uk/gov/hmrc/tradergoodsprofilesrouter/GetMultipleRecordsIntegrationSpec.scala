@@ -594,7 +594,14 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         response.json   shouldBe Json.obj(
           "correlationId" -> correlationId,
           "code"          -> "BAD_REQUEST",
-          "message"       -> "Missing mandatory header X-Client-ID"
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
+            Json.obj(
+              "code"        -> "INVALID_HEADER",
+              "message"     -> "Missing mandatory header X-Client-ID",
+              "errorNumber" -> 6000
+            )
+          )
         )
 
         verifyThatDownstreamApiWasNotCalled()
