@@ -32,7 +32,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfile
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class MaintainProfileServiceTest
+class MaintainProfileServiceSpec
     extends AnyWordSpec
     with Matchers
     with ScalaFutures

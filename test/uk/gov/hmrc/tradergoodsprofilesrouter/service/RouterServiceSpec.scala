@@ -23,7 +23,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.http.Status.OK
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -47,7 +46,6 @@ class RouterServiceSpec
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
   private val eoriNumber    = "GB123456789011"
-  private val actorId       = "GB123456789011"
   private val recordId      = "recordId"
   private val correlationId = "1234-5678-9012"
   private val eisConnector  = mock[EISConnector]
@@ -164,47 +162,6 @@ class RouterServiceSpec
         }
       }
 
-    }
-  }
-
-  "removeRecord" should {
-    "remove a record item" in {
-      when(eisConnector.removeRecord(any, any, any, any)(any))
-        .thenReturn(Future.successful(Right(OK)))
-
-      val result = routerService.removeRecord(eoriNumber, recordId, actorId)
-
-      whenReady(result.value) {
-        _.value shouldBe OK
-      }
-    }
-
-    "EIS return an error" in {
-      when(eisConnector.removeRecord(any, any, any, any)(any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val result = routerService.removeRecord(eoriNumber, recordId, actorId)
-
-      whenReady(result.value) {
-        _.left.value shouldBe BadRequest("error")
-      }
-    }
-
-    "error when an exception is thrown" in {
-      when(eisConnector.removeRecord(any, any, any, any)(any))
-        .thenReturn(Future.failed(new RuntimeException("error")))
-
-      val result = routerService.removeRecord(eoriNumber, recordId, actorId)
-
-      whenReady(result.value) {
-        _.left.value shouldBe InternalServerError(
-          Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "error"
-          )
-        )
-      }
     }
   }
 

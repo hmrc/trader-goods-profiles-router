@@ -88,7 +88,10 @@ trait ValidationRules {
         ).asPresentation
       }
 
-  protected def validateQueryParameters(actorId: String, recordId: String) =
+  protected def validateQueryParameters(
+    actorId: String,
+    recordId: String
+  ): Either[List[Error], ValidatedQueryParameters] =
     (
       validateActorId(actorId).toEitherNec,
       validateRecordId(recordId).toEitherNec

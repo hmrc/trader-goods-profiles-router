@@ -17,11 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.Mockito
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
-import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -30,7 +27,6 @@ import uk.gov.hmrc.http.{HttpReads, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport}
 
 import java.time.Instant
@@ -38,12 +34,10 @@ import scala.concurrent.Future
 
 class EISConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
 
-  private val dateTimeService: DateTimeService = mock[DateTimeService]
-  private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
-  private val eori                             = "GB123456789011"
-  private val actorId                          = "GB123456789011"
-  private val recordId                         = "12345"
-  private val correlationId: String            = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
+  private val eori                  = "GB123456789011"
+  private val recordId              = "12345"
+  private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val eisConnector: EISConnector = new EISConnector(appConfig, httpClientV2, dateTimeService)
 
@@ -133,42 +127,6 @@ class EISConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
       verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordGetBearerToken"): _*)
       verifyExecuteWithParams(correlationId)
 
-    }
-  }
-
-  "removeRecord" should {
-    "remove a record successfully" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
-        .thenReturn(Future.successful(Right(OK)))
-
-      val result = await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
-
-      result.value mustBe OK
-    }
-
-    "send a request with the right url for remove record" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
-        .thenReturn(Future.successful(Right(OK)))
-
-      val result =
-        await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder, Mockito.atLeast(1))
-        .setHeader(buildHeaders(correlationId, "dummyRecordRemoveBearerToken"): _*)
-      verify(requestBuilder, Mockito.atLeast(1)).execute(any, any)
-
-      result.value mustBe OK
-    }
-
-    "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val result = await(eisConnector.removeRecord(eori, recordId, actorId, correlationId))
-
-      result.left.value mustBe BadRequest("error")
     }
   }
 
