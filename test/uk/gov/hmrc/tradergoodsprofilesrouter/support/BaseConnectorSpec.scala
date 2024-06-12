@@ -29,6 +29,7 @@ import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
 
 import scala.concurrent.ExecutionContext
@@ -38,9 +39,10 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
 
-  val appConfig: AppConfig           = mock[AppConfig]
-  val httpClientV2: HttpClientV2     = mock[HttpClientV2]
-  val requestBuilder: RequestBuilder = mock[RequestBuilder]
+  val appConfig: AppConfig             = mock[AppConfig]
+  val httpClientV2: HttpClientV2       = mock[HttpClientV2]
+  val requestBuilder: RequestBuilder   = mock[RequestBuilder]
+  val dateTimeService: DateTimeService = mock[DateTimeService]
 
   def buildHeaders(correlationId: String, accessToken: String) = Seq(
     "X-Correlation-ID" -> correlationId,

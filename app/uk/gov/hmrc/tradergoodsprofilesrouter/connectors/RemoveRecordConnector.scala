@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
-import play.api.http.MimeTypes
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -26,17 +25,16 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.OtherHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordConnector @Inject() (
-  appConfig: AppConfig,
+  override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
-    extends EisHttpErrorHandler {
+    extends BaseConnector
+    with EisHttpErrorHandler {
 
   def removeRecord(
     eori: String,
@@ -47,21 +45,8 @@ class RemoveRecordConnector @Inject() (
     val url = appConfig.eisConfig.removeRecordUrl
     httpClientV2
       .put(url"$url")
-      .setHeader(eisRequestHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
+      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
       .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
       .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
-
-  private def eisRequestHeaders(correlationId: String, bearerToken: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] =
-    Seq(
-      CorrelationId -> correlationId,
-      ForwardedHost -> appConfig.eisConfig.forwardedHost,
-      ContentType   -> MimeTypes.JSON,
-      Accept        -> MimeTypes.JSON,
-      Date          -> dateTimeService.timestamp.asStringHttp,
-      ClientId      -> hc.headers(Seq(ClientId)).head._2,
-      Authorization -> bearerToken
-    )
 }

@@ -19,30 +19,23 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.Mockito
 import org.mockito.MockitoSugar.{reset, verify, when}
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.OK
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
+import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class RemoveRecordConnectorTest extends BaseConnectorSpec with CreateRecordDataSupport {
+class RemoveRecordConnectorTest extends BaseConnectorSpec {
 
-  override implicit val ec: ExecutionContext = ExecutionContext.global
-  override implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
-
-  private val dateTimeService: DateTimeService = mock[DateTimeService]
-  private val eori                             = "GB123456789011"
-  private val actorId                          = "GB123456789011"
-  private val recordId                         = "12345"
-  private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
-  implicit val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  private val eori                  = "GB123456789011"
+  private val actorId               = "GB123456789011"
+  private val recordId              = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
+  private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val connector = new RemoveRecordConnector(appConfig, httpClientV2, dateTimeService)
 

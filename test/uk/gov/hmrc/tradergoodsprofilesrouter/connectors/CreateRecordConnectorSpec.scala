@@ -18,14 +18,12 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
 
 import java.time.Instant
@@ -33,9 +31,8 @@ import scala.concurrent.Future
 
 class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataSupport {
 
-  private val dateTimeService: DateTimeService = mock[DateTimeService]
-  private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
-  implicit val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  private val timestamp              = Instant.parse("2024-05-12T12:15:15.456321Z")
+  implicit val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val connector = new CreateRecordConnector(appConfig, httpClientV2, dateTimeService)
 

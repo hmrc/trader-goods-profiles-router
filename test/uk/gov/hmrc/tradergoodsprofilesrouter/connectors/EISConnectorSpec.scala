@@ -19,7 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -28,7 +27,6 @@ import uk.gov.hmrc.http.{HttpReads, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, MaintainProfileResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport}
 
 import java.time.Instant
@@ -36,11 +34,10 @@ import scala.concurrent.Future
 
 class EISConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
 
-  private val dateTimeService: DateTimeService = mock[DateTimeService]
-  private val timestamp                        = Instant.parse("2024-05-12T12:15:15.456321Z")
-  private val eori                             = "GB123456789011"
-  private val recordId                         = "12345"
-  private val correlationId: String            = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
+  private val eori                  = "GB123456789011"
+  private val recordId              = "12345"
+  private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val eisConnector: EISConnector = new EISConnector(appConfig, httpClientV2, dateTimeService)
 
