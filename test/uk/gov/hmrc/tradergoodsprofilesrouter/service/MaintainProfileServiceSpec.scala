@@ -26,7 +26,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.MaintainProfileConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 
@@ -45,21 +45,21 @@ class MaintainProfileServiceSpec
 
   private val eori          = "GB123456789011"
   private val correlationId = "1234-5678-9012"
-  private val eisConnector  = mock[EISConnector]
+  private val connector     = mock[MaintainProfileConnector]
   private val uuidService   = mock[UuidService]
 
-  val service = new MaintainProfileService(eisConnector, uuidService)
+  val service = new MaintainProfileService(connector, uuidService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(eisConnector, uuidService)
+    reset(connector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
   }
 
   "maintain profile" should {
     "successfully maintain a profile" in {
-      when(eisConnector.maintainProfile(any, any)(any))
+      when(connector.maintainProfile(any, any)(any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
 
       val result = service.maintainProfile(eori, maintainProfileRequest)
@@ -70,7 +70,7 @@ class MaintainProfileServiceSpec
     }
 
     "return an bad request when EIS return a bad request" in {
-      when(eisConnector.maintainProfile(any, any)(any))
+      when(connector.maintainProfile(any, any)(any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
       val result = service.maintainProfile(eori, maintainProfileRequest)
@@ -81,7 +81,7 @@ class MaintainProfileServiceSpec
     }
 
     "return an internal server error when EIS returns one" in {
-      when(eisConnector.maintainProfile(any, any)(any))
+      when(connector.maintainProfile(any, any)(any))
         .thenReturn(Future.failed(new RuntimeException("run time exception")))
 
       val result = service.maintainProfile(eori, maintainProfileRequest)
