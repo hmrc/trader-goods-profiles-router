@@ -22,6 +22,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.{BadGateway, BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound, ServiceUnavailable}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ErrorDetail
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
@@ -181,8 +182,7 @@ trait EisHttpErrorHandler {
       BadRequestCode,
       BadRequestMessage,
       detail.sourceFaultDetail.map { sfd =>
-        //todo: do not use get on an option as the option can be None and then this will crash
-        sfd.detail.get.map(detail => parseFaultDetail(detail, correlationId))
+        sfd.detail.fold[Seq[errors.Error]](Seq())(s => s.map(detail => parseFaultDetail(detail, correlationId)))
       }
     )
 
