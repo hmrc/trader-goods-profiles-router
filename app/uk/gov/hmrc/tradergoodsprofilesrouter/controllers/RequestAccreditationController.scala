@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
+import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
@@ -29,7 +30,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationreq
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, RouterService, UuidService}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class RequestAccreditationController @Inject() (
   override val controllerComponents: ControllerComponents,
@@ -45,7 +46,8 @@ class RequestAccreditationController @Inject() (
   def requestAccreditation: Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
 
-      requestAccreditationRequest <- validateRequestBody[RequestAccreditation](fieldsToErrorCode)
+      requestAccreditationRequest <-
+        EitherT.fromEither[Future](validateRequestBody[RequestAccreditation](fieldsToErrorCode))
       recordItem                  <- getRecordService.fetchRecord(requestAccreditationRequest.eori, requestAccreditationRequest.recordId)
       newAccreditationRequest      = createNewTraderDetails(recordItem, requestAccreditationRequest)
       _                           <- routerService.requestAccreditation(newAccreditationRequest)

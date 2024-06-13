@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action
 
-import cats.data.EitherT
 import cats.implicits.catsSyntaxTuple2Parallel
 import cats.syntax.all._
 import org.apache.commons.validator.routines.EmailValidator
@@ -32,11 +31,10 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.time.Instant
 import java.util.{Locale, UUID}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.util.matching.Regex
 
-//todo: we may want to unify ValidationSupport and this one.
 trait ValidationRules {
   this: BaseController =>
 
@@ -44,13 +42,12 @@ trait ValidationRules {
 
   implicit def ec: ExecutionContext
 
-  protected def validateClientId(implicit request: Request[_]): EitherT[Future, Result, String] =
-    EitherT
-      .fromOption[Future](
-        request.headers.get(HeaderNames.ClientId),
-        Error(InvalidHeader, MissingHeaderClientId, 6000)
+  protected def validateClientId(implicit request: Request[_]): Either[Result, String] =
+    request.headers
+      .get(HeaderNames.ClientId)
+      .toRight(
+        BadRequestErrorResponse(uuidService.uuid, Seq(Error(InvalidHeader, MissingHeaderClientId, 6000))).asPresentation
       )
-      .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
 
   protected def validateRecordId(recordId: String): Either[Error, String] =
     //todo: should this be a path parameter error instead?
@@ -75,19 +72,17 @@ trait ValidationRules {
 
   protected def validateRequestBody[A: Reads](
     fieldToErrorCodeTable: Map[String, (String, String)]
-  )(implicit request: Request[JsValue]): EitherT[Future, Result, A] =
-    EitherT
-      .fromEither[Future](
-        request.body
-          .validate[A]
-          .asEither
-      )
-      .leftMap { errors =>
+  )(implicit request: Request[JsValue]): Either[Result, A] =
+    request.body
+      .validate[A]
+      .asEither
+      .left
+      .map(x =>
         BadRequestErrorResponse(
           uuidService.uuid,
-          convertError[A](errors, fieldToErrorCodeTable)
+          convertError[A](x, fieldToErrorCodeTable)
         ).asPresentation
-      }
+      )
 
   protected def validateQueryParameters(
     actorId: String,

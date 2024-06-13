@@ -52,33 +52,26 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
     "return a client id if present" in new TestValidationRules(uuidService) { validator =>
       val result = validator.validateClientId(FakeRequest().withHeaders("X-Client-ID" -> "any-client-id"))
 
-      whenReady(result.value) {
-        _.value mustBe "any-client-id"
-      }
-
+      result.value mustBe "any-client-id"
     }
 
     "return an error if X-Client-ID is missing" in new TestValidationRules(uuidService) { validator =>
       val result = validator.validateClientId(FakeRequest())
 
-      whenReady(result.value) {
-
-        _.left.value mustBe BadRequest(
-          Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_HEADER",
-                "message"     -> "Missing mandatory header X-Client-ID",
-                "errorNumber" -> 6000
-              )
+      result.left.value mustBe BadRequest(
+        Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
+            Json.obj(
+              "code"        -> "INVALID_HEADER",
+              "message"     -> "Missing mandatory header X-Client-ID",
+              "errorNumber" -> 6000
             )
           )
         )
-      }
-
+      )
     }
   }
 
@@ -173,23 +166,20 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
       val result = validator.validateRequestBody[TestClass](Map("/name" -> ("01", "message-error")))
 
-      whenReady(result.value) {
-
-        _.left.value mustBe BadRequest(
-          Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "message-error",
-                "errorNumber" -> 1
-              )
+      result.left.value mustBe BadRequest(
+        Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
+            Json.obj(
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "message-error",
+              "errorNumber" -> 1
             )
           )
         )
-      }
+      )
     }
 
     "return the Deserialised object" in new TestValidationRules(uuidService) {
@@ -199,10 +189,9 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
       val result = validator.validateRequestBody[TestClass](Map("/name" -> ("01", "message-error")))
 
-      whenReady(result.value) {
-        _.value mustBe TestClass("any-name")
-      }
+      result.value mustBe TestClass("any-name")
     }
+
   }
 
   "isValidDate" should {

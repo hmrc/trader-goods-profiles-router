@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
+import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
@@ -27,7 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class MaintainProfileController @Inject() (
   override val controllerComponents: ControllerComponents,
@@ -40,8 +41,9 @@ class MaintainProfileController @Inject() (
 
   def maintain(eori: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _                      <- validateClientId(request)
-      maintainProfileRequest <- validateRequestBody[MaintainProfileRequest](fieldsToErrorCode)
+      _                      <- EitherT.fromEither[Future](validateClientId)
+      maintainProfileRequest <-
+        EitherT.fromEither[Future](validateRequestBody[MaintainProfileRequest](fieldsToErrorCode))
       response               <- maintainProfileService.maintainProfile(eori, maintainProfileRequest)
     } yield Ok(Json.toJson(response))
 
