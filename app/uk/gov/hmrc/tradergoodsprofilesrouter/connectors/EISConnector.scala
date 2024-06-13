@@ -20,10 +20,8 @@ import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, OtherHttpReader}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.OtherHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 
@@ -44,11 +42,14 @@ class EISConnector @Inject() (
     val url = appConfig.eisConfig.createAccreditationUrl
 
     val accreditationEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
-    httpClientV2
+    val o                       = httpClientV2
       .post(url"$url")
-      .setHeader(buildHeadersForAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
-      .withBody(Json.toJson(accreditationEisRequest))
-      .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
+
+    val c =
+      o.setHeader(buildHeadersForAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
+    val k = c.withBody(Json.toJson(accreditationEisRequest))
+    val h = k.execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
+    h
   }
 
 }
