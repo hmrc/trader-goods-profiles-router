@@ -25,11 +25,10 @@ import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{ValidatedQueryParameters, isValidActorId, isValidComcode, isValidCountryCode, isValidDate}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{ValidatedQueryParameters, isValidActorId, isValidComcode, isValidCountryCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 
-import java.time.Instant
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 
@@ -192,18 +191,6 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
       result.value mustBe TestClass("any-name")
     }
 
-  }
-
-  "isValidDate" should {
-    "return true when date is valid" in {
-      isValidDate(Instant.parse("2024-06-01T12:34:56Z")) mustBe true
-    }
-
-    //todo: do we really want to fail teh validation if date is in millisecond? why do not just format
-    // the date to Seconds instead of failing?
-    "return false when date is millisecond" in {
-      isValidDate(Instant.parse("2024-06-01T12:34:56.789Z")) mustBe false
-    }
   }
 
   "isValidCountryCode" should {

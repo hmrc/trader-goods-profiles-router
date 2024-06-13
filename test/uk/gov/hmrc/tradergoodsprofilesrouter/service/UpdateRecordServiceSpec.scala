@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar.mock
@@ -28,8 +28,11 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.UpdateRecordConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 class UpdateRecordServiceSpec
@@ -65,11 +68,32 @@ class UpdateRecordServiceSpec
 
       val result = sut.updateRecord(eoriNumber, "recordId", updateRecordRequest)
 
-      whenReady(result.value) {
-        _.value mustBe eisResponse
+      whenReady(result.value) { o =>
+        o.value mustBe eisResponse
+        verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
       }
     }
 
+    "dateTime value should be formatted to yyyy-mm-dd'T'hh:mm:ssZ" in {
+      val eisResponse = createOrUpdateRecordResponseData
+      when(connector.updateRecord(any, any)(any))
+        .thenReturn(Future.successful(Right(eisResponse)))
+
+      val invalidFormattedDate = Instant.parse("2024-11-18T23:20:19.1324564Z")
+      val result               =
+        sut.updateRecord(eoriNumber, "recordId", updateRecordRequestWIthInvalidFormattedDate(invalidFormattedDate))
+
+      whenReady(result.value) { _ =>
+        val expectedpayload = UpdateRecordPayload(
+          eori = eoriNumber,
+          recordId = "recordId",
+          actorId = "GB098765432112",
+          comcodeEffectiveFromDate = Some(Instant.parse("2024-11-18T23:20:19Z")),
+          comcodeEffectiveToDate = Some(Instant.parse("2024-11-18T23:20:19Z"))
+        )
+        verify(connector).updateRecord(eqTo(expectedpayload), eqTo(correlationId))(any)
+      }
+    }
     "return an internal server error" when {
 
       "EIS return an error" in {
@@ -103,12 +127,50 @@ class UpdateRecordServiceSpec
     }
   }
 
+  private def updateRecordRequestWIthInvalidFormattedDate(dateTime: Instant) = {
+    val updateRequest =
+      UpdateRecordRequest(
+        actorId = "GB098765432112",
+        comcodeEffectiveFromDate = Some(dateTime),
+        comcodeEffectiveToDate = Some(dateTime)
+      )
+    updateRequest
+  }
+
+  private def expectedPayload = {
+
+    val condition  = Condition(
+      Some("abc123"),
+      Some("Y923"),
+      Some("Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law"),
+      Some("Excluded product")
+    )
+    val assessment = Assessment(
+      Some("abc123"),
+      Some(1),
+      Some(condition)
+    )
+    UpdateRecordPayload(
+      eoriNumber,
+      "recordId",
+      "GB098765432112",
+      Some("BAN001001"),
+      Some("10410100"),
+      Some("Organic bananas"),
+      Some("EC"),
+      Some(1),
+      Some(Seq(assessment)),
+      Some(500),
+      Some("Square metre (m2)"),
+      Some(Instant.parse("2024-11-18T23:20:19Z")),
+      Some(Instant.parse("2024-11-18T23:20:19Z"))
+    )
+  }
+
   val updateRecordRequest: UpdateRecordRequest = Json
     .parse("""
              |{
-             |    "eori": "GB123456789001",
              |    "actorId": "GB098765432112",
-             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
              |    "traderRef": "BAN001001",
              |    "comcode": "10410100",
              |    "adviceStatus": "Not Requested",

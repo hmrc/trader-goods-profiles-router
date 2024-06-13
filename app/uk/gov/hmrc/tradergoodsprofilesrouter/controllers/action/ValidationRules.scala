@@ -20,16 +20,17 @@ import cats.implicits.catsSyntaxTuple2Parallel
 import cats.syntax.all._
 import org.apache.commons.validator.routines.EmailValidator
 import play.api.libs.functional.syntax.toApplicativeOps
+import play.api.libs.json.Json.toJson
 import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json._
+import play.api.mvc.Results.BadRequest
 import play.api.mvc.{BaseController, Request, Result}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{ValidatedQueryParameters, extractSimplePaths, isValidActorId}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{BadRequestErrorResponse, Error}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, ValidatedQueryParameters, extractSimplePaths, isValidActorId}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import java.time.Instant
 import java.util.{Locale, UUID}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -117,9 +118,6 @@ object ValidationRules {
   def isValidCountryCode(rawCountryCode: String): Boolean =
     Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)
 
-  def isValidDate(instant: Instant): Boolean =
-    instant.getNano == 0
-
   private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
 
   object Reads {
@@ -130,7 +128,6 @@ object ValidationRules {
 
     val validComcode: Reads[String] = verifying(isValidComcode)
 
-    val validDate: Reads[Instant]        = verifying(isValidDate)
     val validEmailAddress: Reads[String] = verifying(isValidEmailAddress)
   }
 
@@ -196,4 +193,22 @@ object ValidationRules {
     "/requestorName"                              -> (InvalidOrMissingRequestorNameCode, InvalidOrMissingRequestorName),
     "/requestorEmail"                             -> (InvalidOrMissingRequestorEmailCode, InvalidOrMissingRequestorEmail)
   )
+
+  case class BadRequestErrorResponse(correlationId: String, errors: Seq[Error]) {
+    def asPresentation =
+      BadRequest(
+        toJson(
+          ErrorResponse(
+            correlationId,
+            BadRequestCode,
+            BadRequestMessage,
+            Some(errors)
+          )
+        )
+      )
+  }
+
+  object BadRequestErrorResponse {
+    implicit val format: OFormat[BadRequestErrorResponse] = Json.format[BadRequestErrorResponse]
+  }
 }

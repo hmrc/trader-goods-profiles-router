@@ -21,21 +21,22 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 case class UpdateRecordPayload(
   eori: String,
   recordId: String,
   actorId: String,
-  traderRef: Option[String],
-  comcode: Option[String],
-  goodsDescription: Option[String],
-  countryOfOrigin: Option[String],
-  category: Option[Int],
-  assessments: Option[Seq[Assessment]],
-  supplementaryUnit: Option[Int],
-  measurementUnit: Option[String],
-  comcodeEffectiveFromDate: Option[Instant],
-  comcodeEffectiveToDate: Option[Instant]
+  traderRef: Option[String] = None,
+  comcode: Option[String] = None,
+  goodsDescription: Option[String] = None,
+  countryOfOrigin: Option[String] = None,
+  category: Option[Int] = None,
+  assessments: Option[Seq[Assessment]] = None,
+  supplementaryUnit: Option[Int] = None,
+  measurementUnit: Option[String] = None,
+  comcodeEffectiveFromDate: Option[Instant] = None,
+  comcodeEffectiveToDate: Option[Instant] = None
 )
 
 object UpdateRecordPayload {
@@ -54,7 +55,7 @@ object UpdateRecordPayload {
       assessments = request.assessments,
       supplementaryUnit = request.supplementaryUnit,
       measurementUnit = request.measurementUnit,
-      comcodeEffectiveFromDate = request.comcodeEffectiveFromDate,
-      comcodeEffectiveToDate = request.comcodeEffectiveToDate
+      comcodeEffectiveFromDate = request.comcodeEffectiveFromDate.map(_.truncatedTo(ChronoUnit.SECONDS)),
+      comcodeEffectiveToDate = request.comcodeEffectiveToDate.map(_.truncatedTo(ChronoUnit.SECONDS))
     )
 }
