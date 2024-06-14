@@ -24,7 +24,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.MimeTypes
 import play.api.mvc.Result
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
@@ -44,7 +44,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   val requestBuilder: RequestBuilder   = mock[RequestBuilder]
   val dateTimeService: DateTimeService = mock[DateTimeService]
 
-  def buildHeaders(correlationId: String, accessToken: String) = Seq(
+  def expectedHeader(correlationId: String, accessToken: String) = Seq(
     "X-Correlation-ID" -> correlationId,
     "X-Forwarded-Host" -> "MDTP",
     "Content-Type"     -> MimeTypes.JSON,
@@ -77,11 +77,11 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     )
 
   def verifyExecuteWithParams(expectedCorrelationId: String) = {
-    val captor = ArgCaptor[HttpReads[Either[Result, GetEisRecordsResponse]]]
+    val captor = ArgCaptor[HttpReader[Either[Result, GetEisRecordsResponse]]]
     verify(requestBuilder).execute(captor.capture, any)
 
     val httpReader = captor.value
-    httpReader.asInstanceOf[HttpReader[Either[Result, Any]]].correlationId mustBe expectedCorrelationId
+    httpReader.correlationId mustBe expectedCorrelationId
   }
 
 }

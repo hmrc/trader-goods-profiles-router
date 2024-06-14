@@ -19,13 +19,13 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 import cats.data.EitherT
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json
-import play.api.libs.json.Json.toJson
 import play.api.mvc._
-import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.InvalidQueryParameter
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import java.time.Instant
 import javax.inject.Inject
@@ -33,19 +33,23 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class GetRecordsController @Inject() (
-  cc: ControllerComponents,
-  routerService: RouterService,
-  uuidService: UuidService
-)(implicit ec: ExecutionContext)
-    extends BackendController(cc) {
+  override val controllerComponents: ControllerComponents,
+  getRecordSErvice: GetRecordsService,
+  override val uuidService: UuidService
+)(implicit val ec: ExecutionContext)
+    extends BackendBaseController
+    with ValidationRules {
 
   def getTGPRecord(
     eori: String,
     recordId: String
   ): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val result = for {
-      _          <- validateClientId
-      recordItem <- routerService.fetchRecord(eori, recordId)
+      _          <- EitherT.fromEither[Future](validateClientId)
+      _          <- EitherT
+                      .fromEither[Future](validateRecordId(recordId))
+                      .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
+      recordItem <- getRecordSErvice.fetchRecord(eori, recordId)
     } yield Ok(Json.toJson(recordItem))
 
     result.merge
@@ -58,27 +62,13 @@ class GetRecordsController @Inject() (
     size: Option[Int] = None
   ): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val result = for {
-      _         <- validateClientId
+      _         <- EitherT.fromEither[Future](validateClientId)
       validDate <- validateDate(lastUpdatedDate)
-      records   <- routerService.fetchRecords(eori, validDate, page, size)
+      records   <- getRecordSErvice.fetchRecords(eori, validDate, page, size)
     } yield Ok(Json.toJson(records))
 
     result.merge
   }
-
-  private def validateClientId(implicit request: Request[AnyContent]): EitherT[Future, Result, String] =
-    EitherT.fromOption(
-      request.headers.get(HeaderNames.ClientId),
-      BadRequest(
-        toJson(
-          ErrorResponse(
-            uuidService.uuid,
-            ApplicationConstants.BadRequestCode,
-            ApplicationConstants.MissingHeaderClientId
-          )
-        )
-      )
-    )
 
   private def validateDate(lastUpdateDate: Option[String]): EitherT[Future, Result, Option[Instant]] =
     EitherT.fromEither(

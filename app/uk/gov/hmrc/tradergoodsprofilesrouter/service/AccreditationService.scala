@@ -17,46 +17,39 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import cats.data.EitherT
+import com.google.inject.Inject
 import play.api.Logging
+import play.api.http.Status.CREATED
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.UpdateRecordConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.AccreditationConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
-import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class UpdateRecordService @Inject() (
-  connector: UpdateRecordConnector,
-  uuidService: UuidService
-)(implicit ec: ExecutionContext)
-    extends Logging {
+class AccreditationService @Inject() (connector: AccreditationConnector, uuidService: UuidService)(implicit
+  ec: ExecutionContext
+) extends Logging {
 
-  def updateRecord(
-    eori: String,
-    recordId: String,
-    request: UpdateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
+  def requestAccreditation(
+    request: TraderDetails
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] = {
     val correlationId = uuidService.uuid
-    val payload       = UpdateRecordPayload(eori, recordId, request)
     EitherT(
       connector
-        .updateRecord(payload, correlationId)
+        .requestAccreditation(request, correlationId)
         .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
+          case Right(_)        => Right(CREATED)
+          case error @ Left(_) => error
         }
         .recover { case ex: Throwable =>
           logger.error(
-            s"""[UpdateRecordService] - Error when updating records for Eori Number: $eori,
-            s"correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
+            s"""[AccreditationService] - Error when creating accreditation for
+            correlationId: $correlationId, message: ${ex.getMessage}"""
           )
           Left(
             InternalServerError(
@@ -66,5 +59,4 @@ class UpdateRecordService @Inject() (
         }
     )
   }
-
 }

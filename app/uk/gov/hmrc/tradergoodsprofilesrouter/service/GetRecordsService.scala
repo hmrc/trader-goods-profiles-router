@@ -19,13 +19,11 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.CREATED
 import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.GetRecordsConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -33,8 +31,9 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.Unexpect
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
-class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidService)(implicit ec: ExecutionContext)
-    extends Logging {
+class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidService: UuidService)(implicit
+  ec: ExecutionContext
+) extends Logging {
 
   def fetchRecord(eori: String, recordId: String)(implicit
     hc: HeaderCarrier
@@ -51,7 +50,7 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
           logMessageAndReturnError(
             correlationId,
             ex,
-            s"""[RouterService] - Error when fetching a single record for Eori Number: $eori,
+            s"""[GetRecordsService] - Error when fetching a single record for Eori Number: $eori,
             s"recordId: $recordId, correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
@@ -78,30 +77,8 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
           logMessageAndReturnError(
             correlationId,
             ex,
-            s"""[RouterService] - Error when fetching records for Eori Number: $eori,
+            s"""[GetRecordsService] - Error when fetching records for Eori Number: $eori,
             s"correlationId: $correlationId, message: ${ex.getMessage}"""
-          )
-        }
-    )
-  }
-
-  def requestAccreditation(
-    request: TraderDetails
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] = {
-    val correlationId = uuidService.uuid
-    EitherT(
-      eisConnector
-        .requestAccreditation(request, correlationId)
-        .map {
-          case Right(_)        => Right(CREATED)
-          case error @ Left(_) => error
-        }
-        .recover { case ex: Throwable =>
-          logMessageAndReturnError(
-            correlationId,
-            ex,
-            s"""[RouterService] - Error when creating accreditation for
-            correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }
     )
@@ -115,5 +92,4 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
       )
     )
   }
-
 }

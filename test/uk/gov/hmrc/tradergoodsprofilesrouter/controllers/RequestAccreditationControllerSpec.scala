@@ -26,7 +26,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{AccreditationService, GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
@@ -36,13 +36,15 @@ class RequestAccreditationControllerSpec extends PlaySpec with MockitoSugar with
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  private val mockRouterService = mock[RouterService]
-  private val mockUuidService   = mock[UuidService]
+  private val mockGetRecordsService    = mock[GetRecordsService]
+  private val mockAccreditationService = mock[AccreditationService]
+  private val mockUuidService          = mock[UuidService]
 
   private val sut =
     new RequestAccreditationController(
       stubControllerComponents(),
-      mockRouterService,
+      mockGetRecordsService,
+      mockAccreditationService,
       mockUuidService
     )
 
@@ -53,9 +55,9 @@ class RequestAccreditationControllerSpec extends PlaySpec with MockitoSugar with
   "POST /createaccreditation" should {
 
     "return a 201 Ok response on creating accreditation" in {
-      when(mockRouterService.fetchRecord(any, any)(any))
+      when(mockGetRecordsService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.rightT(getSingleRecordResponseData))
-      when(mockRouterService.requestAccreditation(any)(any))
+      when(mockAccreditationService.requestAccreditation(any)(any))
         .thenReturn(EitherT.rightT(CREATED))
 
       val result = sut.requestAccreditation()(
@@ -66,7 +68,7 @@ class RequestAccreditationControllerSpec extends PlaySpec with MockitoSugar with
     }
 
     "return 400 Bad request when required request field is missing" in {
-      when(mockRouterService.fetchRecord(any, any)(any))
+      when(mockGetRecordsService.fetchRecord(any, any)(any))
         .thenReturn(EitherT.rightT(getSingleRecordResponseData))
 
       val errorResponse = ErrorResponse(

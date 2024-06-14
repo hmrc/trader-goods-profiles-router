@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
+import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
@@ -27,7 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class CreateRecordController @Inject() (
   override val controllerComponents: ControllerComponents,
@@ -40,8 +41,8 @@ class CreateRecordController @Inject() (
 
   def create(eori: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _                   <- validateClientId
-      createRecordRequest <- validateRequestBody[CreateRecordRequest](fieldsToErrorCode)
+      _                   <- EitherT.fromEither[Future](validateClientId)
+      createRecordRequest <- EitherT.fromEither[Future](validateRequestBody[CreateRecordRequest](fieldsToErrorCode))
       response            <- createRecordService.createRecord(eori, createRecordRequest)
     } yield Created(Json.toJson(response))
 

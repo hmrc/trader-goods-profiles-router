@@ -20,7 +20,7 @@ import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validComcode, validDate}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validComcode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.isValidCountryCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
@@ -30,16 +30,16 @@ import java.time.Instant
 
 case class UpdateRecordRequest(
   actorId: String,
-  traderRef: Option[String],
-  comcode: Option[String],
-  goodsDescription: Option[String],
-  countryOfOrigin: Option[String],
-  category: Option[Int],
-  assessments: Option[Seq[Assessment]],
-  supplementaryUnit: Option[Int],
-  measurementUnit: Option[String],
-  comcodeEffectiveFromDate: Option[Instant],
-  comcodeEffectiveToDate: Option[Instant]
+  traderRef: Option[String] = None,
+  comcode: Option[String] = None,
+  goodsDescription: Option[String] = None,
+  countryOfOrigin: Option[String] = None,
+  category: Option[Int] = None,
+  assessments: Option[Seq[Assessment]] = None,
+  supplementaryUnit: Option[Int] = None,
+  measurementUnit: Option[String] = None,
+  comcodeEffectiveFromDate: Option[Instant] = None,
+  comcodeEffectiveToDate: Option[Instant] = None
 )
 
 object UpdateRecordRequest {
@@ -54,9 +54,8 @@ object UpdateRecordRequest {
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[Int] and
       (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
-      (JsPath \ "comcodeEffectiveFromDate").readNullable[Instant](validDate) and
-      (JsPath \ "comcodeEffectiveToDate")
-        .readNullable[Instant](validDate))(UpdateRecordRequest.apply _)
+      (JsPath \ "comcodeEffectiveFromDate").readNullable[Instant] and
+      (JsPath \ "comcodeEffectiveToDate").readNullable[Instant])(UpdateRecordRequest.apply _)
 
   implicit lazy val writes: Writes[UpdateRecordRequest] = (updateRecordRequest: UpdateRecordRequest) =>
     removeNulls(

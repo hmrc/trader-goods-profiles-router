@@ -39,7 +39,7 @@ object EisHttpReader {
       }
   }
 
-  case class OtherHttpReader[T](correlationId: String, errorHandler: (HttpResponse, String) => Result)
+  case class StatusHttpReader(correlationId: String, errorHandler: (HttpResponse, String) => Result)
       extends HttpReads[Either[Result, Int]] {
     override def read(method: String, url: String, response: HttpResponse): Either[Result, Int] =
       response match {

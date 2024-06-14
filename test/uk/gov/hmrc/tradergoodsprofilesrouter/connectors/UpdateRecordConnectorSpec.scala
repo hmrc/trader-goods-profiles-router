@@ -86,9 +86,8 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
       val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordUpdateBearerToken"): _*)
+      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*)
       verify(requestBuilder).withBody(updateRecordPayload)
-      verify(requestBuilder).execute(any, any)
 
       verifyExecuteWithParams(correlationId)
     }

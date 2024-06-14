@@ -24,9 +24,8 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.optionalFieldsToErrorCode
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, optionalFieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -42,11 +41,12 @@ class UpdateRecordController @Inject() (
 
   def update(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
-      _                   <- validateClientId
+      _                   <- EitherT.fromEither[Future](validateClientId)
       _                   <- EitherT
                                .fromEither[Future](validateRecordId(recordId))
                                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-      updateRecordRequest <- validateRequestBody[UpdateRecordRequest](optionalFieldsToErrorCode)
+      updateRecordRequest <-
+        EitherT.fromEither[Future](validateRequestBody[UpdateRecordRequest](optionalFieldsToErrorCode))
       response            <- updateRecordService.updateRecord(eori, recordId, updateRecordRequest)
     } yield Ok(Json.toJson(response))
 

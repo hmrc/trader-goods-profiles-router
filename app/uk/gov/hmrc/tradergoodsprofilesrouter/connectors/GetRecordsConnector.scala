@@ -15,14 +15,13 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
-import play.api.libs.json.Json
+
 import play.api.mvc.Result
 import sttp.model.Uri.UriContext
-import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, OtherHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -31,7 +30,7 @@ import java.time.Instant
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class EISConnector @Inject() (
+class GetRecordsConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   override val dateTimeService: DateTimeService
@@ -69,19 +68,6 @@ class EISConnector @Inject() (
       .get(url"$uri")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
       .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
-  }
-
-  def requestAccreditation(request: TraderDetails, correlationId: String)(implicit
-    hc: HeaderCarrier
-  ): Future[Either[Result, Int]] = {
-    val url = appConfig.eisConfig.createAccreditationUrl
-
-    val accreditationEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
-    httpClientV2
-      .post(url"$url")
-      .setHeader(buildHeadersForAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
-      .withBody(Json.toJson(accreditationEisRequest))
-      .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
 }

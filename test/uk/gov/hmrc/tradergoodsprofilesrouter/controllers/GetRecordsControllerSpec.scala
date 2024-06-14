@@ -27,27 +27,28 @@ import play.api.libs.json.Json
 import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecordsDataSupport with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  private val mockRouterService = mock[RouterService]
-  private val mockUuidService   = mock[UuidService]
-  private val eoriNumber        = "GB123456789001"
-  private val correlationId     = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val getRecordsSrvice = mock[GetRecordsService]
+  private val uuidService      = mock[UuidService]
+  private val eoriNumber       = "GB123456789001"
+  private val correlationId    = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val recordId         = UUID.randomUUID().toString
 
   private val sut =
     new GetRecordsController(
       stubControllerComponents(),
-      mockRouterService,
-      mockUuidService
+      getRecordsSrvice,
+      uuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
@@ -57,16 +58,16 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    when(mockUuidService.uuid).thenReturn(correlationId)
+    when(uuidService.uuid).thenReturn(correlationId)
   }
   "getTGPRecord" should {
 
     "return a successful JSON response for a single record" in {
 
-      when(mockRouterService.fetchRecord(any, any)(any))
+      when(getRecordsSrvice.fetchRecord(any, any)(any))
         .thenReturn(EitherT.rightT(getSingleRecordResponseData))
 
-      val result = sut.getTGPRecord("GB123456789001", "12345")(
+      val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
@@ -77,20 +78,20 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
-      val result = sut.getTGPRecord("eori", "12345")(
+      val result = sut.getTGPRecord("eori", recordId)(
         FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(createErrorResponse)
+      contentAsJson(result) mustBe createMissingHeaderErrorResponse
     }
 
     "return an error if cannot fetch a record" in {
       val errorResponseJson = Json.obj("error" -> "error")
 
-      when(mockRouterService.fetchRecord(any, any)(any))
+      when(getRecordsSrvice.fetchRecord(any, any)(any))
         .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
-      val result = sut.getTGPRecord("GB123456789001", "12345")(
+      val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe INTERNAL_SERVER_ERROR
@@ -104,7 +105,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return a successful JSON response for a multiple records with optional query parameters" in {
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any))
+      when(getRecordsSrvice.fetchRecords(any, any, any, any)(any))
         .thenReturn(EitherT.rightT(getMultipleRecordResponseData()))
 
       val result = sut.getTGPRecords(eoriNumber, Some("2021-12-17T09:30:47.456Z"), Some(1), Some(1))(
@@ -118,7 +119,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return a successful JSON response for a multiple records without optional query parameters" in {
 
-      when(mockRouterService.fetchRecords(any, any, any, any)(any))
+      when(getRecordsSrvice.fetchRecords(any, any, any, any)(any))
         .thenReturn(EitherT.rightT(getMultipleRecordResponseData(eoriNumber)))
 
       val result = sut.getTGPRecords(eoriNumber)(
@@ -136,14 +137,14 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
         FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(createErrorResponse)
+      contentAsJson(result) mustBe createMissingHeaderErrorResponse
     }
 
     "return an error" when {
       "if cannot fetch a records" in {
         val errorResponseJson = Json.obj("error" -> "error")
 
-        when(mockRouterService.fetchRecords(any, any, any, any)(any))
+        when(getRecordsSrvice.fetchRecords(any, any, any, any)(any))
           .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
 
         val result = sut.getTGPRecords(eoriNumber)(
@@ -156,7 +157,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
 
       "lastUpdateDate is not a date" in {
-        when(mockRouterService.fetchRecords(any, any, any, any)(any))
+        when(getRecordsSrvice.fetchRecords(any, any, any, any)(any))
           .thenReturn(EitherT.rightT(getMultipleRecordResponseData()))
 
         val result = sut.getTGPRecords(eoriNumber, Some("not-a-date"), Some(1), Some(1))(
@@ -174,14 +175,18 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
   }
 
-  private def createErrorResponse = {
-    val errorResponse =
-      ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.MissingHeaderClientId
+  private def createMissingHeaderErrorResponse =
+    Json.obj(
+      "correlationId" -> correlationId,
+      "code"          -> "BAD_REQUEST",
+      "message"       -> "Bad Request",
+      "errors"        -> Json.arr(
+        Json.obj(
+          "code"        -> "INVALID_HEADER",
+          "message"     -> "Missing mandatory header X-Client-ID",
+          "errorNumber" -> 6000
+        )
       )
-    errorResponse
-  }
+    )
 
 }

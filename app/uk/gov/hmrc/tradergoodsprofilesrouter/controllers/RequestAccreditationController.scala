@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
+import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
@@ -27,13 +28,14 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAccreditation
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{AccreditationService, GetRecordsService, UuidService}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class RequestAccreditationController @Inject() (
   override val controllerComponents: ControllerComponents,
-  routerService: RouterService,
+  getRecordService: GetRecordsService,
+  accreditationService: AccreditationService,
   override val uuidService: UuidService
 )(implicit
   val ec: ExecutionContext
@@ -44,10 +46,11 @@ class RequestAccreditationController @Inject() (
   def requestAccreditation: Action[JsValue] = Action.async(parse.json) { implicit request =>
     val result = for {
 
-      requestAccreditationRequest <- validateRequestBody[RequestAccreditation](fieldsToErrorCode)
-      recordItem                  <- routerService.fetchRecord(requestAccreditationRequest.eori, requestAccreditationRequest.recordId)
+      requestAccreditationRequest <-
+        EitherT.fromEither[Future](validateRequestBody[RequestAccreditation](fieldsToErrorCode))
+      recordItem                  <- getRecordService.fetchRecord(requestAccreditationRequest.eori, requestAccreditationRequest.recordId)
       newAccreditationRequest      = createNewTraderDetails(recordItem, requestAccreditationRequest)
-      _                           <- routerService.requestAccreditation(newAccreditationRequest)
+      _                           <- accreditationService.requestAccreditation(newAccreditationRequest)
     } yield Created
 
     result.merge
