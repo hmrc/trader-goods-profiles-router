@@ -22,7 +22,7 @@ import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.OtherHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
@@ -47,6 +47,6 @@ class RemoveRecordConnector @Inject() (
       .put(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
       .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
-      .execute(OtherHttpReader(correlationId, handleErrorResponse), ec)
+      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
   }
 }
