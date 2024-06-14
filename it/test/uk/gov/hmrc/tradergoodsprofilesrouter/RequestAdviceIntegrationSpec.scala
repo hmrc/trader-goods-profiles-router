@@ -16,25 +16,26 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalTo, equalToJson, get, post, stubFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, CREATED, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK, SERVICE_UNAVAILABLE}
+import play.api.http.Status._
 import play.api.libs.json.Json
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
 import java.time.Instant
 
-class RequestAccreditationIntegrationSpec
+class RequestAdviceIntegrationSpec
     extends BaseIntegrationWithConnectorSpec
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
 
-  val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime                       = "2021-12-17T09:30:47.456Z"
-  val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
-  val eori                           = "GB123456789001"
-  val recordId                       = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val timestamp              = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val eori                   = "GB123456789001"
+  private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val url                    = fullUrl(s"/traders/$eori/records/$recordId/advice")
   override def connectorPath: String = "/tgp/createaccreditation/v1"
   def connectorPathGetRecord: String = "/tgp/getrecords/v1"
   override def connectorName: String = "eis"
@@ -52,15 +53,16 @@ class RequestAccreditationIntegrationSpec
           stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(CREATED, createAccreditationRequestData)
 
-          val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/json"),
-              ("X-Client-ID", "tss")
-            )
-            .post(requestAccreditationData)
-            .futureValue
+          val response = await(
+            wsClient
+              .url(url)
+              .withHttpHeaders(
+                ("Content-Type", "application/json"),
+                ("Accept", "application/json"),
+                ("X-Client-ID", "tss")
+              )
+              .post(requestAdviceData)
+          )
 
           response.status shouldBe CREATED
 
@@ -74,13 +76,13 @@ class RequestAccreditationIntegrationSpec
           stubForEis(FORBIDDEN, createAccreditationRequestData)
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe FORBIDDEN
@@ -98,13 +100,13 @@ class RequestAccreditationIntegrationSpec
           stubForEis(NOT_FOUND, createAccreditationRequestData)
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe NOT_FOUND
@@ -121,13 +123,13 @@ class RequestAccreditationIntegrationSpec
           stubForEis(BAD_GATEWAY, createAccreditationRequestData)
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe BAD_GATEWAY
@@ -146,13 +148,13 @@ class RequestAccreditationIntegrationSpec
           stubForEis(SERVICE_UNAVAILABLE, createAccreditationRequestData)
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe SERVICE_UNAVAILABLE
@@ -169,13 +171,13 @@ class RequestAccreditationIntegrationSpec
           stubForEis(SERVICE_UNAVAILABLE, createAccreditationRequestData)
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe SERVICE_UNAVAILABLE
@@ -197,13 +199,13 @@ class RequestAccreditationIntegrationSpec
           )
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -224,13 +226,13 @@ class RequestAccreditationIntegrationSpec
           )
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -251,13 +253,13 @@ class RequestAccreditationIntegrationSpec
           )
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -274,13 +276,13 @@ class RequestAccreditationIntegrationSpec
           stubForEis(INTERNAL_SERVER_ERROR, createAccreditationRequestData, Some(eisErrorResponse("404", "Not Found")))
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -301,13 +303,13 @@ class RequestAccreditationIntegrationSpec
           )
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -328,13 +330,13 @@ class RequestAccreditationIntegrationSpec
           )
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -355,13 +357,13 @@ class RequestAccreditationIntegrationSpec
           )
 
           val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
+            .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
               ("Accept", "application/json"),
               ("X-Client-ID", "tss")
             )
-            .post(requestAccreditationData)
+            .post(requestAdviceData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -373,88 +375,6 @@ class RequestAccreditationIntegrationSpec
 
           verifyThatMultipleDownstreamApiWasCalled()
         }
-        "Bad Request with one error detail" in {
-          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
-          stubForEis(
-            BAD_REQUEST,
-            createAccreditationRequestData,
-            Some(s"""
-                    |{
-                    |  "errorDetail": {
-                    |    "timestamp": "2023-09-14T11:29:18Z",
-                    |    "correlationId": "$correlationId",
-                    |    "errorCode": "400",
-                    |    "errorMessage": "Invalid request parameter",
-                    |    "source": "BACKEND",
-                    |    "sourceFaultDetail": {
-                    |      "detail": [
-                    |      "error: 006, message: Missing or invalid mandatory request parameter EORI"
-                    |      ]
-                    |    }
-                    |  }
-                    |}
-                    |""".stripMargin)
-          )
-
-          val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/json"),
-              ("X-Client-ID", "tss")
-            )
-            .post(requestAccreditationData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
-                "errorNumber" -> 6
-              )
-            )
-          )
-
-          verifyThatMultipleDownstreamApiWasCalled()
-        }
-      }
-      "invalid, specifically" - {
-
-        "missing required request field" in {
-          stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
-          val response = wsClient
-            .url(fullUrl(s"/createaccreditation/"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .post(invalidRequestAccreditationData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field RequestorEmail was missing from body or is in the wrong format",
-                "errorNumber" -> 38
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The recordId has been provided in the wrong format",
-                "errorNumber" -> 26
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasNotCalled()
-        }
-
       }
     }
   }
@@ -482,12 +402,6 @@ class RequestAccreditationIntegrationSpec
   private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) = stubFor(
     post(urlEqualTo(s"$connectorPath"))
       .withRequestBody(equalToJson(requestBody))
-      .withHeader("Content-Type", equalTo("application/json"))
-      .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-      .withHeader("X-Correlation-ID", equalTo(correlationId))
-      .withHeader("Date", equalTo(timestamp))
-      .withHeader("Accept", equalTo("application/json"))
-      .withHeader("Authorization", equalTo("Bearer dummyAccreditationCreateBearerToken"))
       .willReturn(
         aResponse()
           .withHeader("Content-Type", "application/json")
@@ -500,16 +414,15 @@ class RequestAccreditationIntegrationSpec
     get(urlEqualTo(s"$connectorPathGetRecord/$eori/$recordId"))
       .willReturn(
         aResponse()
-          .withHeader("Content-Type", "application/json")
           .withStatus(httpStatus)
           .withBody(body)
       )
   )
 
-  lazy val createAccreditationRequestData: String =
+  private def createAccreditationRequestData: String =
     s"""
       |{
-      |   "accreditationRequest":{
+      |   "adviceRequest":{
       |      "requestCommon":{
       |         "receiptDate":"$timestamp"
       |      },
@@ -538,24 +451,12 @@ class RequestAccreditationIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val requestAccreditationData: String =
+  private def requestAdviceData: String =
     s"""
              |{
-             |    "eori": "$eori",
              |    "requestorName": "Mr.Phil Edwards",
-             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
              |    "requestorEmail": "Phil.Edwards@gmail.com"
              |}
              |""".stripMargin
-
-  lazy val invalidRequestAccreditationData: String =
-    s"""
-       |{
-       |    "eori": "$eori",
-       |    "requestorName": "Mr.Phil Edwards",
-       |    "recordId": "",
-       |    "requestorEmail": ""
-       |}
-       |""".stripMargin
 
 }

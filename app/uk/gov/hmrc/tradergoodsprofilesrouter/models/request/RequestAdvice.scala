@@ -22,25 +22,19 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.
 
 import scala.Function.unlift
 
-case class RequestAccreditation(
-  eori: String,
+case class RequestAdvice(
   requestorName: String,
-  recordId: String,
   requestorEmail: String
 )
 
-object RequestAccreditation {
+object RequestAdvice {
 
-  implicit val reads: Reads[RequestAccreditation] =
-    ((JsPath \ "eori").read(lengthBetween(14, 17)) and
-      (JsPath \ "requestorName").read(lengthBetween(1, 70)) and
-      (JsPath \ "recordId").read(lengthBetween(36, 36)) and
+  implicit val reads: Reads[RequestAdvice] =
+    ((JsPath \ "requestorName").read(lengthBetween(1, 70)) and
       (JsPath \ "requestorEmail")
-        .read(lengthBetween(3, 254).keepAnd(validEmailAddress)))(RequestAccreditation.apply _)
+        .read(lengthBetween(3, 254).keepAnd(validEmailAddress)))(RequestAdvice.apply _)
 
-  implicit lazy val writes: OWrites[RequestAccreditation] =
-    ((JsPath \ "eori").write[String] and
-      (JsPath \ "requestorName").write[String] and
-      (JsPath \ "recordId").write[String] and
-      (JsPath \ "requestorEmail").write[String])(unlift(RequestAccreditation.unapply))
+  implicit lazy val writes: OWrites[RequestAdvice] =
+    ((JsPath \ "requestorName").write[String] and
+      (JsPath \ "requestorEmail").write[String])(unlift(RequestAdvice.unapply))
 }

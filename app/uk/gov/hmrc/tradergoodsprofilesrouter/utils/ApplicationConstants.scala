@@ -87,7 +87,7 @@ object ApplicationConstants {
   val InvalidPage                                          = "The URL parameter page is in the wrong format"
   val InvalidSize                                          = "The URL parameter size is in the wrong format"
   val RecordRemovedAndCanNotBeUpdatedMessage               = "This record has been removed and cannot be updated"
-  val AccreditationRequestInProgressMessage                =
+  val AdviceRequestInProgressMessage                       =
     "There is an ongoing accreditation request and the record can not be updated"
 
   val InvalidOrMissingCorrelationID      =
@@ -146,7 +146,7 @@ object ApplicationConstants {
   val InvalidOrMissingComcodeEffectiveToDateCode               = "024"
   val InvalidRecordIdCode                                      = "025"
   val RecordIdDoesNotExistsCode                                = "026"
-  val AccreditationRequestInProgressCode                       = "027"
+  val AdviceRequestInProgressCode                              = "027"
   val InvalidLastUpdatedDateCode                               = "028"
   val InvalidPageCode                                          = "029"
   val InvalidSizeCode                                          = "030"

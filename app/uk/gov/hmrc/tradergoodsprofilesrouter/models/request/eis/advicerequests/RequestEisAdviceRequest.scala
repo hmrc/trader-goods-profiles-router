@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests
 
 import play.api.libs.json.{Json, OFormat}
 
-case class RequestEisAccreditationRequest(
-  accreditationRequest: AccreditationRequest
+case class RequestEisAdviceRequest(
+  adviceRequest: AdviceRequest
 )
 
-object RequestEisAccreditationRequest {
-  implicit val format: OFormat[RequestEisAccreditationRequest] = Json.format[RequestEisAccreditationRequest]
+object RequestEisAdviceRequest {
+  implicit val format: OFormat[RequestEisAdviceRequest] = Json.format[RequestEisAdviceRequest]
 
-  def apply(traderDetails: TraderDetails, dateTime: String): RequestEisAccreditationRequest = {
+  def apply(traderDetails: TraderDetails, dateTime: String): RequestEisAdviceRequest = {
 
-    val defaultRequest       =
+    val defaultRequest =
       RequestCommon(clientID = None, receiptDate = dateTime, boxID = None)
-    val requestDetail        = RequestDetail(traderDetails)
-    val accreditationRequest = AccreditationRequest(requestCommon = defaultRequest, requestDetail = requestDetail)
-    RequestEisAccreditationRequest(accreditationRequest: AccreditationRequest)
+    val requestDetail  = RequestDetail(traderDetails)
+    val adviceRequest  = AdviceRequest(requestCommon = defaultRequest, requestDetail = requestDetail)
+    RequestEisAdviceRequest(adviceRequest: AdviceRequest)
   }
 
 }

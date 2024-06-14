@@ -35,7 +35,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
   private val timestamp              = "Fri, 17 Dec 2021 09:30:47 GMT"
   override def connectorPath: String = s"/tgp/getrecords/v1"
   override def connectorName: String = "eis"
-  private val url                    = fullUrl(s"/traders/$eori")
+  private val url                    = fullUrl(s"/traders/$eori/records")
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -64,7 +64,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime.toString), Some(1), Some(1))
 
         val response = wsClient
-          .url(fullUrl(s"/traders/$eori?lastUpdatedDate=$dateTime&page=1&size=1"))
+          .url(fullUrl(s"/traders/$eori/records/?lastUpdatedDate=$dateTime&page=1&size=1"))
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
@@ -78,7 +78,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         stubForEis(OK, Some(getMultipleRecordResponseData.toString()), None, Some(1), Some(1))
 
         val response = wsClient
-          .url(fullUrl(s"/traders/$eori?page=1&size=1"))
+          .url(fullUrl(s"/traders/$eori/records?page=1&size=1"))
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
@@ -92,7 +92,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         stubForEis(OK, Some(getMultipleRecordResponseData.toString()), None, Some(1), None)
 
         val response = wsClient
-          .url(fullUrl(s"/traders/$eori?page=1"))
+          .url(fullUrl(s"/traders/$eori/records?page=1"))
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
@@ -106,7 +106,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
         stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime.toString))
 
         val response = wsClient
-          .url(fullUrl(s"/traders/$eori?lastUpdatedDate=$dateTime"))
+          .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=$dateTime"))
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .get()
           .futureValue
@@ -390,56 +390,6 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
           verifyThatDownstreamApiWasCalled()
         }
 
-        //Todo: this test may be delete when the Authentication on EORI is done, as
-        // we will never be in the situation of sending a null or invalid EORI to EIS,
-        // as the EORI will be validate bu the Auth and fail before that if invalid.
-        "Bad Request for invalid request parameter error" in {
-          stubEisRequestForInvalidReqParam
-
-          val response = await(
-            wsClient
-              .url(fullUrl("/traders/null"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .get()
-          )
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
-                "errorNumber" -> 6
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "EORI number does not have a TGP",
-                "errorNumber" -> 7
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The URL parameter lastUpdatedDate is in the wrong format",
-                "errorNumber" -> 28
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The URL parameter page is in the wrong format",
-                "errorNumber" -> 29
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The URL parameter size is in the wrong format",
-                "errorNumber" -> 30
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled()
-        }
-
         "Bad Request with unexpected error" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori"))
@@ -612,7 +562,7 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
       stubForEis(OK, Some(getMultipleRecordResponseData.toString()))
 
       val response = wsClient
-        .url(fullUrl(s"/traders/$eori?lastUpdatedDate=wrong-format"))
+        .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=wrong-format"))
         .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
         .get()
         .futureValue
@@ -626,43 +576,6 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
 
     }
   }
-
-  private def stubEisRequestForInvalidReqParam =
-    stubFor(
-      get(urlEqualTo(s"$connectorPath/null"))
-        .withHeader("Content-Type", equalTo("application/json"))
-        .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-        .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-        .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-        .withHeader("Accept", equalTo("application/json"))
-        .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-        .withHeader("X-Client-ID", equalTo("tss"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(BAD_REQUEST)
-            .withBody(s"""
-                 |{
-                 |  "errorDetail": {
-                 |    "timestamp": "2023-09-14T11:29:18Z",
-                 |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                 |    "errorCode": "400",
-                 |    "errorMessage": "Invalid request parameter",
-                 |    "source": "BACKEND",
-                 |    "sourceFaultDetail": {
-                 |      "detail": [
-                 |      "error: 006, message: Missing or invalid mandatory request parameter EORI",
-                 |      "error: 007, message: EORI does not exist in the database",
-                 |      "error: 028, message: Invalid optional request parameter lastUpdatedDate",
-                 |      "error: 029, message: Invalid optional request parameter page",
-                 |      "error: 030, message: Invalid optional request parameter size"
-                 |      ]
-                 |    }
-                 |  }
-                 |}
-                 |""".stripMargin)
-        )
-    )
 
   private def stubForEis(
     httpStatus: Int,
