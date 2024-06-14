@@ -46,7 +46,7 @@ class EISConnector @Inject() (
       .post(url"$url")
       .setHeader(buildHeadersForAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
       .withBody(Json.toJson(accreditationEisRequest))
-      .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
+      .execute(OtherHttpReader(correlationId, handleErrorResponse), ec)
   }
 
 }

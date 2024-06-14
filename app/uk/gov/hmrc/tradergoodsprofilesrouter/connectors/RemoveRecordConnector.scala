@@ -47,6 +47,6 @@ class RemoveRecordConnector @Inject() (
       .put(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
       .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
-      .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
+      .execute(OtherHttpReader(correlationId, handleErrorResponse), ec)
   }
 }

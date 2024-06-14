@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
 import play.api.http.MimeTypes
@@ -25,7 +25,7 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HttpReads, StringContextOps}
+import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.OtherHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
@@ -73,9 +73,9 @@ class EISConnectorSpec extends BaseConnectorSpec {
       await(sut.requestAccreditation(traderDetails, correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/createaccreditation/v1"
-      verify(httpClientV2).post(eqTo(url"$expectedUrl"))(any)
-      verify(requestBuilder).setHeader(eqTo(expectedHeader): _*)
-      verify(requestBuilder).withBody(eqTo(expectedJsonBody))(any, any, any)
+      verify(httpClientV2).post(url"$expectedUrl")
+      verify(requestBuilder).setHeader(expectedHeader: _*)
+      verify(requestBuilder).withBody(expectedJsonBody)
       verifyExecuteWithParamsType(correlationId)
     }
 
@@ -124,10 +124,10 @@ class EISConnectorSpec extends BaseConnectorSpec {
     )
 
   private def verifyExecuteWithParamsType(expectedCorrelationId: String) = {
-    val captor = ArgCaptor[HttpReads[Either[Result, Int]]]
+    val captor = ArgCaptor[OtherHttpReader]
     verify(requestBuilder).execute(captor.capture, any)
 
     val httpReader = captor.value
-    httpReader.asInstanceOf[OtherHttpReader[Either[Result, Int]]].correlationId mustBe expectedCorrelationId
+    httpReader.correlationId mustBe expectedCorrelationId
   }
 }

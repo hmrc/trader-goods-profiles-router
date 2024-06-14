@@ -88,7 +88,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       val eisResponse     = HttpResponse(400, "")
       val errorHandlerSpy = spyOnHandlerErrorFn
 
-      OtherHttpReader[Int](correlationId, errorHandlerSpy.handleErrorResponse)
+      OtherHttpReader(correlationId, errorHandlerSpy.handleErrorResponse)
         .read("GET", "any-url", eisResponse)
 
       verify(errorHandlerSpy).handleErrorResponse(eisResponse, correlationId)

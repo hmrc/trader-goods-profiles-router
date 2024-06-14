@@ -18,6 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
+import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -59,7 +60,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
 
       val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
       verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyMaintainProfileBearerToken"): _*)
+      verify(requestBuilder).setHeader(expectedHeader: _*)
       verify(requestBuilder).withBody(maintainProfileEisRequest)
       verify(requestBuilder).execute(any, any)
       verifyExecuteWithParams(correlationId)
@@ -77,6 +78,17 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       result.left.value mustBe BadRequest("error")
     }
   }
+
+  def expectedHeader: Seq[(String, String)] =
+    Seq(
+      "X-Correlation-ID" -> correlationId,
+      "X-Forwarded-Host" -> "MDTP",
+      "Content-Type"     -> MimeTypes.JSON,
+      "Accept"           -> MimeTypes.JSON,
+      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+      "X-Client-ID"      -> "TSS",
+      "Authorization"    -> "Bearer dummyMaintainProfileBearerToken"
+    )
 
   val maintainProfileEisRequest: JsValue =
     Json.parse("""

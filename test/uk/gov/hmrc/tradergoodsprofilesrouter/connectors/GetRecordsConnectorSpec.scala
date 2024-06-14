@@ -18,6 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
+import play.api.http.MimeTypes
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -31,7 +32,6 @@ import scala.concurrent.Future
 class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
 
   private val eori                  = "GB123456789011"
-  private val actorId               = "GB123456789011"
   private val recordId              = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
@@ -77,10 +77,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
         .thenReturn(Future.successful(Right(response)))
 
       await(connector.fetchRecord(eori, recordId, correlationId))
+
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordGetBearerToken"): _*)
-
+      verify(requestBuilder).setHeader(expectedHeader: _*)
       verifyExecuteWithParams(correlationId)
     }
   }
@@ -118,9 +118,19 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       val expectedUrl            =
         s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
-      verify(requestBuilder).setHeader(buildHeaders(correlationId, "dummyRecordGetBearerToken"): _*)
+      verify(requestBuilder).setHeader(expectedHeader: _*)
       verifyExecuteWithParams(correlationId)
-
     }
   }
+
+  def expectedHeader: Seq[(String, String)] =
+    Seq(
+      "X-Correlation-ID" -> correlationId,
+      "X-Forwarded-Host" -> "MDTP",
+      "Content-Type"     -> MimeTypes.JSON,
+      "Accept"           -> MimeTypes.JSON,
+      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+      "X-Client-ID"      -> "TSS",
+      "Authorization"    -> "Bearer dummyRecordGetBearerToken"
+    )
 }
