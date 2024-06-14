@@ -33,7 +33,7 @@ case class UpdateRecordPayload(
   countryOfOrigin: Option[String] = None,
   category: Option[Int] = None,
   assessments: Option[Seq[Assessment]] = None,
-  supplementaryUnit: Option[Int] = None,
+  supplementaryUnit: Option[BigDecimal] = None,
   measurementUnit: Option[String] = None,
   comcodeEffectiveFromDate: Option[Instant] = None,
   comcodeEffectiveToDate: Option[Instant] = None

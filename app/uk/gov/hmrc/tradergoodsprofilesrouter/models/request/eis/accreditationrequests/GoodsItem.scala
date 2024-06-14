@@ -23,7 +23,7 @@ case class GoodsItem(
   traderReference: String,
   goodsDescription: String,
   countryOfOrigin: Option[String],
-  supplementaryUnit: Option[Int],
+  supplementaryUnit: Option[BigDecimal],
   category: Option[Int],
   measurementUnitDescription: Option[String],
   commodityCode: String
