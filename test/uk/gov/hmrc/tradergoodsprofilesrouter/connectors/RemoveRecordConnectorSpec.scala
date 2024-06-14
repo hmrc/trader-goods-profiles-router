@@ -19,7 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
-import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
@@ -72,7 +71,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
     val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
     verify(httpClientV2).put(url"$expectedUrl")
-    verify(requestBuilder).setHeader(expectedHeader: _*)
+    verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
     verify(requestBuilder)
       .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
     verifyExecuteWithParamsType(correlationId)
@@ -88,17 +87,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
     result.left.value mustBe BadRequest("error")
   }
-
-  def expectedHeader: Seq[(String, String)] =
-    Seq(
-      "X-Correlation-ID" -> correlationId,
-      "X-Forwarded-Host" -> "MDTP",
-      "Content-Type"     -> MimeTypes.JSON,
-      "Accept"           -> MimeTypes.JSON,
-      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-      "X-Client-ID"      -> "TSS",
-      "Authorization"    -> "Bearer dummyRecordRemoveBearerToken"
-    )
 
   private def verifyExecuteWithParamsType(expectedCorrelationId: String) = {
     val captor = ArgCaptor[StatusHttpReader]

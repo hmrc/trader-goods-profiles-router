@@ -47,23 +47,16 @@ class AccreditationService @Inject() (connector: AccreditationConnector, uuidSer
           case error @ Left(_) => error
         }
         .recover { case ex: Throwable =>
-          logMessageAndReturnError(
-            correlationId,
-            ex,
+          logger.error(
             s"""[AccreditationService] - Error when creating accreditation for
             correlationId: $correlationId, message: ${ex.getMessage}"""
+          )
+          Left(
+            InternalServerError(
+              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+            )
           )
         }
     )
   }
-
-  private def logMessageAndReturnError(correlationId: String, ex: Throwable, logMsg: String) = {
-    logger.error(logMsg, ex)
-    Left(
-      InternalServerError(
-        Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-      )
-    )
-  }
-
 }

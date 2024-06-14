@@ -79,7 +79,7 @@ class AccreditationServiceSpec
         }
       }
 
-      "connector throws" in {
+      "connector throws a run time exception" in {
         when(accreditationConnector.requestAccreditation(any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 

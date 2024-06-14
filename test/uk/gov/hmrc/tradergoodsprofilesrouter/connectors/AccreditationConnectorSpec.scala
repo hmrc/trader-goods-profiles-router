@@ -40,6 +40,16 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
 
   private val sut: AccreditationConnector = new AccreditationConnector(appConfig, httpClientV2, dateTimeService)
 
+  private val expectedHeader: Seq[(String, String)] =
+    Seq(
+      "X-Correlation-ID" -> correlationId,
+      "X-Forwarded-Host" -> "MDTP",
+      "Content-Type"     -> MimeTypes.JSON,
+      "Accept"           -> MimeTypes.JSON,
+      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+      "Authorization"    -> "Bearer dummyAccreditationCreateBearerToken"
+    )
+
   override def beforeEach(): Unit = {
     super.beforeEach()
 
@@ -112,16 +122,6 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
         |""".stripMargin)
     expectedBody
   }
-
-  def expectedHeader: Seq[(String, String)] =
-    Seq(
-      "X-Correlation-ID" -> correlationId,
-      "X-Forwarded-Host" -> "MDTP",
-      "Content-Type"     -> MimeTypes.JSON,
-      "Accept"           -> MimeTypes.JSON,
-      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-      "Authorization"    -> "Bearer dummyAccreditationCreateBearerToken"
-    )
 
   private def verifyExecuteWithParamsType(expectedCorrelationId: String) = {
     val captor = ArgCaptor[StatusHttpReader]

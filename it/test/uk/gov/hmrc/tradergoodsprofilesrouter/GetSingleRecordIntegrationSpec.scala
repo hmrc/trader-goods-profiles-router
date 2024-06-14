@@ -35,7 +35,6 @@ class GetSingleRecordIntegrationSpec
   private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
   private val dateTime               = "2021-12-17T09:30:47.456Z"
-  private val timestamp              = "Fri, 17 Dec 2021 09:30:47 GMT"
   private val url                    = fullUrl(s"/traders/$eori/records/$recordId")
   override def connectorPath: String = s"/tgp/getrecords/v1"
   override def connectorName: String = "eis"

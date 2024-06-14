@@ -18,7 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
-import play.api.http.MimeTypes
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -80,7 +79,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
 
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-      verify(requestBuilder).setHeader(expectedHeader: _*)
+      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken"): _*)
       verifyExecuteWithParams(correlationId)
     }
   }
@@ -118,19 +117,8 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       val expectedUrl            =
         s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
-      verify(requestBuilder).setHeader(expectedHeader: _*)
+      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken"): _*)
       verifyExecuteWithParams(correlationId)
     }
   }
-
-  def expectedHeader: Seq[(String, String)] =
-    Seq(
-      "X-Correlation-ID" -> correlationId,
-      "X-Forwarded-Host" -> "MDTP",
-      "Content-Type"     -> MimeTypes.JSON,
-      "Accept"           -> MimeTypes.JSON,
-      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-      "X-Client-ID"      -> "TSS",
-      "Authorization"    -> "Bearer dummyRecordGetBearerToken"
-    )
 }
