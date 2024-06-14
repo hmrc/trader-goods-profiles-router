@@ -42,14 +42,11 @@ class EISConnector @Inject() (
     val url = appConfig.eisConfig.createAccreditationUrl
 
     val accreditationEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
-    val o                       = httpClientV2
+    httpClientV2
       .post(url"$url")
-
-    val c =
-      o.setHeader(buildHeadersForAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
-    val k = c.withBody(Json.toJson(accreditationEisRequest))
-    val h = k.execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
-    h
+      .setHeader(buildHeadersForAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
+      .withBody(Json.toJson(accreditationEisRequest))
+      .execute(OtherHttpReader[Int](correlationId, handleErrorResponse), ec)
   }
 
 }
