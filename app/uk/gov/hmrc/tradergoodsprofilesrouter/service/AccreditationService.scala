@@ -24,22 +24,23 @@ import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EISConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.AccreditationConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidService)(implicit ec: ExecutionContext)
-    extends Logging {
+class AccreditationService @Inject() (connector: AccreditationConnector, uuidService: UuidService)(implicit
+  ec: ExecutionContext
+) extends Logging {
 
   def requestAccreditation(
     request: TraderDetails
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] = {
     val correlationId = uuidService.uuid
     EitherT(
-      eisConnector
+      connector
         .requestAccreditation(request, correlationId)
         .map {
           case Right(_)        => Right(CREATED)
@@ -49,7 +50,7 @@ class RouterService @Inject() (eisConnector: EISConnector, uuidService: UuidServ
           logMessageAndReturnError(
             correlationId,
             ex,
-            s"""[RouterService] - Error when creating accreditation for
+            s"""[AccreditationService] - Error when creating accreditation for
             correlationId: $correlationId, message: ${ex.getMessage}"""
           )
         }

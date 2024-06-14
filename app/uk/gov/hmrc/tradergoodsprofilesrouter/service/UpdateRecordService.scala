@@ -54,7 +54,7 @@ class UpdateRecordService @Inject() (
         }
         .recover { case ex: Throwable =>
           logger.error(
-            s"""[RouterService] - Error when updating records for Eori Number: $eori,
+            s"""[UpdateRecordService] - Error when updating records for Eori Number: $eori,
             s"correlationId: $correlationId, message: ${ex.getMessage}""",
             ex
           )

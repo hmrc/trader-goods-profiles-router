@@ -28,7 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFor
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class EISConnector @Inject() (
+class AccreditationConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   override val dateTimeService: DateTimeService

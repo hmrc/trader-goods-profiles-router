@@ -28,14 +28,14 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAccreditation
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, RouterService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{AccreditationService, GetRecordsService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class RequestAccreditationController @Inject() (
   override val controllerComponents: ControllerComponents,
   getRecordService: GetRecordsService,
-  routerService: RouterService,
+  accreditationService: AccreditationService,
   override val uuidService: UuidService
 )(implicit
   val ec: ExecutionContext
@@ -50,7 +50,7 @@ class RequestAccreditationController @Inject() (
         EitherT.fromEither[Future](validateRequestBody[RequestAccreditation](fieldsToErrorCode))
       recordItem                  <- getRecordService.fetchRecord(requestAccreditationRequest.eori, requestAccreditationRequest.recordId)
       newAccreditationRequest      = createNewTraderDetails(recordItem, requestAccreditationRequest)
-      _                           <- routerService.requestAccreditation(newAccreditationRequest)
+      _                           <- accreditationService.requestAccreditation(newAccreditationRequest)
     } yield Created
 
     result.merge
