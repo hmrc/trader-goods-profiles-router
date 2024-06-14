@@ -35,7 +35,7 @@ case class CreateRecordRequest(
   countryOfOrigin: String,
   category: Int,
   assessments: Option[Seq[Assessment]],
-  supplementaryUnit: Option[Int],
+  supplementaryUnit: Option[BigDecimal],
   measurementUnit: Option[String],
   comcodeEffectiveFromDate: Instant,
   comcodeEffectiveToDate: Option[Instant]
@@ -51,7 +51,7 @@ object CreateRecordRequest {
       (JsPath \ "countryOfOrigin").read(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
       (JsPath \ "category").read[Int](verifying[Int](category => category >= 1 && category <= 3)) and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
-      (JsPath \ "supplementaryUnit").readNullable[Int] and
+      (JsPath \ "supplementaryUnit").readNullable[BigDecimal] and
       (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
       (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
       (JsPath \ "comcodeEffectiveToDate")

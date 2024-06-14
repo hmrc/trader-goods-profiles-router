@@ -413,7 +413,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
              |            }
              |        }
              |    ],
-             |    "supplementaryUnit": 2147483648,
+             |    "supplementaryUnit": "25Kg",
              |    "measurementUnit": "Square metre (m2)",
              |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
              |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"

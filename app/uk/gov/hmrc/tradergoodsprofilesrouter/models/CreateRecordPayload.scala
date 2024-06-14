@@ -32,7 +32,7 @@ case class CreateRecordPayload(
   countryOfOrigin: String,
   category: Int,
   assessments: Option[Seq[Assessment]] = None,
-  supplementaryUnit: Option[Int] = None,
+  supplementaryUnit: Option[BigDecimal] = None,
   measurementUnit: Option[String] = None,
   comcodeEffectiveFromDate: Instant,
   comcodeEffectiveToDate: Option[Instant] = None
