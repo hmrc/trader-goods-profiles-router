@@ -17,17 +17,21 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.when
+import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
 
 import java.time.Instant
 
-class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
+class GetMultipleRecordsIntegrationSpec
+    extends BaseIntegrationWithConnectorSpec
+    with AuthTestSupport
+    with BeforeAndAfterEach {
 
   private val eori                   = "GB123456789001"
   private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
@@ -38,6 +42,8 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
   private val url                    = fullUrl(s"/traders/$eori")
 
   override def beforeEach(): Unit = {
+    reset(authConnector)
+    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(dateTime)
@@ -385,56 +391,6 @@ class GetMultipleRecordsIntegrationSpec extends BaseIntegrationWithConnectorSpec
             "correlationId" -> correlationId,
             "code"          -> "UNEXPECTED_ERROR",
             "message"       -> "Unexpected Error"
-          )
-
-          verifyThatDownstreamApiWasCalled()
-        }
-
-        //Todo: this test may be delete when the Authentication on EORI is done, as
-        // we will never be in the situation of sending a null or invalid EORI to EIS,
-        // as the EORI will be validate bu the Auth and fail before that if invalid.
-        "Bad Request for invalid request parameter error" in {
-          stubEisRequestForInvalidReqParam
-
-          val response = await(
-            wsClient
-              .url(fullUrl("/traders/null"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .get()
-          )
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
-                "errorNumber" -> 6
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "EORI number does not have a TGP",
-                "errorNumber" -> 7
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The URL parameter lastUpdatedDate is in the wrong format",
-                "errorNumber" -> 28
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The URL parameter page is in the wrong format",
-                "errorNumber" -> 29
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The URL parameter size is in the wrong format",
-                "errorNumber" -> 30
-              )
-            )
           )
 
           verifyThatDownstreamApiWasCalled()

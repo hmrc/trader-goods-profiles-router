@@ -17,16 +17,19 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
 
 import java.time.Instant
 
-class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
+class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec
+  with AuthTestSupport
+  with BeforeAndAfterEach {
 
   val eori          = "GB123456789001"
   val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
@@ -38,6 +41,8 @@ class MaintainProfileIntegrationSpec extends BaseIntegrationWithConnectorSpec wi
   override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
+    reset(authConnector)
+    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))

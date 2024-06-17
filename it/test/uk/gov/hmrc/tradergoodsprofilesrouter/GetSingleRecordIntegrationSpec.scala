@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar.when
+import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport}
 
 import java.time.Instant
 
 class GetSingleRecordIntegrationSpec
     extends BaseIntegrationWithConnectorSpec
+    with AuthTestSupport
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
 
@@ -40,6 +41,8 @@ class GetSingleRecordIntegrationSpec
   override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
+    reset(authConnector)
+    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
@@ -331,59 +334,6 @@ class GetSingleRecordIntegrationSpec
             "correlationId" -> correlationId,
             "code"          -> "UNEXPECTED_ERROR",
             "message"       -> "Unexpected Error"
-          )
-
-          verifyThatDownstreamApiWasCalled()
-        }
-
-        //Todo: this test may be delete when the Authentication on EORI is done, as
-        // we will never be in the situation of sending a null or invalid EORI to EIS,
-        // as the EORI will be validate bu the Auth and fail before that if invalid.
-        "Bad Request for invalid or missing EORI" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/null/$recordId"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 006, message: Missing or invalid mandatory request parameter EORI"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
-          )
-
-          val response = await(
-            wsClient
-              .url(fullUrl("/traders/null/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"))
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-              .get()
-          )
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
-                "errorNumber" -> 6
-              )
-            )
           )
 
           verifyThatDownstreamApiWasCalled()

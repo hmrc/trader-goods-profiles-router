@@ -24,8 +24,10 @@ import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.ws.WSClient
 import play.api.{Application, inject}
+import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DateTimeService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
 
 abstract class BaseIntegrationSpec
     extends AnyFreeSpec
@@ -33,6 +35,7 @@ abstract class BaseIntegrationSpec
     with ScalaFutures
     with IntegrationPatience
     with GuiceOneServerPerSuite
+    with AuthTestSupport
     with WireMockSupport {
 
   val wsClient: WSClient                      = app.injector.instanceOf[WSClient]
@@ -43,6 +46,7 @@ abstract class BaseIntegrationSpec
     baseApplicationBuilder()
       .configure(extraApplicationConfig)
       .overrides(
+        inject.bind[AuthConnector].toInstance(authConnector),
         inject.bind[UuidService].toInstance(uuidService),
         inject.bind[DateTimeService].toInstance(dateTimeService)
       )

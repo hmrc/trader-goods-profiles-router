@@ -17,27 +17,33 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.when
+import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
 
 import java.time.Instant
 
-class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
+class UpdateRecordIntegrationSpec
+    extends BaseIntegrationWithConnectorSpec
+    with AuthTestSupport
+    with BeforeAndAfterEach {
 
-  private val eoriNumber             = "GB123456789001"
+  private val eori                   = "GB123456789001"
   private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   val correlationId                  = "d677693e-9981-4ee3-8574-654981ebe606"
   val dateTime                       = "2021-12-17T09:30:47.456Z"
   val timestamp                      = "Fri, 17 Dec 2021 09:30:47 GMT"
-  private val url                    = fullUrl(s"/traders/$eoriNumber/records/$recordId")
+  private val url                    = fullUrl(s"/traders/$eori/records/$recordId")
   override def connectorPath: String = "/tgp/updaterecord/v1"
   override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
+    reset(authConnector)
+    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
@@ -931,7 +937,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   lazy val updateRecordRequestData: String =
     s"""
         |{
-        |    "eori": "$eoriNumber",
+        |    "eori": "$eori",
         |    "actorId": "GB098765432112",
         |    "recordId": "$recordId",
         |    "traderRef": "BAN001001",

@@ -23,7 +23,7 @@ import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, optionalFieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
@@ -31,6 +31,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidS
 import scala.concurrent.{ExecutionContext, Future}
 
 class UpdateRecordController @Inject() (
+  authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   updateRecordService: UpdateRecordService,
   override val uuidService: UuidService
@@ -39,7 +40,7 @@ class UpdateRecordController @Inject() (
     with ValidationRules
     with Logging {
 
-  def update(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def update(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
     val result = for {
       _                   <- EitherT.fromEither[Future](validateClientId)
       _                   <- EitherT

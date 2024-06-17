@@ -17,15 +17,19 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
 
 import java.time.Instant
 
-class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
+class RemoveRecordIntegrationSpec
+    extends BaseIntegrationWithConnectorSpec
+    with AuthTestSupport
+    with BeforeAndAfterEach {
 
   private val eori                   = "GB123456789001"
   private val actorId                = "GB123456789001"
@@ -38,6 +42,8 @@ class RemoveRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
+    reset(authConnector)
+    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
