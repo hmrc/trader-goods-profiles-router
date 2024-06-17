@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics
 
 import com.codahale.metrics.{Counter, Histogram, MetricRegistry, Timer}
@@ -11,12 +27,12 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class MetricsSupportSpec extends AsyncWordSpecLike {
+class MetricsUtilsSpec extends AsyncWordSpecLike {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   trait MockHasMetrics {
-    self: MetricsSupport =>
+    self: MetricsUtils =>
     val timerContext   = mock[Timer.Context]
     val timer          = mock[Timer]
     val successCounter = mock[Counter]
@@ -35,7 +51,7 @@ class MetricsSupportSpec extends AsyncWordSpecLike {
   private val metricName                      = "test-metrics"
 
   class TestMetricsSupport @Inject() (override val metricsRegistry: MetricRegistry)
-      extends MetricsSupport
+      extends MetricsUtils
       with MockHasMetrics
 
   def withTestMetrics[A](test: TestMetricsSupport => A): A =

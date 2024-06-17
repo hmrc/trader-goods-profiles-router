@@ -16,32 +16,24 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import com.codahale.metrics.{Counter, MetricRegistry, Timer}
-import org.mockito.ArgumentMatchers.endsWith
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.MockitoSugar.{reset, verify, when}
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport, MetricsSupportSpec}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
+class GetRecordsConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec with GetRecordsDataSupport {
 
-  private val eori                            = "GB123456789011"
-  private val recordId                        = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val timestamp                       = Instant.parse("2024-05-12T12:15:15.456321Z")
-  private val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
-  private val metricsRegistry: MetricRegistry = mock[MetricRegistry](RETURNS_DEEP_STUBS)
-  private val timerContext                    = mock[Timer.Context]
-  private val successCounter                  = mock[Counter]
-  private val failureCounter                  = mock[Counter]
+  private val eori                  = "GB123456789011"
+  private val recordId              = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
+  private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val connector = new GetRecordsConnector(appConfig, httpClientV2, dateTimeService, metricsRegistry)
 
@@ -51,13 +43,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
 
     setUpAppConfig()
+    setUpMetrics()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-    when(metricsRegistry.counter(endsWith("success-counter"))) thenReturn successCounter
-    when(metricsRegistry.counter(endsWith("failed-counter"))) thenReturn failureCounter
-    when(metricsRegistry.timer(any).time()) thenReturn timerContext
-    when(timerContext.stop()) thenReturn 0L
   }
 
   "fetchRecord" should {
@@ -81,8 +70,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       result.left.value mustBe BadRequest("error")
 
       withClue("process the response within a timer") {
-        verify(metricsRegistry).timer(eqTo("tgp.getrecord.connector-timer"))
-        verify(timerContext).stop()
+        verifyMetrics("tgp.getrecord.connector")
       }
     }
 
@@ -114,8 +102,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       result.value mustBe response
 
       withClue("process the response within a timer") {
-        verify(metricsRegistry).timer(eqTo("tgp.getrecords.connector-timer"))
-        verify(timerContext).stop()
+        verifyMetrics("tgp.getrecords.connector")
       }
     }
 

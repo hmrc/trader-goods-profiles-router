@@ -54,7 +54,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     "Authorization"    -> s"Bearer $accessToken"
   )
 
-  def setUpAppConfig() =
+  def setUpAppConfig(): Unit =
     when(appConfig.eisConfig).thenReturn(
       new EISInstanceConfig(
         "http",

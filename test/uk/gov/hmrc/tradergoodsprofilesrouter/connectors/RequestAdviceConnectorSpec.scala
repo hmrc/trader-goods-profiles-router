@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import org.mockito.ArgumentMatchersSugar.any
 import com.codahale.metrics.{Counter, MetricRegistry, Timer}
 import org.mockito.ArgumentMatchers.endsWith
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
@@ -37,7 +38,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 import java.time.Instant
 import scala.concurrent.Future
 
-class RequestAdviceConnectorSpec extends BaseConnectorSpec {
+class AccreditationConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec {
 
   private val timestamp                       = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
@@ -65,15 +66,12 @@ class RequestAdviceConnectorSpec extends BaseConnectorSpec {
     reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
 
     setUpAppConfig()
+    setUpMetrics()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
 
-    when(metricsRegistry.counter(endsWith("success-counter"))) thenReturn successCounter
-    when(metricsRegistry.counter(endsWith("failed-counter"))) thenReturn failureCounter
-    when(metricsRegistry.timer(any).time()) thenReturn timerContext
-    when(timerContext.stop()) thenReturn 0L
   }
 
   "request Advice" should {
@@ -88,8 +86,7 @@ class RequestAdviceConnectorSpec extends BaseConnectorSpec {
       result.value mustBe OK
 
       withClue("process the response within a timer") {
-        verify(metricsRegistry).timer(eqTo("tgp.advice.connector-timer"))
-        verify(timerContext).stop()
+        verifyMetrics("tgp.advice.connector")
       }
     }
 
