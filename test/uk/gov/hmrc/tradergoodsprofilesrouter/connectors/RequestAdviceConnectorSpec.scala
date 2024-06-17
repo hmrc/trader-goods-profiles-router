@@ -27,18 +27,18 @@ import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.TraderDetails
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class AccreditationConnectorSpec extends BaseConnectorSpec {
+class RequestAdviceConnectorSpec extends BaseConnectorSpec {
 
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val sut: AccreditationConnector = new AccreditationConnector(appConfig, httpClientV2, dateTimeService)
+  private val sut: RequestAdviceConnector = new RequestAdviceConnector(appConfig, httpClientV2, dateTimeService)
 
   private val expectedHeader: Seq[(String, String)] =
     Seq(
@@ -62,14 +62,14 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
   }
 
-  "requestAccreditation" should {
+  "request Advice" should {
     "return 200 OK" in {
       when(requestBuilder.execute[Either[Result, Int]](any, any))
         .thenReturn(Future.successful(Right(200)))
 
       val traderDetails = TraderDetails("eori", "any-name", None, "sample@sample.com", "ukims", Seq.empty)
 
-      val result = await(sut.requestAccreditation(traderDetails, correlationId))
+      val result = await(sut.requestAdvice(traderDetails, correlationId))
 
       result.value mustBe OK
     }
@@ -80,13 +80,13 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
 
       val traderDetails = TraderDetails("eori", "any-name", None, "sample@sample.com", "ukims", Seq.empty)
 
-      await(sut.requestAccreditation(traderDetails, correlationId))
+      await(sut.requestAdvice(traderDetails, correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/createaccreditation/v1"
       verify(httpClientV2).post(url"$expectedUrl")
       verify(requestBuilder).setHeader(expectedHeader: _*)
       verify(requestBuilder).withBody(expectedJsonBody)
-      verifyExecuteWithParamsType(correlationId)
+      verifyExecuteHttpRequest(correlationId)
     }
 
     "return an error" in {
@@ -95,14 +95,14 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
 
       val traderDetails = TraderDetails("eori", "any-name", None, "sample@sample.com", "ukims", Seq.empty)
 
-      val result = await(sut.requestAccreditation(traderDetails, correlationId))
+      val result = await(sut.requestAdvice(traderDetails, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
   }
 
-  private def expectedJsonBody = {
-    val expectedBody = Json.parse("""
+  private def expectedJsonBody =
+    Json.parse("""
         |{
         |"accreditationRequest":{
         | "requestCommon":{
@@ -120,10 +120,8 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
         | }
         |}
         |""".stripMargin)
-    expectedBody
-  }
 
-  private def verifyExecuteWithParamsType(expectedCorrelationId: String) = {
+  private def verifyExecuteHttpRequest(expectedCorrelationId: String) = {
     val captor = ArgCaptor[StatusHttpReader]
     verify(requestBuilder).execute(captor.capture, any)
 

@@ -52,7 +52,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe OK
@@ -69,7 +69,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestDataWithOptionalNullFields)
+            .patch(updateRecordRequestDataWithOptionalNullFields)
             .futureValue
 
           response.status shouldBe OK
@@ -86,7 +86,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestDataWithConditionOptionalNullFields)
+            .patch(updateRecordRequestDataWithConditionOptionalNullFields)
             .futureValue
 
           response.status shouldBe OK
@@ -103,7 +103,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestDataWithSomeOptionalNullFields)
+            .patch(updateRecordRequestDataWithSomeOptionalNullFields)
             .futureValue
 
           response.status shouldBe OK
@@ -117,7 +117,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequiredRequestData)
+            .patch(updateRecordRequiredRequestData)
             .futureValue
 
           response.status shouldBe OK
@@ -133,7 +133,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe FORBIDDEN
@@ -151,7 +151,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe NOT_FOUND
@@ -169,7 +169,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_GATEWAY
@@ -187,7 +187,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe SERVICE_UNAVAILABLE
@@ -208,7 +208,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -226,7 +226,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -247,7 +247,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -265,7 +265,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -286,7 +286,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -304,7 +304,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -325,7 +325,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -361,7 +361,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -405,7 +405,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -453,7 +453,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -494,7 +494,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -519,7 +519,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -537,7 +537,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -560,7 +560,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(invalidRequestData)
+            .patch(invalidRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -583,7 +583,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(invalidOptionalRequestData)
+            .patch(invalidOptionalRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -631,7 +631,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(invalidUpdateRecordRequestDataForAssessmentArray)
+            .patch(invalidUpdateRecordRequestDataForAssessmentArray)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -669,7 +669,7 @@ class UpdateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(invalidActorIdAndComcodeRequestData)
+            .patch(invalidActorIdAndComcodeRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST

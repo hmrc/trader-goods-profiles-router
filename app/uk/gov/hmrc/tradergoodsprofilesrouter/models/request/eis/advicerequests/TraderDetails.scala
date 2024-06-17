@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests
 
 import play.api.libs.json.{Json, OFormat}
 

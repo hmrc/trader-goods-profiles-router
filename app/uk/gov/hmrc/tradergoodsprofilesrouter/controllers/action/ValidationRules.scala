@@ -112,8 +112,8 @@ object ValidationRules {
 
   final case class ValidatedQueryParameters(actorId: String, recordId: String)
 
-  val actorIdPattern: Regex = raw"[A-Z]{2}\d{12,15}".r
-  val comcodePattern: Regex = raw".{6}(.{2}(.{2})?)?".r
+  private val actorIdPattern: Regex = raw"[A-Z]{2}\d{12,15}".r
+  private val comcodePattern: Regex = raw".{6}(.{2}(.{2})?)?".r
 
   def isValidCountryCode(rawCountryCode: String): Boolean =
     Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)
