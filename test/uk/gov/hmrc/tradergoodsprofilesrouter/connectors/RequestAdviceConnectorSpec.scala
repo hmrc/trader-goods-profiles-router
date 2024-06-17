@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
+import com.codahale.metrics.{Counter, MetricRegistry, Timer}
+import org.mockito.ArgumentMatchers.endsWith
+import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.Json
@@ -35,10 +39,15 @@ import scala.concurrent.Future
 
 class RequestAdviceConnectorSpec extends BaseConnectorSpec {
 
-  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
-  private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  private val timestamp                       = Instant.parse("2024-05-12T12:15:15.456321Z")
+  private val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
+  private val metricsRegistry: MetricRegistry = mock[MetricRegistry](RETURNS_DEEP_STUBS)
+  private val timerContext                    = mock[Timer.Context]
+  private val successCounter                  = mock[Counter]
+  private val failureCounter                  = mock[Counter]
 
-  private val sut: RequestAdviceConnector = new RequestAdviceConnector(appConfig, httpClientV2, dateTimeService)
+  private val sut: RequestAdviceConnector =
+    new RequestAdviceConnector(appConfig, httpClientV2, dateTimeService, metricsRegistry)
 
   private val expectedHeader: Seq[(String, String)] =
     Seq(
@@ -53,13 +62,18 @@ class RequestAdviceConnectorSpec extends BaseConnectorSpec {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
+    reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
 
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
+
+    when(metricsRegistry.counter(endsWith("success-counter"))) thenReturn successCounter
+    when(metricsRegistry.counter(endsWith("failed-counter"))) thenReturn failureCounter
+    when(metricsRegistry.timer(any).time()) thenReturn timerContext
+    when(timerContext.stop()) thenReturn 0L
   }
 
   "request Advice" should {
@@ -72,6 +86,11 @@ class RequestAdviceConnectorSpec extends BaseConnectorSpec {
       val result = await(sut.requestAdvice(traderDetails, correlationId))
 
       result.value mustBe OK
+
+      withClue("process the response within a timer") {
+        verify(metricsRegistry).timer(eqTo("tgp.advice.connector-timer"))
+        verify(timerContext).stop()
+      }
     }
 
     "send a request to EIS with the right parameters" in {
