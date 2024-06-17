@@ -39,7 +39,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with MetricsSupportSpe
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
+    reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
 
     setUpAppConfig()
     setUpMetrics()
