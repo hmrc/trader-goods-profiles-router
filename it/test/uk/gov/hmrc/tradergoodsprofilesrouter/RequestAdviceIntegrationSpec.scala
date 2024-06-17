@@ -422,7 +422,7 @@ class RequestAdviceIntegrationSpec
   private def createAccreditationRequestData: String =
     s"""
       |{
-      |   "adviceRequest":{
+      |   "accreditationRequest":{
       |      "requestCommon":{
       |         "receiptDate":"$timestamp"
       |      },

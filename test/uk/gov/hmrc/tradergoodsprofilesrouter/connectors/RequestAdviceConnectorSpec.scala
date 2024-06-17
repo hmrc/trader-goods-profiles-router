@@ -104,7 +104,7 @@ class RequestAdviceConnectorSpec extends BaseConnectorSpec {
   private def expectedJsonBody =
     Json.parse("""
         |{
-        |"adviceRequest":{
+        |"accreditationRequest":{
         | "requestCommon":{
         |   "receiptDate":"Sun, 12 May 2024 12:15:15 GMT"
         |   },

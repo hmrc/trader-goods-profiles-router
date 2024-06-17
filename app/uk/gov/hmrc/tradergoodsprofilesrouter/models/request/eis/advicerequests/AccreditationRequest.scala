@@ -18,20 +18,11 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests
 
 import play.api.libs.json.{Json, OFormat}
 
-case class RequestEisAdviceRequest(
-  adviceRequest: AdviceRequest
+case class AccreditationRequest(
+  requestCommon: RequestCommon,
+  requestDetail: RequestDetail
 )
 
-object RequestEisAdviceRequest {
-  implicit val format: OFormat[RequestEisAdviceRequest] = Json.format[RequestEisAdviceRequest]
-
-  def apply(traderDetails: TraderDetails, dateTime: String): RequestEisAdviceRequest = {
-
-    val defaultRequest =
-      RequestCommon(clientID = None, receiptDate = dateTime, boxID = None)
-    val requestDetail  = RequestDetail(traderDetails)
-    val adviceRequest  = AdviceRequest(requestCommon = defaultRequest, requestDetail = requestDetail)
-    RequestEisAdviceRequest(adviceRequest: AdviceRequest)
-  }
-
+object AccreditationRequest {
+  implicit val format: OFormat[AccreditationRequest] = Json.format[AccreditationRequest]
 }

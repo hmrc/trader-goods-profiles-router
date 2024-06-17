@@ -21,7 +21,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{RequestEisAdviceRequest, TraderDetails}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{RequestEisAccreditationRequest, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 
@@ -41,7 +41,7 @@ class RequestAdviceConnector @Inject() (
   ): Future[Either[Result, Int]] = {
     val url = appConfig.eisConfig.requestAdviceUrl
 
-    val adviceEisRequest = RequestEisAdviceRequest(request, dateTimeService.timestamp.asStringHttp)
+    val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
     httpClientV2
       .post(url"$url")
       .setHeader(buildHeadersForAdvice(correlationId, appConfig.eisConfig.requestAdviceBearerToken): _*)
