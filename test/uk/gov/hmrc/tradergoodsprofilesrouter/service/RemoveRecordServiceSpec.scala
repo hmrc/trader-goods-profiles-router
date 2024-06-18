@@ -96,7 +96,7 @@ class RemoveRecordServiceSpec
     val result = service.removeRecord(eori, recordId, actorId)
 
     whenReady(result.value) { r =>
-      //r.left.value shouldBe BadRequest("error")
+      r.left.value shouldBe BadRequest(Json.toJson(badRequestErrorResponse.errorResponse))
       verify(auditService)
         .auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "BAD_REQUEST", BAD_REQUEST.toString)
 
