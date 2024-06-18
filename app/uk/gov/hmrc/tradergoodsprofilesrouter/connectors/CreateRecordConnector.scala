@@ -18,7 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
 import play.api.libs.json.Json
-import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
@@ -35,18 +34,18 @@ class CreateRecordConnector @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with LegacyEisHttpErrorHandler {
+    with EisHttpErrorHandler {
 
   def createRecord(
     payload: CreateRecordPayload,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
     val url = appConfig.eisConfig.createRecordUrl
 
     httpClientV2
       .post(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
       .withBody(Json.toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, legacyHandleErrorResponse), ec)
+      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 }

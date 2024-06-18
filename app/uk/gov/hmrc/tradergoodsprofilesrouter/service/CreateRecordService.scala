@@ -16,14 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.CreateRecordConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse, InternalServerErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
@@ -39,29 +35,28 @@ class CreateRecordService @Inject() (connector: CreateRecordConnector, uuidServi
   def createRecord(
     eori: String,
     request: CreateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
     val correlationId = uuidService.uuid
 
-    EitherT(
-      connector
-        .createRecord(CreateRecordPayload(eori, request), correlationId)
-        .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
-        }
-        .recover { case ex: Throwable =>
-          logger.error(
-            s"""[CreateRecordService] - Error when creating records for Eori Number: $eori,
-            correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
+    connector
+      .createRecord(CreateRecordPayload(eori, request), correlationId)
+      .map {
+        case Right(response)     => Right(response)
+        case Left(errorResponse) => Left(errorResponse)
 
-          Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
+      }
+      .recover { case ex: Throwable =>
+        logger.error(
+          s"""[CreateRecordService] - Error when creating records for Eori Number: $eori,
+            correlationId: $correlationId, message: ${ex.getMessage}""",
+          ex
+        )
+
+        Left(
+          InternalServerErrorResponse(
+            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
           )
-        }
-    )
+        )
+      }
   }
 }

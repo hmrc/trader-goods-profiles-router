@@ -22,11 +22,11 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.CreateRecordConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, CreateRecordConnector, InternalServerErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -62,41 +62,47 @@ class CreateRecordServiceSpec
       when(connector.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
-      val result = sut.createRecord(eoriNumber, createRecordRequest)
+      val result = await(sut.createRecord(eoriNumber, createRecordRequest))
 
-      whenReady(result.value) {
-        _.value mustBe eisResponse
-      }
+      result.value mustBe eisResponse
     }
 
     "return an internal server error" when {
       "EIS return an error" in {
+        val badRequestErrorResponse = createEisErrorResponse
         when(connector.createRecord(any, any)(any))
-          .thenReturn(Future.successful(Left(BadRequest("error"))))
+          .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = sut.createRecord(eoriNumber, createRecordRequest)
+        val result = await(sut.createRecord(eoriNumber, createRecordRequest))
 
-        whenReady(result.value) {
-          _.left.value mustBe BadRequest("error")
-        }
+        result.left.value mustBe badRequestErrorResponse
       }
 
       "error when an exception is thrown" in {
         when(connector.createRecord(any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = sut.createRecord(eoriNumber, createRecordRequest)
+        val result = await(sut.createRecord(eoriNumber, createRecordRequest))
 
-        whenReady(result.value) {
-          _.left.value mustBe InternalServerError(
-            Json.obj(
-              "correlationId" -> correlationId,
-              "code"          -> "UNEXPECTED_ERROR",
-              "message"       -> "error"
-            )
-          )
-        }
+        result.left.value mustBe InternalServerErrorResponse(
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+        )
       }
     }
   }
+
+  private def createEisErrorResponse =
+    BadRequestErrorResponse(
+      ErrorResponse(
+        correlationId,
+        "BAD_REQUEST",
+        "BAD_REQUEST",
+        Some(
+          Seq(
+            Error("INTERNAL_ERROR", "internal error 1", 6),
+            Error("INTERNAL_ERROR", "internal error 2", 8)
+          )
+        )
+      )
+    )
 }

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.BeforeAndAfterEach
@@ -31,7 +30,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, Erro
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
@@ -62,7 +61,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     "return a 201 with JSON response when creating a record" in {
 
       when(createRecordService.createRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(createRecordResponseData))
+        .thenReturn(Future.successful(Right(createRecordResponseData)))
 
       val request = FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)

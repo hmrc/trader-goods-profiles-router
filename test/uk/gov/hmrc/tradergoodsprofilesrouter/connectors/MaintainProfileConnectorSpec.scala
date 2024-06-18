@@ -62,7 +62,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyMaintainProfileBearerToken"): _*)
       verify(requestBuilder).withBody(maintainProfileEisRequest)
       verify(requestBuilder).execute(any, any)
-      verifyExecuteWithParams(correlationId)
+      legacyVerifyExecuteWithParams(correlationId)
 
       result.value mustBe maintainProfileResponse
     }

@@ -22,7 +22,7 @@ import play.api.mvc.Result
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.LegacyHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -47,6 +47,6 @@ class UpdateRecordConnector @Inject() (
       .put(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.updateRecordBearerToken): _*)
       .withBody(toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, legacyHandleErrorResponse), ec)
+      .execute(LegacyHttpReader[CreateOrUpdateRecordResponse](correlationId, legacyHandleErrorResponse), ec)
   }
 }

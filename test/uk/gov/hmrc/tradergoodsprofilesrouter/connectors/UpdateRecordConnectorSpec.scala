@@ -89,7 +89,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*)
       verify(requestBuilder).withBody(updateRecordPayload)
 
-      verifyExecuteWithParams(correlationId)
+      legacyVerifyExecuteWithParams(correlationId)
     }
   }
 

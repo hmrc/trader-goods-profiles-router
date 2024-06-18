@@ -27,11 +27,23 @@ import scala.util.{Failure, Success, Try}
 
 object EisHttpReader {
 
-  case class HttpReader[T](correlationId: String, errorHandler: (HttpResponse, String) => Result)(implicit
+  case class LegacyHttpReader[T](correlationId: String, errorHandler: (HttpResponse, String) => Result)(implicit
     reads: Reads[T],
     tt: TypeTag[T]
   ) extends HttpReads[Either[Result, T]] {
     override def read(method: String, url: String, response: HttpResponse): Either[Result, T] =
+      response match {
+        case response if isSuccessful(response.status) =>
+          Right(jsonAs[T](response))
+        case response                                  => Left(errorHandler(response, correlationId))
+      }
+  }
+
+  case class HttpReader[T](correlationId: String, errorHandler: (HttpResponse, String) => EisHttpErrorResponse)(implicit
+    reads: Reads[T],
+    tt: TypeTag[T]
+  ) extends HttpReads[Either[EisHttpErrorResponse, T]] {
+    override def read(method: String, url: String, response: HttpResponse): Either[EisHttpErrorResponse, T] =
       response match {
         case response if isSuccessful(response.status) =>
           Right(jsonAs[T](response))

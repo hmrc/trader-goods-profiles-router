@@ -24,7 +24,7 @@ import play.api.http.Status.OK
 import play.api.mvc.Result
 import play.api.mvc.Results.Ok
 import uk.gov.hmrc.http.HttpResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, LegacyStatusHttpReader}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{LegacyHttpReader, LegacyStatusHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
@@ -37,12 +37,12 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
   class TestEisHttpReaderHandler extends LegacyEisHttpErrorHandler
   def successErrorHandler: (HttpResponse, String) => Result = (response, correlationId) => Ok("Success")
 
-  "HttpReader" should {
+  "LegacyHttpReader" should {
     "return a record item" in {
       val eisResponse = HttpResponse(200, getEisRecordsResponseData, Map.empty)
 
       val result =
-        HttpReader[GetEisRecordsResponse](correlationId, successErrorHandler).read("GET", "any-url", eisResponse)
+        LegacyHttpReader[GetEisRecordsResponse](correlationId, successErrorHandler).read("GET", "any-url", eisResponse)
 
       result.value mustBe getEisRecordsResponseData.as[GetEisRecordsResponse]
     }
@@ -51,7 +51,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       val errorHandlerSpy = spyOnHandlerErrorFn
       val eisResponse     = HttpResponse(400, getEisRecordsResponseData, Map.empty)
 
-      HttpReader[GetEisRecordsResponse](correlationId, errorHandlerSpy.legacyHandleErrorResponse)
+      LegacyHttpReader[GetEisRecordsResponse](correlationId, errorHandlerSpy.legacyHandleErrorResponse)
         .read("GET", "any-url", eisResponse)
 
       verify(errorHandlerSpy).legacyHandleErrorResponse(eisResponse, correlationId)
@@ -61,7 +61,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       val eisResponse = HttpResponse(200, "message")
 
       the[RuntimeException] thrownBy {
-        HttpReader[GetEisRecordsResponse](correlationId, successErrorHandler).read("GET", "any-url", eisResponse)
+        LegacyHttpReader[GetEisRecordsResponse](correlationId, successErrorHandler).read("GET", "any-url", eisResponse)
       } must have message "Response body could not be read: message"
     }
 
@@ -69,7 +69,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
       val eisResponse = HttpResponse(200, """{"eori": "GB1234567890"}""")
 
       the[RuntimeException] thrownBy {
-        HttpReader[GetEisRecordsResponse](correlationId, successErrorHandler)
+        LegacyHttpReader[GetEisRecordsResponse](correlationId, successErrorHandler)
           .read("GET", "any-url", eisResponse)
       } must have message s"Response body could not be read as type ${typeOf[GetEisRecordsResponse]}"
     }

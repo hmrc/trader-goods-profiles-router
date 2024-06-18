@@ -21,7 +21,7 @@ import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.LegacyHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -48,7 +48,7 @@ class GetRecordsConnector @Inject() (
     httpClientV2
       .get(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
-      .execute(HttpReader[GetEisRecordsResponse](correlationId, legacyHandleErrorResponse), ec)
+      .execute(LegacyHttpReader[GetEisRecordsResponse](correlationId, legacyHandleErrorResponse), ec)
 
   }
 
@@ -67,7 +67,7 @@ class GetRecordsConnector @Inject() (
     httpClientV2
       .get(url"$uri")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
-      .execute(HttpReader[GetEisRecordsResponse](correlationId, legacyHandleErrorResponse), ec)
+      .execute(LegacyHttpReader[GetEisRecordsResponse](correlationId, legacyHandleErrorResponse), ec)
   }
 
 }
