@@ -17,13 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.any
-import com.codahale.metrics.{Counter, MetricRegistry, Timer}
-import org.mockito.ArgumentMatchers.endsWith
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.mockito.captor.ArgCaptor
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.Json
@@ -33,19 +28,15 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.TraderDetails
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, MetricsSupportSpec}
 
 import java.time.Instant
 import scala.concurrent.Future
 
 class AccreditationConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec {
 
-  private val timestamp                       = Instant.parse("2024-05-12T12:15:15.456321Z")
-  private val correlationId: String           = "3e8dae97-b586-4cef-8511-68ac12da9028"
-  private val metricsRegistry: MetricRegistry = mock[MetricRegistry](RETURNS_DEEP_STUBS)
-  private val timerContext                    = mock[Timer.Context]
-  private val successCounter                  = mock[Counter]
-  private val failureCounter                  = mock[Counter]
+  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
+  private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val sut: RequestAdviceConnector =
     new RequestAdviceConnector(appConfig, httpClientV2, dateTimeService, metricsRegistry)
