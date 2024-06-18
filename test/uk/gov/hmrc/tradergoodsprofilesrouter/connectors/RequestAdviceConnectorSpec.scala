@@ -26,7 +26,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.LegacyStatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, MetricsSupportSpec}
 
@@ -129,7 +129,7 @@ class AccreditationConnectorSpec extends BaseConnectorSpec with MetricsSupportSp
         |""".stripMargin)
 
   private def verifyExecuteHttpRequest(expectedCorrelationId: String) = {
-    val captor = ArgCaptor[LegacyStatusHttpReader]
+    val captor = ArgCaptor[StatusHttpReader]
     verify(requestBuilder).execute(captor.capture, any)
 
     val httpReader = captor.value

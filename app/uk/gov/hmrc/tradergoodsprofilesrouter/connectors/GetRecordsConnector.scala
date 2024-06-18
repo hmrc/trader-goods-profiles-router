@@ -49,11 +49,12 @@ class GetRecordsConnector @Inject() (
     withMetricsTimerAsync("tgp.getrecord.connector") { _ =>
     val url = s"${appConfig.eisConfig.getRecordsUrl}/$eori/$recordId"
 
-      httpClientV2
-        .get(url"$url")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
-        .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
-    }
+    httpClientV2
+      .get(url"$url")
+      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+
+  }
 
   def fetchRecords(
     eori: String,

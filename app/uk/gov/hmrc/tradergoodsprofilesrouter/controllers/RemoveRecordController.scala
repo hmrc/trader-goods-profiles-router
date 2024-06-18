@@ -26,7 +26,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{AuditService, RemoveRecordService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
 

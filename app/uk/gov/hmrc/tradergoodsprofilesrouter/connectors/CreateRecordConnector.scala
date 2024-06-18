@@ -47,10 +47,10 @@ class CreateRecordConnector @Inject() (
     withMetricsTimerAsync("tgp.createrecord.connector") { _ =>
     val url = appConfig.eisConfig.createRecordUrl
 
-      httpClientV2
-        .post(url"$url")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
-        .withBody(Json.toJson(payload))
-        .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
-    }
+    httpClientV2
+      .post(url"$url")
+      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
+      .withBody(Json.toJson(payload))
+      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
+  }
 }
