@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -23,6 +24,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsUtils
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
@@ -31,9 +33,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class RemoveRecordConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val metricsRegistry: MetricRegistry
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
+    with MetricsUtils
     with EisHttpErrorHandler {
 
   def removeRecord(
@@ -41,12 +45,13 @@ class RemoveRecordConnector @Inject() (
     recordId: String,
     actorId: String,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, Int]] = {
-    val url = appConfig.eisConfig.removeRecordUrl
-    httpClientV2
-      .put(url"$url")
-      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
-      .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
-      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
-  }
+  )(implicit hc: HeaderCarrier): Future[Either[Result, Int]] =
+    withMetricsTimerAsync("tgp.removerecord.connector") { _ =>
+      val url = appConfig.eisConfig.removeRecordUrl
+      httpClientV2
+        .put(url"$url")
+        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
+        .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
+        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    }
 }

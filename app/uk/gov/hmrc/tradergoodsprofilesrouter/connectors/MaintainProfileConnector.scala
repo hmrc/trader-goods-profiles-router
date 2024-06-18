@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 import play.api.libs.json.Json
 import play.api.mvc.Result
@@ -23,6 +24,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsUtils
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -32,19 +34,22 @@ import scala.concurrent.{ExecutionContext, Future}
 class MaintainProfileConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val metricsRegistry: MetricRegistry
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
+    with MetricsUtils
     with EisHttpErrorHandler {
 
   def maintainProfile(request: MaintainProfileEisRequest, correlationId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Either[Result, MaintainProfileResponse]] = {
-    val url = appConfig.eisConfig.maintainProfileUrl
-    httpClientV2
-      .put(url"$url")
-      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
-      .withBody(Json.toJson(request))
-      .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
-  }
+  ): Future[Either[Result, MaintainProfileResponse]] =
+    withMetricsTimerAsync("tgp.maintainprofile.connector") { _ =>
+      val url = appConfig.eisConfig.maintainProfileUrl
+      httpClientV2
+        .put(url"$url")
+        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
+        .withBody(Json.toJson(request))
+        .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
+    }
 }
