@@ -29,6 +29,7 @@ import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubCo
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import scala.concurrent.ExecutionContext
@@ -42,6 +43,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
   private val sut =
     new CreateRecordController(
+      new FakeSuccessAuthAction(),
       stubControllerComponents(),
       createRecordService,
       uuidService

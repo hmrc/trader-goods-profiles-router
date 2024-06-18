@@ -28,6 +28,7 @@ import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
@@ -46,6 +47,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
   private val sut =
     new GetRecordsController(
+      new FakeSuccessAuthAction(),
       stubControllerComponents(),
       getRecordsSrvice,
       uuidService

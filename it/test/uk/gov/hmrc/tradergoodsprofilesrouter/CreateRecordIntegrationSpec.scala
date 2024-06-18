@@ -17,24 +17,31 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
 
 import java.time.Instant
 
-class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with BeforeAndAfterEach {
+class CreateRecordIntegrationSpec
+    extends BaseIntegrationWithConnectorSpec
+    with AuthTestSupport
+    with BeforeAndAfterEach {
 
   private val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val url           = fullUrl("/traders/GB123456789012/records")
+  private val url           = fullUrl("/traders/GB123456789001/records")
 
   override def connectorPath: String = "/tgp/createrecord/v1"
   override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
+    reset(authConnector)
+    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
@@ -717,6 +724,44 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
 
           verifyThatDownstreamApiWasNotCalled()
         }
+        "forbidden with any of the following" - {
+          "EORI number is not authorized" in {
+
+            val response = wsClient
+              .url(fullUrl("/traders/GB123456789015/records"))
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .post(createRecordRequestData)
+              .futureValue
+
+            response.status shouldBe FORBIDDEN
+            response.json   shouldBe Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> "FORBIDDEN",
+              "message"       -> s"EORI number is incorrect"
+            )
+
+            verifyThatDownstreamApiWasNotCalled()
+          }
+
+          "incorrect enrolment key is used to authorise " in {
+            withAuthorizedTrader(enrolment = Enrolment("OTHER-ENROLMENT-KEY"))
+
+            val response = wsClient
+              .url(url)
+              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .post(createRecordRequestData)
+              .futureValue
+
+            response.status shouldBe FORBIDDEN
+            response.json   shouldBe Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> "FORBIDDEN",
+              "message"       -> s"EORI number is incorrect"
+            )
+
+            verifyThatDownstreamApiWasNotCalled()
+          }
+        }
       }
     }
   }
@@ -736,7 +781,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .parse("""
         |{
         |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-        |  "eori": "GB123456789012",
+        |  "eori": "GB123456789001",
         |  "actorId": "GB098765432112",
         |  "traderRef": "BAN001001",
         |  "comcode": "10410100",
@@ -778,7 +823,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .parse("""
                |{
                |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
+               |  "eori": "GB123456789001",
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
@@ -820,7 +865,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .parse("""
                |{
                |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
+               |  "eori": "GB123456789001",
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
@@ -857,7 +902,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .parse("""
                |{
                |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
+               |  "eori": "GB123456789001",
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
@@ -893,7 +938,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .parse("""
                |{
                |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
+               |  "eori": "GB123456789001",
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
@@ -924,7 +969,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .parse("""
                |{
                |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
+               |  "eori": "GB123456789001",
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
@@ -1058,7 +1103,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   lazy val createRecordRequiredRequestData: String =
     """
       |{
-      |    "eori": "GB123456789012",
+      |    "eori": "GB123456789001",
       |    "actorId": "GB098765432112",
       |    "traderRef": "BAN001001",
       |    "comcode": "10410100",
@@ -1074,7 +1119,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
       .parse("""
           |{
           |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-          |    "eori": "GB123456789012",
+          |    "eori": "GB123456789001",
           |    "actorId": "GB098765432112",
           |    "traderRef": "BAN001001",
           |    "comcode": "10410100",
@@ -1130,7 +1175,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   lazy val invalidCategoryRequestData: String =
     """
       |{
-      |  "eori": "GB123456789012",
+      |  "eori": "GB123456789001",
       |    "actorId": "GB098765432112",
       |    "traderRef": "BAN001001",
       |    "comcode": "10410100",
@@ -1159,7 +1204,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   lazy val invalidOptionalRequestData: String =
     """
       |{
-      |  "eori": "GB123456789012",
+      |  "eori": "GB123456789001",
       |    "actorId": "GB098765432112",
       |    "traderRef": "BAN001001",
       |    "comcode": "10410100",
@@ -1225,7 +1270,7 @@ class CreateRecordIntegrationSpec extends BaseIntegrationWithConnectorSpec with 
   lazy val invalidActorIdAndComcodeRequestData: String =
     """
       |{
-      |  "eori": "GB123456789012",
+      |  "eori": "GB123456789001",
       |    "actorId": "GB12",
       |    "traderRef": "BAN001001",
       |    "comcode": "104101000",

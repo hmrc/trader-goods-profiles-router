@@ -17,17 +17,19 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
+import uk.gov.hmrc.auth.core.Enrolment
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport}
 
 import java.time.Instant
 
 class RequestAdviceIntegrationSpec
     extends BaseIntegrationWithConnectorSpec
+    with AuthTestSupport
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
 
@@ -41,6 +43,8 @@ class RequestAdviceIntegrationSpec
   override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
+    reset(authConnector)
+    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
@@ -374,6 +378,54 @@ class RequestAdviceIntegrationSpec
           )
 
           verifyThatMultipleDownstreamApiWasCalled()
+        }
+      }
+      "forbidden with any of the following" - {
+        "EORI number is not authorized" in {
+
+          val response = await(
+            wsClient
+              .url(fullUrl("/traders/GB123456789015/records/$recordId/advice"))
+              .withHttpHeaders(
+                ("Content-Type", "application/json"),
+                ("Accept", "application/json"),
+                ("X-Client-ID", "tss")
+              )
+              .post(requestAdviceData)
+          )
+
+          response.status shouldBe FORBIDDEN
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "FORBIDDEN",
+            "message"       -> s"EORI number is incorrect"
+          )
+
+          verifyThatDownstreamApiWasNotCalled()
+        }
+
+        "incorrect enrolment key is used to authorise " in {
+          withAuthorizedTrader(enrolment = Enrolment("OTHER-ENROLMENT-KEY"))
+
+          val response = await(
+            wsClient
+              .url(url)
+              .withHttpHeaders(
+                ("Content-Type", "application/json"),
+                ("Accept", "application/json"),
+                ("X-Client-ID", "tss")
+              )
+              .post(requestAdviceData)
+          )
+
+          response.status shouldBe FORBIDDEN
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "FORBIDDEN",
+            "message"       -> s"EORI number is incorrect"
+          )
+
+          verifyThatDownstreamApiWasNotCalled()
         }
       }
     }

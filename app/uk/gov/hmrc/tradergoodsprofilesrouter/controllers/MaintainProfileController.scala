@@ -23,14 +23,15 @@ import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.fieldsToErrorCode
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class MaintainProfileController @Inject() (
+  authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   maintainProfileService: MaintainProfileService,
   override val uuidService: UuidService
@@ -39,7 +40,7 @@ class MaintainProfileController @Inject() (
     with ValidationRules
     with Logging {
 
-  def maintain(eori: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def maintain(eori: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
     val result = for {
       _                      <- EitherT.fromEither[Future](validateClientId)
       maintainProfileRequest <-
