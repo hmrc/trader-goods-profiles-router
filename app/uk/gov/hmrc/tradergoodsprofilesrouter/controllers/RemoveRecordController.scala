@@ -24,7 +24,7 @@ import play.api.mvc._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{AuditService, RemoveRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,7 +40,8 @@ class RemoveRecordController @Inject() (
   def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- EitherT.fromEither[Future](validateClientId)
+        _ <- EitherT
+               .fromEither[Future](validateClientId)
         _ <- EitherT
                .fromEither[Future](validateQueryParameters(actorId, recordId))
                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)

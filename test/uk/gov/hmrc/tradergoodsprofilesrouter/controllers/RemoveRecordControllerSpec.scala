@@ -27,7 +27,7 @@ import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{AuditService, RemoveRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
@@ -45,11 +45,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
   private val recordId = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
 
   private val controller =
-    new RemoveRecordController(
-      stubControllerComponents(),
-      mockService,
-      mockUuidService
-    )
+    new RemoveRecordController(stubControllerComponents(), mockService, mockUuidService)
 
   def validHeaders: Seq[(String, String)] = Seq(
     HeaderNames.ClientId -> "clientId"

@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
+import org.apache.pekko.Done
 import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -30,6 +31,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RemoveRecordConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordServiceSpec
@@ -43,30 +45,37 @@ class RemoveRecordServiceSpec
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  private val eori          = "GB123456789011"
-  private val actorId       = "GB123456789011"
-  private val recordId      = "12345"
-  private val connector     = mock[RemoveRecordConnector]
-  private val uuidService   = mock[UuidService]
-  private val correlationId = "1234-5678-9012"
+  private val eori            = "GB123456789011"
+  private val actorId         = "GB123456789011"
+  private val recordId        = "12345"
+  private val connector       = mock[RemoveRecordConnector]
+  private val auditService    = mock[AuditService]
+  private val dateTimeService = mock[DateTimeService]
+  private val uuidService     = mock[UuidService]
+  private val correlationId   = "1234-5678-9012"
+  private val dateTime        = Instant.parse("2021-12-17T09:30:47Z")
 
-  val service = new RemoveRecordService(connector, uuidService)
+  val service = new RemoveRecordService(connector, uuidService, auditService, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
     reset(connector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
+    when(dateTimeService.timestamp).thenReturn(dateTime)
   }
 
   "remove a record item" in {
     when(connector.removeRecord(any, any, any, any)(any))
       .thenReturn(Future.successful(Right(OK)))
+    when(auditService.auditRemoveRecord(any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
     val result = service.removeRecord(eori, recordId, actorId)
 
-    whenReady(result.value) {
-      _.value shouldBe NO_CONTENT
+    whenReady(result.value) { r =>
+      r.value shouldBe NO_CONTENT
+      verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString)
+
     }
   }
 

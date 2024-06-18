@@ -26,25 +26,32 @@ import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RemoveRecordConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordService @Inject() (
   connector: RemoveRecordConnector,
-  uuidService: UuidService
+  uuidService: UuidService,
+  auditService: AuditService,
+  dateTimeService: DateTimeService
 )(implicit ec: ExecutionContext)
     extends Logging {
   def removeRecord(eori: String, recordId: String, actorId: String)(implicit
     hc: HeaderCarrier
   ): EitherT[Future, Result, Int] = {
-    val correlationId = uuidService.uuid
+    val correlationId     = uuidService.uuid
+    val requestedDateTime = dateTimeService.timestamp.asStringSeconds
     EitherT(
       connector
         .removeRecord(eori, recordId, actorId, correlationId)
         .map {
-          case Right(_)        => Right(NO_CONTENT)
-          case error @ Left(_) => error
+          case Right(_)        =>
+            auditService.auditRemoveRecord(eori, recordId, actorId, requestedDateTime)
+            Right(NO_CONTENT)
+          case error @ Left(_) =>
+            error
         }
         .recover { case ex: Throwable =>
           logger.error(
