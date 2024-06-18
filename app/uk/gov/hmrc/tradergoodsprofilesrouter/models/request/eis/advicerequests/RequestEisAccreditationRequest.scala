@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests
 
 import play.api.libs.json.{Json, OFormat}
 
+// Will be changed to advice once EIS have made the changes on their side
 case class RequestEisAccreditationRequest(
   accreditationRequest: AccreditationRequest
 )

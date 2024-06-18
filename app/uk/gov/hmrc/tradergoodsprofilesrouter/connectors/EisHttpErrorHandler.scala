@@ -278,8 +278,8 @@ trait EisHttpErrorHandler {
             invalidRequestParameterError(InvalidPage, code.toInt)
           case InvalidSizeCode                                          =>
             invalidRequestParameterError(InvalidSize, code.toInt)
-          case AccreditationRequestInProgressCode                       =>
-            invalidRequestParameterError(AccreditationRequestInProgressMessage, code.toInt)
+          case AdviceRequestInProgressCode                              =>
+            invalidRequestParameterError(AdviceRequestInProgressMessage, code.toInt)
           case RecordRemovedAndCanNotBeUpdatedCode                      =>
             invalidRequestParameterError(RecordRemovedAndCanNotBeUpdatedMessage, code.toInt)
           case InvalidOrMissingCorrelationIdCode                        =>

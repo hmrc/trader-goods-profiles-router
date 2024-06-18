@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests
 
 import play.api.libs.json.{Json, OFormat}
 
-case class RequestCommon(
-  clientID: Option[String],
-  receiptDate: String,
-  boxID: Option[String]
+case class AccreditationRequest(
+  requestCommon: RequestCommon,
+  requestDetail: RequestDetail
 )
 
-object RequestCommon {
-  implicit val format: OFormat[RequestCommon] = Json.format[RequestCommon]
+object AccreditationRequest {
+  implicit val format: OFormat[AccreditationRequest] = Json.format[AccreditationRequest]
 }

@@ -41,7 +41,7 @@ trait BaseConnector {
       HeaderNames.Authorization -> accessToken
     )
 
-  def buildHeadersForAccreditation(correlationId: String, bearerToken: String)(implicit
+  def buildHeadersForAdvice(correlationId: String, bearerToken: String)(implicit
     hc: HeaderCarrier
   ): Seq[(String, String)] =
     buildHeaders(correlationId, bearerToken).filterNot(elm =>

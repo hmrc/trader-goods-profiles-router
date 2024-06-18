@@ -21,14 +21,14 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.accreditationrequests.{RequestEisAccreditationRequest, TraderDetails}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{RequestEisAccreditationRequest, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class AccreditationConnector @Inject() (
+class RequestAdviceConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   override val dateTimeService: DateTimeService
@@ -36,16 +36,16 @@ class AccreditationConnector @Inject() (
     extends BaseConnector
     with EisHttpErrorHandler {
 
-  def requestAccreditation(request: TraderDetails, correlationId: String)(implicit
+  def requestAdvice(request: TraderDetails, correlationId: String)(implicit
     hc: HeaderCarrier
   ): Future[Either[Result, Int]] = {
-    val url = appConfig.eisConfig.createAccreditationUrl
+    val url = appConfig.eisConfig.requestAdviceUrl
 
-    val accreditationEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
+    val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
     httpClientV2
       .post(url"$url")
-      .setHeader(buildHeadersForAccreditation(correlationId, appConfig.eisConfig.createAccreditationBearerToken): _*)
-      .withBody(Json.toJson(accreditationEisRequest))
+      .setHeader(buildHeadersForAdvice(correlationId, appConfig.eisConfig.requestAdviceBearerToken): _*)
+      .withBody(Json.toJson(adviceEisRequest))
       .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
   }
 
