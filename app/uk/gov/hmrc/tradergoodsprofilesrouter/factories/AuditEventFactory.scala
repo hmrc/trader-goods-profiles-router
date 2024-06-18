@@ -40,7 +40,7 @@ case class AuditEventFactory @Inject() (
     actorId: String,
     requestedDateTime: String,
     status: String,
-    statusCode: String
+    statusCode: Int
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
     // var outcomeJson = Json.obj()
     //if (outcome.nonEmpty) {
@@ -63,7 +63,7 @@ case class AuditEventFactory @Inject() (
 
     val outcome = Json.obj(
       "status"        -> status,
-      "statusCode"    -> statusCode,
+      "statusCode"    -> statusCode.toString,
       "failureReason" -> Seq.empty.toString
     )
 

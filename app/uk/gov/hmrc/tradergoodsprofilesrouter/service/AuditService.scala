@@ -38,7 +38,7 @@ class AuditService @Inject() (
     actorId: String,
     requestedDateTime: String,
     status: String,
-    statusCode: String
+    statusCode: Int
   )(implicit
     hc: HeaderCarrier
   ): Future[Done] = {

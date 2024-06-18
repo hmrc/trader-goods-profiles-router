@@ -76,7 +76,7 @@ class RemoveRecordServiceSpec
 
     whenReady(result.value) { r =>
       r.value shouldBe NO_CONTENT
-      verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", "204")
+      verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", NO_CONTENT)
 
     }
   }
@@ -98,7 +98,7 @@ class RemoveRecordServiceSpec
     whenReady(result.value) { r =>
       r.left.value shouldBe BadRequest(Json.toJson(badRequestErrorResponse.errorResponse))
       verify(auditService)
-        .auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "BAD_REQUEST", BAD_REQUEST.toString)
+        .auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "BAD_REQUEST", BAD_REQUEST)
 
     }
   }

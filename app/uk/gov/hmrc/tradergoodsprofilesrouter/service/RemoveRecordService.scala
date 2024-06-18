@@ -48,7 +48,7 @@ class RemoveRecordService @Inject() (
         .removeRecord(eori, recordId, actorId, correlationId)
         .map {
           case Right(_) =>
-            auditService.auditRemoveRecord(eori, recordId, actorId, requestedDateTime, "SUCCEEDED", NO_CONTENT.toString)
+            auditService.auditRemoveRecord(eori, recordId, actorId, requestedDateTime, "SUCCEEDED", NO_CONTENT)
             Right(NO_CONTENT)
 
           case Left(response) =>
@@ -60,7 +60,7 @@ class RemoveRecordService @Inject() (
                   actorId,
                   requestedDateTime,
                   or.errorResponse.code,
-                  BAD_REQUEST.toString
+                  BAD_REQUEST
                 )
                 Left(BadRequest(Json.toJson(or.errorResponse)))
               case or: InternalServerErrorResponse =>
@@ -70,7 +70,7 @@ class RemoveRecordService @Inject() (
                   actorId,
                   requestedDateTime,
                   or.errorResponse.code,
-                  INTERNAL_SERVER_ERROR.toString
+                  INTERNAL_SERVER_ERROR
                 )
                 Left(InternalServerError(Json.toJson(or.errorResponse)))
               case _                               => Left(InternalServerError(""))

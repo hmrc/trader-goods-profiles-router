@@ -6,6 +6,7 @@ import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -48,7 +49,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         .thenReturn(extendedSuccessDataEvent("SUCCEEDED", "204"))
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
-      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", "204"))
+      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", NO_CONTENT))
 
       result mustBe Done
       verify(auditConnector).sendExtendedEvent(extendedSuccessDataEvent("SUCCEEDED", "204"))
@@ -58,7 +59,8 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         .thenReturn(extendedSuccessDataEvent("INTERNAL_SERVER_ERROR", "500"))
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
-      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "INTERNAL_SERVER_ERROR", "500"))
+      val result =
+        await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "INTERNAL_SERVER_ERROR", INTERNAL_SERVER_ERROR))
 
       result mustBe Done
       verify(auditConnector).sendExtendedEvent(extendedSuccessDataEvent("INTERNAL_SERVER_ERROR", "500"))
