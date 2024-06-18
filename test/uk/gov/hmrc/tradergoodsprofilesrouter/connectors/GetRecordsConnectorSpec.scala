@@ -23,26 +23,27 @@ import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport, MetricsSupportSpec}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
+class GetRecordsConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec with GetRecordsDataSupport {
 
   private val eori                  = "GB123456789011"
   private val recordId              = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val connector = new GetRecordsConnector(appConfig, httpClientV2, dateTimeService)
+  private val connector = new GetRecordsConnector(appConfig, httpClientV2, dateTimeService, metricsRegistry)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
+    reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
 
     setUpAppConfig()
+    setUpMetrics()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
@@ -67,6 +68,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       val result = await(connector.fetchRecord(eori, recordId, correlationId))
 
       result.left.value mustBe BadRequest("error")
+
+      withClue("process the response within a timer") {
+        verifyMetrics("tgp.getrecord.connector")
+      }
     }
 
     "send a request with the right parameters" in {
@@ -82,6 +87,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken"): _*)
       verifyExecuteWithParams(correlationId)
     }
+
   }
 
   "fetchRecords" should {
@@ -94,6 +100,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       val result = await(connector.fetchRecords(eori, correlationId))
 
       result.value mustBe response
+
+      withClue("process the response within a timer") {
+        verifyMetrics("tgp.getrecords.connector")
+      }
     }
 
     "return an error if EIS return an error" in {

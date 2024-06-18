@@ -15,11 +15,13 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
+import com.codahale.metrics.MetricRegistry
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsUtils
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{RequestEisAccreditationRequest, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -30,22 +32,25 @@ import scala.concurrent.{ExecutionContext, Future}
 class RequestAdviceConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val metricsRegistry: MetricRegistry
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
+    with MetricsUtils
     with EisHttpErrorHandler {
 
   def requestAdvice(request: TraderDetails, correlationId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Either[EisHttpErrorResponse, Int]] = {
-    val url = appConfig.eisConfig.requestAdviceUrl
+  ): Future[Either[EisHttpErrorResponse, Int]] =
+    withMetricsTimerAsync("tgp.advice.connector") { _ =>
+      val url = appConfig.eisConfig.requestAdviceUrl
 
-    val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
-    httpClientV2
-      .post(url"$url")
-      .setHeader(buildHeadersForAdvice(correlationId, appConfig.eisConfig.requestAdviceBearerToken): _*)
-      .withBody(Json.toJson(adviceEisRequest))
-      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
-  }
+      val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
+      httpClientV2
+        .post(url"$url")
+        .setHeader(buildHeadersForAdvice(correlationId, appConfig.eisConfig.requestAdviceBearerToken): _*)
+        .withBody(Json.toJson(adviceEisRequest))
+        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    }
 
 }

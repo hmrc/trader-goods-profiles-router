@@ -24,24 +24,25 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport, MetricsSupportSpec}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataSupport {
+class CreateRecordConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec with CreateRecordDataSupport {
 
   private val timestamp              = Instant.parse("2024-05-12T12:15:15.456321Z")
   implicit val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val connector = new CreateRecordConnector(appConfig, httpClientV2, dateTimeService)
+  private val connector = new CreateRecordConnector(appConfig, httpClientV2, dateTimeService, metricsRegistry)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
+    reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
 
     setUpAppConfig()
+    setUpMetrics()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
@@ -60,6 +61,10 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       val result  = await(connector.createRecord(request, correlationId))
 
       result.value mustBe expectedResponse
+
+      withClue("process the response within a timer") {
+        verifyMetrics("tgp.createrecord.connector")
+      }
     }
 
     "return an error if EIS return an error" in {
