@@ -24,13 +24,14 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordController @Inject() (
+  authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   service: RemoveRecordService,
   override val uuidService: UuidService
@@ -39,7 +40,7 @@ class RemoveRecordController @Inject() (
     with ValidationRules
     with Logging {
 
-  def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = Action.async {
+  def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
         _ <- EitherT

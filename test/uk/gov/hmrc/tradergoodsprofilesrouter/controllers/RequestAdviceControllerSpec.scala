@@ -26,6 +26,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RequestAdviceService, UuidService}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames._
@@ -44,6 +45,7 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
 
   private val sut =
     new RequestAdviceController(
+      new FakeSuccessAuthAction(),
       stubControllerComponents(),
       mockRequestAdviceService,
       mockUuidService

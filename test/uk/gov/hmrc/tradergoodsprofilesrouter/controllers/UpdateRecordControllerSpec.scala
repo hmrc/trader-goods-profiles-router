@@ -29,6 +29,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecor
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import java.util.UUID
@@ -49,6 +50,7 @@ class UpdateRecordControllerSpec
 
   private val sut =
     new UpdateRecordController(
+      new FakeSuccessAuthAction(),
       stubControllerComponents(),
       updateRecordService,
       mockUuidService

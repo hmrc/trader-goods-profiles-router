@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
@@ -35,6 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class GetRecordsController @Inject() (
+  authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   getRecordSErvice: GetRecordsService,
   override val uuidService: UuidService
@@ -45,7 +46,7 @@ class GetRecordsController @Inject() (
   def getTGPRecord(
     eori: String,
     recordId: String
-  ): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
       _          <- EitherT.fromEither[Future](validateClientId)
       _          <- EitherT
@@ -62,7 +63,7 @@ class GetRecordsController @Inject() (
     lastUpdatedDate: Option[String] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  ): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
       _         <- EitherT.fromEither[Future](validateClientId)
       validDate <- validateDate(lastUpdatedDate)
