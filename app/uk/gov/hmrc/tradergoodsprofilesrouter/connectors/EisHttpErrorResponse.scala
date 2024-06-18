@@ -1,0 +1,13 @@
+package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
+
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+
+sealed trait EisHttpErrorResponse
+
+case class BadRequestErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
+case class ForbiddenErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
+case class NotFoundErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
+case class MethodNotAllowedErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
+case class BadGatewayErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
+case class ServiceUnavailableErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
+case class InternalServerErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse

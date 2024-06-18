@@ -44,24 +44,35 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
   "auditRemoveRecord" should {
     "send an event for success response" in {
 
-      when(auditEventFactory.createRemoveRecord(any, any, any, any)(any)).thenReturn(extendedSuccessDataEvent)
+      when(auditEventFactory.createRemoveRecord(any, any, any, any, any, any)(any))
+        .thenReturn(extendedSuccessDataEvent("SUCCEEDED", "204"))
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
-      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime))
+      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", "204"))
 
       result mustBe Done
-      verify(auditConnector).sendExtendedEvent(extendedSuccessDataEvent)
+      verify(auditConnector).sendExtendedEvent(extendedSuccessDataEvent("SUCCEEDED", "204"))
+    }
+    "send an event for error response without failure reason" in {
+      when(auditEventFactory.createRemoveRecord(any, any, any, any, any, any)(any))
+        .thenReturn(extendedSuccessDataEvent("INTERNAL_SERVER_ERROR", "500"))
+      when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
+
+      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "INTERNAL_SERVER_ERROR", "500"))
+
+      result mustBe Done
+      verify(auditConnector).sendExtendedEvent(extendedSuccessDataEvent("INTERNAL_SERVER_ERROR", "500"))
     }
   }
 
-  private val extendedSuccessDataEvent = ExtendedDataEvent(
+  private def extendedSuccessDataEvent(status: String, statusCode: String) = ExtendedDataEvent(
     auditSource = auditSource,
     auditType = auditType,
     tags = hc.toAuditTags(),
-    detail = auditDetails
+    detail = auditDetails(status, statusCode)
   )
 
-  val auditDetails =
+  private def auditDetails(status: String, statusCode: String) =
     Json.obj(
       "journey"          -> "RemoveRecord",
       "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
@@ -73,8 +84,8 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         "actorId"  -> actorId
       ),
       "outcome"          -> Json.obj(
-        "status"     -> "SUCCEEDED",
-        "statusCode" -> "204"
+        "status"     -> status,
+        "statusCode" -> statusCode
       )
     )
 }

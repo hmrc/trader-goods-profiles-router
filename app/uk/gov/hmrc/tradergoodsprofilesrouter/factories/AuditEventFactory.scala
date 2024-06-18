@@ -17,10 +17,12 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.factories
 
 import com.google.inject.Inject
+import play.api.http.Status.isSuccessful
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
@@ -36,16 +38,34 @@ case class AuditEventFactory @Inject() (
     eori: String,
     recordId: String,
     actorId: String,
-    requestedDateTime: String
+    requestedDateTime: String,
+    status: String,
+    statusCode: String
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    var outcomeJson = Json.obj()
+    // var outcomeJson = Json.obj()
     //if (outcome.nonEmpty) {
     //val outcomeVal = outcome.get
-    outcomeJson = Json.obj(
-      "status"     -> "SUCCEEDED",
-      "statusCode" -> "204"
+
+//    val outcome = response match {
+//      case response if isSuccessful(response.status) =>
+//        Json.obj(
+//          "status"        -> "SUCCEEDED",
+//          "statusCode"    -> response.status,
+//          "failureReason" -> Seq.empty.toString
+//        )
+//      case response                                  =>
+//        val errorResponse = response.json.as[ErrorResponse]
+//        Json.obj(
+//          "status"     -> errorResponse.message,
+//          "statusCode" -> errorResponse.message
+//        )
+//    }
+
+    val outcome = Json.obj(
+      "status"        -> status,
+      "statusCode"    -> statusCode,
+      "failureReason" -> Seq.empty.toString
     )
-    //  }
 
     val auditDetails =
       Json.obj(
@@ -58,7 +78,7 @@ case class AuditEventFactory @Inject() (
           "recordId" -> recordId,
           "actorId"  -> actorId
         ),
-        "outcome"          -> outcomeJson
+        "outcome"          -> outcome
       )
 
     ExtendedDataEvent(

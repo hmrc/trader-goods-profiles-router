@@ -35,7 +35,7 @@ class CreateRecordConnector @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with EisHttpErrorHandler {
+    with LegacyEisHttpErrorHandler {
 
   def createRecord(
     payload: CreateRecordPayload,
@@ -47,6 +47,6 @@ class CreateRecordConnector @Inject() (
       .post(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
       .withBody(Json.toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
+      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, legacyHandleErrorResponse), ec)
   }
 }

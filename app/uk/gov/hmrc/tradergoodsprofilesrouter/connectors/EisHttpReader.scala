@@ -39,9 +39,18 @@ object EisHttpReader {
       }
   }
 
-  case class StatusHttpReader(correlationId: String, errorHandler: (HttpResponse, String) => Result)
+  case class LegacyStatusHttpReader(correlationId: String, errorHandler: (HttpResponse, String) => Result)
       extends HttpReads[Either[Result, Int]] {
     override def read(method: String, url: String, response: HttpResponse): Either[Result, Int] =
+      response match {
+        case response if isSuccessful(response.status) => Right(response.status)
+        case response                                  => Left(errorHandler(response, correlationId))
+      }
+  }
+
+  case class StatusHttpReader(correlationId: String, errorHandler: (HttpResponse, String) => EisHttpErrorResponse)
+      extends HttpReads[Either[EisHttpErrorResponse, Int]] {
+    override def read(method: String, url: String, response: HttpResponse): Either[EisHttpErrorResponse, Int] =
       response match {
         case response if isSuccessful(response.status) => Right(response.status)
         case response                                  => Left(errorHandler(response, correlationId))

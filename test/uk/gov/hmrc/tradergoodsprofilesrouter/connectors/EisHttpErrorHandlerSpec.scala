@@ -26,15 +26,15 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, Erro
 class EisHttpErrorHandlerSpec extends PlaySpec {
 
   private val correlationId: String = "1234-456"
-  class TestHarness extends EisHttpErrorHandler
+  class TestHarness extends LegacyEisHttpErrorHandler
 
-  "handleErrorResponse" should {
+  "legacyHandleErrorResponse" should {
     "return an internal server error" when {
       "Invalid payload response with error code 200" in new TestHarness() { handler =>
         val eisResponse: String = createEisErrorResponseAsJson("200", "Internal Server Error")
         val eisHttpResponse     = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -49,7 +49,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse: String = createEisErrorResponseAsJson("201", "Internal Server Error")
         val eisHttpResponse     = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -64,7 +64,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse     = createEisErrorResponseAsJson("400", "Internal Error Response")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -79,7 +79,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse     = createEisErrorResponseAsJson("401", "Unauthorised")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -94,7 +94,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse     = createEisErrorResponseAsJson("404", "Not Found")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -109,7 +109,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse     = createEisErrorResponseAsJson("405", "Method Not Allowed")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -123,7 +123,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse     = createEisErrorResponseAsJson("500", "Internal Server Error")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -135,7 +135,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse     = createEisErrorResponseAsJson("502", "Bad Gateway")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -147,7 +147,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse     = createEisErrorResponseAsJson("503", "Service Unavailable")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -158,7 +158,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse     = createEisErrorResponseAsJson("001", "Service Unavailable")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -169,7 +169,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val invalidJson     = """{ "wrongField": "value" }"""
         val eisHttpResponse = HttpResponse(500, invalidJson)
 
-        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(eisHttpResponse, correlationId)
 
         result.header.status mustBe INTERNAL_SERVER_ERROR
         result mustBe InternalServerError(
@@ -188,7 +188,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
-        val result = handler.handleErrorResponse(httpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(httpResponse, correlationId)
 
         result mustBe BadRequest(
           createInvalidParameterErrorAsJson(
@@ -244,7 +244,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
       "Unexpected error response given an invalid json string" in new TestHarness { handler =>
         val httpResponse = HttpResponse(400, """{"invalid": "json"}""")
 
-        val result = handler.handleErrorResponse(httpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(httpResponse, correlationId)
 
         result mustBe BadRequest(
           createErrorResponseAsJson("UNEXPECTED_ERROR", "Unexpected Error")
@@ -254,7 +254,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse  = createEisErrorResponseWithDetailsAsJson("400", "Bad Request", "error: 100, message: unknown")
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
-        val result = handler.handleErrorResponse(httpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(httpResponse, correlationId)
 
         result mustBe BadRequest(
           createUnexpectedErrorAsJson(
@@ -270,7 +270,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
         val exception = intercept[IllegalArgumentException] {
-          handler.handleErrorResponse(httpResponse, correlationId)
+          handler.legacyHandleErrorResponse(httpResponse, correlationId)
         }
 
         exception.getMessage mustBe s"Unable to parse fault detail for correlation Id: $correlationId"
@@ -282,7 +282,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
       "Forbidden response" in new TestHarness { handler =>
         val httpResponse = HttpResponse(403, "")
 
-        val result = handler.handleErrorResponse(httpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(httpResponse, correlationId)
 
         result mustBe Forbidden(
           createErrorResponseAsJson("FORBIDDEN", "Forbidden")
@@ -292,7 +292,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
       "Not found response" in new TestHarness { handler =>
         val httpResponse = HttpResponse(404, "")
 
-        val result = handler.handleErrorResponse(httpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(httpResponse, correlationId)
 
         result mustBe NotFound(
           createErrorResponseAsJson("NOT_FOUND", "Not Found")
@@ -301,7 +301,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
       "Method not allowed response" in new TestHarness { handler =>
         val httpResponse = HttpResponse(405, "")
 
-        val result = handler.handleErrorResponse(httpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(httpResponse, correlationId)
 
         result mustBe MethodNotAllowed(
           createErrorResponseAsJson(
@@ -313,7 +313,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
       "Unknown error response" in new TestHarness { handler =>
         val httpResponse = HttpResponse(504, "")
 
-        val result = handler.handleErrorResponse(httpResponse, correlationId)
+        val result = handler.legacyHandleErrorResponse(httpResponse, correlationId)
 
         result mustBe InternalServerError(
           createErrorResponseAsJson(

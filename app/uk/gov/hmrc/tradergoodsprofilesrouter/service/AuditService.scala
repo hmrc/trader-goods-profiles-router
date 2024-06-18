@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import com.google.inject.Inject
 import org.apache.pekko.Done
 import play.api.Logging
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory
 
@@ -32,10 +32,17 @@ class AuditService @Inject() (
   ec: ExecutionContext
 ) extends Logging {
 
-  def auditRemoveRecord(eori: String, recordId: String, actorId: String, requestedDateTime: String)(implicit
+  def auditRemoveRecord(
+    eori: String,
+    recordId: String,
+    actorId: String,
+    requestedDateTime: String,
+    status: String,
+    statusCode: String
+  )(implicit
     hc: HeaderCarrier
   ): Future[Done] = {
-    val event = auditEventFactory.createRemoveRecord(eori, recordId, actorId, requestedDateTime)
+    val event = auditEventFactory.createRemoveRecord(eori, recordId, actorId, requestedDateTime, status, statusCode)
     auditConnector.sendExtendedEvent(event).map { auditResult =>
       logger.info(s"Remove record audit event status: $auditResult")
       Done

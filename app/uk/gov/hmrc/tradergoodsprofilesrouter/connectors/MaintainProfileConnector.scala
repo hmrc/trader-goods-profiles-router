@@ -35,7 +35,7 @@ class MaintainProfileConnector @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with EisHttpErrorHandler {
+    with LegacyEisHttpErrorHandler {
 
   def maintainProfile(request: MaintainProfileEisRequest, correlationId: String)(implicit
     hc: HeaderCarrier
@@ -45,6 +45,6 @@ class MaintainProfileConnector @Inject() (
       .put(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
       .withBody(Json.toJson(request))
-      .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
+      .execute(HttpReader[MaintainProfileResponse](correlationId, legacyHandleErrorResponse), ec)
   }
 }

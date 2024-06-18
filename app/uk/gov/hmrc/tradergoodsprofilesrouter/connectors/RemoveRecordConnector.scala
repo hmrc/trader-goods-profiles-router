@@ -22,7 +22,7 @@ import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{LegacyStatusHttpReader, StatusHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
@@ -41,7 +41,7 @@ class RemoveRecordConnector @Inject() (
     recordId: String,
     actorId: String,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, Int]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] = {
     val url = appConfig.eisConfig.removeRecordUrl
     httpClientV2
       .put(url"$url")

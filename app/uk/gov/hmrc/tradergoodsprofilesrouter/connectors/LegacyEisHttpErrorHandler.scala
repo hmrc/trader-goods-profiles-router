@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import play.api.http.Status._
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, METHOD_NOT_ALLOWED, NOT_FOUND, SERVICE_UNAVAILABLE}
 import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.mvc.Result
+import play.api.mvc.Results.{BadGateway, BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound, ServiceUnavailable}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ErrorDetail
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
@@ -25,60 +27,78 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
-trait EisHttpErrorHandler {
-  def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): EisHttpErrorResponse =
+trait LegacyEisHttpErrorHandler {
+  def legacyHandleErrorResponse(httpResponse: HttpResponse, correlationId: String): Result =
     httpResponse.status match {
 
       case BAD_REQUEST =>
-        BadRequestErrorResponse(determine400Error(correlationId, httpResponse.body))
+        BadRequest(Json.toJson(determine400Error(correlationId, httpResponse.body)))
       case FORBIDDEN   =>
-        ForbiddenErrorResponse(
-          ErrorResponse(
-            correlationId,
-            ForbiddenCode,
-            ForbiddenMessage
+        Forbidden(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              ForbiddenCode,
+              ForbiddenMessage
+            )
           )
         )
       case NOT_FOUND   =>
-        NotFoundErrorResponse(
-          ErrorResponse(
-            correlationId,
-            NotFoundCode,
-            NotFoundMessage
+        NotFound(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              NotFoundCode,
+              NotFoundMessage
+            )
           )
         )
 
       case METHOD_NOT_ALLOWED =>
-        MethodNotAllowedErrorResponse(
-          ErrorResponse(
-            correlationId,
-            MethodNotAllowedCode,
-            MethodNotAllowedMessage
+        MethodNotAllowed(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              MethodNotAllowedCode,
+              MethodNotAllowedMessage
+            )
           )
         )
 
       case BAD_GATEWAY =>
-        BadGatewayErrorResponse(
-          ErrorResponse(
-            correlationId,
-            BadGatewayCode,
-            BadGatewayMessage
+        BadGateway(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              BadGatewayCode,
+              BadGatewayMessage
+            )
           )
         )
 
       case SERVICE_UNAVAILABLE =>
-        ServiceUnavailableErrorResponse(
-          ErrorResponse(
-            correlationId,
-            ServiceUnavailableCode,
-            ServiceUnavailableMessage
+        ServiceUnavailable {
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              ServiceUnavailableCode,
+              ServiceUnavailableMessage
+            )
           )
-        )
+        }
 
       case INTERNAL_SERVER_ERROR =>
-        InternalServerErrorResponse(determine500Error(correlationId, httpResponse.body))
+        InternalServerError(Json.toJson(determine500Error(correlationId, httpResponse.body)))
       case _                     =>
-        InternalServerErrorResponse(ErrorResponse(correlationId, UnexpectedErrorCode, UnexpectedErrorMessage))
+        InternalServerError(
+          Json.toJson(
+            ErrorResponse(
+              correlationId,
+              UnexpectedErrorCode,
+              UnexpectedErrorMessage
+            )
+          )
+        )
     }
 
   private def determine500Error(correlationId: String, message: String): ErrorResponse =
@@ -95,46 +115,45 @@ trait EisHttpErrorHandler {
               InvalidOrEmptyPayloadCode,
               InvalidOrEmptyPayloadMessage
             )
-
-          case "400" =>
+          case "400"         =>
             ErrorResponse(
               correlationId,
               InternalErrorResponseCode,
               InternalErrorResponseMessage
             )
-          case "401" =>
+          case "401"         =>
             ErrorResponse(
               correlationId,
               UnauthorizedCode,
               UnauthorizedMessage
             )
-          case "404" =>
+          case "404"         =>
             ErrorResponse(correlationId, NotFoundCode, NotFoundMessage)
-          case "405" =>
+          case "405"         =>
             ErrorResponse(
               correlationId,
               MethodNotAllowedCode,
               MethodNotAllowedMessage
             )
-          case "500" =>
+          case "500"         =>
             ErrorResponse(
               correlationId,
               InternalServerErrorCode,
               InternalServerErrorMessage
             )
-          case "502" =>
+          case "502"         =>
             ErrorResponse(
               correlationId,
               BadGatewayCode,
               BadGatewayMessage
             )
-          case "503" =>
+          case "503"         =>
             ErrorResponse(
               correlationId,
               ServiceUnavailableCode,
               ServiceUnavailableMessage
             )
-          case _     =>
+          case _             =>
             ErrorResponse(correlationId, UnknownCode, UnknownMessage)
         }
       case JsError(_)           =>

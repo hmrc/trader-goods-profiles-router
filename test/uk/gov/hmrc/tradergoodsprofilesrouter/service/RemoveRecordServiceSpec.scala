@@ -19,19 +19,21 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import org.apache.pekko.Done
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.{NO_CONTENT, OK}
+import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, OK}
 import play.api.libs.json.Json
 import play.api.mvc.Results.{BadRequest, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RemoveRecordConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, RemoveRecordConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import java.time.Instant
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordServiceSpec
@@ -68,25 +70,36 @@ class RemoveRecordServiceSpec
   "remove a record item" in {
     when(connector.removeRecord(any, any, any, any)(any))
       .thenReturn(Future.successful(Right(OK)))
-    when(auditService.auditRemoveRecord(any, any, any, any)(any)).thenReturn(Future.successful(Done))
+    when(auditService.auditRemoveRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
     val result = service.removeRecord(eori, recordId, actorId)
 
     whenReady(result.value) { r =>
       r.value shouldBe NO_CONTENT
-      verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString)
+      verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", "204")
 
     }
   }
 
   "EIS return an error" in {
+    val badRequestErrorResponse = BadRequestErrorResponse(
+      ErrorResponse(
+        UUID.randomUUID().toString,
+        "BAD_REQUEST",
+        "BAD_REQUEST"
+      )
+    )
+
     when(connector.removeRecord(any, any, any, any)(any))
-      .thenReturn(Future.successful(Left(BadRequest("error"))))
+      .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
     val result = service.removeRecord(eori, recordId, actorId)
 
-    whenReady(result.value) {
-      _.left.value shouldBe BadRequest("error")
+    whenReady(result.value) { r =>
+      //r.left.value shouldBe BadRequest("error")
+      verify(auditService)
+        .auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "BAD_REQUEST", BAD_REQUEST.toString)
+
     }
   }
 

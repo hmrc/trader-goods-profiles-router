@@ -19,12 +19,12 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.NO_CONTENT
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.Json
 import play.api.mvc.Result
-import play.api.mvc.Results.InternalServerError
+import play.api.mvc.Results.{BadRequest, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RemoveRecordConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, RemoveRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -47,11 +47,34 @@ class RemoveRecordService @Inject() (
       connector
         .removeRecord(eori, recordId, actorId, correlationId)
         .map {
-          case Right(_)        =>
-            auditService.auditRemoveRecord(eori, recordId, actorId, requestedDateTime)
+          case Right(_) =>
+            auditService.auditRemoveRecord(eori, recordId, actorId, requestedDateTime, "SUCCEEDED", NO_CONTENT.toString)
             Right(NO_CONTENT)
-          case error @ Left(_) =>
-            error
+
+          case Left(response) =>
+            response match {
+              case or: BadRequestErrorResponse     =>
+                auditService.auditRemoveRecord(
+                  eori,
+                  recordId,
+                  actorId,
+                  requestedDateTime,
+                  or.errorResponse.code,
+                  BAD_REQUEST.toString
+                )
+                Left(BadRequest(Json.toJson(or.errorResponse)))
+              case or: InternalServerErrorResponse =>
+                auditService.auditRemoveRecord(
+                  eori,
+                  recordId,
+                  actorId,
+                  requestedDateTime,
+                  or.errorResponse.code,
+                  INTERNAL_SERVER_ERROR.toString
+                )
+                Left(InternalServerError(Json.toJson(or.errorResponse)))
+              case _                               => Left(InternalServerError(""))
+            }
         }
         .recover { case ex: Throwable =>
           logger.error(

@@ -36,7 +36,7 @@ class GetRecordsConnector @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with EisHttpErrorHandler {
+    with LegacyEisHttpErrorHandler {
 
   def fetchRecord(
     eori: String,
@@ -48,7 +48,7 @@ class GetRecordsConnector @Inject() (
     httpClientV2
       .get(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
-      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, legacyHandleErrorResponse), ec)
 
   }
 
@@ -67,7 +67,7 @@ class GetRecordsConnector @Inject() (
     httpClientV2
       .get(url"$uri")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
-      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, legacyHandleErrorResponse), ec)
   }
 
 }
