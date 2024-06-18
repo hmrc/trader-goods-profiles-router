@@ -23,7 +23,7 @@ import play.api.Logging
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, fieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RequestAdviceService, UuidService}
@@ -31,6 +31,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RequestAdviceService, Uuid
 import scala.concurrent.{ExecutionContext, Future}
 
 class RequestAdviceController @Inject() (
+  authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   service: RequestAdviceService,
   override val uuidService: UuidService
@@ -40,7 +41,7 @@ class RequestAdviceController @Inject() (
     with ValidationRules
     with Logging {
 
-  def requestAdvice(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) {
+  def requestAdvice(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) {
     implicit request: Request[JsValue] =>
       val result = for {
         _                    <- EitherT.fromEither[Future](validateClientId)

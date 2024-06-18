@@ -707,7 +707,7 @@ class UpdateRecordIntegrationSpec
           val response = wsClient
             .url(fullUrl(s"/traders/GB123456789015/records/$recordId"))
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe FORBIDDEN
@@ -726,7 +726,7 @@ class UpdateRecordIntegrationSpec
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .put(updateRecordRequestData)
+            .patch(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe FORBIDDEN

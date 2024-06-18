@@ -567,7 +567,7 @@ class GetMultipleRecordsIntegrationSpec
         "EORI number is not authorized" in {
 
           val response = wsClient
-            .url(fullUrl(s"/traders/GB123456789015"))
+            .url(fullUrl(s"/traders/GB123456789015/records"))
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
             .get()
             .futureValue
