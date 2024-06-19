@@ -90,6 +90,9 @@ object ApplicationConstants {
   val AdviceRequestInProgressMessage                       =
     "There is an ongoing accreditation request and the record can not be updated"
 
+  //TODO check this is correct
+  val AdviceRequestRejectionMessage                        = "There is an ongoing advice request and a new request cannot be requested."
+
   val InvalidOrMissingCorrelationID      =
     "X-Correlation-ID was missing from Header or is in the wrong format"
   val InvalidOrMissingRequestDate        =

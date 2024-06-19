@@ -18,7 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.MockitoSugar.{reset, verifyZeroInteractions, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
@@ -26,7 +26,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.CREATED
 import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.mvc.Results.{BadRequest, Conflict, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RequestAdviceConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
@@ -78,9 +78,6 @@ class RequestAdviceServiceSpec
       _.value shouldBe CREATED
     }
   }
-
-  "should throw an error if fetch record fails" in {}
-
   "return an error" when {
     "connector return an error" in {
       when(getRecordService.fetchRecord(any, any)(any))
@@ -115,6 +112,38 @@ class RequestAdviceServiceSpec
         )
       }
     }
+
+    "should reject request if adviceStatus is not Not Requested" in {
+      when(getRecordService.fetchRecord(any, any)(any))
+        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatusOfRequested))
+
+      val result = service.requestAdvice(eori, recordId, request)
+
+      whenReady(result.value) {
+        _.left.value mustBe Conflict(
+          Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "There is an ongoing advice request and a new request cannot be requested."
+          )
+        )
+      }
+      verifyZeroInteractions(connector)
+    }
+  }
+
+  "should throw an error if it fails to fetch a record" in {
+    val errorResponseJson = Json.obj("error" -> "error")
+    when(getRecordService.fetchRecord(any, any)(any))
+      .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
+
+    val result = service.requestAdvice(eori, recordId, request)
+    whenReady(result.value) {
+      _.left.value mustBe InternalServerError(
+        errorResponseJson
+      )
+    }
+    verifyZeroInteractions(connector)
   }
 
 }

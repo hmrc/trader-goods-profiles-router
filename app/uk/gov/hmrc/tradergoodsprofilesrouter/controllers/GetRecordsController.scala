@@ -34,7 +34,7 @@ import scala.util.Try
 
 class GetRecordsController @Inject() (
   override val controllerComponents: ControllerComponents,
-  getRecordSErvice: GetRecordsService,
+  getRecordService: GetRecordsService,
   override val uuidService: UuidService
 )(implicit val ec: ExecutionContext)
     extends BackendBaseController
@@ -49,7 +49,7 @@ class GetRecordsController @Inject() (
       _          <- EitherT
                       .fromEither[Future](validateRecordId(recordId))
                       .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-      recordItem <- getRecordSErvice.fetchRecord(eori, recordId)
+      recordItem <- getRecordService.fetchRecord(eori, recordId)
     } yield Ok(Json.toJson(recordItem))
 
     result.merge
@@ -64,7 +64,7 @@ class GetRecordsController @Inject() (
     val result = for {
       _         <- EitherT.fromEither[Future](validateClientId)
       validDate <- validateDate(lastUpdatedDate)
-      records   <- getRecordSErvice.fetchRecords(eori, validDate, page, size)
+      records   <- getRecordService.fetchRecords(eori, validDate, page, size)
     } yield Ok(Json.toJson(records))
 
     result.merge
