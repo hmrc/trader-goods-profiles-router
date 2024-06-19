@@ -23,7 +23,8 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, OK}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, RemoveRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
@@ -69,14 +70,12 @@ class RemoveRecordServiceSpec
         .thenReturn(Future.successful(Right(OK)))
       when(auditService.auditRemoveRecord(any, any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
-      val result = service.removeRecord(eori, recordId, actorId)
+      val result = await(service.removeRecord(eori, recordId, actorId))
 
-      whenReady(result.value) { r =>
-        r.value mustBe NO_CONTENT
+      result.value mustBe NO_CONTENT
 
-        withClue("send an audit message") {
-          verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", 204)
-        }
+      withClue("send an audit message") {
+        verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", 204)
       }
     }
 
@@ -86,40 +85,45 @@ class RemoveRecordServiceSpec
       when(connector.removeRecord(any, any, any, any)(any))
         .thenReturn(Future.successful(Left(createEisErrorResponse)))
 
-      val result = service.removeRecord(eori, recordId, actorId)
+      val result = await(service.removeRecord(eori, recordId, actorId))
 
-      whenReady(result.value) { r =>
-        r.left.value mustBe badRequestErrorResponse
-        verify(auditService)
-          .auditRemoveRecord(
-            eori,
-            recordId,
-            actorId,
-            dateTime.toString,
-            "BAD_REQUEST",
-            BAD_REQUEST,
-            Some(Seq("internal error 1", "internal error 2"))
-          )
-
-      }
+      result.left.value mustBe badRequestErrorResponse
+      verify(auditService)
+        .auditRemoveRecord(
+          eori,
+          recordId,
+          actorId,
+          dateTime.toString,
+          "BAD_REQUEST",
+          BAD_REQUEST,
+          Some(Seq("internal error 1", "internal error 2"))
+        )
     }
 
     "error when an exception is thrown" in {
       when(connector.removeRecord(any, any, any, any)(any))
         .thenReturn(Future.failed(new RuntimeException("error")))
 
-      val result = service.removeRecord(eori, recordId, actorId)
+      val result = await(service.removeRecord(eori, recordId, actorId))
 
-      whenReady(result.value) {
-        _.left.value mustBe InternalServerErrorResponse(
-          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+      result.left.value mustBe InternalServerErrorResponse(
+        ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+      )
+
+      verify(auditService)
+        .auditRemoveRecord(
+          eori,
+          recordId,
+          actorId,
+          dateTime.toString,
+          "UNEXPECTED_ERROR",
+          INTERNAL_SERVER_ERROR
         )
-      }
     }
   }
 
-  private def createEisErrorResponse = {
-    val badRequestErrorResponse = BadRequestErrorResponse(
+  private def createEisErrorResponse =
+    BadRequestErrorResponse(
       ErrorResponse(
         correlationId,
         "BAD_REQUEST",
@@ -132,6 +136,4 @@ class RemoveRecordServiceSpec
         )
       )
     )
-    badRequestErrorResponse
-  }
 }

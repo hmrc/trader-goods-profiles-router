@@ -31,7 +31,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidS
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
 
@@ -56,7 +56,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     "return a 200 Ok response on removing a record" in {
 
       when(mockService.removeRecord(any, any, any)(any))
-        .thenReturn(EitherT.rightT(NO_CONTENT))
+        .thenReturn(Future.successful(Right(NO_CONTENT)))
 
       val result = controller.remove(eori, recordId, actorId)(
         FakeRequest().withHeaders(validHeaders: _*)
@@ -82,11 +82,10 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     }
 
     "return an error if cannot remove a record" in {
-      val errorResponse     = ErrorResponse("1234", "INTERNAL_SERVER_ERROR", "any-message")
-      val errorResponseJson = Json.obj("error" -> "error")
+      val errorResponse = ErrorResponse("1234", "INTERNAL_SERVER_ERROR", "any-message")
 
       when(mockService.removeRecord(any, any, any)(any))
-        .thenReturn(EitherT.leftT(InternalServerErrorResponse(errorResponse)))
+        .thenReturn(Future.successful(Left(InternalServerErrorResponse(errorResponse))))
 
       val result = controller.remove(eori, recordId, actorId)(
         FakeRequest().withHeaders(validHeaders: _*)

@@ -58,8 +58,10 @@ class RemoveRecordController @Inject() (
     recordId: String,
     actorId: String
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] =
-    service
-      .removeRecord(eori, recordId, actorId)
+    EitherT(
+      service
+        .removeRecord(eori, recordId, actorId)
+    )
       .leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
 
 }

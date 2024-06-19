@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.NO_CONTENT
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, RemoveRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
@@ -37,45 +36,51 @@ class RemoveRecordService @Inject() (
     extends Logging {
   def removeRecord(eori: String, recordId: String, actorId: String)(implicit
     hc: HeaderCarrier
-  ): EitherT[Future, EisHttpErrorResponse, Int] = {
+  ): Future[Either[EisHttpErrorResponse, Int]] = {
     val correlationId     = uuidService.uuid
     val requestedDateTime = dateTimeService.timestamp.asStringSeconds
-    EitherT(
-      connector
-        .removeRecord(eori, recordId, actorId, correlationId)
-        .map {
-          case Right(_) =>
-            auditService.auditRemoveRecord(eori, recordId, actorId, requestedDateTime, "SUCCEEDED", NO_CONTENT)
-            Right(NO_CONTENT)
+    connector
+      .removeRecord(eori, recordId, actorId, correlationId)
+      .map {
+        case Right(_) =>
+          auditService.auditRemoveRecord(eori, recordId, actorId, requestedDateTime, "SUCCEEDED", NO_CONTENT)
+          Right(NO_CONTENT)
 
-          case Left(response) =>
-            val failureReason = response.errorResponse.errors.map { error =>
-              error.map(e => e.message)
-            }
-            auditService.auditRemoveRecord(
-              eori,
-              recordId,
-              actorId,
-              requestedDateTime,
-              response.errorResponse.code,
-              response.status,
-              failureReason
-            )
-            Left(response)
-        }
-        .recover { case ex: Throwable =>
-          logger.error(
-            s"""[RemoveRecordService] - Error occurred while removing record for Eori Number: $eori, recordId: $recordId,
+        case Left(response) =>
+          val failureReason = response.errorResponse.errors.map { error =>
+            error.map(e => e.message)
+          }
+          auditService.auditRemoveRecord(
+            eori,
+            recordId,
+            actorId,
+            requestedDateTime,
+            response.errorResponse.code,
+            response.status,
+            failureReason
+          )
+          Left(response)
+      }
+      .recover { case ex: Throwable =>
+        logger.error(
+          s"""[RemoveRecordService] - Error occurred while removing record for Eori Number: $eori, recordId: $recordId,
             actorId: $actorId, correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
+          ex
+        )
 
-          Left(
-            InternalServerErrorResponse(
-              ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
-            )
+        auditService.auditRemoveRecord(
+          eori,
+          recordId,
+          actorId,
+          requestedDateTime,
+          UnexpectedErrorCode,
+          INTERNAL_SERVER_ERROR
+        )
+        Left(
+          InternalServerErrorResponse(
+            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
           )
-        }
-    )
+        )
+      }
   }
 }
