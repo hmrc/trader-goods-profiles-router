@@ -39,7 +39,7 @@ class AuditService @Inject() (
     requestedDateTime: String,
     status: String,
     statusCode: Int,
-    failureReason: Seq[String] = Seq.empty
+    failureReason: Option[Seq[String]] = None
   )(implicit
     hc: HeaderCarrier
   ): Future[Done] = {
@@ -50,7 +50,7 @@ class AuditService @Inject() (
       requestedDateTime,
       status,
       statusCode,
-      Some(failureReason)
+      failureReason
     )
     auditConnector
       .sendExtendedEvent(event)

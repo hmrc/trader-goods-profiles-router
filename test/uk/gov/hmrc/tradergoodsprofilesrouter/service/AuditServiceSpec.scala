@@ -22,7 +22,7 @@ import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.{JsValue, Json, __}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
@@ -67,8 +67,24 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", 204))
 
       result mustBe Done
-      verify(auditEventFactory).createRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", 204, Some(Seq.empty))
+      verify(auditEventFactory).createRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", 204)
       verify(auditConnector).sendExtendedEvent(auditEvent)
+    }
+
+    "send an event with reason failure" in {
+
+      val auditEventWithFailure =
+        extendedDataEvent(auditDetailJsonWithFailureReason("BAD_REQUEST", 400, Seq("erro-1", "error-2")))
+      when(auditEventFactory.createRemoveRecord(any, any, any, any, any, any, any)(any))
+        .thenReturn(auditEventWithFailure)
+
+      when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
+
+      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "BAD_REQUEST", 400))
+
+      result mustBe Done
+      verify(auditEventFactory).createRemoveRecord(eori, recordId, actorId, dateTime, "BAD_REQUEST", 400)
+      verify(auditConnector).sendExtendedEvent(auditEventWithFailure)
     }
 
     "catch any exception" in {
@@ -107,5 +123,12 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         "statusCode" -> statusCode
       )
     )
+
+  private def auditDetailJsonWithFailureReason(status: String, statusCode: Int, failureReason: Seq[String]) =
+    auditDetailsJson(status, statusCode)
+      .transform(
+        __.json.update((__ \ "outcome" \ "failureReason").json.put(Json.toJson(failureReason)))
+      )
+      .get
 
 }

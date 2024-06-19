@@ -53,27 +53,27 @@ class RemoveRecordService @Inject() (
 
           case Left(response) =>
             response match {
-              case or: BadRequestErrorResponse     =>
+              case o: BadRequestErrorResponse     =>
                 auditService.auditRemoveRecord(
                   eori,
                   recordId,
                   actorId,
                   requestedDateTime,
-                  or.errorResponse.code,
+                  o.errorResponse.code,
                   BAD_REQUEST
                 )
-                Left(BadRequest(Json.toJson(or.errorResponse)))
-              case or: InternalServerErrorResponse =>
+                Left(BadRequest(Json.toJson(o.errorResponse)))
+              case o: InternalServerErrorResponse =>
                 auditService.auditRemoveRecord(
                   eori,
                   recordId,
                   actorId,
                   requestedDateTime,
-                  or.errorResponse.code,
+                  o.errorResponse.code,
                   INTERNAL_SERVER_ERROR
                 )
-                Left(InternalServerError(Json.toJson(or.errorResponse)))
-              case _                               => Left(InternalServerError(""))
+                Left(InternalServerError(Json.toJson(o.errorResponse)))
+              case _                              => Left(InternalServerError(""))
             }
         }
         .recover { case ex: Throwable =>
