@@ -30,7 +30,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, Erro
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import java.time.Instant
-import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordServiceSpec
@@ -81,78 +80,58 @@ class RemoveRecordServiceSpec
       }
     }
 
-    "return an error" when {
-      "EIS return an error" in {
-        val badRequestErrorResponse = BadRequestErrorResponse(
-          ErrorResponse(
-            UUID.randomUUID().toString,
+    "EIS return an error" in {
+      val badRequestErrorResponse = createEisErrorResponse
+
+      when(connector.removeRecord(any, any, any, any)(any))
+        .thenReturn(Future.successful(Left(createEisErrorResponse)))
+
+      val result = service.removeRecord(eori, recordId, actorId)
+
+      whenReady(result.value) { r =>
+        r.left.value mustBe badRequestErrorResponse
+        verify(auditService)
+          .auditRemoveRecord(
+            eori,
+            recordId,
+            actorId,
+            dateTime.toString,
             "BAD_REQUEST",
-            "BAD_REQUEST"
+            BAD_REQUEST,
+            Some(Seq("internal error 1", "internal error 2"))
           )
-        )
 
-        when(connector.removeRecord(any, any, any, any)(any))
-          .thenReturn(Future.successful(Left(badRequestErrorResponse)))
-
-        val result = service.removeRecord(eori, recordId, actorId)
-
-        whenReady(result.value) { r =>
-          r.left.value mustBe badRequestErrorResponse
-          verify(auditService)
-            .auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "BAD_REQUEST", BAD_REQUEST)
-
-        }
-      }
-
-      "EIS return an error XX" in {
-        val badRequestErrorResponse = BadRequestErrorResponse(
-          ErrorResponse(
-            UUID.randomUUID().toString,
-            "BAD_REQUEST",
-            "BAD_REQUEST",
-            Some(
-              Seq(
-                Error("INTERNAL_ERROR", "internal error 1", 6),
-                Error("INTERNAL_ERROR", "internal error 2", 8)
-              )
-            )
-          )
-        )
-
-        when(connector.removeRecord(any, any, any, any)(any))
-          .thenReturn(Future.successful(Left(badRequestErrorResponse)))
-
-        val result = service.removeRecord(eori, recordId, actorId)
-
-        whenReady(result.value) { r =>
-          r.left.value mustBe badRequestErrorResponse
-          verify(auditService)
-            .auditRemoveRecord(
-              eori,
-              recordId,
-              actorId,
-              dateTime.toString,
-              "BAD_REQUEST",
-              BAD_REQUEST,
-              Some(Seq("internal error 1", "internal error 2"))
-            )
-
-        }
-      }
-
-      "error when an exception is thrown" in {
-        when(connector.removeRecord(any, any, any, any)(any))
-          .thenReturn(Future.failed(new RuntimeException("error")))
-
-        val result = service.removeRecord(eori, recordId, actorId)
-
-        whenReady(result.value) {
-          _.left.value mustBe InternalServerErrorResponse(
-            ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
-          )
-        }
       }
     }
 
+    "error when an exception is thrown" in {
+      when(connector.removeRecord(any, any, any, any)(any))
+        .thenReturn(Future.failed(new RuntimeException("error")))
+
+      val result = service.removeRecord(eori, recordId, actorId)
+
+      whenReady(result.value) {
+        _.left.value mustBe InternalServerErrorResponse(
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+        )
+      }
+    }
+  }
+
+  private def createEisErrorResponse = {
+    val badRequestErrorResponse = BadRequestErrorResponse(
+      ErrorResponse(
+        correlationId,
+        "BAD_REQUEST",
+        "BAD_REQUEST",
+        Some(
+          Seq(
+            Error("INTERNAL_ERROR", "internal error 1", 6),
+            Error("INTERNAL_ERROR", "internal error 2", 8)
+          )
+        )
+      )
+    )
+    badRequestErrorResponse
   }
 }
