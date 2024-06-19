@@ -38,8 +38,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  val createRecordService      = mock[CreateRecordService]
-  val uuidService: UuidService = mock[UuidService]
+  val createRecordService: CreateRecordService = mock[CreateRecordService]
+  val uuidService: UuidService                 = mock[UuidService]
 
   private val sut =
     new CreateRecordController(
