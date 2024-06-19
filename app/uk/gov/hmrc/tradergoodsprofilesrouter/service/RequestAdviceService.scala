@@ -29,7 +29,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.AdviceStatuses.NotRequested
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.AdviceStatuses.AllowedAdviceStatuses
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{AdviceRequestRejectionMessage, BadRequestCode, UnexpectedErrorCode}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -82,10 +82,10 @@ class RequestAdviceService @Inject() (
   }
 
   private def isValidAdviceStatus(adviceStatus: String): Either[Result, Unit] =
-    if (adviceStatus != NotRequested) {
-      Left(Conflict(Json.toJson(ErrorResponse(uuidService.uuid, BadRequestCode, AdviceRequestRejectionMessage))))
-    } else {
+    if (AllowedAdviceStatuses.contains(adviceStatus.toLowerCase)) {
       Right(())
+    } else {
+      Left(Conflict(Json.toJson(ErrorResponse(uuidService.uuid, BadRequestCode, AdviceRequestRejectionMessage))))
     }
 
   private def createNewTraderDetails(

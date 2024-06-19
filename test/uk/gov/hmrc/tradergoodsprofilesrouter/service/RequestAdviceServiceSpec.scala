@@ -67,7 +67,7 @@ class RequestAdviceServiceSpec
   "should successfully send a request advice request to EIS" in {
 
     when(getRecordService.fetchRecord(any, any)(any))
-      .thenReturn(EitherT.rightT(getSingleRecordResponseData))
+      .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus()))
 
     when(connector.requestAdvice(any, any)(any))
       .thenReturn(Future.successful(Right(CREATED)))
@@ -81,7 +81,7 @@ class RequestAdviceServiceSpec
   "return an error" when {
     "connector return an error" in {
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getSingleRecordResponseData))
+        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus()))
 
       when(connector.requestAdvice(any, any)(any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
@@ -95,7 +95,7 @@ class RequestAdviceServiceSpec
 
     "connector throws a run time exception" in {
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getSingleRecordResponseData))
+        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus()))
 
       when(connector.requestAdvice(any, any)(any))
         .thenReturn(Future.failed(new RuntimeException("error")))
@@ -113,9 +113,23 @@ class RequestAdviceServiceSpec
       }
     }
 
-    "should reject request if adviceStatus is not Not Requested" in {
+    "should throw an error if it fails to fetch a record" in {
+      val errorResponseJson = Json.obj("error" -> "error")
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatusOfRequested))
+        .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
+
+      val result = service.requestAdvice(eori, recordId, request)
+      whenReady(result.value) {
+        _.left.value mustBe InternalServerError(
+          errorResponseJson
+        )
+      }
+      verifyZeroInteractions(connector)
+    }
+
+    "should throw a 409 conflict when  advice status is not on the approved list" in {
+      when(getRecordService.fetchRecord(any, any)(any))
+        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus("incorrect status")))
 
       val result = service.requestAdvice(eori, recordId, request)
 
@@ -130,20 +144,6 @@ class RequestAdviceServiceSpec
       }
       verifyZeroInteractions(connector)
     }
-  }
-
-  "should throw an error if it fails to fetch a record" in {
-    val errorResponseJson = Json.obj("error" -> "error")
-    when(getRecordService.fetchRecord(any, any)(any))
-      .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
-
-    val result = service.requestAdvice(eori, recordId, request)
-    whenReady(result.value) {
-      _.left.value mustBe InternalServerError(
-        errorResponseJson
-      )
-    }
-    verifyZeroInteractions(connector)
   }
 
 }

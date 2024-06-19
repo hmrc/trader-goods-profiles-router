@@ -21,58 +21,15 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsR
 
 trait GetRecordsDataSupport {
 
-  val getSingleRecordResponseData: GoodsItemRecords = Json
-    .parse("""
-             |  {
-             |    "eori": "GB1234567890",
-             |    "actorId": "GB1234567890",
-             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-             |    "traderRef": "BAN001001",
-             |    "comcode": "10410100",
-             |    "accreditationStatus": "Not requested",
-             |    "goodsDescription": "Organic bananas",
-             |    "countryOfOrigin": "EC",
-             |    "category": 3,
-             |    "assessments": [
-             |      {
-             |        "assessmentId": "abc123",
-             |        "primaryCategory": "1",
-             |        "condition": {
-             |          "type": "abc123",
-             |          "conditionId": "Y923",
-             |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-             |          "conditionTraderText": "Excluded product"
-             |        }
-             |      }
-             |    ],
-             |    "supplementaryUnit": 500,
-             |    "measurementUnit": "square meters(m^2)",
-             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
-             |    "version": 1,
-             |    "active": true,
-             |    "toReview": false,
-             |    "reviewReason": null,
-             |    "declarable": "IMMI declarable",
-             |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-             |    "nirmsNumber": "RMS-GB-123456",
-             |    "niphlNumber": "6 S12345",
-             |    "locked": false,
-             |    "createdDateTime": "2024-11-18T23:20:19Z",
-             |    "updatedDateTime": "2024-11-18T23:20:19Z"
-             |  }
-             |""".stripMargin)
-    .as[GoodsItemRecords]
-
-  val getResponseDataWithAccreditationStatusOfRequested: GoodsItemRecords = Json
-    .parse("""
+  def getResponseDataWithAccreditationStatus(status: String = "Not Requested"): GoodsItemRecords = Json
+    .parse(s"""
         |  {
         |    "eori": "GB1234567890",
         |    "actorId": "GB1234567890",
         |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
-        |    "accreditationStatus": "Requested",
+        |    "accreditationStatus": "$status",
         |    "goodsDescription": "Organic bananas",
         |    "countryOfOrigin": "EC",
         |    "category": 3,
