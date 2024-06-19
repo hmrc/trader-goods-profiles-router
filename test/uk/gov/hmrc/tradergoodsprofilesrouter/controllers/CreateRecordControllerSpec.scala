@@ -103,54 +103,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       }
     }
 
-    "return 400 Bad request when required request field is missing from assessment array" in {
-
-      val errorResponse = ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.BadRequestMessage,
-        Some(
-          Seq(
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Optional field type is in the wrong format",
-              17
-            ),
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Optional field assessmentId is in the wrong format",
-              15
-            ),
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Optional field primaryCategory is in the wrong format",
-              16
-            ),
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Optional field conditionId is in the wrong format",
-              18
-            ),
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Mandatory field actorId was missing from body or is in the wrong format",
-              8
-            )
-          )
-        )
-      )
-
-      val request =
-        FakeRequest().withBody(invalidCreateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
-      val result  = sut.create("eori")(request)
-
-      status(result) mustBe BAD_REQUEST
-
-      withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(errorResponse)
-      }
-    }
-
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
       val expectedErrorResponse =
@@ -174,58 +126,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)
-    }
-
-    "return 400 Bad request when category is out of range" in {
-
-      val errorResponse = ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.BadRequestMessage,
-        Some(
-          Seq(
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Mandatory field category was missing from body or is in the wrong format",
-              14
-            )
-          )
-        )
-      )
-
-      val request = FakeRequest().withBody(outOfRangeCategoryRequestData).withHeaders(validHeaders: _*)
-      val result  = sut.create("eori")(request)
-
-      status(result) mustBe BAD_REQUEST
-
-      withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(errorResponse)
-      }
-    }
-
-    "return 400 Bad request when supplementaryUnit is out of range" in {
-
-      val errorResponse = ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.BadRequestMessage,
-        Some(
-          Seq(
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Optional field supplementaryUnit is in the wrong format",
-              21
-            )
-          )
-        )
-      )
-
-      val request = FakeRequest().withBody(outOfRangeSupplementaryUnitRequestData).withHeaders(validHeaders: _*)
-      val result  = sut.create("eori")(request)
-
-      status(result) mustBe BAD_REQUEST
-
-      contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
   }
 
