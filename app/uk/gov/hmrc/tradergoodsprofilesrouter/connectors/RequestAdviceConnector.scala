@@ -22,7 +22,7 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsUtils
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{RequestEisAccreditationRequest, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -37,7 +37,7 @@ class RequestAdviceConnector @Inject() (
   override val metricsRegistry: MetricRegistry
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with MetricsUtils
+    with MetricsSupport
     with EisHttpErrorHandler {
 
   def requestAdvice(request: TraderDetails, correlationId: String)(implicit

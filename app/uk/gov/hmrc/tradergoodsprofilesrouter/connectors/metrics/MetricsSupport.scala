@@ -22,8 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-//todo: find a more suitable name rather then Utils
-trait MetricsUtils {
+trait MetricsSupport {
 
   val metricsRegistry: MetricRegistry
 
