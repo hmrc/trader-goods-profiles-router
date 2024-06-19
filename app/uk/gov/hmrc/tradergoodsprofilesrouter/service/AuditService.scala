@@ -55,13 +55,7 @@ class AuditService @Inject() (
     auditConnector
       .sendExtendedEvent(event)
       .map { auditResult: AuditResult =>
-        logger.info(s"[AuditService] - Remove record audit event status: $auditResult")
-        Done
-      }
-      .recover { case ex: Throwable =>
-        logger.warn(s"""[AuditService] - Error sending audit remove record for eori: $eori, recoredId: $recordId, 
-             |actorId: $actorId, with message ${ex.getMessage}
-             |""".stripMargin)
+        logger.info(s"[AuditService] - Remove record audit event status: $auditResult.")
         Done
       }
   }

@@ -86,17 +86,6 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       verify(auditEventFactory).createRemoveRecord(eori, recordId, actorId, dateTime, "BAD_REQUEST", 400)
       verify(auditConnector).sendExtendedEvent(auditEventWithFailure)
     }
-
-    "catch any exception" in {
-      when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
-
-      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", 201))
-
-      result mustBe Done
-      verify(auditConnector).sendExtendedEvent(auditEvent)
-
-    }
-
   }
 
   private def extendedDataEvent(auditDetails: JsValue) =
