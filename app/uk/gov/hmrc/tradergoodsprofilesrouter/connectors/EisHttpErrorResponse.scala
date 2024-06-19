@@ -16,14 +16,32 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import play.api.http.Status._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 
-sealed trait EisHttpErrorResponse
+trait EisHttpErrorResponse {
+  val status: Int
+  val errorResponse: ErrorResponse
+}
 
-case class BadRequestErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
-case class ForbiddenErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
-case class NotFoundErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
-case class MethodNotAllowedErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
-case class BadGatewayErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
-case class ServiceUnavailableErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
-case class InternalServerErrorResponse(errorResponse: ErrorResponse) extends EisHttpErrorResponse
+case class BadRequestErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
+  override val status: Int = BAD_REQUEST
+}
+case class ForbiddenErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
+  override val status: Int = FORBIDDEN
+}
+case class NotFoundErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
+  override val status: Int = NOT_FOUND
+}
+case class MethodNotAllowedErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
+  override val status: Int = METHOD_NOT_ALLOWED
+}
+case class BadGatewayErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
+  override val status: Int = BAD_GATEWAY
+}
+case class ServiceUnavailableErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
+  override val status: Int = SERVICE_UNAVAILABLE
+}
+case class InternalServerErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
+  override val status: Int = INTERNAL_SERVER_ERROR
+}

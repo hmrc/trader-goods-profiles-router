@@ -19,12 +19,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT}
-import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.http.Status.NO_CONTENT
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, RemoveRecordConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, RemoveRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -40,7 +37,7 @@ class RemoveRecordService @Inject() (
     extends Logging {
   def removeRecord(eori: String, recordId: String, actorId: String)(implicit
     hc: HeaderCarrier
-  ): EitherT[Future, Result, Int] = {
+  ): EitherT[Future, EisHttpErrorResponse, Int] = {
     val correlationId     = uuidService.uuid
     val requestedDateTime = dateTimeService.timestamp.asStringSeconds
     EitherT(
@@ -52,29 +49,15 @@ class RemoveRecordService @Inject() (
             Right(NO_CONTENT)
 
           case Left(response) =>
-            response match {
-              case o: BadRequestErrorResponse     =>
-                auditService.auditRemoveRecord(
-                  eori,
-                  recordId,
-                  actorId,
-                  requestedDateTime,
-                  o.errorResponse.code,
-                  BAD_REQUEST
-                )
-                Left(BadRequest(Json.toJson(o.errorResponse)))
-              case o: InternalServerErrorResponse =>
-                auditService.auditRemoveRecord(
-                  eori,
-                  recordId,
-                  actorId,
-                  requestedDateTime,
-                  o.errorResponse.code,
-                  INTERNAL_SERVER_ERROR
-                )
-                Left(InternalServerError(Json.toJson(o.errorResponse)))
-              case _                              => Left(InternalServerError(""))
-            }
+            auditService.auditRemoveRecord(
+              eori,
+              recordId,
+              actorId,
+              requestedDateTime,
+              response.errorResponse.code,
+              response.status
+            )
+            Left(response)
         }
         .recover { case ex: Throwable =>
           logger.error(
@@ -84,8 +67,8 @@ class RemoveRecordService @Inject() (
           )
 
           Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+            InternalServerErrorResponse(
+              ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
             )
           )
         }
