@@ -26,7 +26,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, OK}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, RemoveRecordConnector}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import java.time.Instant
@@ -100,6 +100,42 @@ class RemoveRecordServiceSpec
           r.left.value mustBe badRequestErrorResponse
           verify(auditService)
             .auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "BAD_REQUEST", BAD_REQUEST)
+
+        }
+      }
+
+      "EIS return an error XX" in {
+        val badRequestErrorResponse = BadRequestErrorResponse(
+          ErrorResponse(
+            UUID.randomUUID().toString,
+            "BAD_REQUEST",
+            "BAD_REQUEST",
+            Some(
+              Seq(
+                Error("INTERNAL_ERROR", "internal error 1", 6),
+                Error("INTERNAL_ERROR", "internal error 2", 8)
+              )
+            )
+          )
+        )
+
+        when(connector.removeRecord(any, any, any, any)(any))
+          .thenReturn(Future.successful(Left(badRequestErrorResponse)))
+
+        val result = service.removeRecord(eori, recordId, actorId)
+
+        whenReady(result.value) { r =>
+          r.left.value mustBe badRequestErrorResponse
+          verify(auditService)
+            .auditRemoveRecord(
+              eori,
+              recordId,
+              actorId,
+              dateTime.toString,
+              "BAD_REQUEST",
+              BAD_REQUEST,
+              Some(Seq("internal error 1", "internal error 2"))
+            )
 
         }
       }

@@ -49,13 +49,17 @@ class RemoveRecordService @Inject() (
             Right(NO_CONTENT)
 
           case Left(response) =>
+            val failureReason = response.errorResponse.errors.map { error =>
+              error.map(e => e.message)
+            }
             auditService.auditRemoveRecord(
               eori,
               recordId,
               actorId,
               requestedDateTime,
               response.errorResponse.code,
-              response.status
+              response.status,
+              failureReason
             )
             Left(response)
         }
