@@ -17,17 +17,16 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.factories
 
 import com.google.inject.Inject
-import play.api.http.Status.isSuccessful
-import play.api.libs.json.Json
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory.{AuditDetails, AuditOutcome, AuditRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-case class AuditEventFactory @Inject() (
+class AuditEventFactory @Inject() (
   dateTimeService: DateTimeService
 ) {
 
@@ -40,52 +39,59 @@ case class AuditEventFactory @Inject() (
     actorId: String,
     requestedDateTime: String,
     status: String,
-    statusCode: Int
+    statusCode: Int,
+    failureReason: Option[Seq[String]] = None
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
-    // var outcomeJson = Json.obj()
-    //if (outcome.nonEmpty) {
-    //val outcomeVal = outcome.get
 
-//    val outcome = response match {
-//      case response if isSuccessful(response.status) =>
-//        Json.obj(
-//          "status"        -> "SUCCEEDED",
-//          "statusCode"    -> response.status,
-//          "failureReason" -> Seq.empty.toString
-//        )
-//      case response                                  =>
-//        val errorResponse = response.json.as[ErrorResponse]
-//        Json.obj(
-//          "status"     -> errorResponse.message,
-//          "statusCode" -> errorResponse.message
-//        )
-//    }
-
-    val outcome = Json.obj(
-      "status"        -> status,
-      "statusCode"    -> statusCode.toString,
-      "failureReason" -> Seq.empty.toString
+    val auditDetails = AuditDetails(
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      requestDateTime = requestedDateTime,
+      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      outcome = AuditOutcome(status, statusCode, failureReason),
+      request = AuditRequest(eori, recordId, actorId)
     )
-
-    val auditDetails =
-      Json.obj(
-        "journey"          -> "RemoveRecord",
-        "clientId"         -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
-        "requestDateTime"  -> requestedDateTime,
-        "responseDateTime" -> dateTimeService.timestamp.asStringSeconds,
-        "request"          -> Json.obj(
-          "eori"     -> eori,
-          "recordId" -> recordId,
-          "actorId"  -> actorId
-        ),
-        "outcome"          -> outcome
-      )
 
     ExtendedDataEvent(
       auditSource = auditSource,
       auditType = auditType,
       tags = hc.toAuditTags(),
-      detail = auditDetails
+      detail = Json.toJson(auditDetails)
     )
+  }
+}
+
+object AuditEventFactory {
+
+  case class AuditDetails(
+    private val journey: String = "RemoveRecord",
+    clientId: String,
+    requestDateTime: String,
+    responseDateTime: String,
+    outcome: AuditOutcome,
+    request: AuditRequest
+  )
+
+  object AuditDetails {
+    implicit val format: OFormat[AuditDetails] = Json.format[AuditDetails]
+  }
+
+  case class AuditRequest(
+    eori: String,
+    recordId: String,
+    actorId: String
+  )
+
+  object AuditRequest {
+    implicit val format: OFormat[AuditRequest] = Json.format[AuditRequest]
+  }
+
+  case class AuditOutcome(
+    status: String,
+    statusCode: Int,
+    failureReason: Option[Seq[String]] = None
+  )
+
+  object AuditOutcome {
+    implicit val format: OFormat[AuditOutcome] = Json.format[AuditOutcome]
   }
 }

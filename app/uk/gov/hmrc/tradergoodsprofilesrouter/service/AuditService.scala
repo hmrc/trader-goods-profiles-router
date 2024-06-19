@@ -19,8 +19,8 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import com.google.inject.Inject
 import org.apache.pekko.Done
 import play.api.Logging
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse}
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -38,15 +38,32 @@ class AuditService @Inject() (
     actorId: String,
     requestedDateTime: String,
     status: String,
-    statusCode: Int
+    statusCode: Int,
+    failureReason: Seq[String] = Seq.empty
   )(implicit
     hc: HeaderCarrier
   ): Future[Done] = {
-    val event = auditEventFactory.createRemoveRecord(eori, recordId, actorId, requestedDateTime, status, statusCode)
-    auditConnector.sendExtendedEvent(event).map { auditResult =>
-      logger.info(s"Remove record audit event status: $auditResult")
-      Done
-    }
+    val event = auditEventFactory.createRemoveRecord(
+      eori,
+      recordId,
+      actorId,
+      requestedDateTime,
+      status,
+      statusCode,
+      Some(failureReason)
+    )
+    auditConnector
+      .sendExtendedEvent(event)
+      .map { auditResult: AuditResult =>
+        logger.info(s"[AuditService] - Remove record audit event status: $auditResult")
+        Done
+      }
+      .recover { case ex: Throwable =>
+        logger.warn(s"""[AuditService] - Error sending audit remove record for eori: $eori, recoredId: $recordId, 
+             |actorId: $actorId, with message ${ex.getMessage}
+             |""".stripMargin)
+        Done
+      }
   }
 
 }

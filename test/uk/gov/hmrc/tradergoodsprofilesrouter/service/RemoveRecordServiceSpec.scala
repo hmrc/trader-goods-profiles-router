@@ -20,7 +20,6 @@ import org.apache.pekko.Done
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
@@ -67,56 +66,61 @@ class RemoveRecordServiceSpec
     when(dateTimeService.timestamp).thenReturn(dateTime)
   }
 
-  "remove a record item" in {
-    when(connector.removeRecord(any, any, any, any)(any))
-      .thenReturn(Future.successful(Right(OK)))
-    when(auditService.auditRemoveRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
+  "removeRecord" should {
+    "return NO_CONTENT when successful" in {
+      when(connector.removeRecord(any, any, any, any)(any))
+        .thenReturn(Future.successful(Right(OK)))
+      when(auditService.auditRemoveRecord(any, any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
-    val result = service.removeRecord(eori, recordId, actorId)
+      val result = service.removeRecord(eori, recordId, actorId)
 
-    whenReady(result.value) { r =>
-      r.value shouldBe NO_CONTENT
-      verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", NO_CONTENT)
+      whenReady(result.value) { r =>
+        r.value mustBe NO_CONTENT
 
+        withClue("send an audit message") {
+          verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", 204)
+        }
+
+      }
     }
-  }
 
-  "EIS return an error" in {
-    val badRequestErrorResponse = BadRequestErrorResponse(
-      ErrorResponse(
-        UUID.randomUUID().toString,
-        "BAD_REQUEST",
-        "BAD_REQUEST"
-      )
-    )
-
-    when(connector.removeRecord(any, any, any, any)(any))
-      .thenReturn(Future.successful(Left(badRequestErrorResponse)))
-
-    val result = service.removeRecord(eori, recordId, actorId)
-
-    whenReady(result.value) { r =>
-      r.left.value shouldBe BadRequest(Json.toJson(badRequestErrorResponse.errorResponse))
-      verify(auditService)
-        .auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "BAD_REQUEST", BAD_REQUEST)
-
-    }
-  }
-
-  "error when an exception is thrown" in {
-    when(connector.removeRecord(any, any, any, any)(any))
-      .thenReturn(Future.failed(new RuntimeException("error")))
-
-    val result = service.removeRecord(eori, recordId, actorId)
-
-    whenReady(result.value) {
-      _.left.value shouldBe InternalServerError(
-        Json.obj(
-          "correlationId" -> correlationId,
-          "code"          -> "UNEXPECTED_ERROR",
-          "message"       -> "error"
+    "EIS return an error" in {
+      val badRequestErrorResponse = BadRequestErrorResponse(
+        ErrorResponse(
+          UUID.randomUUID().toString,
+          "BAD_REQUEST",
+          "BAD_REQUEST"
         )
       )
+
+      when(connector.removeRecord(any, any, any, any)(any))
+        .thenReturn(Future.successful(Left(badRequestErrorResponse)))
+
+      val result = service.removeRecord(eori, recordId, actorId)
+
+      whenReady(result.value) { r =>
+        r.left.value mustBe BadRequest(Json.toJson(badRequestErrorResponse.errorResponse))
+        verify(auditService)
+          .auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "BAD_REQUEST", BAD_REQUEST)
+
+      }
+    }
+
+    "error when an exception is thrown" in {
+      when(connector.removeRecord(any, any, any, any)(any))
+        .thenReturn(Future.failed(new RuntimeException("error")))
+
+      val result = service.removeRecord(eori, recordId, actorId)
+
+      whenReady(result.value) {
+        _.left.value mustBe InternalServerError(
+          Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "UNEXPECTED_ERROR",
+            "message"       -> "error"
+          )
+        )
+      }
     }
   }
 }
