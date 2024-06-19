@@ -26,12 +26,12 @@ import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, MetricsSupportSpec}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class RemoveRecordConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec {
+class RemoveRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
 
   private val eori                  = "GB123456789011"
   private val actorId               = "GB123456789011"

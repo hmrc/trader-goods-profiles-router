@@ -24,12 +24,12 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport, MetricsSupportSpec}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec, CreateRecordDataSupport}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class CreateRecordConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec with CreateRecordDataSupport {
+class CreateRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec with CreateRecordDataSupport {
 
   private val timestamp              = Instant.parse("2024-05-12T12:15:15.456321Z")
   implicit val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"

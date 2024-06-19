@@ -23,7 +23,7 @@ import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.MockitoSugar.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar.mock
 
-trait MetricsSupportSpec {
+trait BaseMetricsSpec {
 
   val metricsRegistry: MetricRegistry = mock[MetricRegistry](RETURNS_DEEP_STUBS)
   val timerContext                    = mock[Timer.Context]

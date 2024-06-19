@@ -28,12 +28,12 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class MetricsUtilsSpec extends PlaySpec {
+class MetricsSupportSpec extends PlaySpec {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   trait MockHasMetrics {
-    self: MetricsUtils =>
+    self: MetricsSupport =>
     val timerContext                             = mock[Timer.Context]
     val timer                                    = mock[Timer]
     val successCounter                           = mock[Counter]
@@ -50,7 +50,7 @@ class MetricsUtilsSpec extends PlaySpec {
 
   private val metricName = "test-metrics"
 
-  class TestMetricsSupport @Inject() extends MetricsUtils with MockHasMetrics
+  class TestMetricsSupport @Inject() extends MetricsSupport with MockHasMetrics
 
   def withTestMetrics[A](test: TestMetricsSupport => A): A =
     test(new TestMetricsSupport())
