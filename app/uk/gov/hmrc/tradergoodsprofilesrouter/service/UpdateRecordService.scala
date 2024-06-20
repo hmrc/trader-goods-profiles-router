@@ -16,13 +16,9 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import play.api.Logging
-import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.UpdateRecordConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, UpdateRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
@@ -42,29 +38,28 @@ class UpdateRecordService @Inject() (
     eori: String,
     recordId: String,
     request: UpdateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
     val correlationId = uuidService.uuid
     val payload       = UpdateRecordPayload(eori, recordId, request)
-    EitherT(
-      connector
-        .updateRecord(payload, correlationId)
-        .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
-        }
-        .recover { case ex: Throwable =>
-          logger.error(
-            s"""[UpdateRecordService] - Error when updating records for Eori Number: $eori,
-            s"correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
-          Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
-          )
-        }
-    )
-  }
 
+    connector
+      .updateRecord(payload, correlationId)
+      .map {
+        case Right(response) => Right(response)
+        case Left(response)  => Left(response)
+      }
+      .recover { case ex: Throwable =>
+        logger.error(
+          s"""[UpdateRecordService] - Error when updating records for Eori Number: $eori,
+            s"correlationId: $correlationId, message: ${ex.getMessage}""",
+          ex
+        )
+
+        Left(
+          InternalServerErrorResponse(
+            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
+          )
+        )
+      }
+  }
 }

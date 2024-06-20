@@ -18,18 +18,19 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.UpdateRecordConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, UpdateRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import java.time.Instant
@@ -66,12 +67,10 @@ class UpdateRecordServiceSpec
       when(connector.updateRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
-      val result = sut.updateRecord(eoriNumber, "recordId", updateRecordRequest)
+      val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
 
-      whenReady(result.value) { o =>
-        o.value mustBe eisResponse
-        verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
-      }
+      result.value mustBe eisResponse
+      verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
     }
 
     "dateTime value should be formatted to yyyy-mm-dd'T'hh:mm:ssZ" in {
@@ -81,47 +80,43 @@ class UpdateRecordServiceSpec
 
       val invalidFormattedDate = Instant.parse("2024-11-18T23:20:19.1324564Z")
       val result               =
-        sut.updateRecord(eoriNumber, "recordId", updateRecordRequestWIthInvalidFormattedDate(invalidFormattedDate))
-
-      whenReady(result.value) { _ =>
-        val expectedpayload = UpdateRecordPayload(
-          eori = eoriNumber,
-          recordId = "recordId",
-          actorId = "GB098765432112",
-          comcodeEffectiveFromDate = Some(Instant.parse("2024-11-18T23:20:19Z")),
-          comcodeEffectiveToDate = Some(Instant.parse("2024-11-18T23:20:19Z"))
+        await(
+          sut.updateRecord(eoriNumber, "recordId", updateRecordRequestWIthInvalidFormattedDate(invalidFormattedDate))
         )
-        verify(connector).updateRecord(eqTo(expectedpayload), eqTo(correlationId))(any)
-      }
+
+      val expectedpayload = UpdateRecordPayload(
+        eori = eoriNumber,
+        recordId = "recordId",
+        actorId = "GB098765432112",
+        comcodeEffectiveFromDate = Some(Instant.parse("2024-11-18T23:20:19Z")),
+        comcodeEffectiveToDate = Some(Instant.parse("2024-11-18T23:20:19Z"))
+      )
+
+      result.value mustBe eisResponse
+      verify(connector).updateRecord(eqTo(expectedpayload), eqTo(correlationId))(any)
+
     }
     "return an internal server error" when {
 
       "EIS return an error" in {
+        val badRequestErrorResponse = createEisErrorResponse
         when(connector.updateRecord(any, any)(any))
-          .thenReturn(Future.successful(Left(BadRequest("error"))))
+          .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = sut.updateRecord(eoriNumber, "recordId", updateRecordRequest)
+        val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
 
-        whenReady(result.value) {
-          _.left.value mustBe BadRequest("error")
-        }
+        result.left.value mustBe badRequestErrorResponse
       }
 
       "error when an exception is thrown" in {
         when(connector.updateRecord(any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = sut.updateRecord(eoriNumber, "recordId", updateRecordRequest)
+        val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
 
-        whenReady(result.value) {
-          _.left.value mustBe InternalServerError(
-            Json.obj(
-              "correlationId" -> correlationId,
-              "code"          -> "UNEXPECTED_ERROR",
-              "message"       -> "error"
-            )
-          )
-        }
+        result.left.value mustBe InternalServerErrorResponse(
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+        )
       }
 
     }
@@ -240,4 +235,19 @@ class UpdateRecordServiceSpec
                |}
                |""".stripMargin)
       .as[CreateOrUpdateRecordResponse]
+
+  private def createEisErrorResponse =
+    BadRequestErrorResponse(
+      ErrorResponse(
+        correlationId,
+        "BAD_REQUEST",
+        "BAD_REQUEST",
+        Some(
+          Seq(
+            Error("INTERNAL_ERROR", "internal error 1", 6),
+            Error("INTERNAL_ERROR", "internal error 2", 8)
+          )
+        )
+      )
+    )
 }

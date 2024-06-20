@@ -18,11 +18,10 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
 import play.api.libs.json.Json.toJson
-import play.api.mvc.Result
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.LegacyHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -35,18 +34,18 @@ class UpdateRecordConnector @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with LegacyEisHttpErrorHandler {
+    with EisHttpErrorHandler {
 
   def updateRecord(
     payload: UpdateRecordPayload,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
     val url = appConfig.eisConfig.updateRecordUrl
 
     httpClientV2
       .put(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.updateRecordBearerToken): _*)
       .withBody(toJson(payload))
-      .execute(LegacyHttpReader[CreateOrUpdateRecordResponse](correlationId, legacyHandleErrorResponse), ec)
+      .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
   }
 }

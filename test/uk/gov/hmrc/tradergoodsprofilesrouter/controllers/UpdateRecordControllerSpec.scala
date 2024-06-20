@@ -33,7 +33,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class UpdateRecordControllerSpec
     extends PlaySpec
@@ -70,7 +70,7 @@ class UpdateRecordControllerSpec
     "return a 200 with JSON response when updating a record" in {
 
       when(updateRecordService.updateRecord(any, any, any)(any))
-        .thenReturn(EitherT.rightT(createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]))
+        .thenReturn(Future.successful(Right(createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse])))
 
       val result =
         sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
@@ -168,7 +168,7 @@ class UpdateRecordControllerSpec
 
     "return a Bad Request if actorId is invalid" in {
       when(updateRecordService.updateRecord(any, any, any)(any))
-        .thenReturn(EitherT.rightT(createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]))
+        .thenReturn(Future.successful(Right(createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse])))
 
       val result = sut.update(eoriNumber, "invalid-actorId")(
         FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
