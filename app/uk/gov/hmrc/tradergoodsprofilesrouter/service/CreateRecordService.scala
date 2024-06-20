@@ -18,17 +18,24 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import com.google.inject.Inject
 import play.api.Logging
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse, InternalServerErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateRecordService @Inject() (connector: CreateRecordConnector, uuidService: UuidService)(implicit
+class CreateRecordService @Inject() (
+  connector: CreateRecordConnector,
+  uuidService: UuidService,
+  auditService: AuditService,
+  dateTimeService: DateTimeService
+)(implicit
   ec: ExecutionContext
 ) extends Logging {
 
@@ -36,13 +43,29 @@ class CreateRecordService @Inject() (connector: CreateRecordConnector, uuidServi
     eori: String,
     request: CreateRecordRequest
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
-    val correlationId = uuidService.uuid
+    val correlationId     = uuidService.uuid
+    val requestedDateTime = dateTimeService.timestamp.asStringSeconds
 
     connector
       .createRecord(CreateRecordPayload(eori, request), correlationId)
       .map {
-        case Right(response)     => Right(response)
-        case Left(errorResponse) => Left(errorResponse)
+        case Right(response) =>
+          auditService.auditCreateRecord(request, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
+          Right(response)
+        case Left(response)  =>
+          val failureReason = response.errorResponse.errors.map { error =>
+            error.map(e => e.message)
+          }
+
+          auditService.auditCreateRecord(
+            request,
+            requestedDateTime,
+            response.errorResponse.code,
+            response.status,
+            failureReason
+          )
+
+          Left(response)
 
       }
       .recover { case ex: Throwable =>
@@ -50,6 +73,13 @@ class CreateRecordService @Inject() (connector: CreateRecordConnector, uuidServi
           s"""[CreateRecordService] - Error when creating records for Eori Number: $eori,
             correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
+        )
+
+        auditService.auditCreateRecord(
+          request,
+          requestedDateTime,
+          UnexpectedErrorCode,
+          INTERNAL_SERVER_ERROR
         )
 
         Left(

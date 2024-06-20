@@ -75,7 +75,7 @@ class RemoveRecordServiceSpec
       result.value mustBe NO_CONTENT
 
       withClue("send an audit message") {
-        verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", 204)
+        verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", NO_CONTENT)
       }
     }
 

@@ -21,7 +21,9 @@ import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory.{AuditDetails, AuditOutcome, AuditRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory.AuditOutcome
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
@@ -43,12 +45,38 @@ class AuditEventFactory @Inject() (
     failureReason: Option[Seq[String]] = None
   )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
 
-    val auditDetails = AuditDetails(
+    val auditDetails = AuditRemoveRecordDetails(
       clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
       requestDateTime = requestedDateTime,
       responseDateTime = dateTimeService.timestamp.asStringSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),
-      request = AuditRequest(eori, recordId, actorId)
+      request = AuditRemoveRecordRequest(eori, recordId, actorId)
+    )
+
+    ExtendedDataEvent(
+      auditSource = auditSource,
+      auditType = auditType,
+      tags = hc.toAuditTags(),
+      detail = Json.toJson(auditDetails)
+    )
+  }
+
+  def createRecord(
+    createRecordRequest: CreateRecordRequest,
+    requestedDateTime: String,
+    status: String,
+    statusCode: Int,
+    failureReason: Option[Seq[String]] = None,
+    createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
+  )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
+
+    val auditDetails = AuditCreateRecordDetails(
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      requestDateTime = requestedDateTime,
+      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      outcome = AuditOutcome(status, statusCode, failureReason),
+      request = createRecordRequest,
+      response = createOrUpdateRecordResponse
     )
 
     ExtendedDataEvent(
@@ -61,29 +89,6 @@ class AuditEventFactory @Inject() (
 }
 
 object AuditEventFactory {
-
-  case class AuditDetails(
-    private val journey: String = "RemoveRecord",
-    clientId: String,
-    requestDateTime: String,
-    responseDateTime: String,
-    outcome: AuditOutcome,
-    request: AuditRequest
-  )
-
-  object AuditDetails {
-    implicit val format: OFormat[AuditDetails] = Json.format[AuditDetails]
-  }
-
-  case class AuditRequest(
-    eori: String,
-    recordId: String,
-    actorId: String
-  )
-
-  object AuditRequest {
-    implicit val format: OFormat[AuditRequest] = Json.format[AuditRequest]
-  }
 
   case class AuditOutcome(
     status: String,

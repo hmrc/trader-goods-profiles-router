@@ -22,6 +22,8 @@ import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -60,4 +62,29 @@ class AuditService @Inject() (
       }
   }
 
+  def auditCreateRecord(
+    createRecordRequest: CreateRecordRequest,
+    requestedDateTime: String,
+    status: String,
+    statusCode: Int,
+    failureReason: Option[Seq[String]] = None,
+    createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[Done] = {
+    val event = auditEventFactory.createRecord(
+      createRecordRequest,
+      requestedDateTime,
+      status,
+      statusCode,
+      failureReason,
+      createOrUpdateRecordResponse
+    )
+    auditConnector
+      .sendExtendedEvent(event)
+      .map { auditResult: AuditResult =>
+        logger.info(s"[AuditService] - Create record audit event status: $auditResult.")
+        Done
+      }
+  }
 }

@@ -20,8 +20,12 @@ import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{Json, __}
+import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, OK}
+import play.api.libs.json.{JsObject, Json, __}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
 import java.time.Instant
@@ -45,25 +49,72 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
 
   "createRemoveRecord" should {
     "return a ExtendedDataEvent with no failure reason" in {
-      val result = sut.createRemoveRecord(eori, recordId, actorId, timestamp.toString, "SUCCEEDED", 201)
+      val result = sut.createRemoveRecord(eori, recordId, actorId, timestamp.toString, "SUCCEEDED", NO_CONTENT)
 
       result.auditSource mustBe "trader-goods-profiles-router"
       result.auditType mustBe "ManageGoodsRecord"
-      result.detail mustBe auditDetailJson("SUCCEEDED", 201)
+      result.detail mustBe auditRemoveRecordDetailJson("SUCCEEDED", NO_CONTENT)
     }
 
     "return a ExtendedDataEvent with failure reason" in {
       val failureReason = Seq("error-1", "error-2")
       val result        =
-        sut.createRemoveRecord(eori, recordId, actorId, timestamp.toString, "BAD_REQUEST", 400, Some(failureReason))
+        sut.createRemoveRecord(
+          eori,
+          recordId,
+          actorId,
+          timestamp.toString,
+          "BAD_REQUEST",
+          BAD_REQUEST,
+          Some(failureReason)
+        )
 
       result.auditSource mustBe "trader-goods-profiles-router"
       result.auditType mustBe "ManageGoodsRecord"
-      result.detail mustBe auditDetailJsonWithFailureReason("BAD_REQUEST", 400, failureReason)
+      result.detail mustBe auditDetailJsonWithFailureReason(
+        failureReason,
+        auditRemoveRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
+      )
     }
   }
 
-  private def auditDetailJson(status: String, statusCode: Int) =
+  "createRecord" should {
+    "return a ExtendedDataEvent with no failure reason" in {
+
+      val result = sut.createRecord(
+        createRecordRequestData,
+        timestamp.toString,
+        "SUCCEEDED",
+        OK,
+        None,
+        Some(createRecordResponseData)
+      )
+
+      result.auditSource mustBe "trader-goods-profiles-router"
+      result.auditType mustBe "ManageGoodsRecord"
+      result.detail mustBe auditCreateRecordDetailJson("SUCCEEDED", OK, Some(createRecordResponseData))
+    }
+
+    "return a ExtendedDataEvent with failure reason" in {
+      val failureReason = Seq("error-1", "error-2")
+      val result        = sut.createRecord(
+        createRecordRequestData,
+        timestamp.toString,
+        "BAD_REQUEST",
+        BAD_REQUEST,
+        Some(failureReason)
+      )
+
+      result.auditSource mustBe "trader-goods-profiles-router"
+      result.auditType mustBe "ManageGoodsRecord"
+      result.detail mustBe auditDetailJsonWithFailureReason(
+        failureReason,
+        auditCreateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
+      )
+    }
+  }
+
+  private def auditRemoveRecordDetailJson(status: String, statusCode: Int) =
     Json.obj(
       "journey"          -> "RemoveRecord",
       "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
@@ -80,11 +131,102 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
       )
     )
 
-  private def auditDetailJsonWithFailureReason(status: String, statusCode: Int, failureReason: Seq[String]) =
-    auditDetailJson(status, statusCode)
+  private def auditCreateRecordDetailJson(
+    status: String,
+    statusCode: Int,
+    createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
+  ) =
+    removeNulls(
+      Json.obj(
+        "journey"          -> "CreateRecord",
+        "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
+        "requestDateTime"  -> timestamp.toString,
+        "responseDateTime" -> "2021-12-17T09:30:47Z",
+        "request"          -> createRecordRequestData,
+        "outcome"          -> Json.obj(
+          "status"     -> status,
+          "statusCode" -> statusCode
+        ),
+        "response"         -> Some(createOrUpdateRecordResponse)
+      )
+    )
+
+  private def auditDetailJsonWithFailureReason(failureReason: Seq[String], eventData: JsObject) =
+    eventData
       .transform(
         __.json.update((__ \ "outcome" \ "failureReason").json.put(Json.toJson(failureReason)))
       )
       .get
 
+  lazy val createRecordResponseData: CreateOrUpdateRecordResponse = Json
+    .parse("""
+             |{
+             |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+             |  "eori": "GB123456789012",
+             |  "actorId": "GB098765432112",
+             |  "traderRef": "BAN001001",
+             |  "comcode": "10410100",
+             |  "accreditationStatus": "Not Requested",
+             |  "goodsDescription": "Organic bananas",
+             |  "countryOfOrigin": "EC",
+             |  "category": 1,
+             |  "supplementaryUnit": 500,
+             |  "measurementUnit": "Square metre (m2)",
+             |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+             |  "version": 1,
+             |  "active": true,
+             |  "toReview": false,
+             |  "reviewReason": "Commodity code change",
+             |  "declarable": "SPIMM",
+             |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+             |  "nirmsNumber": "RMS-GB-123456",
+             |  "niphlNumber": "6 S12345",
+             |  "createdDateTime": "2024-11-18T23:20:19Z",
+             |  "updatedDateTime": "2024-11-18T23:20:19Z",
+             |  "assessments": [
+             |    {
+             |      "assessmentId": "abc123",
+             |      "primaryCategory": 1,
+             |      "condition": {
+             |        "type": "abc123",
+             |        "conditionId": "Y923",
+             |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |        "conditionTraderText": "Excluded product"
+             |      }
+             |    }
+             |  ]
+             |}
+             |""".stripMargin)
+    .as[CreateOrUpdateRecordResponse]
+
+  lazy val createRecordRequestData: CreateRecordRequest = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789012",
+             |    "actorId": "GB098765432112",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "10410100",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 1,
+             |    "assessments": [
+             |        {
+             |            "assessmentId": "abc123",
+             |            "primaryCategory": 1,
+             |            "condition": {
+             |                "type": "abc123",
+             |                "conditionId": "Y923",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        }
+             |    ],
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
+    .as[CreateRecordRequest]
 }
