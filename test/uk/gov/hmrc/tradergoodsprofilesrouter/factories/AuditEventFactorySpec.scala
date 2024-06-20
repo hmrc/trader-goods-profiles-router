@@ -24,7 +24,7 @@ import play.api.http.Status.{BAD_REQUEST, NO_CONTENT, OK}
 import play.api.libs.json.{JsObject, Json, __}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
@@ -47,9 +47,9 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
     when(dataTimeService.timestamp).thenReturn(timestamp)
   }
 
-  "createRemoveRecord" should {
+  "removeRecord" should {
     "return a ExtendedDataEvent with no failure reason" in {
-      val result = sut.createRemoveRecord(eori, recordId, actorId, timestamp.toString, "SUCCEEDED", NO_CONTENT)
+      val result = sut.removeRecord(eori, recordId, actorId, timestamp.toString, "SUCCEEDED", NO_CONTENT)
 
       result.auditSource mustBe "trader-goods-profiles-router"
       result.auditType mustBe "ManageGoodsRecord"
@@ -59,7 +59,7 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
     "return a ExtendedDataEvent with failure reason" in {
       val failureReason = Seq("error-1", "error-2")
       val result        =
-        sut.createRemoveRecord(
+        sut.removeRecord(
           eori,
           recordId,
           actorId,
@@ -87,12 +87,12 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
         "SUCCEEDED",
         OK,
         None,
-        Some(createRecordResponseData)
+        Some(createOrUpdateRecordResponseData)
       )
 
       result.auditSource mustBe "trader-goods-profiles-router"
       result.auditType mustBe "ManageGoodsRecord"
-      result.detail mustBe auditCreateRecordDetailJson("SUCCEEDED", OK, Some(createRecordResponseData))
+      result.detail mustBe auditCreateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
     }
 
     "return a ExtendedDataEvent with failure reason" in {
@@ -110,6 +110,42 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
       result.detail mustBe auditDetailJsonWithFailureReason(
         failureReason,
         auditCreateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
+      )
+    }
+  }
+
+  "updateRecord" should {
+    "return a ExtendedDataEvent with no failure reason" in {
+
+      val result = sut.updateRecord(
+        updateRecordRequestData,
+        timestamp.toString,
+        "SUCCEEDED",
+        OK,
+        None,
+        Some(createOrUpdateRecordResponseData)
+      )
+
+      result.auditSource mustBe "trader-goods-profiles-router"
+      result.auditType mustBe "ManageGoodsRecord"
+      result.detail mustBe auditUpdateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
+    }
+
+    "return a ExtendedDataEvent with failure reason" in {
+      val failureReason = Seq("error-1", "error-2")
+      val result        = sut.updateRecord(
+        updateRecordRequestData,
+        timestamp.toString,
+        "BAD_REQUEST",
+        BAD_REQUEST,
+        Some(failureReason)
+      )
+
+      result.auditSource mustBe "trader-goods-profiles-router"
+      result.auditType mustBe "ManageGoodsRecord"
+      result.detail mustBe auditDetailJsonWithFailureReason(
+        failureReason,
+        auditUpdateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
       )
     }
   }
@@ -151,6 +187,26 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
       )
     )
 
+  private def auditUpdateRecordDetailJson(
+    status: String,
+    statusCode: Int,
+    createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
+  ) =
+    removeNulls(
+      Json.obj(
+        "journey"          -> "UpdateRecord",
+        "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
+        "requestDateTime"  -> timestamp.toString,
+        "responseDateTime" -> "2021-12-17T09:30:47Z",
+        "request"          -> updateRecordRequestData,
+        "outcome"          -> Json.obj(
+          "status"     -> status,
+          "statusCode" -> statusCode
+        ),
+        "response"         -> Some(createOrUpdateRecordResponse)
+      )
+    )
+
   private def auditDetailJsonWithFailureReason(failureReason: Seq[String], eventData: JsObject) =
     eventData
       .transform(
@@ -158,7 +214,7 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
       )
       .get
 
-  lazy val createRecordResponseData: CreateOrUpdateRecordResponse = Json
+  lazy val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse = Json
     .parse("""
              |{
              |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -229,4 +285,36 @@ class AuditEventFactorySpec extends PlaySpec with BeforeAndAfterEach {
              |}
              |""".stripMargin)
     .as[CreateRecordRequest]
+
+  lazy val updateRecordRequestData: UpdateRecordRequest =
+    Json
+      .parse("""
+                 |{
+                 |    "eori": "GB123456789001",
+                 |    "actorId": "GB098765432112",
+                 |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                 |    "traderRef": "BAN001001",
+                 |    "comcode": "10410100",
+                 |    "goodsDescription": "Organic bananas",
+                 |    "countryOfOrigin": "EC",
+                 |    "category": 1,
+                 |    "assessments": [
+                 |        {
+                 |            "assessmentId": "abc123",
+                 |            "primaryCategory": 1,
+                 |            "condition": {
+                 |                "type": "abc123",
+                 |                "conditionId": "Y923",
+                 |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                 |                "conditionTraderText": "Excluded product"
+                 |            }
+                 |        }
+                 |    ],
+                 |    "supplementaryUnit": 500,
+                 |    "measurementUnit": "Square metre (m2)",
+                 |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                 |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+                 |}
+                 |""".stripMargin)
+      .as[UpdateRecordRequest]
 }

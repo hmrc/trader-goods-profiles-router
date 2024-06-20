@@ -17,12 +17,14 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import play.api.Logging
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, UpdateRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
 import javax.inject.Inject
@@ -30,7 +32,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class UpdateRecordService @Inject() (
   connector: UpdateRecordConnector,
-  uuidService: UuidService
+  uuidService: UuidService,
+  auditService: AuditService,
+  dateTimeService: DateTimeService
 )(implicit ec: ExecutionContext)
     extends Logging {
 
@@ -39,20 +43,43 @@ class UpdateRecordService @Inject() (
     recordId: String,
     request: UpdateRecordRequest
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
-    val correlationId = uuidService.uuid
-    val payload       = UpdateRecordPayload(eori, recordId, request)
+    val correlationId     = uuidService.uuid
+    val payload           = UpdateRecordPayload(eori, recordId, request)
+    val requestedDateTime = dateTimeService.timestamp.asStringSeconds
 
     connector
       .updateRecord(payload, correlationId)
       .map {
-        case Right(response) => Right(response)
-        case Left(response)  => Left(response)
+        case Right(response) =>
+          auditService.auditUpdateRecord(request, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
+          Right(response)
+        case Left(response)  =>
+          val failureReason = response.errorResponse.errors.map { error =>
+            error.map(e => e.message)
+          }
+
+          auditService.auditUpdateRecord(
+            request,
+            requestedDateTime,
+            response.errorResponse.code,
+            response.status,
+            failureReason
+          )
+
+          Left(response)
       }
       .recover { case ex: Throwable =>
         logger.error(
           s"""[UpdateRecordService] - Error when updating records for Eori Number: $eori,
             s"correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
+        )
+
+        auditService.auditUpdateRecord(
+          request,
+          requestedDateTime,
+          UnexpectedErrorCode,
+          INTERNAL_SERVER_ERROR
         )
 
         Left(

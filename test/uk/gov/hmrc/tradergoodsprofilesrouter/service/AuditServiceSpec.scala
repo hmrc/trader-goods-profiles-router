@@ -32,12 +32,11 @@ import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.postfixOps
 
 class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
 
@@ -52,7 +51,10 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
   private val actorId                = "GB123456789011"
   private val auditRemoveRecordEvent = extendedDataEvent(auditRemoveRecordDetailsJson("SUCCEEDED", NO_CONTENT))
   private val auditCreateRecordEvent = extendedDataEvent(
-    auditCreateRecordDetailJson("SUCCEEDED", OK, Some(createRecordResponseData))
+    auditCreateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
+  )
+  private val auditUpdateRecordEvent = extendedDataEvent(
+    auditUpdateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
   )
 
   val sut = new AuditService(auditConnector, auditEventFactory)
@@ -62,10 +64,12 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
 
     reset(auditConnector, auditEventFactory)
 
-    when(auditEventFactory.createRemoveRecord(any, any, any, any, any, any, any)(any))
+    when(auditEventFactory.removeRecord(any, any, any, any, any, any, any)(any))
       .thenReturn(auditRemoveRecordEvent)
     when(auditEventFactory.createRecord(any, any, any, any, any, any)(any))
       .thenReturn(auditCreateRecordEvent)
+    when(auditEventFactory.updateRecord(any, any, any, any, any, any)(any))
+      .thenReturn(auditUpdateRecordEvent)
   }
 
   "auditRemoveRecord" should {
@@ -76,7 +80,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", NO_CONTENT))
 
       result mustBe Done
-      verify(auditEventFactory).createRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", NO_CONTENT)
+      verify(auditEventFactory).removeRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", NO_CONTENT)
       verify(auditConnector).sendExtendedEvent(auditRemoveRecordEvent)
     }
 
@@ -89,7 +93,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
             auditRemoveRecordDetailsJson("BAD_REQUEST", BAD_REQUEST)
           )
         )
-      when(auditEventFactory.createRemoveRecord(any, any, any, any, any, any, any)(any))
+      when(auditEventFactory.removeRecord(any, any, any, any, any, any, any)(any))
         .thenReturn(auditEventWithFailure)
 
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
@@ -107,7 +111,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       result mustBe Done
-      verify(auditEventFactory).createRemoveRecord(
+      verify(auditEventFactory).removeRecord(
         eori,
         recordId,
         actorId,
@@ -125,12 +129,19 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
       val result = await(
-        sut.auditCreateRecord(createRecordRequestData, dateTime, "SUCCEEDED", OK, None, Some(createRecordResponseData))
+        sut.auditCreateRecord(
+          createRecordRequestData,
+          dateTime,
+          "SUCCEEDED",
+          OK,
+          None,
+          Some(createOrUpdateRecordResponseData)
+        )
       )
 
       result mustBe Done
       verify(auditEventFactory)
-        .createRecord(createRecordRequestData, dateTime, "SUCCEEDED", OK, None, Some(createRecordResponseData))
+        .createRecord(createRecordRequestData, dateTime, "SUCCEEDED", OK, None, Some(createOrUpdateRecordResponseData))
       verify(auditConnector).sendExtendedEvent(auditCreateRecordEvent)
     }
 
@@ -161,6 +172,58 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       result mustBe Done
       verify(auditEventFactory)
         .createRecord(createRecordRequestData, dateTime, "BAD_REQUEST", BAD_REQUEST, Some(Seq("erro-1", "error-2")))
+      verify(auditConnector).sendExtendedEvent(auditEventWithFailure)
+    }
+  }
+
+  "auditUpdateRecord" should {
+    "send an event for success response" in {
+      when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
+
+      val result = await(
+        sut.auditUpdateRecord(
+          updateRecordRequestData,
+          dateTime,
+          "SUCCEEDED",
+          OK,
+          None,
+          Some(createOrUpdateRecordResponseData)
+        )
+      )
+
+      result mustBe Done
+      verify(auditEventFactory)
+        .updateRecord(updateRecordRequestData, dateTime, "SUCCEEDED", OK, None, Some(createOrUpdateRecordResponseData))
+      verify(auditConnector).sendExtendedEvent(auditUpdateRecordEvent)
+    }
+
+    "send an event with reason failure" in {
+
+      val auditEventWithFailure =
+        extendedDataEvent(
+          auditDetailJsonWithFailureReason(
+            Seq("erro-1", "error-2"),
+            auditUpdateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
+          )
+        )
+      when(auditEventFactory.updateRecord(any, any, any, any, any, any)(any))
+        .thenReturn(auditEventWithFailure)
+
+      when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
+
+      val result = await(
+        sut.auditUpdateRecord(
+          updateRecordRequestData,
+          dateTime,
+          "BAD_REQUEST",
+          BAD_REQUEST,
+          Some(Seq("erro-1", "error-2"))
+        )
+      )
+
+      result mustBe Done
+      verify(auditEventFactory)
+        .updateRecord(updateRecordRequestData, dateTime, "BAD_REQUEST", BAD_REQUEST, Some(Seq("erro-1", "error-2")))
       verify(auditConnector).sendExtendedEvent(auditEventWithFailure)
     }
   }
@@ -210,6 +273,26 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
     )
 
+  private def auditUpdateRecordDetailJson(
+    status: String,
+    statusCode: Int,
+    createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
+  ) =
+    removeNulls(
+      Json.obj(
+        "journey"          -> "UpdateRecord",
+        "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
+        "requestDateTime"  -> dateTime,
+        "responseDateTime" -> dateTime,
+        "request"          -> updateRecordRequestData,
+        "outcome"          -> Json.obj(
+          "status"     -> status,
+          "statusCode" -> statusCode
+        ),
+        "response"         -> Some(createOrUpdateRecordResponse)
+      )
+    )
+
   private def auditDetailJsonWithFailureReason(failureReason: Seq[String], eventData: JsObject) =
     eventData
       .transform(
@@ -217,7 +300,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
       .get
 
-  lazy val createRecordResponseData: CreateOrUpdateRecordResponse = Json
+  lazy val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse = Json
     .parse("""
              |{
              |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -288,4 +371,36 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
              |}
              |""".stripMargin)
     .as[CreateRecordRequest]
+
+  lazy val updateRecordRequestData: UpdateRecordRequest =
+    Json
+      .parse("""
+               |{
+               |    "eori": "GB123456789001",
+               |    "actorId": "GB098765432112",
+               |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+               |    "traderRef": "BAN001001",
+               |    "comcode": "10410100",
+               |    "goodsDescription": "Organic bananas",
+               |    "countryOfOrigin": "EC",
+               |    "category": 1,
+               |    "assessments": [
+               |        {
+               |            "assessmentId": "abc123",
+               |            "primaryCategory": 1,
+               |            "condition": {
+               |                "type": "abc123",
+               |                "conditionId": "Y923",
+               |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+               |                "conditionTraderText": "Excluded product"
+               |            }
+               |        }
+               |    ],
+               |    "supplementaryUnit": 500,
+               |    "measurementUnit": "Square metre (m2)",
+               |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+               |}
+               |""".stripMargin)
+      .as[UpdateRecordRequest]
 }

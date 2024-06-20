@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
+import org.apache.pekko.Done
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
@@ -47,18 +49,22 @@ class UpdateRecordServiceSpec
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  private val correlationId = "1234-5678-9012"
-  private val eoriNumber    = "GB123456789011"
-  private val connector     = mock[UpdateRecordConnector]
-  private val uuidService   = mock[UuidService]
+  private val correlationId   = "1234-5678-9012"
+  private val eoriNumber      = "GB123456789011"
+  private val connector       = mock[UpdateRecordConnector]
+  private val uuidService     = mock[UuidService]
+  private val auditService    = mock[AuditService]
+  private val dateTimeService = mock[DateTimeService]
+  private val dateTime        = Instant.parse("2021-12-17T09:30:47Z")
 
-  private val sut = new UpdateRecordService(connector, uuidService)
+  private val sut = new UpdateRecordService(connector, uuidService, auditService, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
     reset(connector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
+    when(dateTimeService.timestamp).thenReturn(dateTime)
   }
 
   "updateRecord" should {
@@ -66,17 +72,21 @@ class UpdateRecordServiceSpec
       val eisResponse = createOrUpdateRecordResponseData
       when(connector.updateRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
+      when(auditService.auditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
       val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
 
       result.value mustBe eisResponse
       verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
+      verify(auditService)
+        .auditUpdateRecord(updateRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
 
     "dateTime value should be formatted to yyyy-mm-dd'T'hh:mm:ssZ" in {
       val eisResponse = createOrUpdateRecordResponseData
       when(connector.updateRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
+      when(auditService.auditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
       val invalidFormattedDate = Instant.parse("2024-11-18T23:20:19.1324564Z")
       val result               =
@@ -94,7 +104,8 @@ class UpdateRecordServiceSpec
 
       result.value mustBe eisResponse
       verify(connector).updateRecord(eqTo(expectedpayload), eqTo(correlationId))(any)
-
+      verify(auditService)
+        .auditUpdateRecord(updateRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
     "return an internal server error" when {
 
@@ -106,6 +117,14 @@ class UpdateRecordServiceSpec
         val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
 
         result.left.value mustBe badRequestErrorResponse
+        verify(auditService)
+          .auditUpdateRecord(
+            updateRecordRequest,
+            dateTime.toString,
+            "BAD_REQUEST",
+            BAD_REQUEST,
+            Some(Seq("internal error 1", "internal error 2"))
+          )
       }
 
       "error when an exception is thrown" in {
@@ -117,6 +136,14 @@ class UpdateRecordServiceSpec
         result.left.value mustBe InternalServerErrorResponse(
           ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
         )
+
+        verify(auditService)
+          .auditUpdateRecord(
+            updateRecordRequest,
+            dateTime.toString,
+            "UNEXPECTED_ERROR",
+            INTERNAL_SERVER_ERROR
+          )
       }
 
     }

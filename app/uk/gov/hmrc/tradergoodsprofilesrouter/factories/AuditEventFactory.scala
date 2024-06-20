@@ -22,7 +22,8 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory.AuditOutcome
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditUpdateRecordDetails
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -35,7 +36,7 @@ class AuditEventFactory @Inject() (
   private val auditSource = "trader-goods-profiles-router"
   private val auditType   = "ManageGoodsRecord"
 
-  def createRemoveRecord(
+  def removeRecord(
     eori: String,
     recordId: String,
     actorId: String,
@@ -76,6 +77,32 @@ class AuditEventFactory @Inject() (
       responseDateTime = dateTimeService.timestamp.asStringSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),
       request = createRecordRequest,
+      response = createOrUpdateRecordResponse
+    )
+
+    ExtendedDataEvent(
+      auditSource = auditSource,
+      auditType = auditType,
+      tags = hc.toAuditTags(),
+      detail = Json.toJson(auditDetails)
+    )
+  }
+
+  def updateRecord(
+    updateRecordRequest: UpdateRecordRequest,
+    requestedDateTime: String,
+    status: String,
+    statusCode: Int,
+    failureReason: Option[Seq[String]] = None,
+    createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
+  )(implicit hc: HeaderCarrier): ExtendedDataEvent = {
+
+    val auditDetails = AuditUpdateRecordDetails(
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      requestDateTime = requestedDateTime,
+      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      outcome = AuditOutcome(status, statusCode, failureReason),
+      request = updateRecordRequest,
       response = createOrUpdateRecordResponse
     )
 
