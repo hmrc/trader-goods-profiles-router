@@ -157,6 +157,7 @@ object ApplicationConstants {
   val InvalidOrMissingUkimsNumberCode                          = "033"
   val InvalidOrMissingNirmsNumberCode                          = "034"
   val InvalidOrMissingNiphlNumberCode                          = "035"
+  val InvalidRequestAdviceNumberCode                           = "1015"
 
   val InvalidOrMissingCorrelationIdCode      = "E001"
   val InvalidOrMissingRequestDateCode        = "E002"

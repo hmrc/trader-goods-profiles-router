@@ -138,7 +138,14 @@ class RequestAdviceServiceSpec
           Json.obj(
             "correlationId" -> correlationId,
             "code"          -> "BAD_REQUEST",
-            "message"       -> "There is an ongoing advice request and a new request cannot be requested."
+            "message"       -> "Bad Request",
+            "errors"        -> Json.arr(
+              Json.obj(
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "There is an ongoing advice request and a new request cannot be requested.",
+                "errorNumber" -> 1015
+              )
+            )
           )
         )
       }

@@ -28,9 +28,9 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RequestAdviceConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.AdviceStatuses.AllowedAdviceStatuses
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{AdviceRequestRejectionMessage, BadRequestCode, UnexpectedErrorCode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{AdviceRequestRejectionMessage, BadRequestCode, BadRequestMessage, InvalidRequestAdviceNumberCode, InvalidRequestParameters, UnexpectedErrorCode}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -85,7 +85,22 @@ class RequestAdviceService @Inject() (
     if (AllowedAdviceStatuses.contains(adviceStatus.toLowerCase)) {
       Right(())
     } else {
-      Left(Conflict(Json.toJson(ErrorResponse(uuidService.uuid, BadRequestCode, AdviceRequestRejectionMessage))))
+      Left(
+        Conflict(
+          Json.toJson(
+            ErrorResponse(
+              uuidService.uuid,
+              BadRequestCode,
+              BadRequestMessage,
+              Some(
+                Seq(
+                  Error(InvalidRequestParameters, AdviceRequestRejectionMessage, InvalidRequestAdviceNumberCode.toInt)
+                )
+              )
+            )
+          )
+        )
+      )
     }
 
   private def createNewTraderDetails(
