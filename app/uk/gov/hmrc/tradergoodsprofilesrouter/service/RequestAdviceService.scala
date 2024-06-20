@@ -22,14 +22,15 @@ import play.api.Logging
 import play.api.http.Status.CREATED
 import play.api.libs.json.Json
 import play.api.mvc.Result
-import play.api.mvc.Results.InternalServerError
+import play.api.mvc.Results.{Conflict, InternalServerError}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RequestAdviceConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.AdviceStatuses.AllowedAdviceStatuses
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{AdviceRequestRejectionMessage, BadRequestCode, BadRequestMessage, InvalidRequestAdviceNumberCode, InvalidRequestParameters, UnexpectedErrorCode}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,6 +48,9 @@ class RequestAdviceService @Inject() (
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] =
     for {
       goodsItemRecord <- routerService.fetchRecord(eori, recordId)
+      _               <- EitherT
+                           .fromEither[Future](isValidAdviceStatus(goodsItemRecord.adviceStatus))
+                           .leftMap(e => e)
       _               <- connectorRequest(createNewTraderDetails(eori, goodsItemRecord, request))
     } yield CREATED
 
@@ -76,6 +80,28 @@ class RequestAdviceService @Inject() (
         }
     )
   }
+
+  private def isValidAdviceStatus(adviceStatus: String): Either[Result, Unit] =
+    if (AllowedAdviceStatuses.contains(adviceStatus.toLowerCase)) {
+      Right(())
+    } else {
+      Left(
+        Conflict(
+          Json.toJson(
+            ErrorResponse(
+              uuidService.uuid,
+              BadRequestCode,
+              BadRequestMessage,
+              Some(
+                Seq(
+                  Error(InvalidRequestParameters, AdviceRequestRejectionMessage, InvalidRequestAdviceNumberCode.toInt)
+                )
+              )
+            )
+          )
+        )
+      )
+    }
 
   private def createNewTraderDetails(
     eori: String,
