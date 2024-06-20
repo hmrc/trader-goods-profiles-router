@@ -32,10 +32,10 @@ case class MaintainProfileResponse(
 
 object MaintainProfileResponse {
   // TODO: This will need to be removed once EIS/B&T make the same validation on their side
-  private def removeLeadingDashes(niphlsNumber: Option[String]): Option[String] =
-    niphlsNumber match {
-      case Some(niphls) => Some(niphls.dropWhile(_ == '-'))
-      case None         => None
+  private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
+    niphlNumber match {
+      case Some(niphl) => Some(niphl.dropWhile(_ == '-'))
+      case None        => None
     }
 
   implicit val reads: Reads[MaintainProfileResponse] =

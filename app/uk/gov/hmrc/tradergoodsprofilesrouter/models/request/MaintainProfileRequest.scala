@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsPath, OWrites, Reads}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validNiphls}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validNiphl}
 
 import scala.Function.unlift
 
@@ -37,7 +37,7 @@ object MaintainProfileRequest {
       (JsPath \ "ukimsNumber").read(lengthBetween(32, 32)) and
       (JsPath \ "nirmsNumber").readNullable(lengthBetween(13, 13)) and
       (JsPath \ "niphlNumber")
-        .readNullable(validNiphls))(MaintainProfileRequest.apply _)
+        .readNullable(validNiphl))(MaintainProfileRequest.apply _)
 
   implicit lazy val writes: OWrites[MaintainProfileRequest] =
     ((JsPath \ "actorId").write[String] and

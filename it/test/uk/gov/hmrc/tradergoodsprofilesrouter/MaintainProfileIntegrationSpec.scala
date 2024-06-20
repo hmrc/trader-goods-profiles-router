@@ -178,7 +178,7 @@ class MaintainProfileIntegrationSpec
       |"actorId":"GB098765432112",
       |"ukimsNumber":"XIUKIM47699357400020231115081800",
       |"nirmsNumber":"RMS-GB-123456",
-      |"niphlNumber": "S123456"
+      |"niphlNumber": "SM12345"
       |}
       |""".stripMargin
 
