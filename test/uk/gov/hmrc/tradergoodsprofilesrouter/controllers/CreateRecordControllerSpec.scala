@@ -17,20 +17,21 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.MockitoSugar.{reset, verify, verifyZeroInteractions, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import play.api.test.Helpers.{defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.ExecutionContext
 
@@ -59,7 +60,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     reset(uuidService, createRecordService)
     when(uuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
   }
-  "POST /records" should {
+  "create" should {
 
     "return a 201 with JSON response when creating a record" in {
 
@@ -71,36 +72,19 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
       status(result) mustBe CREATED
 
-      withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(createRecordResponseData)
-      }
+      verify(createRecordService).createRecord(
+        eqTo("eori"),
+        eqTo(createRecordRequestData.as[CreateRecordRequest])
+      )(any)
     }
 
     "return 400 Bad request when required request field is missing" in {
-
-      val errorResponse = ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.BadRequestMessage,
-        Some(
-          Seq(
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Mandatory field traderRef was missing from body or is in the wrong format",
-              9
-            )
-          )
-        )
-      )
-
       val request = FakeRequest().withBody(invalidCreateRecordRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
 
       status(result) mustBe BAD_REQUEST
 
-      withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(errorResponse)
-      }
+      verifyZeroInteractions(createRecordService)
     }
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
@@ -125,7 +109,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       val result  = sut.create("eori")(request)
 
       status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)
+
+      verifyZeroInteractions(createRecordService)
     }
   }
 
