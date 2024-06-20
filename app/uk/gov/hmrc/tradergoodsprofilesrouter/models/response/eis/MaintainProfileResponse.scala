@@ -31,18 +31,26 @@ case class MaintainProfileResponse(
 )
 
 object MaintainProfileResponse {
+  // TODO: This will need to be removed once EIS/B&T make the same validation on their side
+  private def removeLeadingDashes(niphlsNumber: Option[String]): Option[String] =
+    niphlsNumber match {
+      case Some(niphls) => Some(niphls.dropWhile(_ == '-'))
+      case None         => None
+    }
 
   implicit val reads: Reads[MaintainProfileResponse] =
     ((JsPath \ "eori").read[String] and
       (JsPath \ "actorId").read[String] and
       (JsPath \ "ukimsNumber").readNullable[String] and
       (JsPath \ "nirmsNumber").readNullable[String] and
-      (JsPath \ "niphlsNumber").readNullable[String])(MaintainProfileResponse.apply _)
+      (JsPath \ "niphlNumber").readNullable[String])(MaintainProfileResponse.apply _)
 
   implicit lazy val writes: OWrites[MaintainProfileResponse] =
     ((JsPath \ "eori").write[String] and
       (JsPath \ "actorId").write[String] and
       (JsPath \ "ukimsNumber").writeNullable[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlsNumber").writeNullable[String])(unlift(MaintainProfileResponse.unapply))
+      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes))(
+      unlift(MaintainProfileResponse.unapply)
+    )
 }

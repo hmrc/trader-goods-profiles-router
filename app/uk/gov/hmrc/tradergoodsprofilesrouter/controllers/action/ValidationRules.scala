@@ -114,6 +114,8 @@ object ValidationRules {
 
   private val actorIdPattern: Regex = raw"[A-Z]{2}\d{12,15}".r
   private val comcodePattern: Regex = raw".{6}(.{2}(.{2})?)?".r
+  private val niphlsPattern: Regex  = """^\d{4}$|^\d{5}$|^\d{6}$|^[A-Za-z]\d{5}$|^[A-Za-z]\d{6}$""".r
+//  private val niphlsPattern: Regex  = raw"^\d{4}$|^\d{5}$|^\d{6}$|^[A-Za-z]\d{5}$|^[A-Za-z]\d{6}".r
 
   def isValidCountryCode(rawCountryCode: String): Boolean =
     Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)
@@ -129,6 +131,8 @@ object ValidationRules {
     val validComcode: Reads[String] = verifying(isValidComcode)
 
     val validEmailAddress: Reads[String] = verifying(isValidEmailAddress)
+
+    val validNiphls: Reads[String] = verifying(isValidNiphls)
   }
 
   def isValidEmailAddress(emailAddress: String): Boolean = emailValidator.isValid(emailAddress)
@@ -136,6 +140,8 @@ object ValidationRules {
   def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
 
   def isValidComcode(comcode: String): Boolean = comcodePattern.matches(comcode)
+
+  def isValidNiphls(niphls: String): Boolean = niphlsPattern.matches(niphls)
 
   private def extractSimplePaths(
     errors: scala.collection.Seq[(JsPath, collection.Seq[JsonValidationError])]
