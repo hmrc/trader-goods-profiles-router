@@ -27,7 +27,7 @@ import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, LegacyHttpReader}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
@@ -75,14 +75,6 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
         "dummyMaintainProfileBearerToken"
       )
     )
-
-  def legacyVerifyExecuteWithParams(expectedCorrelationId: String) = {
-    val captor = ArgCaptor[LegacyHttpReader[Either[Result, GetEisRecordsResponse]]]
-    verify(requestBuilder).execute(captor.capture, any)
-
-    val httpReader = captor.value
-    httpReader.correlationId mustBe expectedCorrelationId
-  }
 
   def verifyExecuteWithParams(expectedCorrelationId: String) = {
     val captor = ArgCaptor[HttpReader[Either[Result, GetEisRecordsResponse]]]

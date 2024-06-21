@@ -24,11 +24,12 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.MaintainProfileConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, MaintainProfileConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -62,39 +63,31 @@ class MaintainProfileServiceSpec
       when(connector.maintainProfile(any, any)(any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
 
-      val result = service.maintainProfile(eori, maintainProfileRequest)
+      val result = await(service.maintainProfile(eori, maintainProfileRequest))
 
-      whenReady(result.value) {
-        _.value shouldBe maintainProfileResponse
-      }
+      result.value shouldBe maintainProfileResponse
     }
 
     "return an bad request when EIS return a bad request" in {
+      val badRequestErrorResponse = createEisErrorResponse
+
       when(connector.maintainProfile(any, any)(any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+        .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-      val result = service.maintainProfile(eori, maintainProfileRequest)
+      val result = await(service.maintainProfile(eori, maintainProfileRequest))
 
-      whenReady(result.value) {
-        _.left.value shouldBe BadRequest("error")
-      }
+      result.left.value shouldBe badRequestErrorResponse
     }
 
     "return an internal server error when EIS returns one" in {
       when(connector.maintainProfile(any, any)(any))
-        .thenReturn(Future.failed(new RuntimeException("run time exception")))
+        .thenReturn(Future.failed(new RuntimeException("error")))
 
-      val result = service.maintainProfile(eori, maintainProfileRequest)
+      val result = await(service.maintainProfile(eori, maintainProfileRequest))
 
-      whenReady(result.value) {
-        _.left.value shouldBe InternalServerError(
-          Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "run time exception"
-          )
-        )
-      }
+      result.left.value shouldBe InternalServerErrorResponse(
+        ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+      )
     }
 
     lazy val maintainProfileRequest: MaintainProfileRequest =
@@ -124,4 +117,19 @@ class MaintainProfileServiceSpec
         .as[MaintainProfileResponse]
 
   }
+
+  private def createEisErrorResponse =
+    BadRequestErrorResponse(
+      ErrorResponse(
+        correlationId,
+        "BAD_REQUEST",
+        "BAD_REQUEST",
+        Some(
+          Seq(
+            Error("INTERNAL_ERROR", "internal error 1", 6),
+            Error("INTERNAL_ERROR", "internal error 2", 8)
+          )
+        )
+      )
+    )
 }

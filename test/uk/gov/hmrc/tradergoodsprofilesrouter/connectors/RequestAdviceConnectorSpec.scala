@@ -26,7 +26,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.LegacyStatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
@@ -75,7 +75,7 @@ class RequestAdviceConnectorSpec extends BaseConnectorSpec {
     }
 
     "send a request to EIS with the right parameters" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(200)))
 
       val traderDetails = TraderDetails("eori", "any-name", None, "sample@sample.com", "ukims", Seq.empty)
@@ -122,7 +122,7 @@ class RequestAdviceConnectorSpec extends BaseConnectorSpec {
         |""".stripMargin)
 
   private def verifyExecuteHttpRequest(expectedCorrelationId: String) = {
-    val captor = ArgCaptor[LegacyStatusHttpReader]
+    val captor = ArgCaptor[StatusHttpReader]
     verify(requestBuilder).execute(captor.capture, any)
 
     val httpReader = captor.value

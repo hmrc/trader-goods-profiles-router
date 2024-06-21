@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -31,7 +30,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRecordsDataSupport {
 
@@ -75,7 +74,7 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
 
     "return a 201 Ok response on creating accreditation" in {
       when(mockRequestAdviceService.requestAdvice(any, any, any)(any))
-        .thenReturn(EitherT.rightT(CREATED))
+        .thenReturn(Future.successful(Right(CREATED)))
 
       val result = sut.requestAdvice(eori, recordId)(
         FakeRequest().withBody(requestAccreditationData).withHeaders(validHeaders: _*)

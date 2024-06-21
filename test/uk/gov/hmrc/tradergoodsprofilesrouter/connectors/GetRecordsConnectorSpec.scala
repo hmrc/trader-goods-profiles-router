@@ -80,7 +80,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken"): _*)
-      legacyVerifyExecuteWithParams(correlationId)
+      verifyExecuteWithParams(correlationId)
     }
   }
 
@@ -108,7 +108,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     "send a request with the right url for fetch records" in {
       val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
 
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
       await(connector.fetchRecords(eori, correlationId, Some(timestamp), Some(1), Some(1)))
@@ -118,7 +118,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
         s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken"): _*)
-      legacyVerifyExecuteWithParams(correlationId)
+      verifyExecuteWithParams(correlationId)
     }
   }
 }

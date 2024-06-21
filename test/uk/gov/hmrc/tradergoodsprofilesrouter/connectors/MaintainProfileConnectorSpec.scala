@@ -51,7 +51,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
 
   "maintain Profile" should {
     "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
-      when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
 
       val result =
@@ -62,7 +62,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyMaintainProfileBearerToken"): _*)
       verify(requestBuilder).withBody(maintainProfileEisRequest)
       verify(requestBuilder).execute(any, any)
-      legacyVerifyExecuteWithParams(correlationId)
+      verifyExecuteWithParams(correlationId)
 
       result.value mustBe maintainProfileResponse
     }

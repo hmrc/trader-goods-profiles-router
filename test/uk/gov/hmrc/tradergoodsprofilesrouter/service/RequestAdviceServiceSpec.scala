@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -25,11 +24,11 @@ import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.CREATED
-import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RequestAdviceConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -67,54 +66,60 @@ class RequestAdviceServiceSpec
   "should successfully send a request advice request to EIS" in {
 
     when(getRecordService.fetchRecord(any, any)(any))
-      .thenReturn(EitherT.rightT(getSingleRecordResponseData))
+      .thenReturn(Future.successful(Right(getSingleRecordResponseData)))
 
     when(connector.requestAdvice(any, any)(any))
       .thenReturn(Future.successful(Right(CREATED)))
 
-    val result = service.requestAdvice(eori, recordId, request)
+    val result = await(service.requestAdvice(eori, recordId, request))
 
-    whenReady(result.value) {
-      _.value shouldBe CREATED
-    }
+    result.value shouldBe CREATED
   }
 
   "should throw an error if fetch record fails" in {}
 
   "return an error" when {
     "connector return an error" in {
+      val badRequestErrorResponse = createEisErrorResponse
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getSingleRecordResponseData))
+        .thenReturn(Future.successful(Right(getSingleRecordResponseData)))
 
       when(connector.requestAdvice(any, any)(any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+        .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-      val result = service.requestAdvice(eori, recordId, request)
+      val result = await(service.requestAdvice(eori, recordId, request))
 
-      whenReady(result.value) {
-        _.left.value mustBe BadRequest("error")
-      }
+      result.left.value mustBe badRequestErrorResponse
     }
 
     "connector throws a run time exception" in {
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getSingleRecordResponseData))
+        .thenReturn(Future.successful(Right(getSingleRecordResponseData)))
 
       when(connector.requestAdvice(any, any)(any))
         .thenReturn(Future.failed(new RuntimeException("error")))
 
-      val result = service.requestAdvice(eori, recordId, request)
+      val result = await(service.requestAdvice(eori, recordId, request))
 
-      whenReady(result.value) {
-        _.left.value mustBe InternalServerError(
-          Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "error"
-          )
-        )
-      }
+      result.left.value mustBe InternalServerErrorResponse(
+        ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+      )
     }
   }
+
+  private def createEisErrorResponse =
+    BadRequestErrorResponse(
+      ErrorResponse(
+        correlationId,
+        "BAD_REQUEST",
+        "BAD_REQUEST",
+        Some(
+          Seq(
+            Error("INTERNAL_ERROR", "internal error 1", 6),
+            Error("INTERNAL_ERROR", "internal error 2", 8)
+          )
+        )
+      )
+    )
 
 }

@@ -16,15 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.CREATED
-import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RequestAdviceConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
@@ -44,37 +39,34 @@ class RequestAdviceService @Inject() (
     eori: String,
     recordId: String,
     request: RequestAdvice
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] =
-    for {
-      goodsItemRecord <- routerService.fetchRecord(eori, recordId)
-      _               <- connectorRequest(createNewTraderDetails(eori, goodsItemRecord, request))
-    } yield CREATED
-
-  private def connectorRequest(
-    request: TraderDetails
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] = {
     val correlationId = uuidService.uuid
-    EitherT(
-      connector
-        .requestAdvice(request, correlationId)
-        .map {
-          case Right(_)        => Right(CREATED)
-          case error @ Left(_) => error
-        }
-        .recover { case ex: Throwable =>
-          logger.error(
-            s"""[RequestAdviceService] - Error when creating accreditation for
-                          correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
 
-          Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
+    routerService
+      .fetchRecord(eori, recordId)
+      .flatMap {
+        case Right(goodsItemRecord) =>
+          connector
+            .requestAdvice(createNewTraderDetails(eori, goodsItemRecord, request), correlationId)
+            .flatMap {
+              case Right(response) => Future.successful(Right(response))
+              case Left(error)     => Future.successful(Left(error))
+            }
+        case Left(error)            => Future.successful(Left(error))
+      }
+      .recover { case ex: Throwable =>
+        logger.error(
+          s"""[RequestAdviceService] - Error when creating accreditation for
+                          correlationId: $correlationId, message: ${ex.getMessage}""",
+          ex
+        )
+
+        Left(
+          InternalServerErrorResponse(
+            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
           )
-        }
-    )
+        )
+      }
   }
 
   private def createNewTraderDetails(

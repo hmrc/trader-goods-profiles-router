@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import play.api.mvc.Result
 import sttp.model.Uri.UriContext
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.LegacyHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -36,19 +35,19 @@ class GetRecordsConnector @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with LegacyEisHttpErrorHandler {
+    with EisHttpErrorHandler {
 
   def fetchRecord(
     eori: String,
     recordId: String,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, GetEisRecordsResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
     val url = s"${appConfig.eisConfig.getRecordsUrl}/$eori/$recordId"
 
     httpClientV2
       .get(url"$url")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
-      .execute(LegacyHttpReader[GetEisRecordsResponse](correlationId, legacyHandleErrorResponse), ec)
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
 
   }
 
@@ -58,7 +57,7 @@ class GetRecordsConnector @Inject() (
     lastUpdatedDate: Option[Instant] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  )(implicit hc: HeaderCarrier): Future[Either[Result, GetEisRecordsResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
 
     val formattedLastUpdateDate: Option[String] = lastUpdatedDate.map(_.asStringSeconds)
     val uri                                     =
@@ -67,7 +66,7 @@ class GetRecordsConnector @Inject() (
     httpClientV2
       .get(url"$uri")
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
-      .execute(LegacyHttpReader[GetEisRecordsResponse](correlationId, legacyHandleErrorResponse), ec)
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
   }
 
 }

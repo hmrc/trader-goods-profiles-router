@@ -16,14 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.InternalServerError
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.GetRecordsConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, GetRecordsConnector, InternalServerErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -37,24 +33,23 @@ class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidServic
 
   def fetchRecord(eori: String, recordId: String)(implicit
     hc: HeaderCarrier
-  ): EitherT[Future, Result, GoodsItemRecords] = {
+  ): Future[Either[EisHttpErrorResponse, GoodsItemRecords]] = {
     val correlationId: String = uuidService.uuid
-    EitherT(
-      eisConnector
-        .fetchRecord(eori, recordId, correlationId)
-        .map {
-          case Right(response) => Right(response.goodsItemRecords.head)
-          case Left(error)     => Left(error)
-        }
-        .recover { case ex: Throwable =>
-          logMessageAndReturnError(
-            correlationId,
-            ex,
-            s"""[GetRecordsService] - Error when fetching a single record for Eori Number: $eori,
+    eisConnector
+      .fetchRecord(eori, recordId, correlationId)
+      .map {
+        case Right(response) => Right(response.goodsItemRecords.head)
+        case Left(error)     => Left(error)
+      }
+      .recover { case ex: Throwable =>
+        logMessageAndReturnError(
+          correlationId,
+          ex,
+          s"""[GetRecordsService] - Error when fetching a single record for Eori Number: $eori,
             s"recordId: $recordId, correlationId: $correlationId, message: ${ex.getMessage}"""
-          )
-        }
-    )
+        )
+      }
+
   }
 
   def fetchRecords(
@@ -64,31 +59,29 @@ class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidServic
     size: Option[Int] = None
   )(implicit
     hc: HeaderCarrier
-  ): EitherT[Future, Result, GetEisRecordsResponse] = {
+  ): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
     val correlationId: String = uuidService.uuid
-    EitherT(
-      eisConnector
-        .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
-        .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
-        }
-        .recover { case ex: Throwable =>
-          logMessageAndReturnError(
-            correlationId,
-            ex,
-            s"""[GetRecordsService] - Error when fetching records for Eori Number: $eori,
+    eisConnector
+      .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
+      .map {
+        case Right(response) => Right(response)
+        case Left(response)  => Left(response)
+      }
+      .recover { case ex: Throwable =>
+        logMessageAndReturnError(
+          correlationId,
+          ex,
+          s"""[GetRecordsService] - Error when fetching records for Eori Number: $eori,
             s"correlationId: $correlationId, message: ${ex.getMessage}"""
-          )
-        }
-    )
+        )
+      }
   }
 
   private def logMessageAndReturnError(correlationId: String, ex: Throwable, logMsg: String) = {
     logger.error(logMsg, ex)
     Left(
-      InternalServerError(
-        Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+      InternalServerErrorResponse(
+        ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
       )
     )
   }

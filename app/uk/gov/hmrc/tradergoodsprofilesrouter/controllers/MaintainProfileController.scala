@@ -21,11 +21,13 @@ import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents, Result}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.fieldsToErrorCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,10 +46,19 @@ class MaintainProfileController @Inject() (
       _                      <- EitherT.fromEither[Future](validateClientId)
       maintainProfileRequest <-
         EitherT.fromEither[Future](validateRequestBody[MaintainProfileRequest](fieldsToErrorCode))
-      response               <- maintainProfileService.maintainProfile(eori, maintainProfileRequest)
+      response               <- maintainProfile(eori, maintainProfileRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge
   }
+
+  private def maintainProfile(
+    eori: String,
+    maintainProfileRequest: MaintainProfileRequest
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, MaintainProfileResponse] =
+    EitherT(
+      maintainProfileService.maintainProfile(eori, maintainProfileRequest)
+    )
+      .leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
 
 }

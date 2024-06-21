@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import play.api.libs.json.Json
-import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.LegacyStatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{RequestEisAccreditationRequest, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -34,11 +33,11 @@ class RequestAdviceConnector @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with LegacyEisHttpErrorHandler {
+    with EisHttpErrorHandler {
 
   def requestAdvice(request: TraderDetails, correlationId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Either[Result, Int]] = {
+  ): Future[Either[EisHttpErrorResponse, Int]] = {
     val url = appConfig.eisConfig.requestAdviceUrl
 
     val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
@@ -46,7 +45,7 @@ class RequestAdviceConnector @Inject() (
       .post(url"$url")
       .setHeader(buildHeadersForAdvice(correlationId, appConfig.eisConfig.requestAdviceBearerToken): _*)
       .withBody(Json.toJson(adviceEisRequest))
-      .execute(LegacyStatusHttpReader(correlationId, legacyHandleErrorResponse), ec)
+      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
   }
 
 }

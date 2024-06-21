@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -31,7 +30,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, Uu
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
 
@@ -54,7 +53,7 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
   "PUT /profile/maintain " should {
     "return a 200 ok when the call to EIS is successful to maintain a record" in {
       when(mockMaintainProfileService.maintainProfile(any, any)(any))
-        .thenReturn(EitherT.rightT(maintainProfileResponse))
+        .thenReturn(Future.successful(Right(maintainProfileResponse)))
 
       val result = sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders(validHeaders: _*))
 
