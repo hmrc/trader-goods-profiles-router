@@ -58,7 +58,7 @@ class GetMultipleRecordsIntegrationSpec
 
         val response = wsClient
           .url(url)
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -72,7 +72,7 @@ class GetMultipleRecordsIntegrationSpec
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records/?lastUpdatedDate=$dateTime&page=1&size=1"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -86,7 +86,7 @@ class GetMultipleRecordsIntegrationSpec
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?page=1&size=1"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -100,7 +100,7 @@ class GetMultipleRecordsIntegrationSpec
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?page=1"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -114,7 +114,7 @@ class GetMultipleRecordsIntegrationSpec
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=$dateTime"))
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -130,7 +130,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -149,7 +149,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -168,7 +168,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -187,7 +187,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -206,7 +206,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -225,7 +225,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -244,7 +244,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -263,7 +263,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -282,7 +282,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -301,7 +301,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -320,7 +320,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -339,7 +339,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -358,7 +358,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -383,7 +383,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -400,7 +400,6 @@ class GetMultipleRecordsIntegrationSpec
         "Bad Request with unexpected error" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
@@ -433,7 +432,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -456,7 +455,6 @@ class GetMultipleRecordsIntegrationSpec
         "Bad Request with unable to parse the detail" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
@@ -487,7 +485,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -503,7 +501,6 @@ class GetMultipleRecordsIntegrationSpec
         "Bad Request with invalid json" in {
           stubFor(
             get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("Content-Type", equalTo("application/json"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
@@ -525,7 +522,7 @@ class GetMultipleRecordsIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -543,7 +540,6 @@ class GetMultipleRecordsIntegrationSpec
 
         val response = wsClient
           .url(url)
-          .withHttpHeaders(("Content-Type", "application/json"))
           .get()
           .futureValue
 
@@ -568,7 +564,7 @@ class GetMultipleRecordsIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/traders/GB123456789015/records"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(("X-Client-ID", "tss"))
             .get()
             .futureValue
 
@@ -587,7 +583,7 @@ class GetMultipleRecordsIntegrationSpec
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(("X-Client-ID", "tss"))
             .get()
             .futureValue
 
@@ -608,7 +604,7 @@ class GetMultipleRecordsIntegrationSpec
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=wrong-format"))
-        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+        .withHttpHeaders(("X-Client-ID", "tss"))
         .get()
         .futureValue
 
@@ -634,7 +630,6 @@ class GetMultipleRecordsIntegrationSpec
       uri"$connectorPath/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
     stubFor(
       get(urlEqualTo(s"$uri"))
-        .withHeader("Content-Type", equalTo("application/json"))
         .withHeader("X-Forwarded-Host", equalTo("MDTP"))
         .withHeader("X-Correlation-ID", equalTo(correlationId))
         .withHeader("Date", equalTo(timestamp))

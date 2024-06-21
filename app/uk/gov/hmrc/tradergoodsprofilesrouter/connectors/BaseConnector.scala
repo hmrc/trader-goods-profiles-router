@@ -28,23 +28,28 @@ trait BaseConnector {
   def appConfig: AppConfig
   def dateTimeService: DateTimeService
 
-  def buildHeaders(correlationId: String, accessToken: String)(implicit
+  def buildHeaders(correlationId: String, accessToken: String, method: String)(implicit
     hc: HeaderCarrier
-  ): Seq[(String, String)] =
-    Seq(
+  ): Seq[(String, String)] = {
+    val headers = Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> appConfig.eisConfig.forwardedHost,
-      HeaderNames.ContentType   -> MimeTypes.JSON,
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
       HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
       HeaderNames.Authorization -> accessToken
     )
 
+    method match {
+      case "GET" => headers
+      case _     => headers :+ (HeaderNames.ContentType -> MimeTypes.JSON)
+    }
+  }
+
   def buildHeadersForAdvice(correlationId: String, bearerToken: String)(implicit
     hc: HeaderCarrier
   ): Seq[(String, String)] =
-    buildHeaders(correlationId, bearerToken).filterNot(elm =>
+    buildHeaders(correlationId, bearerToken, "POST").filterNot(elm =>
       elm == HeaderNames.ClientId -> hc.headers(Seq(HeaderNames.ClientId)).head._2
     )
 

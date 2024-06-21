@@ -50,7 +50,7 @@ class CreateRecordConnector @Inject() (
 
       httpClientV2
         .post(url"$url")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken): _*)
+        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.createRecordBearerToken, "POST"): _*)
         .withBody(Json.toJson(payload))
         .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
     }

@@ -76,7 +76,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
 
     val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
     verify(httpClientV2).put(url"$expectedUrl")
-    verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
+    verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken", "PUT"): _*)
     verify(requestBuilder)
       .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
     verifyExecuteWithParamsType(correlationId)

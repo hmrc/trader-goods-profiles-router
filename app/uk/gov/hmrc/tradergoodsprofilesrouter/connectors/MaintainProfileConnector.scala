@@ -48,7 +48,7 @@ class MaintainProfileConnector @Inject() (
       val url = appConfig.eisConfig.maintainProfileUrl
       httpClientV2
         .put(url"$url")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
+        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken, "PUT"): _*)
         .withBody(Json.toJson(request))
         .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
     }

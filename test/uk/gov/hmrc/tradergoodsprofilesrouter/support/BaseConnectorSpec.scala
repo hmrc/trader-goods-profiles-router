@@ -44,15 +44,21 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   val requestBuilder: RequestBuilder   = mock[RequestBuilder]
   val dateTimeService: DateTimeService = mock[DateTimeService]
 
-  def expectedHeader(correlationId: String, accessToken: String) = Seq(
-    "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> "MDTP",
-    "Content-Type"     -> MimeTypes.JSON,
-    "Accept"           -> MimeTypes.JSON,
-    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-    "X-Client-ID"      -> "TSS",
-    "Authorization"    -> s"Bearer $accessToken"
-  )
+  def expectedHeader(correlationId: String, accessToken: String, method: String) = {
+    val headers = Seq(
+      "X-Correlation-ID" -> correlationId,
+      "X-Forwarded-Host" -> "MDTP",
+      "Accept"           -> MimeTypes.JSON,
+      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+      "X-Client-ID"      -> "TSS",
+      "Authorization"    -> s"Bearer $accessToken"
+    )
+
+    method match {
+      case "GET" => headers
+      case _     => headers :+ ("Content-Type" -> MimeTypes.JSON)
+    }
+  }
 
   def setUpAppConfig(): Unit =
     when(appConfig.eisConfig).thenReturn(

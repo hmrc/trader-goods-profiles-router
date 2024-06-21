@@ -46,7 +46,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec wit
     setUpMetrics()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
 
   "fetchRecord" should {
@@ -84,7 +84,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec wit
 
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken"): _*)
+      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken", "GET"): _*)
       verifyExecuteWithParams(correlationId)
     }
 
@@ -127,7 +127,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec wit
       val expectedUrl            =
         s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
-      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken"): _*)
+      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordGetBearerToken", "GET"): _*)
       verifyExecuteWithParams(correlationId)
     }
   }

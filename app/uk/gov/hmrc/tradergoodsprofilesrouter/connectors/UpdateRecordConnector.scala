@@ -50,7 +50,7 @@ class UpdateRecordConnector @Inject() (
 
       httpClientV2
         .put(url"$url")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.updateRecordBearerToken): _*)
+        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.updateRecordBearerToken, "PUT"): _*)
         .withBody(toJson(payload))
         .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
     }
