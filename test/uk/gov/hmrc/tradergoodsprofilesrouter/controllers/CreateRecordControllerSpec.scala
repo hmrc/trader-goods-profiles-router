@@ -30,7 +30,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecor
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, HeaderNames}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -87,23 +87,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
-
-      val expectedErrorResponse =
-        ErrorResponse(
-          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          "BAD_REQUEST",
-          "Bad Request",
-          Some(
-            Seq(
-              Error(
-                "INVALID_HEADER",
-                "Missing mandatory header X-Client-ID",
-                6000
-              )
-            )
-          )
-        )
-
       val request = FakeRequest().withBody(createRecordRequestData)
       val result  = sut.create("eori")(request)
 

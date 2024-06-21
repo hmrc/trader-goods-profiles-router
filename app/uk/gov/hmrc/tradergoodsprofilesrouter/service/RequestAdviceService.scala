@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import com.google.inject.Inject
 import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, RequestAdviceConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{ConflictErrorResponse, EisHttpErrorResponse, InternalServerErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
@@ -47,12 +47,10 @@ class RequestAdviceService @Inject() (
       .fetchRecord(eori, recordId)
       .flatMap {
         case Right(goodsItemRecord) =>
-          connector
-            .requestAdvice(createNewTraderDetails(eori, goodsItemRecord, request), correlationId)
-            .flatMap {
-              case Right(response) => Future.successful(Right(response))
-              case Left(error)     => Future.successful(Left(error))
-            }
+          validateAndRequestAdvice(eori, goodsItemRecord, request, correlationId).flatMap {
+            case Right(response) => Future.successful(Right(response))
+            case Left(error)     => Future.successful(Left(error))
+          }
         case Left(error)            => Future.successful(Left(error))
       }
       .recover { case ex: Throwable =>
@@ -70,13 +68,25 @@ class RequestAdviceService @Inject() (
       }
   }
 
-  private def isValidAdviceStatus(adviceStatus: String): Either[Result, Unit] =
-    if (AllowedAdviceStatuses.contains(adviceStatus.toLowerCase)) {
-      Right(())
+  private def validateAndRequestAdvice(
+    eori: String,
+    goodsItemRecord: GoodsItemRecords,
+    request: RequestAdvice,
+    correlationId: String
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[Either[EisHttpErrorResponse, Int]] =
+    if (AllowedAdviceStatuses.contains(goodsItemRecord.adviceStatus.toLowerCase)) {
+      connector
+        .requestAdvice(createNewTraderDetails(eori, goodsItemRecord, request), correlationId)
+        .flatMap {
+          case Right(response) => Future.successful(Right(response))
+          case Left(error)     => Future.successful(Left(error))
+        }
     } else {
-      Left(
-        Conflict(
-          Json.toJson(
+      Future.successful(
+        Left(
+          ConflictErrorResponse(
             ErrorResponse(
               uuidService.uuid,
               BadRequestCode,

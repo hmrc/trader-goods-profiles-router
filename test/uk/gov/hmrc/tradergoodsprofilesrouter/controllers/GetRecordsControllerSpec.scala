@@ -66,7 +66,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return a successful JSON response for a single record" in {
 
-      when(getRecordsSrvice.fetchRecord(any, any)(any))
+      when(getRecordsService.fetchRecord(any, any)(any))
         .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(
@@ -92,7 +92,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
         ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
       )
 
-      when(getRecordsSrvice.fetchRecord(any, any)(any))
+      when(getRecordsService.fetchRecord(any, any)(any))
         .thenReturn(Future.successful(Left(errorResponseJson)))
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(
@@ -113,7 +113,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return a successful JSON response for a multiple records with optional query parameters" in {
 
-      when(getRecordsSrvice.fetchRecords(any, any, any, any)(any))
+      when(getRecordsService.fetchRecords(any, any, any, any)(any))
         .thenReturn(Future.successful(Right(getMultipleRecordResponseData())))
 
       val result = sut.getTGPRecords(eoriNumber, Some("2021-12-17T09:30:47.456Z"), Some(1), Some(1))(
@@ -127,7 +127,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return a successful JSON response for a multiple records without optional query parameters" in {
 
-      when(getRecordsSrvice.fetchRecords(any, any, any, any)(any))
+      when(getRecordsService.fetchRecords(any, any, any, any)(any))
         .thenReturn(Future.successful(Right(getMultipleRecordResponseData(eoriNumber))))
 
       val result = sut.getTGPRecords(eoriNumber)(
@@ -154,7 +154,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
           ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
         )
 
-        when(getRecordsSrvice.fetchRecords(any, any, any, any)(any))
+        when(getRecordsService.fetchRecords(any, any, any, any)(any))
           .thenReturn(Future.successful(Left(errorResponseJson)))
 
         val result = sut.getTGPRecords(eoriNumber)(
@@ -171,7 +171,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
 
       "lastUpdateDate is not a date" in {
-        when(getRecordsSrvice.fetchRecords(any, any, any, any)(any))
+        when(getRecordsService.fetchRecords(any, any, any, any)(any))
           .thenReturn(Future.successful(Right(getMultipleRecordResponseData())))
 
         val result = sut.getTGPRecords(eoriNumber, Some("not-a-date"), Some(1), Some(1))(

@@ -46,7 +46,6 @@ class GetRecordsConnector @Inject() (
     recordId: String,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] =
-
     withMetricsTimerAsync("tgp.getrecord.connector") { _ =>
       val url = s"${appConfig.eisConfig.getRecordsUrl}/$eori/$recordId"
 

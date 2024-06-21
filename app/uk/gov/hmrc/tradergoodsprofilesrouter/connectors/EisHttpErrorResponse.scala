@@ -45,3 +45,6 @@ case class ServiceUnavailableErrorResponse(override val errorResponse: ErrorResp
 case class InternalServerErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
   override val status: Int = INTERNAL_SERVER_ERROR
 }
+case class ConflictErrorResponse(override val errorResponse: ErrorResponse) extends EisHttpErrorResponse {
+  override val status: Int = CONFLICT
+}
