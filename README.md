@@ -21,6 +21,35 @@ For sbt:
 sbt run
 ```
 
+### Test the API locally
+
+Notice: You can use the run_local.sh script file to load all needed services and start the trader-goods-profiles service.
+#### Start the services
+* Open a terminal window, type the below command and press enter. This will load locally all the auth services necessary for testing :
+
+    ```
+    sm2 --start AUTH_ALL
+    ```
+
+#### Generate an access token
+* Use the [Auth wizard](http://localhost:9949/auth-login-stub/gg-sign-in)
+    * Fill the following details:
+      <br><br>
+
+      **Redirect Url**: http://localhost:9949/auth-login-stub/session <br>
+      **Affinity Group**: Organisation or Individual<br>
+      **Enrolment Key**: HMRC-CUS-ORG <br>
+      **Identifier Name**: EORINumber <br>
+      **Identifier Value**: GB123456789001 (or any thing else similer). Refer to the service guide to get a list of EROI
+      number suitable for test or look at the stubs [README.md file](https://github.com/hmrc/trader-goods-profiles-stubs/blob/main/README.md)
+      <br><br>
+* Press submit. This will redirect to a new page showing an access token.
+* Copy the Bearer token
+
+* In the Authorization tab select **Bearer Token** as **Auth Type**
+* Add the access token create on [this step](#generate-an-access-token)
+* Add the right url
+* Send the request.
 
 ## API
 

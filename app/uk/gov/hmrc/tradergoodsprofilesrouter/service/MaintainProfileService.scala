@@ -40,7 +40,13 @@ class MaintainProfileService @Inject() (connector: MaintainProfileConnector, uui
     hc: HeaderCarrier
   ): EitherT[Future, Result, MaintainProfileResponse] = {
     val eisRequest    =
-      MaintainProfileEisRequest(eori, request.actorId, request.ukimsNumber, request.nirmsNumber, request.niphlNumber)
+      MaintainProfileEisRequest(
+        eori,
+        request.actorId,
+        request.ukimsNumber,
+        request.nirmsNumber,
+        padNiphlNumber(request.niphlNumber)
+      )
     val correlationId = uuidService.uuid
 
     EitherT(
@@ -64,4 +70,13 @@ class MaintainProfileService @Inject() (connector: MaintainProfileConnector, uui
         }
     )
   }
+
+  // TODO: This will need to be removed once EIS / B&T make the same validation on their side
+  private def padNiphlNumber(niphlNumber: Option[String]): Option[String] =
+    niphlNumber match {
+      case Some(niphl) =>
+        if (niphl.length >= 8) Some(niphl)
+        else Some("-" * (8 - niphl.length) + niphl)
+      case None        => None
+    }
 }
