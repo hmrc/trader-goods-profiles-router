@@ -37,7 +37,7 @@ import scala.util.Try
 class GetRecordsController @Inject() (
   authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
-  getRecordSErvice: GetRecordsService,
+  getRecordService: GetRecordsService,
   override val uuidService: UuidService
 )(implicit val ec: ExecutionContext)
     extends BackendBaseController

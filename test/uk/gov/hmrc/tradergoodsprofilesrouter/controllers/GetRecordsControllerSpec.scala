@@ -39,17 +39,17 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  private val getRecordsSrvice = mock[GetRecordsService]
-  private val uuidService      = mock[UuidService]
-  private val eoriNumber       = "GB123456789001"
-  private val correlationId    = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val recordId         = UUID.randomUUID().toString
+  private val getRecordsService = mock[GetRecordsService]
+  private val uuidService       = mock[UuidService]
+  private val eoriNumber        = "GB123456789001"
+  private val correlationId     = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val recordId          = UUID.randomUUID().toString
 
   private val sut =
     new GetRecordsController(
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
-      getRecordsSrvice,
+      getRecordsService,
       uuidService
     )
 
@@ -67,14 +67,14 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     "return a successful JSON response for a single record" in {
 
       when(getRecordsSrvice.fetchRecord(any, any)(any))
-        .thenReturn(Future.successful(Right(getSingleRecordResponseData)))
+        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
       withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(getSingleRecordResponseData)
+        contentAsJson(result) mustBe Json.toJson(getResponseDataWithAccreditationStatus())
       }
     }
 

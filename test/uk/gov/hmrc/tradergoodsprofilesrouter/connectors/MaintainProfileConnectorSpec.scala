@@ -25,12 +25,12 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, MetricsSupportSpec}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class MaintainProfileConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec {
+class MaintainProfileConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
 
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")

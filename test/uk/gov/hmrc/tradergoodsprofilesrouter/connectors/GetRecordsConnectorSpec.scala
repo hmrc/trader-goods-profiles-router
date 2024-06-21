@@ -23,12 +23,12 @@ import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetRecordsDataSupport, MetricsSupportSpec}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec, GetRecordsDataSupport}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class GetRecordsConnectorSpec extends BaseConnectorSpec with MetricsSupportSpec with GetRecordsDataSupport {
+class GetRecordsConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec with GetRecordsDataSupport {
 
   private val eori                  = "GB123456789011"
   private val recordId              = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"

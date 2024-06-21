@@ -89,6 +89,7 @@ object ApplicationConstants {
   val RecordRemovedAndCanNotBeUpdatedMessage               = "This record has been removed and cannot be updated"
   val AdviceRequestInProgressMessage                       =
     "There is an ongoing accreditation request and the record can not be updated"
+  val AdviceRequestRejectionMessage                        = "There is an ongoing advice request and a new request cannot be requested."
 
   val InvalidOrMissingCorrelationID      =
     "X-Correlation-ID was missing from Header or is in the wrong format"
@@ -156,6 +157,7 @@ object ApplicationConstants {
   val InvalidOrMissingUkimsNumberCode                          = "033"
   val InvalidOrMissingNirmsNumberCode                          = "034"
   val InvalidOrMissingNiphlNumberCode                          = "035"
+  val InvalidRequestAdviceNumberCode                           = "1015"
 
   val InvalidOrMissingCorrelationIdCode      = "E001"
   val InvalidOrMissingRequestDateCode        = "E002"
