@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
+import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
 import uk.gov.hmrc.http.HeaderCarrier
@@ -40,32 +41,14 @@ class RequestAdviceService @Inject() (
     eori: String,
     recordId: String,
     request: RequestAdvice
-  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] = {
+  )(implicit hc: HeaderCarrier): EitherT[Future, EisHttpErrorResponse, Int] = {
     val correlationId = uuidService.uuid
 
-    routerService
-      .fetchRecord(eori, recordId)
-      .flatMap {
-        case Right(goodsItemRecord) =>
-          validateAndRequestAdvice(eori, goodsItemRecord, request, correlationId).flatMap {
-            case Right(response) => Future.successful(Right(response))
-            case Left(error)     => Future.successful(Left(error))
-          }
-        case Left(error)            => Future.successful(Left(error))
-      }
-      .recover { case ex: Throwable =>
-        logger.error(
-          s"""[RequestAdviceService] - Error when creating accreditation for
-                          correlationId: $correlationId, message: ${ex.getMessage}""",
-          ex
-        )
+    for {
+      goodsItemRecords <- EitherT(routerService.fetchRecord(eori, recordId)).leftMap(o => o)
+      response         <- EitherT(validateAndRequestAdvice(eori, goodsItemRecords, request, correlationId)).leftMap(o => o)
+    } yield response
 
-        Left(
-          InternalServerErrorResponse(
-            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
-          )
-        )
-      }
   }
 
   private def validateAndRequestAdvice(
@@ -77,13 +60,24 @@ class RequestAdviceService @Inject() (
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] =
     if (AllowedAdviceStatuses.contains(goodsItemRecord.adviceStatus.toLowerCase)) {
+      val traderDetails = createNewTraderDetails(eori, goodsItemRecord, request)
       connector
-        .requestAdvice(createNewTraderDetails(eori, goodsItemRecord, request), correlationId)
-        .flatMap {
-          case Right(response) => Future.successful(Right(response))
-          case Left(error)     => Future.successful(Left(error))
+        .requestAdvice(traderDetails, correlationId)
+        .map(r => r)
+        .recover { case ex: Throwable =>
+          logger.error(
+            s"""[RequestAdviceService] - Error when creating accreditation for
+                          correlationId: $correlationId, message: ${ex.getMessage}""",
+            ex
+          )
+
+          Left(
+            InternalServerErrorResponse(
+              ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
+            )
+          )
         }
-    } else {
+    } else
       Future.successful(
         Left(
           ConflictErrorResponse(
@@ -100,7 +94,36 @@ class RequestAdviceService @Inject() (
           )
         )
       )
-    }
+
+//    val o = for {
+//      b <- sendRequestAdvice(createNewTraderDetails(eori, goodsItemRecord, request), correlationId) if f
+//    } yield b
+
+//    if (AllowedAdviceStatuses.contains(goodsItemRecord.adviceStatus.toLowerCase)) {
+//      connector
+//        .requestAdvice(createNewTraderDetails(eori, goodsItemRecord, request), correlationId)
+//        .flatMap {
+//          case Right(response) => Future.successful(Right(response))
+//          case Left(error)     => Future.successful(Left(error))
+//        }
+//    } else {
+//      Future.successful(
+//        Left(
+//          ConflictErrorResponse(
+//            ErrorResponse(
+//              uuidService.uuid,
+//              BadRequestCode,
+//              BadRequestMessage,
+//              Some(
+//                Seq(
+//                  Error(InvalidRequestParameters, AdviceRequestRejectionMessage, InvalidRequestAdviceNumberCode.toInt)
+//                )
+//              )
+//            )
+//          )
+//        )
+//      )
+//    }
 
   private def createNewTraderDetails(
     eori: String,

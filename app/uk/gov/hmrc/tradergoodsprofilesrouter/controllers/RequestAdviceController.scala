@@ -61,9 +61,6 @@ class RequestAdviceController @Inject() (
     recordId: String,
     request: RequestAdvice
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] =
-    EitherT(
-      service.requestAdvice(eori, recordId, request)
-    )
-      .leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
+    service.requestAdvice(eori, recordId, request).leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
 
 }
