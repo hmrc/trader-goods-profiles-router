@@ -60,7 +60,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec with BaseMetricsSpe
 
       val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
       verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyMaintainProfileBearerToken", "PUT"): _*)
+      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyMaintainProfileBearerToken"): _*)
       verify(requestBuilder).withBody(maintainProfileEisRequest)
       verify(requestBuilder).execute(any, any)
       verifyExecuteWithParams(correlationId)
