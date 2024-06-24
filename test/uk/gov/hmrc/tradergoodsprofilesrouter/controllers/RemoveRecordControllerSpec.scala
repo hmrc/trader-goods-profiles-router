@@ -24,7 +24,7 @@ import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.InternalServerErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
@@ -90,7 +90,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
       val errorResponse = ErrorResponse("1234", "INTERNAL_SERVER_ERROR", "any-message")
 
       when(mockService.removeRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Left(InternalServerErrorResponse(errorResponse))))
+        .thenReturn(Future.successful(Left(EisHttpErrorResponse(INTERNAL_SERVER_ERROR, errorResponse))))
 
       val result = controller.remove(eori, recordId, actorId)(
         FakeRequest().withHeaders(validHeaders: _*)

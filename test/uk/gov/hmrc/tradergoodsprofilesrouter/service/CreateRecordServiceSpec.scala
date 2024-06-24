@@ -26,7 +26,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, CreateRecordConnector, InternalServerErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
@@ -103,7 +103,8 @@ class CreateRecordServiceSpec
 
         val result = await(sut.createRecord(eoriNumber, createRecordRequest))
 
-        result.left.value mustBe InternalServerErrorResponse(
+        result.left.value mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
           ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
         )
 
@@ -119,7 +120,8 @@ class CreateRecordServiceSpec
   }
 
   private def createEisErrorResponse =
-    BadRequestErrorResponse(
+    EisHttpErrorResponse(
+      BAD_REQUEST,
       ErrorResponse(
         correlationId,
         "BAD_REQUEST",

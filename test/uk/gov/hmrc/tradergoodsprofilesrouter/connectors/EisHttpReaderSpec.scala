@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{doReturn, spy, verify}
 import org.scalatest.EitherValues
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.OK
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, StatusHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
@@ -36,9 +36,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
   class TestEisHttpReaderHandler extends EisHttpErrorHandler
   def successErrorHandler: (HttpResponse, String) => EisHttpErrorResponse =
     (response, correlationId) =>
-      InternalServerErrorResponse(
-        ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
-      )
+      EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
   "HttpReader" should {
     "return a record item" in {
       val eisResponse = HttpResponse(200, getEisRecordsResponseData, Map.empty)
@@ -101,9 +99,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
   private def spyOnHandlerErrorFn = {
     val errorHandlerSpy = spy(new TestEisHttpReaderHandler)
     doReturn(
-      InternalServerErrorResponse(
-        ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
-      )
+      EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
     ).when(errorHandlerSpy).handleErrorResponse(any, any)
     errorHandlerSpy
   }

@@ -27,7 +27,7 @@ import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, UpdateRecordConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, UpdateRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
@@ -133,7 +133,8 @@ class UpdateRecordServiceSpec
 
         val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
 
-        result.left.value mustBe InternalServerErrorResponse(
+        result.left.value mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
           ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
         )
 
@@ -264,7 +265,8 @@ class UpdateRecordServiceSpec
       .as[CreateOrUpdateRecordResponse]
 
   private def createEisErrorResponse =
-    BadRequestErrorResponse(
+    EisHttpErrorResponse(
+      BAD_REQUEST,
       ErrorResponse(
         correlationId,
         "BAD_REQUEST",

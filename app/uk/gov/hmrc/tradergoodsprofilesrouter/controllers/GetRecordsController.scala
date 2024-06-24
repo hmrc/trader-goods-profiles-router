@@ -97,7 +97,7 @@ class GetRecordsController @Inject() (
     EitherT(
       getRecordService.fetchRecords(eori, validDate, page, size)
     )
-      .leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
   private def getRecord(
     eori: String,
@@ -106,5 +106,5 @@ class GetRecordsController @Inject() (
     EitherT(
       getRecordService.fetchRecord(eori, recordId)
     )
-      .leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 }

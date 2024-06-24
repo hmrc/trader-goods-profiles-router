@@ -18,8 +18,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import com.google.inject.Inject
 import play.api.Logging
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, GetRecordsConnector, InternalServerErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, GetRecordsConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -80,9 +81,7 @@ class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidServic
   private def logMessageAndReturnError(correlationId: String, ex: Throwable, logMsg: String) = {
     logger.error(logMsg, ex)
     Left(
-      InternalServerErrorResponse(
-        ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
-      )
+      EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
     )
   }
 }

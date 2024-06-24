@@ -23,9 +23,9 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.CREATED
+import play.api.http.Status.{BAD_REQUEST, CONFLICT, CREATED, INTERNAL_SERVER_ERROR}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, ConflictErrorResponse, InternalServerErrorResponse, RequestAdviceConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
@@ -104,7 +104,8 @@ class RequestAdviceServiceSpec
       val result = service.requestAdvice(eori, recordId, request)
 
       whenReady(result.value) {
-        _.left.value mustBe InternalServerErrorResponse(
+        _.left.value mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
           ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
         )
       }
@@ -147,7 +148,8 @@ class RequestAdviceServiceSpec
       val result = service.requestAdvice(eori, recordId, request)
 
       whenReady(result.value) { r =>
-        r.left.value mustBe ConflictErrorResponse(
+        r.left.value mustBe EisHttpErrorResponse(
+          CONFLICT,
           ErrorResponse(
             correlationId,
             "BAD_REQUEST",
@@ -170,7 +172,8 @@ class RequestAdviceServiceSpec
   }
 
   private def createEisErrorResponse =
-    BadRequestErrorResponse(
+    EisHttpErrorResponse(
+      BAD_REQUEST,
       ErrorResponse(
         correlationId,
         "BAD_REQUEST",

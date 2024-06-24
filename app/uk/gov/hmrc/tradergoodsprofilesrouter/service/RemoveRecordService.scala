@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, RemoveRecordConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RemoveRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
@@ -56,7 +56,7 @@ class RemoveRecordService @Inject() (
             actorId,
             requestedDateTime,
             response.errorResponse.code,
-            response.status,
+            response.httpStatus,
             failureReason
           )
           Left(response)
@@ -77,9 +77,7 @@ class RemoveRecordService @Inject() (
           INTERNAL_SERVER_ERROR
         )
         Left(
-          InternalServerErrorResponse(
-            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
-          )
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
         )
       }
   }

@@ -18,8 +18,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import com.google.inject.Inject
 import play.api.Logging
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, MaintainProfileConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, MaintainProfileConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
@@ -58,9 +59,7 @@ class MaintainProfileService @Inject() (connector: MaintainProfileConnector, uui
           ex
         )
         Left(
-          InternalServerErrorResponse(
-            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
-          )
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
         )
       }
   }

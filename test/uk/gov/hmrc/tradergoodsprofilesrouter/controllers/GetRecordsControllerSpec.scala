@@ -25,7 +25,7 @@ import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.InternalServerErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
@@ -88,9 +88,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     }
 
     "return an error if cannot fetch a record" in {
-      val errorResponseJson = InternalServerErrorResponse(
-        ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
-      )
+      val errorResponseJson =
+        EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
 
       when(getRecordsService.fetchRecord(any, any)(any))
         .thenReturn(Future.successful(Left(errorResponseJson)))
@@ -150,9 +149,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return an error" when {
       "if cannot fetch a records" in {
-        val errorResponseJson = InternalServerErrorResponse(
-          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
-        )
+        val errorResponseJson =
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
 
         when(getRecordsService.fetchRecords(any, any, any, any)(any))
           .thenReturn(Future.successful(Left(errorResponseJson)))

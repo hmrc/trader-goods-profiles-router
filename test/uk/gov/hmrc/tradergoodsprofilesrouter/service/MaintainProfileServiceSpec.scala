@@ -23,10 +23,11 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, InternalServerErrorResponse, MaintainProfileConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, MaintainProfileConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
@@ -85,7 +86,8 @@ class MaintainProfileServiceSpec
 
       val result = await(service.maintainProfile(eori, maintainProfileRequest))
 
-      result.left.value shouldBe InternalServerErrorResponse(
+      result.left.value shouldBe EisHttpErrorResponse(
+        INTERNAL_SERVER_ERROR,
         ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
       )
     }
@@ -119,7 +121,8 @@ class MaintainProfileServiceSpec
   }
 
   private def createEisErrorResponse =
-    BadRequestErrorResponse(
+    EisHttpErrorResponse(
+      BAD_REQUEST,
       ErrorResponse(
         correlationId,
         "BAD_REQUEST",

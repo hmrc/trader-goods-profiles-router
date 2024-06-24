@@ -59,5 +59,5 @@ class CreateRecordController @Inject() (
     EitherT(
       createRecordService.createRecord(eori, createRecordRequest)
     )
-      .leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 }

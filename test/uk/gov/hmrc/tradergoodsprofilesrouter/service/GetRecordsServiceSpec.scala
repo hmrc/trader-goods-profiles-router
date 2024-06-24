@@ -23,9 +23,10 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{BadRequestErrorResponse, GetRecordsConnector, InternalServerErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, GetRecordsConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
@@ -88,7 +89,8 @@ class GetRecordsServiceSpec
 
         val result = await(sut.fetchRecord(eoriNumber, recordId))
 
-        result.left.value shouldBe InternalServerErrorResponse(
+        result.left.value shouldBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
           ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
         )
       }
@@ -141,7 +143,8 @@ class GetRecordsServiceSpec
 
         val result = await(sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1)))
 
-        result.left.value shouldBe InternalServerErrorResponse(
+        result.left.value shouldBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
           ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
         )
       }
@@ -149,7 +152,8 @@ class GetRecordsServiceSpec
   }
 
   private def createEisErrorResponse =
-    BadRequestErrorResponse(
+    EisHttpErrorResponse(
+      BAD_REQUEST,
       ErrorResponse(
         correlationId,
         "BAD_REQUEST",

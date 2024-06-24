@@ -30,9 +30,10 @@ trait EisHttpErrorHandler {
     httpResponse.status match {
 
       case BAD_REQUEST =>
-        BadRequestErrorResponse(determine400Error(correlationId, httpResponse.body))
+        EisHttpErrorResponse(BAD_REQUEST, determine400Error(correlationId, httpResponse.body))
       case FORBIDDEN   =>
-        ForbiddenErrorResponse(
+        EisHttpErrorResponse(
+          FORBIDDEN,
           ErrorResponse(
             correlationId,
             ForbiddenCode,
@@ -40,7 +41,8 @@ trait EisHttpErrorHandler {
           )
         )
       case NOT_FOUND   =>
-        NotFoundErrorResponse(
+        EisHttpErrorResponse(
+          NOT_FOUND,
           ErrorResponse(
             correlationId,
             NotFoundCode,
@@ -49,7 +51,8 @@ trait EisHttpErrorHandler {
         )
 
       case METHOD_NOT_ALLOWED =>
-        MethodNotAllowedErrorResponse(
+        EisHttpErrorResponse(
+          METHOD_NOT_ALLOWED,
           ErrorResponse(
             correlationId,
             MethodNotAllowedCode,
@@ -58,7 +61,8 @@ trait EisHttpErrorHandler {
         )
 
       case BAD_GATEWAY =>
-        BadGatewayErrorResponse(
+        EisHttpErrorResponse(
+          BAD_GATEWAY,
           ErrorResponse(
             correlationId,
             BadGatewayCode,
@@ -67,7 +71,8 @@ trait EisHttpErrorHandler {
         )
 
       case SERVICE_UNAVAILABLE =>
-        ServiceUnavailableErrorResponse(
+        EisHttpErrorResponse(
+          SERVICE_UNAVAILABLE,
           ErrorResponse(
             correlationId,
             ServiceUnavailableCode,
@@ -76,9 +81,12 @@ trait EisHttpErrorHandler {
         )
 
       case INTERNAL_SERVER_ERROR =>
-        InternalServerErrorResponse(determine500Error(correlationId, httpResponse.body))
+        EisHttpErrorResponse(INTERNAL_SERVER_ERROR, determine500Error(correlationId, httpResponse.body))
       case _                     =>
-        InternalServerErrorResponse(ErrorResponse(correlationId, UnexpectedErrorCode, UnexpectedErrorMessage))
+        EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, UnexpectedErrorCode, UnexpectedErrorMessage)
+        )
     }
 
   private def determine500Error(correlationId: String, message: String): ErrorResponse =

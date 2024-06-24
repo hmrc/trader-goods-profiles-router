@@ -63,6 +63,6 @@ class RemoveRecordController @Inject() (
       service
         .removeRecord(eori, recordId, actorId)
     )
-      .leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
 }

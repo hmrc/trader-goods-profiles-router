@@ -19,8 +19,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
+import play.api.http.Status.{CONFLICT, INTERNAL_SERVER_ERROR}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{ConflictErrorResponse, EisHttpErrorResponse, InternalServerErrorResponse, RequestAdviceConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
@@ -72,7 +73,8 @@ class RequestAdviceService @Inject() (
           )
 
           Left(
-            InternalServerErrorResponse(
+            EisHttpErrorResponse(
+              INTERNAL_SERVER_ERROR,
               ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
             )
           )
@@ -80,7 +82,8 @@ class RequestAdviceService @Inject() (
     } else
       Future.successful(
         Left(
-          ConflictErrorResponse(
+          EisHttpErrorResponse(
+            CONFLICT,
             ErrorResponse(
               uuidService.uuid,
               BadRequestCode,
@@ -95,43 +98,13 @@ class RequestAdviceService @Inject() (
         )
       )
 
-//    val o = for {
-//      b <- sendRequestAdvice(createNewTraderDetails(eori, goodsItemRecord, request), correlationId) if f
-//    } yield b
-
-//    if (AllowedAdviceStatuses.contains(goodsItemRecord.adviceStatus.toLowerCase)) {
-//      connector
-//        .requestAdvice(createNewTraderDetails(eori, goodsItemRecord, request), correlationId)
-//        .flatMap {
-//          case Right(response) => Future.successful(Right(response))
-//          case Left(error)     => Future.successful(Left(error))
-//        }
-//    } else {
-//      Future.successful(
-//        Left(
-//          ConflictErrorResponse(
-//            ErrorResponse(
-//              uuidService.uuid,
-//              BadRequestCode,
-//              BadRequestMessage,
-//              Some(
-//                Seq(
-//                  Error(InvalidRequestParameters, AdviceRequestRejectionMessage, InvalidRequestAdviceNumberCode.toInt)
-//                )
-//              )
-//            )
-//          )
-//        )
-//      )
-//    }
-
   private def createNewTraderDetails(
     eori: String,
     goodsItemRecords: GoodsItemRecords,
     request: RequestAdvice
   ): TraderDetails = {
 
-    val goodsItem     = GoodsItem(
+    val goodsItem = GoodsItem(
       goodsItemRecords.recordId,
       goodsItemRecords.traderRef,
       goodsItemRecords.goodsDescription,
@@ -141,7 +114,7 @@ class RequestAdviceService @Inject() (
       goodsItemRecords.measurementUnit,
       goodsItemRecords.comcode
     )
-    val traderDetails = TraderDetails(
+    TraderDetails(
       eori,
       request.requestorName,
       Some(goodsItemRecords.actorId),
@@ -149,6 +122,5 @@ class RequestAdviceService @Inject() (
       goodsItemRecords.ukimsNumber,
       Seq(goodsItem)
     )
-    traderDetails
   }
 }

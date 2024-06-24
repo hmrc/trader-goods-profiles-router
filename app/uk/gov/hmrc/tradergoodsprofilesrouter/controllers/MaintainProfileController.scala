@@ -60,6 +60,6 @@ class MaintainProfileController @Inject() (
     EitherT(
       maintainProfileService.maintainProfile(eori, maintainProfileRequest)
     )
-      .leftMap(e => Status(e.status)(Json.toJson(e.errorResponse)))
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
 }

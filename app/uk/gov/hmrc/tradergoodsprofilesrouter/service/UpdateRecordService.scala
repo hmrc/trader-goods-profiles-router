@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import play.api.Logging
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, InternalServerErrorResponse, UpdateRecordConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, UpdateRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
@@ -62,7 +62,7 @@ class UpdateRecordService @Inject() (
             request,
             requestedDateTime,
             response.errorResponse.code,
-            response.status,
+            response.httpStatus,
             failureReason
           )
 
@@ -83,9 +83,7 @@ class UpdateRecordService @Inject() (
         )
 
         Left(
-          InternalServerErrorResponse(
-            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
-          )
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
         )
       }
   }

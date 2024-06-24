@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse, InternalServerErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
@@ -61,7 +61,7 @@ class CreateRecordService @Inject() (
             request,
             requestedDateTime,
             response.errorResponse.code,
-            response.status,
+            response.httpStatus,
             failureReason
           )
 
@@ -83,9 +83,7 @@ class CreateRecordService @Inject() (
         )
 
         Left(
-          InternalServerErrorResponse(
-            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
-          )
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
         )
       }
   }
