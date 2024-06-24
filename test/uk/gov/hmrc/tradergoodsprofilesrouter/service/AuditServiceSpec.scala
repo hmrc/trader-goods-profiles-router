@@ -19,6 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import org.apache.pekko.Done
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
+import org.mockito.captor.ArgCaptor
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
@@ -30,7 +31,6 @@ import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
@@ -43,45 +43,39 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq(("X-Client-ID", "TSS")))
 
-  private val auditConnector         = mock[AuditConnector]
-  private val auditEventFactory      = mock[AuditEventFactory]
-  private val dateTime               = Instant.parse("2021-12-17T09:30:47Z").toString
-  private val eori                   = "GB123456789011"
-  private val recordId               = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val actorId                = "GB123456789011"
-  private val auditRemoveRecordEvent = extendedDataEvent(auditRemoveRecordDetailsJson("SUCCEEDED", NO_CONTENT))
-  private val auditCreateRecordEvent = extendedDataEvent(
-    auditCreateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
-  )
-  private val auditUpdateRecordEvent = extendedDataEvent(
-    auditUpdateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
-  )
+  private val auditConnector  = mock[AuditConnector]
+  private val dataTimeService = mock[DateTimeService]
+  private val timestamp       = Instant.parse("2021-12-17T09:30:47Z")
+  private val dateTime        = timestamp.toString
+  private val eori            = "GB123456789011"
+  private val recordId        = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val actorId         = "GB123456789011"
+  private val auditType       = "ManageGoodsRecord"
+  private val auditSource     = "trader-goods-profiles-router"
 
-  val sut = new AuditService(auditConnector, auditEventFactory)
+  val sut = new AuditService(auditConnector, dataTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(auditConnector, auditEventFactory)
-
-    when(auditEventFactory.removeRecord(any, any, any, any, any, any, any)(any))
-      .thenReturn(auditRemoveRecordEvent)
-    when(auditEventFactory.createRecord(any, any, any, any, any, any)(any))
-      .thenReturn(auditCreateRecordEvent)
-    when(auditEventFactory.updateRecord(any, any, any, any, any, any)(any))
-      .thenReturn(auditUpdateRecordEvent)
+    reset(auditConnector, dataTimeService)
+    when(dataTimeService.timestamp).thenReturn(timestamp)
   }
 
-  "auditRemoveRecord" should {
+  "emitAuditRemoveRecord" should {
     "send an event for success response" in {
 
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
-      val result = await(sut.auditRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", NO_CONTENT))
+      val result = await(sut.emitAuditRemoveRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", NO_CONTENT))
 
       result mustBe Done
-      verify(auditEventFactory).removeRecord(eori, recordId, actorId, dateTime, "SUCCEEDED", NO_CONTENT)
-      verify(auditConnector).sendExtendedEvent(auditRemoveRecordEvent)
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe emitAuditRemoveRecordDetailsJson("SUCCEEDED", NO_CONTENT)
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
     }
 
     "send an event with reason failure" in {
@@ -90,16 +84,14 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         extendedDataEvent(
           auditDetailJsonWithFailureReason(
             Seq("erro-1", "error-2"),
-            auditRemoveRecordDetailsJson("BAD_REQUEST", BAD_REQUEST)
+            emitAuditRemoveRecordDetailsJson("BAD_REQUEST", BAD_REQUEST)
           )
         )
-      when(auditEventFactory.removeRecord(any, any, any, any, any, any, any)(any))
-        .thenReturn(auditEventWithFailure)
 
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
       val result = await(
-        sut.auditRemoveRecord(
+        sut.emitAuditRemoveRecord(
           eori,
           recordId,
           actorId,
@@ -111,25 +103,21 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       result mustBe Done
-      verify(auditEventFactory).removeRecord(
-        eori,
-        recordId,
-        actorId,
-        dateTime,
-        "BAD_REQUEST",
-        BAD_REQUEST,
-        Some(Seq("erro-1", "error-2"))
-      )
-      verify(auditConnector).sendExtendedEvent(auditEventWithFailure)
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe auditEventWithFailure.detail
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
     }
   }
 
-  "auditCreateRecord" should {
+  "emitAuditCreateRecord" should {
     "send an event for success response" in {
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
       val result = await(
-        sut.auditCreateRecord(
+        sut.emitAuditCreateRecord(
           createRecordRequestData,
           dateTime,
           "SUCCEEDED",
@@ -140,9 +128,12 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       result mustBe Done
-      verify(auditEventFactory)
-        .createRecord(createRecordRequestData, dateTime, "SUCCEEDED", OK, None, Some(createOrUpdateRecordResponseData))
-      verify(auditConnector).sendExtendedEvent(auditCreateRecordEvent)
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe emitAuditCreateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
     }
 
     "send an event with reason failure" in {
@@ -151,16 +142,14 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         extendedDataEvent(
           auditDetailJsonWithFailureReason(
             Seq("erro-1", "error-2"),
-            auditCreateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
+            emitAuditCreateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
           )
         )
-      when(auditEventFactory.createRecord(any, any, any, any, any, any)(any))
-        .thenReturn(auditEventWithFailure)
 
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
       val result = await(
-        sut.auditCreateRecord(
+        sut.emitAuditCreateRecord(
           createRecordRequestData,
           dateTime,
           "BAD_REQUEST",
@@ -170,18 +159,21 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       result mustBe Done
-      verify(auditEventFactory)
-        .createRecord(createRecordRequestData, dateTime, "BAD_REQUEST", BAD_REQUEST, Some(Seq("erro-1", "error-2")))
-      verify(auditConnector).sendExtendedEvent(auditEventWithFailure)
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe auditEventWithFailure.detail
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
     }
   }
 
-  "auditUpdateRecord" should {
+  "emitAuditUpdateRecord" should {
     "send an event for success response" in {
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
       val result = await(
-        sut.auditUpdateRecord(
+        sut.emitAuditUpdateRecord(
           updateRecordRequestData,
           dateTime,
           "SUCCEEDED",
@@ -192,9 +184,12 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       result mustBe Done
-      verify(auditEventFactory)
-        .updateRecord(updateRecordRequestData, dateTime, "SUCCEEDED", OK, None, Some(createOrUpdateRecordResponseData))
-      verify(auditConnector).sendExtendedEvent(auditUpdateRecordEvent)
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe emitAuditUpdateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
     }
 
     "send an event with reason failure" in {
@@ -203,16 +198,14 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         extendedDataEvent(
           auditDetailJsonWithFailureReason(
             Seq("erro-1", "error-2"),
-            auditUpdateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
+            emitAuditUpdateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
           )
         )
-      when(auditEventFactory.updateRecord(any, any, any, any, any, any)(any))
-        .thenReturn(auditEventWithFailure)
 
       when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
 
       val result = await(
-        sut.auditUpdateRecord(
+        sut.emitAuditUpdateRecord(
           updateRecordRequestData,
           dateTime,
           "BAD_REQUEST",
@@ -222,9 +215,12 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       result mustBe Done
-      verify(auditEventFactory)
-        .updateRecord(updateRecordRequestData, dateTime, "BAD_REQUEST", BAD_REQUEST, Some(Seq("erro-1", "error-2")))
-      verify(auditConnector).sendExtendedEvent(auditEventWithFailure)
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe auditEventWithFailure.detail
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
     }
   }
 
@@ -236,7 +232,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       detail = auditDetails
     )
 
-  private def auditRemoveRecordDetailsJson(status: String, statusCode: Int) =
+  private def emitAuditRemoveRecordDetailsJson(status: String, statusCode: Int) =
     Json.obj(
       "journey"          -> "RemoveRecord",
       "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
@@ -253,7 +249,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
     )
 
-  private def auditCreateRecordDetailJson(
+  private def emitAuditCreateRecordDetailJson(
     status: String,
     statusCode: Int,
     createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
@@ -273,7 +269,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       )
     )
 
-  private def auditUpdateRecordDetailJson(
+  private def emitAuditUpdateRecordDetailJson(
     status: String,
     statusCode: Int,
     createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None

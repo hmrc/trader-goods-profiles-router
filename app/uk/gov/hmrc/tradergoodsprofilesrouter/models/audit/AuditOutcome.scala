@@ -18,12 +18,12 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.audit
 
 import play.api.libs.json.{Json, OFormat}
 
-case class Outcome(
+case class AuditOutcome(
   status: String,
-  statusCode: String,
+  statusCode: Int,
   failureReason: Option[Seq[String]] = None
 )
 
-object RemoveEisRecordRequest {
-  implicit val format: OFormat[Outcome] = Json.format[Outcome]
+object AuditOutcome {
+  implicit val format: OFormat[AuditOutcome] = Json.format[AuditOutcome]
 }

@@ -43,14 +43,14 @@ class RemoveRecordService @Inject() (
       .removeRecord(eori, recordId, actorId, correlationId)
       .map {
         case Right(_) =>
-          auditService.auditRemoveRecord(eori, recordId, actorId, requestedDateTime, "SUCCEEDED", NO_CONTENT)
+          auditService.emitAuditRemoveRecord(eori, recordId, actorId, requestedDateTime, "SUCCEEDED", NO_CONTENT)
           Right(NO_CONTENT)
 
         case Left(response) =>
           val failureReason = response.errorResponse.errors.map { error =>
             error.map(e => e.message)
           }
-          auditService.auditRemoveRecord(
+          auditService.emitAuditRemoveRecord(
             eori,
             recordId,
             actorId,
@@ -68,7 +68,7 @@ class RemoveRecordService @Inject() (
           ex
         )
 
-        auditService.auditRemoveRecord(
+        auditService.emitAuditRemoveRecord(
           eori,
           recordId,
           actorId,

@@ -68,14 +68,15 @@ class RemoveRecordServiceSpec
     "return NO_CONTENT when successful" in {
       when(connector.removeRecord(any, any, any, any)(any))
         .thenReturn(Future.successful(Right(OK)))
-      when(auditService.auditRemoveRecord(any, any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
+      when(auditService.emitAuditRemoveRecord(any, any, any, any, any, any, any)(any))
+        .thenReturn(Future.successful(Done))
 
       val result = await(service.removeRecord(eori, recordId, actorId))
 
       result.value mustBe NO_CONTENT
 
       withClue("send an audit message") {
-        verify(auditService).auditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", NO_CONTENT)
+        verify(auditService).emitAuditRemoveRecord(eori, recordId, actorId, dateTime.toString, "SUCCEEDED", NO_CONTENT)
       }
     }
 
@@ -89,7 +90,7 @@ class RemoveRecordServiceSpec
 
       result.left.value mustBe badRequestErrorResponse
       verify(auditService)
-        .auditRemoveRecord(
+        .emitAuditRemoveRecord(
           eori,
           recordId,
           actorId,
@@ -112,7 +113,7 @@ class RemoveRecordServiceSpec
       )
 
       verify(auditService)
-        .auditRemoveRecord(
+        .emitAuditRemoveRecord(
           eori,
           recordId,
           actorId,

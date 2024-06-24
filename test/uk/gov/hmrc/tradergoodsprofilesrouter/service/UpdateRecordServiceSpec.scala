@@ -72,21 +72,21 @@ class UpdateRecordServiceSpec
       val eisResponse = createOrUpdateRecordResponseData
       when(connector.updateRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
-      when(auditService.auditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
+      when(auditService.emitAuditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
       val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
 
       result.value mustBe eisResponse
       verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
       verify(auditService)
-        .auditUpdateRecord(updateRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
+        .emitAuditUpdateRecord(updateRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
 
     "dateTime value should be formatted to yyyy-mm-dd'T'hh:mm:ssZ" in {
       val eisResponse = createOrUpdateRecordResponseData
       when(connector.updateRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
-      when(auditService.auditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
+      when(auditService.emitAuditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
       val invalidFormattedDate = Instant.parse("2024-11-18T23:20:19.1324564Z")
       val result               =
@@ -105,7 +105,7 @@ class UpdateRecordServiceSpec
       result.value mustBe eisResponse
       verify(connector).updateRecord(eqTo(expectedpayload), eqTo(correlationId))(any)
       verify(auditService)
-        .auditUpdateRecord(updateRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
+        .emitAuditUpdateRecord(updateRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
     "return an internal server error" when {
 
@@ -118,7 +118,7 @@ class UpdateRecordServiceSpec
 
         result.left.value mustBe badRequestErrorResponse
         verify(auditService)
-          .auditUpdateRecord(
+          .emitAuditUpdateRecord(
             updateRecordRequest,
             dateTime.toString,
             "BAD_REQUEST",
@@ -139,7 +139,7 @@ class UpdateRecordServiceSpec
         )
 
         verify(auditService)
-          .auditUpdateRecord(
+          .emitAuditUpdateRecord(
             updateRecordRequest,
             dateTime.toString,
             "UNEXPECTED_ERROR",

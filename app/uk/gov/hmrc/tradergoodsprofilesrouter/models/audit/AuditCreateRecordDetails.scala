@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.factories
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory.AuditOutcome
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditOutcome
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 

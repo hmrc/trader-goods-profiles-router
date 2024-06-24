@@ -52,7 +52,7 @@ class GetRecordsController @Inject() (
       _          <- EitherT
                       .fromEither[Future](validateRecordId(recordId))
                       .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-      recordItem <- getRecord(eori, recordId)
+      recordItem <- getSingleRecord(eori, recordId)
     } yield Ok(Json.toJson(recordItem))
 
     result.merge
@@ -99,7 +99,7 @@ class GetRecordsController @Inject() (
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
-  private def getRecord(
+  private def getSingleRecord(
     eori: String,
     recordId: String
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords] =

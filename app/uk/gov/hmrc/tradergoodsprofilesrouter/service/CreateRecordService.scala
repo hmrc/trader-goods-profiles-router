@@ -50,14 +50,14 @@ class CreateRecordService @Inject() (
       .createRecord(CreateRecordPayload(eori, request), correlationId)
       .map {
         case Right(response) =>
-          auditService.auditCreateRecord(request, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
+          auditService.emitAuditCreateRecord(request, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
           Right(response)
         case Left(response)  =>
           val failureReason = response.errorResponse.errors.map { error =>
             error.map(e => e.message)
           }
 
-          auditService.auditCreateRecord(
+          auditService.emitAuditCreateRecord(
             request,
             requestedDateTime,
             response.errorResponse.code,
@@ -75,7 +75,7 @@ class CreateRecordService @Inject() (
           ex
         )
 
-        auditService.auditCreateRecord(
+        auditService.emitAuditCreateRecord(
           request,
           requestedDateTime,
           UnexpectedErrorCode,

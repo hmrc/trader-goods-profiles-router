@@ -19,22 +19,31 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import com.google.inject.Inject
 import org.apache.pekko.Done
 import play.api.Logging
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditEventFactory
+import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
+import uk.gov.hmrc.tradergoodsprofilesrouter.factories.{AuditCreateRecordDetails, AuditRemoveRecordDetails, AuditRemoveRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditOutcome, AuditUpdateRecordDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class AuditService @Inject() (
   auditConnector: AuditConnector,
-  auditEventFactory: AuditEventFactory
+  dateTimeService: DateTimeService
 )(implicit
   ec: ExecutionContext
 ) extends Logging {
 
-  def auditRemoveRecord(
+  private val auditSource = "trader-goods-profiles-router"
+  private val auditType   = "ManageGoodsRecord"
+
+  def emitAuditRemoveRecord(
     eori: String,
     recordId: String,
     actorId: String,
@@ -45,15 +54,22 @@ class AuditService @Inject() (
   )(implicit
     hc: HeaderCarrier
   ): Future[Done] = {
-    val event = auditEventFactory.removeRecord(
-      eori,
-      recordId,
-      actorId,
-      requestedDateTime,
-      status,
-      statusCode,
-      failureReason
+
+    val auditDetails = AuditRemoveRecordDetails(
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      requestDateTime = requestedDateTime,
+      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      outcome = AuditOutcome(status, statusCode, failureReason),
+      request = AuditRemoveRecordRequest(eori, recordId, actorId)
     )
+
+    val event = ExtendedDataEvent(
+      auditSource = auditSource,
+      auditType = auditType,
+      tags = hc.toAuditTags(),
+      detail = Json.toJson(auditDetails)
+    )
+
     auditConnector
       .sendExtendedEvent(event)
       .map { auditResult: AuditResult =>
@@ -62,7 +78,7 @@ class AuditService @Inject() (
       }
   }
 
-  def auditCreateRecord(
+  def emitAuditCreateRecord(
     createRecordRequest: CreateRecordRequest,
     requestedDateTime: String,
     status: String,
@@ -72,13 +88,20 @@ class AuditService @Inject() (
   )(implicit
     hc: HeaderCarrier
   ): Future[Done] = {
-    val event = auditEventFactory.createRecord(
-      createRecordRequest,
-      requestedDateTime,
-      status,
-      statusCode,
-      failureReason,
-      createOrUpdateRecordResponse
+    val auditDetails = AuditCreateRecordDetails(
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      requestDateTime = requestedDateTime,
+      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      outcome = AuditOutcome(status, statusCode, failureReason),
+      request = createRecordRequest,
+      response = createOrUpdateRecordResponse
+    )
+
+    val event = ExtendedDataEvent(
+      auditSource = auditSource,
+      auditType = auditType,
+      tags = hc.toAuditTags(),
+      detail = Json.toJson(auditDetails)
     )
     auditConnector
       .sendExtendedEvent(event)
@@ -88,7 +111,7 @@ class AuditService @Inject() (
       }
   }
 
-  def auditUpdateRecord(
+  def emitAuditUpdateRecord(
     updateRecordRequest: UpdateRecordRequest,
     requestedDateTime: String,
     status: String,
@@ -98,13 +121,20 @@ class AuditService @Inject() (
   )(implicit
     hc: HeaderCarrier
   ): Future[Done] = {
-    val event = auditEventFactory.updateRecord(
-      updateRecordRequest,
-      requestedDateTime,
-      status,
-      statusCode,
-      failureReason,
-      createOrUpdateRecordResponse
+    val auditDetails = AuditUpdateRecordDetails(
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      requestDateTime = requestedDateTime,
+      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      outcome = AuditOutcome(status, statusCode, failureReason),
+      request = updateRecordRequest,
+      response = createOrUpdateRecordResponse
+    )
+
+    val event = ExtendedDataEvent(
+      auditSource = auditSource,
+      auditType = auditType,
+      tags = hc.toAuditTags(),
+      detail = Json.toJson(auditDetails)
     )
     auditConnector
       .sendExtendedEvent(event)

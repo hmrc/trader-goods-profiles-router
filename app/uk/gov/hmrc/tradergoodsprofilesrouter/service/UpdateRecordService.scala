@@ -51,14 +51,14 @@ class UpdateRecordService @Inject() (
       .updateRecord(payload, correlationId)
       .map {
         case Right(response) =>
-          auditService.auditUpdateRecord(request, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
+          auditService.emitAuditUpdateRecord(request, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
           Right(response)
         case Left(response)  =>
           val failureReason = response.errorResponse.errors.map { error =>
             error.map(e => e.message)
           }
 
-          auditService.auditUpdateRecord(
+          auditService.emitAuditUpdateRecord(
             request,
             requestedDateTime,
             response.errorResponse.code,
@@ -75,7 +75,7 @@ class UpdateRecordService @Inject() (
           ex
         )
 
-        auditService.auditUpdateRecord(
+        auditService.emitAuditUpdateRecord(
           request,
           requestedDateTime,
           UnexpectedErrorCode,

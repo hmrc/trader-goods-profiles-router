@@ -69,13 +69,13 @@ class CreateRecordServiceSpec
       when(connector.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
-      when(auditService.auditCreateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
+      when(auditService.emitAuditCreateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
       val result = await(sut.createRecord(eoriNumber, createRecordRequest))
 
       result.value mustBe eisResponse
       verify(auditService)
-        .auditCreateRecord(createRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
+        .emitAuditCreateRecord(createRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
 
     "return an internal server error" when {
@@ -88,7 +88,7 @@ class CreateRecordServiceSpec
 
         result.left.value mustBe badRequestErrorResponse
         verify(auditService)
-          .auditCreateRecord(
+          .emitAuditCreateRecord(
             createRecordRequest,
             dateTime.toString,
             "BAD_REQUEST",
@@ -109,7 +109,7 @@ class CreateRecordServiceSpec
         )
 
         verify(auditService)
-          .auditCreateRecord(
+          .emitAuditCreateRecord(
             createRecordRequest,
             dateTime.toString,
             "UNEXPECTED_ERROR",
