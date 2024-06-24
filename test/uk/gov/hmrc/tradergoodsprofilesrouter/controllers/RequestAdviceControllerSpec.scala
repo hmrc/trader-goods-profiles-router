@@ -60,6 +60,7 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
   private val requestAccreditationData = Json
     .parse("""
         |{
+        |    "actorId": "GB9876543210983",
         |    "requestorName": "Mr. Phil Edwards",
         |    "requestorEmail": "Phil.Edwards@gmail.com"
         |}
@@ -68,6 +69,7 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
   private val invalidRequestAccreditationData = Json
     .parse("""
         |{
+        |    "actorId": "",
         |    "requestorName": "Mr. Phil Edwards",
         |    "requestorEmail": ""
         |}
@@ -134,6 +136,11 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
               "INVALID_REQUEST_PARAMETER",
               "Mandatory field RequestorEmail was missing from body or is in the wrong format",
               38
+            ),
+            Error(
+              "INVALID_REQUEST_PARAMETER",
+              "Mandatory field actorId was missing from body or is in the wrong format",
+              8
             )
           )
         )

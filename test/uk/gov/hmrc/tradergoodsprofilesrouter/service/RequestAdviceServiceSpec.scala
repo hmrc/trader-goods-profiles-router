@@ -51,7 +51,7 @@ class RequestAdviceServiceSpec
   private val getRecordService = mock[GetRecordsService]
   private val uuidService      = mock[UuidService]
 
-  private val request = new RequestAdvice("Judi Dench", "judi@example.com")
+  private val request = new RequestAdvice("GB9876543210983", "Judi Dench", "judi@example.com")
 
   val service = new RequestAdviceService(connector, getRecordService, uuidService)
 

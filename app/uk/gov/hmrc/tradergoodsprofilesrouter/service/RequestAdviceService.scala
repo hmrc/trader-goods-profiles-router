@@ -117,7 +117,7 @@ class RequestAdviceService @Inject() (
     TraderDetails(
       eori,
       request.requestorName,
-      Some(goodsItemRecords.actorId),
+      Some(request.actorId),
       request.requestorEmail,
       goodsItemRecords.ukimsNumber,
       Seq(goodsItem)
