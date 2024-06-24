@@ -23,6 +23,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.
 import scala.Function.unlift
 
 case class RequestAdvice(
+  actorId: String,
   requestorName: String,
   requestorEmail: String
 )
@@ -30,11 +31,11 @@ case class RequestAdvice(
 object RequestAdvice {
 
   implicit val reads: Reads[RequestAdvice] =
-    ((JsPath \ "requestorName").read(lengthBetween(1, 70)) and
+    ((JsPath \ "actorId").read(lengthBetween(14, 17)) and (JsPath \ "requestorName").read(lengthBetween(1, 70)) and
       (JsPath \ "requestorEmail")
         .read(lengthBetween(3, 254).keepAnd(validEmailAddress)))(RequestAdvice.apply _)
 
   implicit lazy val writes: OWrites[RequestAdvice] =
-    ((JsPath \ "requestorName").write[String] and
+    ((JsPath \ "actorId").write[String] and (JsPath \ "requestorName").write[String] and
       (JsPath \ "requestorEmail").write[String])(unlift(RequestAdvice.unapply))
 }

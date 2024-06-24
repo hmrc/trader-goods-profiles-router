@@ -122,7 +122,7 @@ class RequestAdviceService @Inject() (
     val traderDetails = TraderDetails(
       eori,
       request.requestorName,
-      Some(goodsItemRecords.actorId),
+      Some(request.actorId),
       request.requestorEmail,
       goodsItemRecords.ukimsNumber,
       Seq(goodsItem)

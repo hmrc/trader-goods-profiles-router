@@ -482,7 +482,7 @@ class RequestAdviceIntegrationSpec
       |         "traderDetails":{
       |            "traderEORI":"GB123456789001",
       |            "requestorName":"Mr.Phil Edwards",
-      |            "requestorEORI":"GB1234567890",
+      |            "requestorEORI":"GB9876543210983",
       |            "requestorEmail":"Phil.Edwards@gmail.com",
       |            "ukimsAuthorisation":"XIUKIM47699357400020231115081800",
       |            "goodsItems":[
@@ -506,6 +506,7 @@ class RequestAdviceIntegrationSpec
   private def requestAdviceData: String =
     s"""
              |{
+             |    "actorId": "GB9876543210983",
              |    "requestorName": "Mr.Phil Edwards",
              |    "requestorEmail": "Phil.Edwards@gmail.com"
              |}
