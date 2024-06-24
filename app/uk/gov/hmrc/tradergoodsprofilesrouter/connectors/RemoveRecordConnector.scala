@@ -50,7 +50,7 @@ class RemoveRecordConnector @Inject() (
       val url = appConfig.eisConfig.removeRecordUrl
       httpClientV2
         .put(url"$url")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken, "PUT"): _*)
+        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
         .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
         .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
     }
