@@ -90,9 +90,9 @@ class GetRecordsController @Inject() (
 
   private def getRecords(
     eori: String,
-    validDate: Option[Instant] = None,
-    page: Option[Int] = None,
-    size: Option[Int] = None
+    validDate: Option[Instant],
+    page: Option[Int],
+    size: Option[Int]
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetEisRecordsResponse] =
     EitherT(
       getRecordService.fetchRecords(eori, validDate, page, size)
