@@ -23,11 +23,12 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.GetRecordsConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, GetRecordsConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
 import java.time.Instant
@@ -65,40 +66,33 @@ class GetRecordsServiceSpec
       when(getRecordsConnector.fetchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
 
-      val result = sut.fetchRecord(eoriNumber, recordId)
+      val result = await(sut.fetchRecord(eoriNumber, recordId))
 
-      whenReady(result.value) {
-        _.value shouldBe getEisRecordsResponseData.as[GetEisRecordsResponse].goodsItemRecords.head
-      }
+      result.value shouldBe getEisRecordsResponseData.as[GetEisRecordsResponse].goodsItemRecords.head
     }
 
     "return an error" when {
       "EIS return an error" in {
+        val badRequestErrorResponse = createEisErrorResponse
+
         when(getRecordsConnector.fetchRecord(any, any, any)(any))
-          .thenReturn(Future.successful(Left(BadRequest("error"))))
+          .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = sut.fetchRecord(eoriNumber, recordId)
+        val result = await(sut.fetchRecord(eoriNumber, recordId))
 
-        whenReady(result.value) {
-          _.left.value shouldBe BadRequest("error")
-        }
+        result.left.value shouldBe badRequestErrorResponse
       }
 
       "error when an exception is thrown" in {
         when(getRecordsConnector.fetchRecord(any, any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = sut.fetchRecord(eoriNumber, recordId)
+        val result = await(sut.fetchRecord(eoriNumber, recordId))
 
-        whenReady(result.value) {
-          _.left.value shouldBe InternalServerError(
-            Json.obj(
-              "correlationId" -> correlationId,
-              "code"          -> "UNEXPECTED_ERROR",
-              "message"       -> "error"
-            )
-          )
-        }
+        result.left.value shouldBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+        )
       }
 
     }
@@ -114,11 +108,9 @@ class GetRecordsServiceSpec
       when(getRecordsConnector.fetchRecords(any, any, any, any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
-      val result = sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))
+      val result = await(sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1)))
 
-      whenReady(result.value) {
-        _.value shouldBe eisResponse
-      }
+      result.value shouldBe eisResponse
 
       withClue("should call the getRecordsConnector with teh right parameters") {
         verify(getRecordsConnector)
@@ -135,34 +127,44 @@ class GetRecordsServiceSpec
     "return an error" when {
 
       "EIS return an error" in {
+        val badRequestErrorResponse = createEisErrorResponse
+
         when(getRecordsConnector.fetchRecords(any, any, any, any, any)(any))
-          .thenReturn(Future.successful(Left(BadRequest("error"))))
+          .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))
+        val result = await(sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1)))
 
-        whenReady(result.value) {
-          _.left.value shouldBe BadRequest("error")
-        }
+        result.left.value shouldBe badRequestErrorResponse
       }
 
       "error when an exception is thrown" in {
         when(getRecordsConnector.fetchRecords(any, any, any, any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1))
+        val result = await(sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1)))
 
-        whenReady(result.value) {
-          _.left.value shouldBe InternalServerError(
-            Json.obj(
-              "correlationId" -> correlationId,
-              "code"          -> "UNEXPECTED_ERROR",
-              "message"       -> "error"
-            )
-          )
-        }
+        result.left.value shouldBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+        )
       }
-
     }
   }
+
+  private def createEisErrorResponse =
+    EisHttpErrorResponse(
+      BAD_REQUEST,
+      ErrorResponse(
+        correlationId,
+        "BAD_REQUEST",
+        "BAD_REQUEST",
+        Some(
+          Seq(
+            Error("INTERNAL_ERROR", "internal error 1", 6),
+            Error("INTERNAL_ERROR", "internal error 2", 8)
+          )
+        )
+      )
+    )
 
 }

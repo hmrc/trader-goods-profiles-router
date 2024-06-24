@@ -19,7 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 import play.api.libs.json.Json
-import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
@@ -44,7 +43,7 @@ class CreateRecordConnector @Inject() (
   def createRecord(
     payload: CreateRecordPayload,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] =
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] =
     withMetricsTimerAsync("tgp.createrecord.connector") { _ =>
       val url = appConfig.eisConfig.createRecordUrl
 

@@ -19,9 +19,8 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 import play.api.libs.json.Json
-import play.api.mvc.Result
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
@@ -43,7 +42,7 @@ class MaintainProfileConnector @Inject() (
 
   def maintainProfile(request: MaintainProfileEisRequest, correlationId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Either[Result, MaintainProfileResponse]] =
+  ): Future[Either[EisHttpErrorResponse, MaintainProfileResponse]] =
     withMetricsTimerAsync("tgp.maintainprofile.connector") { _ =>
       val url = appConfig.eisConfig.maintainProfileUrl
       httpClientV2

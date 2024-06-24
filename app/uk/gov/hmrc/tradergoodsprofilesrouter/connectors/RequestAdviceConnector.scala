@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.codahale.metrics.MetricRegistry
 import play.api.libs.json.Json
-import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
@@ -42,7 +41,7 @@ class RequestAdviceConnector @Inject() (
 
   def requestAdvice(request: TraderDetails, correlationId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Either[Result, Int]] =
+  ): Future[Either[EisHttpErrorResponse, Int]] =
     withMetricsTimerAsync("tgp.advice.connector") { _ =>
       val url = appConfig.eisConfig.requestAdviceUrl
 

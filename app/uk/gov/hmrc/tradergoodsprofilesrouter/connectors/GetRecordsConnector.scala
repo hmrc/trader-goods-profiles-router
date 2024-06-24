@@ -17,10 +17,9 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.codahale.metrics.MetricRegistry
-import play.api.mvc.Result
 import sttp.model.Uri.UriContext
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
@@ -46,7 +45,7 @@ class GetRecordsConnector @Inject() (
     eori: String,
     recordId: String,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, GetEisRecordsResponse]] =
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] =
     withMetricsTimerAsync("tgp.getrecord.connector") { _ =>
       val url = s"${appConfig.eisConfig.getRecordsUrl}/$eori/$recordId"
 
@@ -62,7 +61,7 @@ class GetRecordsConnector @Inject() (
     lastUpdatedDate: Option[Instant] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  )(implicit hc: HeaderCarrier): Future[Either[Result, GetEisRecordsResponse]] =
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] =
     withMetricsTimerAsync("tgp.getrecords.connector") { _ =>
       val formattedLastUpdateDate: Option[String] = lastUpdatedDate.map(_.asStringSeconds)
       val uri                                     =

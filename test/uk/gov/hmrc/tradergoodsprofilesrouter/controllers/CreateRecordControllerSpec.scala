@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, verifyZeroInteractions, when}
 import org.scalatest.BeforeAndAfterEach
@@ -28,12 +27,11 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
@@ -65,7 +63,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     "return a 201 with JSON response when creating a record" in {
 
       when(createRecordService.createRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(createRecordResponseData))
+        .thenReturn(Future.successful(Right(createRecordResponseData)))
 
       val request = FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
       val result  = sut.create("eori")(request)
@@ -88,23 +86,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
-
-      val expectedErrorResponse =
-        ErrorResponse(
-          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          "BAD_REQUEST",
-          "Bad Request",
-          Some(
-            Seq(
-              Error(
-                "INVALID_HEADER",
-                "Missing mandatory header X-Client-ID",
-                6000
-              )
-            )
-          )
-        )
-
       val request = FakeRequest().withBody(createRecordRequestData)
       val result  = sut.create("eori")(request)
 

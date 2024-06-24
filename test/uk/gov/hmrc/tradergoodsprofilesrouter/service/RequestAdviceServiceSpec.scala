@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verifyZeroInteractions, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
@@ -24,12 +23,11 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.CREATED
-import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, Conflict, InternalServerError}
+import play.api.http.Status.{BAD_REQUEST, CONFLICT, CREATED, INTERNAL_SERVER_ERROR}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RequestAdviceConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -67,7 +65,7 @@ class RequestAdviceServiceSpec
   "should successfully send a request advice request to EIS" in {
 
     when(getRecordService.fetchRecord(any, any)(any))
-      .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus()))
+      .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
 
     when(connector.requestAdvice(any, any)(any))
       .thenReturn(Future.successful(Right(CREATED)))
@@ -77,25 +75,28 @@ class RequestAdviceServiceSpec
     whenReady(result.value) {
       _.value shouldBe CREATED
     }
+
   }
+
   "return an error" when {
-    "connector return an error" in {
+    "request advice return an error" in {
+      val badRequestErrorResponse = createEisErrorResponse
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus()))
+        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
 
       when(connector.requestAdvice(any, any)(any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+        .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
       val result = service.requestAdvice(eori, recordId, request)
 
       whenReady(result.value) {
-        _.left.value mustBe BadRequest("error")
+        _.left.value shouldBe badRequestErrorResponse
       }
     }
 
-    "connector throws a run time exception" in {
+    "request Advice throw an error" in {
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus()))
+        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
 
       when(connector.requestAdvice(any, any)(any))
         .thenReturn(Future.failed(new RuntimeException("error")))
@@ -103,54 +104,87 @@ class RequestAdviceServiceSpec
       val result = service.requestAdvice(eori, recordId, request)
 
       whenReady(result.value) {
-        _.left.value mustBe InternalServerError(
-          Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "error"
-          )
+        _.left.value mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
         )
+      }
+
+    }
+
+    "fetch record fails" in {
+      val badRequestErrorResponse = createEisErrorResponse
+      when(getRecordService.fetchRecord(any, any)(any))
+        .thenReturn(Future.successful(Left(badRequestErrorResponse)))
+
+      when(connector.requestAdvice(any, any)(any))
+        .thenReturn(Future.failed(new RuntimeException("error")))
+
+      val result = service.requestAdvice(eori, recordId, request)
+
+      whenReady(result.value) { r =>
+        r.left.value mustBe badRequestErrorResponse
+        verifyZeroInteractions(connector)
       }
     }
 
     "should throw an error if it fails to fetch a record" in {
-      val errorResponseJson = Json.obj("error" -> "error")
+      val badRequestErrorResponse = createEisErrorResponse
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
+        .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
       val result = service.requestAdvice(eori, recordId, request)
-      whenReady(result.value) {
-        _.left.value mustBe InternalServerError(
-          errorResponseJson
-        )
+      whenReady(result.value) { r =>
+        r.left.value mustBe badRequestErrorResponse
+        verifyZeroInteractions(connector)
       }
-      verifyZeroInteractions(connector)
+
     }
 
     "should throw a 409 conflict when  advice status is not on the approved list" in {
       when(getRecordService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus("incorrect status")))
+        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus("incorrect status"))))
 
       val result = service.requestAdvice(eori, recordId, request)
 
-      whenReady(result.value) {
-        _.left.value mustBe Conflict(
-          Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "There is an ongoing advice request and a new request cannot be requested.",
-                "errorNumber" -> 1015
+      whenReady(result.value) { r =>
+        r.left.value mustBe EisHttpErrorResponse(
+          CONFLICT,
+          ErrorResponse(
+            correlationId,
+            "BAD_REQUEST",
+            "Bad Request",
+            Some(
+              Seq(
+                Error(
+                  "INVALID_REQUEST_PARAMETER",
+                  "There is an ongoing advice request and a new request cannot be requested.",
+                  1015
+                )
               )
             )
           )
         )
+        verifyZeroInteractions(connector)
       }
-      verifyZeroInteractions(connector)
+
     }
   }
+
+  private def createEisErrorResponse =
+    EisHttpErrorResponse(
+      BAD_REQUEST,
+      ErrorResponse(
+        correlationId,
+        "BAD_REQUEST",
+        "BAD_REQUEST",
+        Some(
+          Seq(
+            Error("INTERNAL_ERROR", "internal error 1", 6),
+            Error("INTERNAL_ERROR", "internal error 2", 8)
+          )
+        )
+      )
+    )
 
 }

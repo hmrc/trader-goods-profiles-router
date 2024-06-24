@@ -20,7 +20,9 @@ import cats.data.EitherT
 import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
+import play.api.libs.json.Json
 import play.api.mvc._
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
@@ -41,14 +43,26 @@ class RemoveRecordController @Inject() (
   def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- EitherT.fromEither[Future](validateClientId)
+        _ <- EitherT
+               .fromEither[Future](validateClientId)
         _ <- EitherT
                .fromEither[Future](validateQueryParameters(actorId, recordId))
                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
-        _ <- service.removeRecord(eori, recordId, actorId)
+        _ <- removeRecord(eori, recordId, actorId)
       } yield NoContent
 
       result.merge
   }
+
+  private def removeRecord(
+    eori: String,
+    recordId: String,
+    actorId: String
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] =
+    EitherT(
+      service
+        .removeRecord(eori, recordId, actorId)
+    )
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
 }

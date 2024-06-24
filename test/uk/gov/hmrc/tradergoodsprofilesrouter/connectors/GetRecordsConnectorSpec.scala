@@ -118,7 +118,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec wit
     "send a request with the right url for fetch records" in {
       val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
 
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
       await(connector.fetchRecords(eori, correlationId, Some(timestamp), Some(1), Some(1)))

@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatest.BeforeAndAfterEach
@@ -24,16 +23,17 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
-import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecordsDataSupport with BeforeAndAfterEach {
 
@@ -67,7 +67,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     "return a successful JSON response for a single record" in {
 
       when(getRecordsService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.rightT(getResponseDataWithAccreditationStatus()))
+        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
@@ -88,17 +88,22 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     }
 
     "return an error if cannot fetch a record" in {
-      val errorResponseJson = Json.obj("error" -> "error")
+      val errorResponseJson =
+        EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
 
       when(getRecordsService.fetchRecord(any, any)(any))
-        .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
+        .thenReturn(Future.successful(Left(errorResponseJson)))
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe INTERNAL_SERVER_ERROR
       withClue("should return json response") {
-        contentAsJson(result) mustBe errorResponseJson
+        contentAsJson(result) mustBe Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> "UNEXPECTED_ERROR",
+          "message"       -> "error"
+        )
       }
     }
   }
@@ -108,7 +113,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     "return a successful JSON response for a multiple records with optional query parameters" in {
 
       when(getRecordsService.fetchRecords(any, any, any, any)(any))
-        .thenReturn(EitherT.rightT(getMultipleRecordResponseData()))
+        .thenReturn(Future.successful(Right(getMultipleRecordResponseData())))
 
       val result = sut.getTGPRecords(eoriNumber, Some("2021-12-17T09:30:47.456Z"), Some(1), Some(1))(
         FakeRequest().withHeaders(validHeaders: _*)
@@ -122,7 +127,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     "return a successful JSON response for a multiple records without optional query parameters" in {
 
       when(getRecordsService.fetchRecords(any, any, any, any)(any))
-        .thenReturn(EitherT.rightT(getMultipleRecordResponseData(eoriNumber)))
+        .thenReturn(Future.successful(Right(getMultipleRecordResponseData(eoriNumber))))
 
       val result = sut.getTGPRecords(eoriNumber)(
         FakeRequest().withHeaders(validHeaders: _*)
@@ -144,23 +149,28 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return an error" when {
       "if cannot fetch a records" in {
-        val errorResponseJson = Json.obj("error" -> "error")
+        val errorResponseJson =
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
 
         when(getRecordsService.fetchRecords(any, any, any, any)(any))
-          .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
+          .thenReturn(Future.successful(Left(errorResponseJson)))
 
         val result = sut.getTGPRecords(eoriNumber)(
           FakeRequest().withHeaders(validHeaders: _*)
         )
         status(result) mustBe INTERNAL_SERVER_ERROR
         withClue("should return json response") {
-          contentAsJson(result) mustBe errorResponseJson
+          contentAsJson(result) mustBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "UNEXPECTED_ERROR",
+            "message"       -> "error"
+          )
         }
       }
 
       "lastUpdateDate is not a date" in {
         when(getRecordsService.fetchRecords(any, any, any, any)(any))
-          .thenReturn(EitherT.rightT(getMultipleRecordResponseData()))
+          .thenReturn(Future.successful(Right(getMultipleRecordResponseData())))
 
         val result = sut.getTGPRecords(eoriNumber, Some("not-a-date"), Some(1), Some(1))(
           FakeRequest().withHeaders(validHeaders: _*)

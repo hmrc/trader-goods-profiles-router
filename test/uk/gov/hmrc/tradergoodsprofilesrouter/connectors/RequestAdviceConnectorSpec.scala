@@ -82,7 +82,7 @@ class AccreditationConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec 
     }
 
     "send a request to EIS with the right parameters" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(200)))
 
       val traderDetails = TraderDetails("eori", "any-name", None, "sample@sample.com", "ukims", Seq.empty)

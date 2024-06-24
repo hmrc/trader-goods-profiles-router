@@ -16,52 +16,75 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.InternalServerError
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.CreateRecordConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateRecordService @Inject() (connector: CreateRecordConnector, uuidService: UuidService)(implicit
+class CreateRecordService @Inject() (
+  connector: CreateRecordConnector,
+  uuidService: UuidService,
+  auditService: AuditService,
+  dateTimeService: DateTimeService
+)(implicit
   ec: ExecutionContext
 ) extends Logging {
 
   def createRecord(
     eori: String,
     request: CreateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] = {
-    val correlationId = uuidService.uuid
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
+    val correlationId     = uuidService.uuid
+    val requestedDateTime = dateTimeService.timestamp.asStringSeconds
 
-    EitherT(
-      connector
-        .createRecord(CreateRecordPayload(eori, request), correlationId)
-        .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
-        }
-        .recover { case ex: Throwable =>
-          logger.error(
-            s"""[CreateRecordService] - Error when creating records for Eori Number: $eori,
+    connector
+      .createRecord(CreateRecordPayload(eori, request), correlationId)
+      .map {
+        case Right(response) =>
+          auditService.emitAuditCreateRecord(request, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
+          Right(response)
+        case Left(response)  =>
+          val failureReason = response.errorResponse.errors.map { error =>
+            error.map(e => e.message)
+          }
+
+          auditService.emitAuditCreateRecord(
+            request,
+            requestedDateTime,
+            response.errorResponse.code,
+            response.httpStatus,
+            failureReason
+          )
+
+          Left(response)
+
+      }
+      .recover { case ex: Throwable =>
+        logger.error(
+          s"""[CreateRecordService] - Error when creating records for Eori Number: $eori,
             correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
+          ex
+        )
 
-          Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
-          )
-        }
-    )
+        auditService.emitAuditCreateRecord(
+          request,
+          requestedDateTime,
+          UnexpectedErrorCode,
+          INTERNAL_SERVER_ERROR
+        )
+
+        Left(
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+        )
+      }
   }
 }

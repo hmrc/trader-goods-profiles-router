@@ -17,9 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.INTERNAL_SERVER_ERROR
-import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Results.{BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound}
+import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, METHOD_NOT_ALLOWED, NOT_FOUND}
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 
@@ -36,12 +35,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson(
-            "INVALID_OR_EMPTY_PAYLOAD",
-            "Invalid Response Payload or Empty payload"
-          )
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "INVALID_OR_EMPTY_PAYLOAD", "Invalid Response Payload or Empty payload")
         )
       }
 
@@ -51,12 +47,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson(
-            "INVALID_OR_EMPTY_PAYLOAD",
-            "Invalid Response Payload or Empty payload"
-          )
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "INVALID_OR_EMPTY_PAYLOAD", "Invalid Response Payload or Empty payload")
         )
       }
 
@@ -66,12 +59,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson(
-            "INTERNAL_ERROR_RESPONSE",
-            "Internal Error Response"
-          )
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "INTERNAL_ERROR_RESPONSE", "Internal Error Response")
         )
       }
 
@@ -81,12 +71,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson(
-            "UNAUTHORIZED",
-            "Unauthorized"
-          )
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "UNAUTHORIZED", "Unauthorized")
         )
       }
 
@@ -96,12 +83,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson(
-            "NOT_FOUND",
-            "Not Found"
-          )
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "NOT_FOUND", "Not Found")
         )
       }
 
@@ -111,12 +95,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson(
-            "METHOD_NOT_ALLOWED",
-            "Method Not Allowed"
-          )
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "METHOD_NOT_ALLOWED", "Method Not Allowed")
         )
       }
       "Internal server error" in new TestHarness { handler =>
@@ -125,11 +106,10 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson("INTERNAL_SERVER_ERROR", "Internal Server Error")
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "INTERNAL_SERVER_ERROR", "Internal Server Error")
         )
-
       }
       "Bad gateway" in new TestHarness { handler =>
         val eisResponse     = createEisErrorResponseAsJson("502", "Bad Gateway")
@@ -137,11 +117,10 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson("BAD_GATEWAY", "Bad Gateway")
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "BAD_GATEWAY", "Bad Gateway")
         )
-
       }
       "Service unavailable" in new TestHarness { handler =>
         val eisResponse     = createEisErrorResponseAsJson("503", "Service Unavailable")
@@ -149,9 +128,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson("SERVICE_UNAVAILABLE", "Service Unavailable")
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "SERVICE_UNAVAILABLE", "Service Unavailable")
         )
       }
       "Unknown error response" in new TestHarness { handler =>
@@ -160,9 +139,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson("UNKNOWN", "Unknown Error")
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "UNKNOWN", "Unknown Error")
         )
       }
       "Unexpected error is thrown" in new TestHarness { handler =>
@@ -171,9 +150,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
 
-        result.header.status mustBe INTERNAL_SERVER_ERROR
-        result mustBe InternalServerError(
-          createErrorResponseAsJson("UNEXPECTED_ERROR", "Unexpected Error")
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "Unexpected Error")
         )
       }
     }
@@ -190,55 +169,60 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        result mustBe BadRequest(
-          createInvalidParameterErrorAsJson(
+        result mustBe EisHttpErrorResponse(
+          BAD_REQUEST,
+          ErrorResponse(
+            correlationId,
             "BAD_REQUEST",
             "Bad Request",
-            Seq(
-              "6"    -> "Mandatory field eori was missing from body or is in the wrong format",
-              "7"    -> "EORI number does not have a TGP",
-              "8"    -> "Mandatory field actorId was missing from body or is in the wrong format",
-              "9"    -> "Mandatory field traderRef was missing from body or is in the wrong format",
-              "10"   -> "Trying to create or update a record with a duplicate traderRef",
-              "11"   -> "Mandatory field comcode was missing from body or is in the wrong format",
-              "12"   -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
-              "13"   -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
-              "14"   -> "Mandatory field category was missing from body or is in the wrong format",
-              "15"   -> "Optional field assessmentId is in the wrong format",
-              "16"   -> "Optional field primaryCategory is in the wrong format",
-              "17"   -> "Optional field type is in the wrong format",
-              "18"   -> "Optional field conditionId is in the wrong format",
-              "19"   -> "Optional field conditionDescription is in the wrong format",
-              "20"   -> "Optional field conditionTraderText is in the wrong format",
-              "21"   -> "Optional field supplementaryUnit is in the wrong format",
-              "22"   -> "Optional field measurementUnit is in the wrong format",
-              "23"   -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
-              "24"   -> "Optional field comcodeEffectiveToDate is in the wrong format",
-              "25"   -> "The recordId has been provided in the wrong format",
-              "26"   -> "The requested recordId to update doesn’t exist",
-              "27"   -> "There is an ongoing accreditation request and the record can not be updated",
-              "28"   -> "The URL parameter lastUpdatedDate is in the wrong format",
-              "29"   -> "The URL parameter page is in the wrong format",
-              "30"   -> "The URL parameter size is in the wrong format",
-              "31"   -> "This record has been removed and cannot be updated",
-              "E001" -> "X-Correlation-ID was missing from Header or is in the wrong format",
-              "E002" -> "Request Date was missing from Header or is in the wrong format",
-              "E003" -> "X-Forwarded-Host was missing from Header or is in the wrong format",
-              "E004" -> "Content-Type was missing from Header or is in the wrong format",
-              "E005" -> "Accept was missing from Header or is in the wrong format",
-              "E006" -> "Mandatory field receiptDate was missing from body",
-              "E007" -> "The eori has been provided in the wrong format",
-              "E008" -> "Mandatory field RequestorName was missing from body or is in the wrong format",
-              "E009" -> "Mandatory field RequestorEmail was missing from body or is in the wrong format",
-              "E010" -> "Mandatory field ukimsNumber was missing from body or in the wrong format",
-              "E011" -> "Mandatory field goodsItems was missing from body",
-              "E012" -> "The recordId has been provided in the wrong format",
-              "E013" -> "Mandatory field traderReference was missing from body",
-              "E014" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
-              "E015" -> "Mandatory field commodityCode was missing from body"
-            ): _*
+            Some(
+              Seq(
+                "6"    -> "Mandatory field eori was missing from body or is in the wrong format",
+                "7"    -> "EORI number does not have a TGP",
+                "8"    -> "Mandatory field actorId was missing from body or is in the wrong format",
+                "9"    -> "Mandatory field traderRef was missing from body or is in the wrong format",
+                "10"   -> "Trying to create or update a record with a duplicate traderRef",
+                "11"   -> "Mandatory field comcode was missing from body or is in the wrong format",
+                "12"   -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
+                "13"   -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
+                "14"   -> "Mandatory field category was missing from body or is in the wrong format",
+                "15"   -> "Optional field assessmentId is in the wrong format",
+                "16"   -> "Optional field primaryCategory is in the wrong format",
+                "17"   -> "Optional field type is in the wrong format",
+                "18"   -> "Optional field conditionId is in the wrong format",
+                "19"   -> "Optional field conditionDescription is in the wrong format",
+                "20"   -> "Optional field conditionTraderText is in the wrong format",
+                "21"   -> "Optional field supplementaryUnit is in the wrong format",
+                "22"   -> "Optional field measurementUnit is in the wrong format",
+                "23"   -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
+                "24"   -> "Optional field comcodeEffectiveToDate is in the wrong format",
+                "25"   -> "The recordId has been provided in the wrong format",
+                "26"   -> "The requested recordId to update doesn’t exist",
+                "27"   -> "There is an ongoing accreditation request and the record can not be updated",
+                "28"   -> "The URL parameter lastUpdatedDate is in the wrong format",
+                "29"   -> "The URL parameter page is in the wrong format",
+                "30"   -> "The URL parameter size is in the wrong format",
+                "31"   -> "This record has been removed and cannot be updated",
+                "E001" -> "X-Correlation-ID was missing from Header or is in the wrong format",
+                "E002" -> "Request Date was missing from Header or is in the wrong format",
+                "E003" -> "X-Forwarded-Host was missing from Header or is in the wrong format",
+                "E004" -> "Content-Type was missing from Header or is in the wrong format",
+                "E005" -> "Accept was missing from Header or is in the wrong format",
+                "E006" -> "Mandatory field receiptDate was missing from body",
+                "E007" -> "The eori has been provided in the wrong format",
+                "E008" -> "Mandatory field RequestorName was missing from body or is in the wrong format",
+                "E009" -> "Mandatory field RequestorEmail was missing from body or is in the wrong format",
+                "E010" -> "Mandatory field ukimsNumber was missing from body or in the wrong format",
+                "E011" -> "Mandatory field goodsItems was missing from body",
+                "E012" -> "The recordId has been provided in the wrong format",
+                "E013" -> "Mandatory field traderReference was missing from body",
+                "E014" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
+                "E015" -> "Mandatory field commodityCode was missing from body"
+              ).map { case (code, message) => Error("INVALID_REQUEST_PARAMETER", message, convertCode(code)) }
+            )
           )
         )
+
       }
 
       "Unexpected error response given an invalid json string" in new TestHarness { handler =>
@@ -246,8 +230,9 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        result mustBe BadRequest(
-          createErrorResponseAsJson("UNEXPECTED_ERROR", "Unexpected Error")
+        result mustBe EisHttpErrorResponse(
+          BAD_REQUEST,
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "Unexpected Error")
         )
       }
       "Unexpected error code response" in new TestHarness { handler =>
@@ -256,11 +241,13 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        result mustBe BadRequest(
-          createUnexpectedErrorAsJson(
+        result mustBe EisHttpErrorResponse(
+          BAD_REQUEST,
+          ErrorResponse(
+            correlationId,
             "BAD_REQUEST",
             "Bad Request",
-            Seq("100" -> "Unrecognised error number"): _*
+            Some(Seq(Error("UNEXPECTED_ERROR", "Unrecognised error number", 100)))
           )
         )
       }
@@ -284,30 +271,23 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        result mustBe Forbidden(
-          createErrorResponseAsJson("FORBIDDEN", "Forbidden")
-        )
-
+        result mustBe EisHttpErrorResponse(FORBIDDEN, ErrorResponse(correlationId, "FORBIDDEN", "Forbidden"))
       }
       "Not found response" in new TestHarness { handler =>
         val httpResponse = HttpResponse(404, "")
 
         val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        result mustBe NotFound(
-          createErrorResponseAsJson("NOT_FOUND", "Not Found")
-        )
+        result mustBe EisHttpErrorResponse(NOT_FOUND, ErrorResponse(correlationId, "NOT_FOUND", "Not Found"))
       }
       "Method not allowed response" in new TestHarness { handler =>
         val httpResponse = HttpResponse(405, "")
 
         val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        result mustBe MethodNotAllowed(
-          createErrorResponseAsJson(
-            "METHOD_NOT_ALLOWED",
-            "Method Not Allowed"
-          )
+        result mustBe EisHttpErrorResponse(
+          METHOD_NOT_ALLOWED,
+          ErrorResponse(correlationId, "METHOD_NOT_ALLOWED", "Method Not Allowed")
         )
       }
       "Unknown error response" in new TestHarness { handler =>
@@ -315,42 +295,13 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
         val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        result mustBe InternalServerError(
-          createErrorResponseAsJson(
-            "UNEXPECTED_ERROR",
-            "Unexpected Error"
-          )
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "Unexpected Error")
         )
       }
     }
   }
-
-  private def createUnexpectedErrorAsJson(
-    code: String,
-    message: String,
-    errors: (String, String)*
-  ): JsValue =
-    Json.toJson(
-      ErrorResponse(
-        correlationId,
-        code,
-        message,
-        Some(errors.map(e => Error("UNEXPECTED_ERROR", e._2, e._1.toInt)))
-      )
-    )
-  private def createInvalidParameterErrorAsJson(
-    code: String,
-    message: String,
-    errors: (String, String)*
-  ): JsValue =
-    Json.toJson(
-      ErrorResponse(
-        correlationId,
-        code,
-        message,
-        Some(errors.map(e => Error("INVALID_REQUEST_PARAMETER", e._2, convertCode(e._1))))
-      )
-    )
 
   def convertCode(code: String): Int                                                                       =
     if (code.startsWith("E")) {
@@ -388,9 +339,6 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
        |  }
        |}
         """.stripMargin
-
-  private def createErrorResponseAsJson(code: String, message: String): JsValue =
-    Json.toJson(ErrorResponse(correlationId, code, message))
 
   private def generateErrorCodes = {
 

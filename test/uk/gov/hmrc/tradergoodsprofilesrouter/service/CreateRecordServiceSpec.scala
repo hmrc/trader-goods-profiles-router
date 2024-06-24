@@ -16,19 +16,22 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
+import org.apache.pekko.Done
 import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.Json
-import play.api.mvc.Results.{BadRequest, InternalServerError}
+import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
+import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.CreateRecordConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 class CreateRecordServiceSpec
@@ -42,18 +45,22 @@ class CreateRecordServiceSpec
   implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  private val eoriNumber    = "GB123456789011"
-  private val connector     = mock[CreateRecordConnector]
-  private val uuidService   = mock[UuidService]
-  private val correlationId = "1234-5678-9012"
+  private val eoriNumber      = "GB123456789011"
+  private val connector       = mock[CreateRecordConnector]
+  private val uuidService     = mock[UuidService]
+  private val auditService    = mock[AuditService]
+  private val dateTimeService = mock[DateTimeService]
+  private val correlationId   = "1234-5678-9012"
+  private val dateTime        = Instant.parse("2021-12-17T09:30:47Z")
 
-  val sut = new CreateRecordService(connector, uuidService)
+  val sut = new CreateRecordService(connector, uuidService, auditService, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
     reset(connector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
+    when(dateTimeService.timestamp).thenReturn(dateTime)
   }
 
   "test" should {
@@ -62,41 +69,69 @@ class CreateRecordServiceSpec
       when(connector.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
 
-      val result = sut.createRecord(eoriNumber, createRecordRequest)
+      when(auditService.emitAuditCreateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
-      whenReady(result.value) {
-        _.value mustBe eisResponse
-      }
+      val result = await(sut.createRecord(eoriNumber, createRecordRequest))
+
+      result.value mustBe eisResponse
+      verify(auditService)
+        .emitAuditCreateRecord(createRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
 
     "return an internal server error" when {
       "EIS return an error" in {
+        val badRequestErrorResponse = createEisErrorResponse
         when(connector.createRecord(any, any)(any))
-          .thenReturn(Future.successful(Left(BadRequest("error"))))
+          .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = sut.createRecord(eoriNumber, createRecordRequest)
+        val result = await(sut.createRecord(eoriNumber, createRecordRequest))
 
-        whenReady(result.value) {
-          _.left.value mustBe BadRequest("error")
-        }
+        result.left.value mustBe badRequestErrorResponse
+        verify(auditService)
+          .emitAuditCreateRecord(
+            createRecordRequest,
+            dateTime.toString,
+            "BAD_REQUEST",
+            BAD_REQUEST,
+            Some(Seq("internal error 1", "internal error 2"))
+          )
       }
 
       "error when an exception is thrown" in {
         when(connector.createRecord(any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = sut.createRecord(eoriNumber, createRecordRequest)
+        val result = await(sut.createRecord(eoriNumber, createRecordRequest))
 
-        whenReady(result.value) {
-          _.left.value mustBe InternalServerError(
-            Json.obj(
-              "correlationId" -> correlationId,
-              "code"          -> "UNEXPECTED_ERROR",
-              "message"       -> "error"
-            )
+        result.left.value mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")
+        )
+
+        verify(auditService)
+          .emitAuditCreateRecord(
+            createRecordRequest,
+            dateTime.toString,
+            "UNEXPECTED_ERROR",
+            INTERNAL_SERVER_ERROR
           )
-        }
       }
     }
   }
+
+  private def createEisErrorResponse =
+    EisHttpErrorResponse(
+      BAD_REQUEST,
+      ErrorResponse(
+        correlationId,
+        "BAD_REQUEST",
+        "BAD_REQUEST",
+        Some(
+          Seq(
+            Error("INTERNAL_ERROR", "internal error 1", 6),
+            Error("INTERNAL_ERROR", "internal error 2", 8)
+          )
+        )
+      )
+    )
 }

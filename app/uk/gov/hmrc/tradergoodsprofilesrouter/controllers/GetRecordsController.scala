@@ -20,9 +20,11 @@ import cats.data.EitherT
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json
 import play.api.mvc._
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.InvalidQueryParameter
@@ -50,7 +52,7 @@ class GetRecordsController @Inject() (
       _          <- EitherT
                       .fromEither[Future](validateRecordId(recordId))
                       .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-      recordItem <- getRecordService.fetchRecord(eori, recordId)
+      recordItem <- getSingleRecord(eori, recordId)
     } yield Ok(Json.toJson(recordItem))
 
     result.merge
@@ -65,7 +67,7 @@ class GetRecordsController @Inject() (
     val result = for {
       _         <- EitherT.fromEither[Future](validateClientId)
       validDate <- validateDate(lastUpdatedDate)
-      records   <- getRecordService.fetchRecords(eori, validDate, page, size)
+      records   <- getRecords(eori, validDate, page, size)
     } yield Ok(Json.toJson(records))
 
     result.merge
@@ -85,4 +87,24 @@ class GetRecordsController @Inject() (
         )
       )
     )
+
+  private def getRecords(
+    eori: String,
+    validDate: Option[Instant],
+    page: Option[Int],
+    size: Option[Int]
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetEisRecordsResponse] =
+    EitherT(
+      getRecordService.fetchRecords(eori, validDate, page, size)
+    )
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+
+  private def getSingleRecord(
+    eori: String,
+    recordId: String
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords] =
+    EitherT(
+      getRecordService.fetchRecord(eori, recordId)
+    )
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 }

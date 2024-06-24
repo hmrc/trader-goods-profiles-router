@@ -19,9 +19,8 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 import play.api.libs.json.Json.toJson
-import play.api.mvc.Result
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
@@ -44,7 +43,7 @@ class UpdateRecordConnector @Inject() (
   def updateRecord(
     payload: UpdateRecordPayload,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, CreateOrUpdateRecordResponse]] =
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] =
     withMetricsTimerAsync("tgp.updaterecord.connector") { _ =>
       val url = appConfig.eisConfig.updateRecordUrl
 

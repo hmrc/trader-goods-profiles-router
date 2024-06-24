@@ -21,11 +21,13 @@ import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents}
+import play.api.mvc.{Action, ControllerComponents, Result}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.fieldsToErrorCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,9 +46,18 @@ class CreateRecordController @Inject() (
     val result = for {
       _                   <- EitherT.fromEither[Future](validateClientId)
       createRecordRequest <- EitherT.fromEither[Future](validateRequestBody[CreateRecordRequest](fieldsToErrorCode))
-      response            <- createRecordService.createRecord(eori, createRecordRequest)
+      response            <- createRecord(eori, createRecordRequest)
     } yield Created(Json.toJson(response))
 
     result.merge
   }
+
+  private def createRecord(
+    eori: String,
+    createRecordRequest: CreateRecordRequest
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] =
+    EitherT(
+      createRecordService.createRecord(eori, createRecordRequest)
+    )
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 }

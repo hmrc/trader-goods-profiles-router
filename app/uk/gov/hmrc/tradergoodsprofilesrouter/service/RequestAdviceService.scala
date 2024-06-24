@@ -19,12 +19,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.CREATED
-import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.{Conflict, InternalServerError}
+import play.api.http.Status.{CONFLICT, INTERNAL_SERVER_ERROR}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.RequestAdviceConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
@@ -45,26 +42,29 @@ class RequestAdviceService @Inject() (
     eori: String,
     recordId: String,
     request: RequestAdvice
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] =
-    for {
-      goodsItemRecord <- routerService.fetchRecord(eori, recordId)
-      _               <- EitherT
-                           .fromEither[Future](isValidAdviceStatus(goodsItemRecord.adviceStatus))
-                           .leftMap(e => e)
-      _               <- connectorRequest(createNewTraderDetails(eori, goodsItemRecord, request))
-    } yield CREATED
-
-  private def connectorRequest(
-    request: TraderDetails
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] = {
+  )(implicit hc: HeaderCarrier): EitherT[Future, EisHttpErrorResponse, Int] = {
     val correlationId = uuidService.uuid
-    EitherT(
+
+    for {
+      goodsItemRecords <- EitherT(routerService.fetchRecord(eori, recordId)).leftMap(o => o)
+      response         <- EitherT(validateAndRequestAdvice(eori, goodsItemRecords, request, correlationId)).leftMap(o => o)
+    } yield response
+
+  }
+
+  private def validateAndRequestAdvice(
+    eori: String,
+    goodsItemRecord: GoodsItemRecords,
+    request: RequestAdvice,
+    correlationId: String
+  )(implicit
+    hc: HeaderCarrier
+  ): Future[Either[EisHttpErrorResponse, Int]] =
+    if (AllowedAdviceStatuses.contains(goodsItemRecord.adviceStatus.toLowerCase)) {
+      val traderDetails = createNewTraderDetails(eori, goodsItemRecord, request)
       connector
-        .requestAdvice(request, correlationId)
-        .map {
-          case Right(_)        => Right(CREATED)
-          case error @ Left(_) => error
-        }
+        .requestAdvice(traderDetails, correlationId)
+        .map(r => r)
         .recover { case ex: Throwable =>
           logger.error(
             s"""[RequestAdviceService] - Error when creating accreditation for
@@ -73,21 +73,17 @@ class RequestAdviceService @Inject() (
           )
 
           Left(
-            InternalServerError(
-              Json.toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+            EisHttpErrorResponse(
+              INTERNAL_SERVER_ERROR,
+              ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
             )
           )
         }
-    )
-  }
-
-  private def isValidAdviceStatus(adviceStatus: String): Either[Result, Unit] =
-    if (AllowedAdviceStatuses.contains(adviceStatus.toLowerCase)) {
-      Right(())
-    } else {
-      Left(
-        Conflict(
-          Json.toJson(
+    } else
+      Future.successful(
+        Left(
+          EisHttpErrorResponse(
+            CONFLICT,
             ErrorResponse(
               uuidService.uuid,
               BadRequestCode,
@@ -101,7 +97,6 @@ class RequestAdviceService @Inject() (
           )
         )
       )
-    }
 
   private def createNewTraderDetails(
     eori: String,
@@ -109,7 +104,7 @@ class RequestAdviceService @Inject() (
     request: RequestAdvice
   ): TraderDetails = {
 
-    val goodsItem     = GoodsItem(
+    val goodsItem = GoodsItem(
       goodsItemRecords.recordId,
       goodsItemRecords.traderRef,
       goodsItemRecords.goodsDescription,
@@ -119,7 +114,7 @@ class RequestAdviceService @Inject() (
       goodsItemRecords.measurementUnit,
       goodsItemRecords.comcode
     )
-    val traderDetails = TraderDetails(
+    TraderDetails(
       eori,
       request.requestorName,
       Some(goodsItemRecords.actorId),
@@ -127,6 +122,5 @@ class RequestAdviceService @Inject() (
       goodsItemRecords.ukimsNumber,
       Seq(goodsItem)
     )
-    traderDetails
   }
 }

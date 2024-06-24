@@ -16,23 +16,22 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import cats.data.EitherT
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.Json
-import play.api.mvc.Results.InternalServerError
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
 
@@ -62,7 +61,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     "return a 200 Ok response on removing a record" in {
 
       when(mockService.removeRecord(any, any, any)(any))
-        .thenReturn(EitherT.rightT(NO_CONTENT))
+        .thenReturn(Future.successful(Right(NO_CONTENT)))
 
       val result = controller.remove(eori, recordId, actorId)(
         FakeRequest().withHeaders(validHeaders: _*)
@@ -88,10 +87,10 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     }
 
     "return an error if cannot remove a record" in {
-      val errorResponseJson = Json.obj("error" -> "error")
+      val errorResponse = ErrorResponse("1234", "INTERNAL_SERVER_ERROR", "any-message")
 
       when(mockService.removeRecord(any, any, any)(any))
-        .thenReturn(EitherT.leftT(InternalServerError(errorResponseJson)))
+        .thenReturn(Future.successful(Left(EisHttpErrorResponse(INTERNAL_SERVER_ERROR, errorResponse))))
 
       val result = controller.remove(eori, recordId, actorId)(
         FakeRequest().withHeaders(validHeaders: _*)
@@ -99,7 +98,11 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
 
       status(result) mustBe INTERNAL_SERVER_ERROR
       withClue("should return json response") {
-        contentAsJson(result) mustBe errorResponseJson
+        contentAsJson(result) mustBe Json.obj(
+          "correlationId" -> "1234",
+          "code"          -> "INTERNAL_SERVER_ERROR",
+          "message"       -> "any-message"
+        )
       }
     }
   }

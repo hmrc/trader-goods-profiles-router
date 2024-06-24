@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, METHOD_NOT_ALLOWED, NOT_FOUND, SERVICE_UNAVAILABLE}
+import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import play.api.mvc.Result
-import play.api.mvc.Results.{BadGateway, BadRequest, Forbidden, InternalServerError, MethodNotAllowed, NotFound, ServiceUnavailable}
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ErrorDetail
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
@@ -28,76 +26,66 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorRespons
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 trait EisHttpErrorHandler {
-  def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): Result =
+  def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): EisHttpErrorResponse =
     httpResponse.status match {
 
       case BAD_REQUEST =>
-        BadRequest(Json.toJson(determine400Error(correlationId, httpResponse.body)))
+        EisHttpErrorResponse(BAD_REQUEST, determine400Error(correlationId, httpResponse.body))
       case FORBIDDEN   =>
-        Forbidden(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              ForbiddenCode,
-              ForbiddenMessage
-            )
+        EisHttpErrorResponse(
+          FORBIDDEN,
+          ErrorResponse(
+            correlationId,
+            ForbiddenCode,
+            ForbiddenMessage
           )
         )
       case NOT_FOUND   =>
-        NotFound(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              NotFoundCode,
-              NotFoundMessage
-            )
+        EisHttpErrorResponse(
+          NOT_FOUND,
+          ErrorResponse(
+            correlationId,
+            NotFoundCode,
+            NotFoundMessage
           )
         )
 
       case METHOD_NOT_ALLOWED =>
-        MethodNotAllowed(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              MethodNotAllowedCode,
-              MethodNotAllowedMessage
-            )
+        EisHttpErrorResponse(
+          METHOD_NOT_ALLOWED,
+          ErrorResponse(
+            correlationId,
+            MethodNotAllowedCode,
+            MethodNotAllowedMessage
           )
         )
 
       case BAD_GATEWAY =>
-        BadGateway(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              BadGatewayCode,
-              BadGatewayMessage
-            )
+        EisHttpErrorResponse(
+          BAD_GATEWAY,
+          ErrorResponse(
+            correlationId,
+            BadGatewayCode,
+            BadGatewayMessage
           )
         )
 
       case SERVICE_UNAVAILABLE =>
-        ServiceUnavailable(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              ServiceUnavailableCode,
-              ServiceUnavailableMessage
-            )
+        EisHttpErrorResponse(
+          SERVICE_UNAVAILABLE,
+          ErrorResponse(
+            correlationId,
+            ServiceUnavailableCode,
+            ServiceUnavailableMessage
           )
         )
 
       case INTERNAL_SERVER_ERROR =>
-        InternalServerError(Json.toJson(determine500Error(correlationId, httpResponse.body)))
+        EisHttpErrorResponse(INTERNAL_SERVER_ERROR, determine500Error(correlationId, httpResponse.body))
       case _                     =>
-        InternalServerError(
-          Json.toJson(
-            ErrorResponse(
-              correlationId,
-              UnexpectedErrorCode,
-              UnexpectedErrorMessage
-            )
-          )
+        EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(correlationId, UnexpectedErrorCode, UnexpectedErrorMessage)
         )
     }
 
@@ -115,45 +103,46 @@ trait EisHttpErrorHandler {
               InvalidOrEmptyPayloadCode,
               InvalidOrEmptyPayloadMessage
             )
-          case "400"         =>
+
+          case "400" =>
             ErrorResponse(
               correlationId,
               InternalErrorResponseCode,
               InternalErrorResponseMessage
             )
-          case "401"         =>
+          case "401" =>
             ErrorResponse(
               correlationId,
               UnauthorizedCode,
               UnauthorizedMessage
             )
-          case "404"         =>
+          case "404" =>
             ErrorResponse(correlationId, NotFoundCode, NotFoundMessage)
-          case "405"         =>
+          case "405" =>
             ErrorResponse(
               correlationId,
               MethodNotAllowedCode,
               MethodNotAllowedMessage
             )
-          case "500"         =>
+          case "500" =>
             ErrorResponse(
               correlationId,
               InternalServerErrorCode,
               InternalServerErrorMessage
             )
-          case "502"         =>
+          case "502" =>
             ErrorResponse(
               correlationId,
               BadGatewayCode,
               BadGatewayMessage
             )
-          case "503"         =>
+          case "503" =>
             ErrorResponse(
               correlationId,
               ServiceUnavailableCode,
               ServiceUnavailableMessage
             )
-          case _             =>
+          case _     =>
             ErrorResponse(correlationId, UnknownCode, UnknownMessage)
         }
       case JsError(_)           =>

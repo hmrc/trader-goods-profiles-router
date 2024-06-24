@@ -19,7 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import play.api.http.Status._
 import play.api.libs.Files.logger
 import play.api.libs.json._
-import play.api.mvc.Result
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
 import scala.reflect.runtime.universe.{TypeTag, typeOf}
@@ -27,11 +26,11 @@ import scala.util.{Failure, Success, Try}
 
 object EisHttpReader {
 
-  case class HttpReader[T](correlationId: String, errorHandler: (HttpResponse, String) => Result)(implicit
+  case class HttpReader[T](correlationId: String, errorHandler: (HttpResponse, String) => EisHttpErrorResponse)(implicit
     reads: Reads[T],
     tt: TypeTag[T]
-  ) extends HttpReads[Either[Result, T]] {
-    override def read(method: String, url: String, response: HttpResponse): Either[Result, T] =
+  ) extends HttpReads[Either[EisHttpErrorResponse, T]] {
+    override def read(method: String, url: String, response: HttpResponse): Either[EisHttpErrorResponse, T] =
       response match {
         case response if isSuccessful(response.status) =>
           Right(jsonAs[T](response))
@@ -39,9 +38,9 @@ object EisHttpReader {
       }
   }
 
-  case class StatusHttpReader(correlationId: String, errorHandler: (HttpResponse, String) => Result)
-      extends HttpReads[Either[Result, Int]] {
-    override def read(method: String, url: String, response: HttpResponse): Either[Result, Int] =
+  case class StatusHttpReader(correlationId: String, errorHandler: (HttpResponse, String) => EisHttpErrorResponse)
+      extends HttpReads[Either[EisHttpErrorResponse, Int]] {
+    override def read(method: String, url: String, response: HttpResponse): Either[EisHttpErrorResponse, Int] =
       response match {
         case response if isSuccessful(response.status) => Right(response.status)
         case response                                  => Left(errorHandler(response, correlationId))

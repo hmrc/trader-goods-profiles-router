@@ -19,7 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 import play.api.libs.json.Json
-import play.api.mvc.Result
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
@@ -45,7 +44,7 @@ class RemoveRecordConnector @Inject() (
     recordId: String,
     actorId: String,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[Result, Int]] =
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] =
     withMetricsTimerAsync("tgp.removerecord.connector") { _ =>
       val url = appConfig.eisConfig.removeRecordUrl
       httpClientV2

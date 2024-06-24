@@ -16,14 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.libs.json.Json.toJson
-import play.api.mvc.Result
-import play.api.mvc.Results.InternalServerError
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.MaintainProfileConnector
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, MaintainProfileConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
@@ -38,7 +35,7 @@ class MaintainProfileService @Inject() (connector: MaintainProfileConnector, uui
 
   def maintainProfile(eori: String, request: MaintainProfileRequest)(implicit
     hc: HeaderCarrier
-  ): EitherT[Future, Result, MaintainProfileResponse] = {
+  ): Future[Either[EisHttpErrorResponse, MaintainProfileResponse]] = {
     val eisRequest    =
       MaintainProfileEisRequest(
         eori,
@@ -49,26 +46,22 @@ class MaintainProfileService @Inject() (connector: MaintainProfileConnector, uui
       )
     val correlationId = uuidService.uuid
 
-    EitherT(
-      connector
-        .maintainProfile(eisRequest, correlationId)
-        .map {
-          case response @ Right(_) => response
-          case error @ Left(_)     => error
-        }
-        .recover { case ex: Throwable =>
-          logger.error(
-            s"""[MaintainProfileService] - Error when maintaining profile for ActorId: ${request.actorId},
+    connector
+      .maintainProfile(eisRequest, correlationId)
+      .map {
+        case Right(response) => Right(response)
+        case Left(response)  => Left(response)
+      }
+      .recover { case ex: Throwable =>
+        logger.error(
+          s"""[MaintainProfileService] - Error when maintaining profile for ActorId: ${request.actorId},
           s"correlationId: $correlationId, message: ${ex.getMessage}""",
-            ex
-          )
-          Left(
-            InternalServerError(
-              toJson(ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-            )
-          )
-        }
-    )
+          ex
+        )
+        Left(
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+        )
+      }
   }
 
   // TODO: This will need to be removed once EIS / B&T make the same validation on their side
