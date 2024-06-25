@@ -51,7 +51,7 @@ class GetRecordsConnector @Inject() (
 
       httpClientV2
         .get(url"$url")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
+        .setHeader(buildHeadersForGetMethod(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
         .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
     }
 
@@ -69,7 +69,7 @@ class GetRecordsConnector @Inject() (
 
       httpClientV2
         .get(url"$uri")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
+        .setHeader(buildHeadersForGetMethod(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
         .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
     }
 

@@ -45,10 +45,10 @@ class AccreditationConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec 
     Seq(
       "X-Correlation-ID" -> correlationId,
       "X-Forwarded-Host" -> "MDTP",
-      "Content-Type"     -> MimeTypes.JSON,
       "Accept"           -> MimeTypes.JSON,
       "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-      "Authorization"    -> "Bearer dummyAccreditationCreateBearerToken"
+      "Authorization"    -> "Bearer dummyAccreditationCreateBearerToken",
+      "Content-Type"     -> MimeTypes.JSON
     )
 
   override def beforeEach(): Unit = {

@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.support
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{verify, when}
 import org.mockito.captor.ArgCaptor
-import org.scalatest.{BeforeAndAfterEach, EitherValues}
+import org.scalatest.{Assertion, BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.MimeTypes
@@ -44,10 +44,19 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   val requestBuilder: RequestBuilder   = mock[RequestBuilder]
   val dateTimeService: DateTimeService = mock[DateTimeService]
 
-  def expectedHeader(correlationId: String, accessToken: String) = Seq(
+  def expectedHeader(correlationId: String, accessToken: String): Seq[(String, String)] = Seq(
     "X-Correlation-ID" -> correlationId,
     "X-Forwarded-Host" -> "MDTP",
-    "Content-Type"     -> MimeTypes.JSON,
+    "Accept"           -> MimeTypes.JSON,
+    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+    "X-Client-ID"      -> "TSS",
+    "Authorization"    -> s"Bearer $accessToken",
+    "Content-Type"     -> MimeTypes.JSON
+  )
+
+  def expectedHeaderForGetMethod(correlationId: String, accessToken: String): Seq[(String, String)] = Seq(
+    "X-Correlation-ID" -> correlationId,
+    "X-Forwarded-Host" -> "MDTP",
     "Accept"           -> MimeTypes.JSON,
     "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
     "X-Client-ID"      -> "TSS",
@@ -76,7 +85,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       )
     )
 
-  def verifyExecuteWithParams(expectedCorrelationId: String) = {
+  def verifyExecuteWithParams(expectedCorrelationId: String): Assertion = {
     val captor = ArgCaptor[HttpReader[Either[Result, GetEisRecordsResponse]]]
     verify(requestBuilder).execute(captor.capture, any)
 

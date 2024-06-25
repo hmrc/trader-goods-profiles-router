@@ -28,18 +28,21 @@ trait BaseConnector {
   def appConfig: AppConfig
   def dateTimeService: DateTimeService
 
-  def buildHeaders(correlationId: String, accessToken: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] =
+  def buildHeaders(correlationId: String, accessToken: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
     Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> appConfig.eisConfig.forwardedHost,
-      HeaderNames.ContentType   -> MimeTypes.JSON,
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
       HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
-      HeaderNames.Authorization -> accessToken
+      HeaderNames.Authorization -> accessToken,
+      HeaderNames.ContentType   -> MimeTypes.JSON
     )
+
+  def buildHeadersForGetMethod(correlationId: String, accessToken: String)(implicit
+    hc: HeaderCarrier
+  ): Seq[(String, String)] =
+    buildHeaders(correlationId, accessToken).filterNot(_._1 == HeaderNames.ContentType)
 
   def buildHeadersForAdvice(correlationId: String, bearerToken: String)(implicit
     hc: HeaderCarrier
@@ -47,5 +50,4 @@ trait BaseConnector {
     buildHeaders(correlationId, bearerToken).filterNot(elm =>
       elm == HeaderNames.ClientId -> hc.headers(Seq(HeaderNames.ClientId)).head._2
     )
-
 }
