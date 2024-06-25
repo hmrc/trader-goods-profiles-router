@@ -113,7 +113,7 @@ class AccreditationConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec 
         |{
         |"accreditationRequest":{
         | "requestCommon":{
-        |   "receiptDate":"Sun, 12 May 2024 12:15:15 GMT"
+        |   "receiptDate":"2024-05-12T12:15:15Z"
         |   },
         |   "requestDetail":{
         |     "traderDetails":{

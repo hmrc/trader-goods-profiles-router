@@ -45,7 +45,7 @@ class RequestAdviceConnector @Inject() (
     withMetricsTimerAsync("tgp.advice.connector") { _ =>
       val url = appConfig.eisConfig.requestAdviceUrl
 
-      val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringHttp)
+      val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringSeconds)
       httpClientV2
         .post(url"$url")
         .setHeader(buildHeadersForAdvice(correlationId, appConfig.eisConfig.requestAdviceBearerToken): _*)
