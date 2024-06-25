@@ -34,7 +34,7 @@ class RequestAdviceIntegrationSpec
     with BeforeAndAfterEach {
 
   private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val timestamp              = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val timestamp              = "2021-12-17T09:30:47Z"
   private val eori                   = "GB123456789001"
   private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   private val url                    = fullUrl(s"/traders/$eori/records/$recordId/advice")
