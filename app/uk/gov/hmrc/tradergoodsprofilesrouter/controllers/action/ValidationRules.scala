@@ -20,6 +20,7 @@ import cats.implicits.catsSyntaxTuple2Parallel
 import cats.syntax.all._
 import org.apache.commons.validator.routines.EmailValidator
 import play.api.libs.functional.syntax.toApplicativeOps
+import play.api.libs.json.JsPath.json
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json._
@@ -31,9 +32,11 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
+import java.time.Instant
+import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.util.{Locale, UUID}
 import scala.concurrent.ExecutionContext
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
 
 trait ValidationRules {
@@ -132,6 +135,17 @@ object ValidationRules {
     val validEmailAddress: Reads[String] = verifying(isValidEmailAddress)
 
     val validNiphl: Reads[String] = verifying(isValidNiphl)
+
+    val instantReads: Reads[Instant] = validDate
+
+  }
+  def validDate(json: JsValue): JsResult[Instant] = json match {
+    case JsString(s) =>
+      Try(Instant.parse(s)) match {
+        case Success(instant)                   => JsSuccess(instant)
+        case Failure(_: DateTimeParseException) => JsError()
+      }
+    case _           => JsError()
   }
 
   def isValidEmailAddress(emailAddress: String): Boolean = emailValidator.isValid(emailAddress)

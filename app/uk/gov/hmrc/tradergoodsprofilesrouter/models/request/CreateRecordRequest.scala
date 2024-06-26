@@ -20,7 +20,7 @@ import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json._
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validComcode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{instantReads, lengthBetween, validActorId, validComcode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.isValidCountryCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
@@ -53,7 +53,7 @@ object CreateRecordRequest {
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[BigDecimal] and
       (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
-      (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
+      (JsPath \ "comcodeEffectiveFromDate").read(instantReads) and
       (JsPath \ "comcodeEffectiveToDate")
         .readNullable[Instant])(CreateRecordRequest.apply _)
 
