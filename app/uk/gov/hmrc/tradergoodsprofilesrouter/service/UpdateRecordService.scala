@@ -45,13 +45,13 @@ class UpdateRecordService @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
     val correlationId     = uuidService.uuid
     val payload           = UpdateRecordPayload(eori, recordId, request)
-    val requestedDateTime = dateTimeService.timestamp.asStringSeconds
+    val requestedDateTime = dateTimeService.timestamp.asStringMilliSeconds
 
     connector
       .updateRecord(payload, correlationId)
       .map {
         case Right(response) =>
-          auditService.emitAuditUpdateRecord(request, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
+          auditService.emitAuditUpdateRecord(payload, requestedDateTime, "SUCCEEDED", OK, None, Some(response))
           Right(response)
         case Left(response)  =>
           val failureReason = response.errorResponse.errors.map { error =>
@@ -59,7 +59,7 @@ class UpdateRecordService @Inject() (
           }
 
           auditService.emitAuditUpdateRecord(
-            request,
+            payload,
             requestedDateTime,
             response.errorResponse.code,
             response.httpStatus,
@@ -76,7 +76,7 @@ class UpdateRecordService @Inject() (
         )
 
         auditService.emitAuditUpdateRecord(
-          request,
+          payload,
           requestedDateTime,
           UnexpectedErrorCode,
           INTERNAL_SERVER_ERROR

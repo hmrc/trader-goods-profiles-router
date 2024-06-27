@@ -51,11 +51,12 @@ class UpdateRecordServiceSpec
 
   private val correlationId   = "1234-5678-9012"
   private val eoriNumber      = "GB123456789011"
+  private val recordId        = "b2fa315b-2d31-4629-90fc-a7b1a5119873"
   private val connector       = mock[UpdateRecordConnector]
   private val uuidService     = mock[UuidService]
   private val auditService    = mock[AuditService]
   private val dateTimeService = mock[DateTimeService]
-  private val dateTime        = Instant.parse("2021-12-17T09:30:47Z")
+  private val dateTime        = Instant.parse("2021-12-17T09:30:47.456Z")
 
   private val sut = new UpdateRecordService(connector, uuidService, auditService, dateTimeService)
 
@@ -74,12 +75,12 @@ class UpdateRecordServiceSpec
         .thenReturn(Future.successful(Right(eisResponse)))
       when(auditService.emitAuditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
-      val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
+      val result = await(sut.updateRecord(eoriNumber, recordId, updateRecordRequest))
 
       result.value mustBe eisResponse
       verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
       verify(auditService)
-        .emitAuditUpdateRecord(updateRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
+        .emitAuditUpdateRecord(updateRecordPayload, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
 
     "dateTime value should be formatted to yyyy-mm-dd'T'hh:mm:ssZ" in {
@@ -91,12 +92,12 @@ class UpdateRecordServiceSpec
       val invalidFormattedDate = Instant.parse("2024-11-18T23:20:19.1324564Z")
       val result               =
         await(
-          sut.updateRecord(eoriNumber, "recordId", updateRecordRequestWIthInvalidFormattedDate(invalidFormattedDate))
+          sut.updateRecord(eoriNumber, recordId, updateRecordRequestWIthInvalidFormattedDate(invalidFormattedDate))
         )
 
       val expectedpayload = UpdateRecordPayload(
         eori = eoriNumber,
-        recordId = "recordId",
+        recordId = recordId,
         actorId = "GB098765432112",
         comcodeEffectiveFromDate = Some(Instant.parse("2024-11-18T23:20:19Z")),
         comcodeEffectiveToDate = Some(Instant.parse("2024-11-18T23:20:19Z"))
@@ -105,7 +106,7 @@ class UpdateRecordServiceSpec
       result.value mustBe eisResponse
       verify(connector).updateRecord(eqTo(expectedpayload), eqTo(correlationId))(any)
       verify(auditService)
-        .emitAuditUpdateRecord(updateRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
+        .emitAuditUpdateRecord(updateRecordPayload, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
     "return an internal server error" when {
 
@@ -114,12 +115,12 @@ class UpdateRecordServiceSpec
         when(connector.updateRecord(any, any)(any))
           .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
+        val result = await(sut.updateRecord(eoriNumber, recordId, updateRecordRequest))
 
         result.left.value mustBe badRequestErrorResponse
         verify(auditService)
           .emitAuditUpdateRecord(
-            updateRecordRequest,
+            updateRecordPayload,
             dateTime.toString,
             "BAD_REQUEST",
             BAD_REQUEST,
@@ -131,7 +132,7 @@ class UpdateRecordServiceSpec
         when(connector.updateRecord(any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = await(sut.updateRecord(eoriNumber, "recordId", updateRecordRequest))
+        val result = await(sut.updateRecord(eoriNumber, recordId, updateRecordRequest))
 
         result.left.value mustBe EisHttpErrorResponse(
           INTERNAL_SERVER_ERROR,
@@ -140,7 +141,7 @@ class UpdateRecordServiceSpec
 
         verify(auditService)
           .emitAuditUpdateRecord(
-            updateRecordRequest,
+            updateRecordPayload,
             dateTime.toString,
             "UNEXPECTED_ERROR",
             INTERNAL_SERVER_ERROR
@@ -175,7 +176,7 @@ class UpdateRecordServiceSpec
     )
     UpdateRecordPayload(
       eoriNumber,
-      "recordId",
+      recordId,
       "GB098765432112",
       Some("BAN001001"),
       Some("10410100"),
@@ -219,6 +220,38 @@ class UpdateRecordServiceSpec
              |}
              |""".stripMargin)
     .as[UpdateRecordRequest]
+
+  val updateRecordPayload: UpdateRecordPayload = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789011",
+             |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+             |    "actorId": "GB098765432112",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "10410100",
+             |    "adviceStatus": "Not Requested",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 1,
+             |    "assessments": [
+             |        {
+             |            "assessmentId": "abc123",
+             |            "primaryCategory": 1,
+             |            "condition": {
+             |                "type": "abc123",
+             |                "conditionId": "Y923",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        }
+             |    ],
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
+    .as[UpdateRecordPayload]
 
   val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse =
     Json

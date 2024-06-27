@@ -31,9 +31,13 @@ import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditCreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,7 +49,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
 
   private val auditConnector  = mock[AuditConnector]
   private val dataTimeService = mock[DateTimeService]
-  private val timestamp       = Instant.parse("2021-12-17T09:30:47Z")
+  private val timestamp       = Instant.parse("2021-12-17T09:30:47.456Z")
   private val dateTime        = timestamp.toString
   private val eori            = "GB123456789011"
   private val recordId        = "d677693e-9981-4ee3-8574-654981ebe606"
@@ -118,7 +122,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
 
       val result = await(
         sut.emitAuditCreateRecord(
-          createRecordRequestData,
+          createRecordRequestDataPayload,
           dateTime,
           "SUCCEEDED",
           OK,
@@ -131,7 +135,40 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
       verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
       val actualEvent             = extendedDateEventCaptor.value
-      actualEvent.detail mustBe emitAuditCreateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
+      actualEvent.detail mustBe emitAuditCreateRecordDetailJson(
+        "SUCCEEDED",
+        OK,
+        auditCreateRecordRequestData,
+        Some(auditCreateRecordResponseData)
+      )
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
+    }
+
+    "send an event for success response without assessments" in {
+      when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
+
+      val result = await(
+        sut.emitAuditCreateRecord(
+          createRecordRequestDataPayloadWithoutAssessments,
+          dateTime,
+          "SUCCEEDED",
+          OK,
+          None,
+          Some(createOrUpdateRecordResponseDataWithoutAssessments)
+        )
+      )
+
+      result mustBe Done
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe emitAuditCreateRecordDetailJson(
+        "SUCCEEDED",
+        OK,
+        auditCreateRecordRequestDataWithoutAssessments,
+        Some(auditCreateRecordResponseData)
+      )
       actualEvent.auditType mustBe auditType
       actualEvent.auditSource mustBe auditSource
     }
@@ -142,7 +179,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         extendedDataEvent(
           auditDetailJsonWithFailureReason(
             Seq("erro-1", "error-2"),
-            emitAuditCreateRecordDetailJson("BAD_REQUEST", BAD_REQUEST)
+            emitAuditCreateRecordDetailJson("BAD_REQUEST", BAD_REQUEST, auditCreateRecordRequestData)
           )
         )
 
@@ -150,7 +187,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
 
       val result = await(
         sut.emitAuditCreateRecord(
-          createRecordRequestData,
+          createRecordRequestDataPayload,
           dateTime,
           "BAD_REQUEST",
           BAD_REQUEST,
@@ -174,7 +211,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
 
       val result = await(
         sut.emitAuditUpdateRecord(
-          updateRecordRequestData,
+          updateRecordRequestDataPayload,
           dateTime,
           "SUCCEEDED",
           OK,
@@ -187,7 +224,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
       verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
       val actualEvent             = extendedDateEventCaptor.value
-      actualEvent.detail mustBe emitAuditUpdateRecordDetailJson("SUCCEEDED", OK, Some(createOrUpdateRecordResponseData))
+      actualEvent.detail mustBe emitAuditUpdateRecordDetailJson("SUCCEEDED", OK, Some(auditUpdateRecordResponseData))
       actualEvent.auditType mustBe auditType
       actualEvent.auditSource mustBe auditSource
     }
@@ -206,7 +243,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
 
       val result = await(
         sut.emitAuditUpdateRecord(
-          updateRecordRequestData,
+          updateRecordRequestDataPayload,
           dateTime,
           "BAD_REQUEST",
           BAD_REQUEST,
@@ -252,7 +289,8 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
   private def emitAuditCreateRecordDetailJson(
     status: String,
     statusCode: Int,
-    createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
+    auditCreateRecordRequest: AuditCreateRecordRequest,
+    auditCreateRecordResponse: Option[AuditCreateRecordResponse] = None
   ) =
     removeNulls(
       Json.obj(
@@ -260,19 +298,19 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
         "requestDateTime"  -> dateTime,
         "responseDateTime" -> dateTime,
-        "request"          -> createRecordRequestData,
+        "request"          -> auditCreateRecordRequest,
         "outcome"          -> Json.obj(
           "status"     -> status,
           "statusCode" -> statusCode
         ),
-        "response"         -> Some(createOrUpdateRecordResponse)
+        "response"         -> Some(auditCreateRecordResponse)
       )
     )
 
   private def emitAuditUpdateRecordDetailJson(
     status: String,
     statusCode: Int,
-    createOrUpdateRecordResponse: Option[CreateOrUpdateRecordResponse] = None
+    auditUpdateRecordResponse: Option[AuditUpdateRecordResponse] = None
   ) =
     removeNulls(
       Json.obj(
@@ -280,12 +318,12 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
         "requestDateTime"  -> dateTime,
         "responseDateTime" -> dateTime,
-        "request"          -> updateRecordRequestData,
+        "request"          -> auditUpdateRecordRequestData,
         "outcome"          -> Json.obj(
           "status"     -> status,
           "statusCode" -> statusCode
         ),
-        "response"         -> Some(createOrUpdateRecordResponse)
+        "response"         -> Some(auditUpdateRecordResponse)
       )
     )
 
@@ -338,7 +376,70 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
              |""".stripMargin)
     .as[CreateOrUpdateRecordResponse]
 
-  lazy val createRecordRequestData: CreateRecordRequest = Json
+  lazy val createOrUpdateRecordResponseDataWithoutAssessments: CreateOrUpdateRecordResponse = Json
+    .parse("""
+             |{
+             |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+             |  "eori": "GB123456789012",
+             |  "actorId": "GB098765432112",
+             |  "traderRef": "BAN001001",
+             |  "comcode": "10410100",
+             |  "accreditationStatus": "Not Requested",
+             |  "goodsDescription": "Organic bananas",
+             |  "countryOfOrigin": "EC",
+             |  "category": 1,
+             |  "supplementaryUnit": 500,
+             |  "measurementUnit": "Square metre (m2)",
+             |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+             |  "version": 1,
+             |  "active": true,
+             |  "toReview": false,
+             |  "reviewReason": "Commodity code change",
+             |  "declarable": "SPIMM",
+             |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+             |  "nirmsNumber": "RMS-GB-123456",
+             |  "niphlNumber": "6 S12345",
+             |  "createdDateTime": "2024-11-18T23:20:19Z",
+             |  "updatedDateTime": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
+    .as[CreateOrUpdateRecordResponse]
+
+  lazy val auditCreateRecordResponseData: AuditCreateRecordResponse = Json
+    .parse("""
+             |{
+             |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+             |  "adviceStatus": "Not Requested",
+             |  "recordVersion": 1,
+             |  "recordActive": true,
+             |  "recordToReview": false,
+             |  "reviewReason": "Commodity code change",
+             |  "declarableStatus": "SPIMM",
+             |  "UKIMSNumber": "XIUKIM47699357400020231115081800",
+             |  "NIRMSNumber": "RMS-GB-123456",
+             |  "NIPHLNumber": "6 S12345"
+             |}
+             |""".stripMargin)
+    .as[AuditCreateRecordResponse]
+
+  lazy val auditUpdateRecordResponseData: AuditUpdateRecordResponse = Json
+    .parse("""
+             |{
+             |  "adviceStatus": "Not Requested",
+             |  "recordVersion": 1,
+             |  "recordActive": true,
+             |  "recordToReview": false,
+             |  "reviewReason": "Commodity code change",
+             |  "declarableStatus": "SPIMM",
+             |  "UKIMSNumber": "XIUKIM47699357400020231115081800",
+             |  "NIRMSNumber": "RMS-GB-123456",
+             |  "NIPHLNumber": "6 S12345"
+             |}
+             |""".stripMargin)
+    .as[AuditUpdateRecordResponse]
+
+  lazy val createRecordRequestDataPayload: CreateRecordPayload = Json
     .parse("""
              |{
              |    "eori": "GB123456789012",
@@ -366,9 +467,64 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
              |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
              |}
              |""".stripMargin)
-    .as[CreateRecordRequest]
+    .as[CreateRecordPayload]
 
-  lazy val updateRecordRequestData: UpdateRecordRequest =
+  lazy val createRecordRequestDataPayloadWithoutAssessments: CreateRecordPayload = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789012",
+             |    "actorId": "GB098765432112",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "10410100",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 1,
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
+    .as[CreateRecordPayload]
+
+  lazy val auditCreateRecordRequestData: AuditCreateRecordRequest = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789012",
+             |    "actorId": "GB098765432112",
+             |    "goodsDescription": "Organic bananas",
+             |    "traderReference": "BAN001001",
+             |    "category": 1,
+             |    "commodityCode": "10410100",
+             |    "countryOfOrigin": "EC",
+             |    "commodityCodeEffectiveFrom": "2024-11-18T23:20:19Z",
+             |    "commodityCodeEffectiveTo": "2024-11-18T23:20:19Z",
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "categoryAssessments": 1
+             |}
+             |""".stripMargin)
+    .as[AuditCreateRecordRequest]
+
+  lazy val auditCreateRecordRequestDataWithoutAssessments: AuditCreateRecordRequest = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789012",
+             |    "actorId": "GB098765432112",
+             |    "goodsDescription": "Organic bananas",
+             |    "traderReference": "BAN001001",
+             |    "category": 1,
+             |    "commodityCode": "10410100",
+             |    "countryOfOrigin": "EC",
+             |    "commodityCodeEffectiveFrom": "2024-11-18T23:20:19Z",
+             |    "commodityCodeEffectiveTo": "2024-11-18T23:20:19Z",
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)"
+             |}
+             |""".stripMargin)
+    .as[AuditCreateRecordRequest]
+
+  lazy val updateRecordRequestDataPayload: UpdateRecordPayload =
     Json
       .parse("""
                |{
@@ -398,5 +554,25 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
                |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
                |}
                |""".stripMargin)
-      .as[UpdateRecordRequest]
+      .as[UpdateRecordPayload]
+
+  lazy val auditUpdateRecordRequestData: AuditUpdateRecordRequest = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789001",
+             |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+             |    "actorId": "GB098765432112",
+             |    "goodsDescription": "Organic bananas",
+             |    "traderReference": "BAN001001",
+             |    "category": 1,
+             |    "commodityCode": "10410100",
+             |    "countryOfOrigin": "EC",
+             |    "commodityCodeEffectiveFrom": "2024-11-18T23:20:19Z",
+             |    "commodityCodeEffectiveTo": "2024-11-18T23:20:19Z",
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "categoryAssessments": 1
+             |}
+             |""".stripMargin)
+    .as[AuditUpdateRecordRequest]
 }

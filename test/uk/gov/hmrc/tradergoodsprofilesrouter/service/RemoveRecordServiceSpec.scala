@@ -52,7 +52,7 @@ class RemoveRecordServiceSpec
   private val dateTimeService = mock[DateTimeService]
   private val uuidService     = mock[UuidService]
   private val correlationId   = "1234-5678-9012"
-  private val dateTime        = Instant.parse("2021-12-17T09:30:47Z")
+  private val dateTime        = Instant.parse("2021-12-17T09:30:47.456Z")
 
   val service = new RemoveRecordService(connector, uuidService, auditService, dateTimeService)
 

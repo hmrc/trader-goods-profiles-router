@@ -16,20 +16,25 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.audit
 
-import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.AuditUpdateRecordResponse
+import play.api.libs.json._
 
-case class AuditUpdateRecordDetails(
-  private val journey: String = "UpdateRecord",
-  clientId: String,
-  requestDateTime: String,
-  responseDateTime: String,
-  outcome: AuditOutcome,
-  request: AuditUpdateRecordRequest,
-  response: Option[AuditUpdateRecordResponse] = None
+import java.time.Instant
+
+case class AuditCreateRecordRequest(
+  eori: String,
+  actorId: String,
+  goodsDescription: String,
+  traderReference: String,
+  category: Int,
+  commodityCode: String,
+  countryOfOrigin: String,
+  commodityCodeEffectiveFrom: Instant,
+  commodityCodeEffectiveTo: Option[Instant] = None,
+  supplementaryUnit: Option[BigDecimal] = None,
+  measurementUnit: Option[String] = None,
+  categoryAssessments: Option[Int] = None
 )
 
-object AuditUpdateRecordDetails {
-  implicit val format: OFormat[AuditUpdateRecordDetails] = Json.format[AuditUpdateRecordDetails]
+object AuditCreateRecordRequest {
+  implicit val format: OFormat[AuditCreateRecordRequest] = Json.format[AuditCreateRecordRequest]
 }
