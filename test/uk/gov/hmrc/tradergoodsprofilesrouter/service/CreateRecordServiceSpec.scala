@@ -51,7 +51,7 @@ class CreateRecordServiceSpec
   private val auditService    = mock[AuditService]
   private val dateTimeService = mock[DateTimeService]
   private val correlationId   = "1234-5678-9012"
-  private val dateTime        = Instant.parse("2021-12-17T09:30:47Z")
+  private val dateTime        = Instant.parse("2021-12-17T09:30:47.456Z")
 
   val sut = new CreateRecordService(connector, uuidService, auditService, dateTimeService)
 
@@ -75,7 +75,7 @@ class CreateRecordServiceSpec
 
       result.value mustBe eisResponse
       verify(auditService)
-        .emitAuditCreateRecord(createRecordRequest, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
+        .emitAuditCreateRecord(createRecordPayload, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
     }
 
     "return an internal server error" when {
@@ -89,7 +89,7 @@ class CreateRecordServiceSpec
         result.left.value mustBe badRequestErrorResponse
         verify(auditService)
           .emitAuditCreateRecord(
-            createRecordRequest,
+            createRecordPayload,
             dateTime.toString,
             "BAD_REQUEST",
             BAD_REQUEST,
@@ -110,7 +110,7 @@ class CreateRecordServiceSpec
 
         verify(auditService)
           .emitAuditCreateRecord(
-            createRecordRequest,
+            createRecordPayload,
             dateTime.toString,
             "UNEXPECTED_ERROR",
             INTERNAL_SERVER_ERROR

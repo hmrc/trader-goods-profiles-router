@@ -38,7 +38,7 @@ class RemoveRecordService @Inject() (
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] = {
     val correlationId     = uuidService.uuid
-    val requestedDateTime = dateTimeService.timestamp.asStringSeconds
+    val requestedDateTime = dateTimeService.timestamp.asStringMilliSeconds
     connector
       .removeRecord(eori, recordId, actorId, correlationId)
       .map {

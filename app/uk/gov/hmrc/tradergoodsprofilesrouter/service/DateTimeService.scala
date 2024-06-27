@@ -44,5 +44,10 @@ object DateTimeService {
         .ofInstant(dateTime, ZoneOffset.UTC)
         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssX"))
 
+    implicit def asStringMilliSeconds: String =
+      ZonedDateTime
+        .ofInstant(dateTime, ZoneOffset.UTC)
+        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
+
   }
 }

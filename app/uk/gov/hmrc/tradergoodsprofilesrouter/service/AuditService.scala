@@ -25,9 +25,12 @@ import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.tradergoodsprofilesrouter.factories.{AuditCreateRecordDetails, AuditRemoveRecordDetails, AuditRemoveRecordRequest}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditOutcome, AuditUpdateRecordDetails}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditCreateRecordRequest, AuditOutcome, AuditUpdateRecordDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
@@ -58,7 +61,7 @@ class AuditService @Inject() (
     val auditDetails = AuditRemoveRecordDetails(
       clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
       requestDateTime = requestedDateTime,
-      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),
       request = AuditRemoveRecordRequest(eori, recordId, actorId)
     )
@@ -79,7 +82,7 @@ class AuditService @Inject() (
   }
 
   def emitAuditCreateRecord(
-    createRecordRequest: CreateRecordRequest,
+    createRecordPayload: CreateRecordPayload,
     requestedDateTime: String,
     status: String,
     statusCode: Int,
@@ -91,10 +94,10 @@ class AuditService @Inject() (
     val auditDetails = AuditCreateRecordDetails(
       clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
       requestDateTime = requestedDateTime,
-      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),
-      request = createRecordRequest,
-      response = createOrUpdateRecordResponse
+      request = prepareAuditCreateRecordRequest(createRecordPayload),
+      response = prepareAuditCreateRecordResponse(createOrUpdateRecordResponse)
     )
 
     val event = ExtendedDataEvent(
@@ -112,7 +115,7 @@ class AuditService @Inject() (
   }
 
   def emitAuditUpdateRecord(
-    updateRecordRequest: UpdateRecordRequest,
+    updateRecordPayload: UpdateRecordPayload,
     requestedDateTime: String,
     status: String,
     statusCode: Int,
@@ -124,10 +127,10 @@ class AuditService @Inject() (
     val auditDetails = AuditUpdateRecordDetails(
       clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
       requestDateTime = requestedDateTime,
-      responseDateTime = dateTimeService.timestamp.asStringSeconds,
+      responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),
-      request = updateRecordRequest,
-      response = createOrUpdateRecordResponse
+      request = prepareAuditUpdateRecordRequest(updateRecordPayload),
+      response = prepareAuditUpdateRecordResponse(createOrUpdateRecordResponse)
     )
 
     val event = ExtendedDataEvent(
@@ -143,4 +146,68 @@ class AuditService @Inject() (
         Done
       }
   }
+
+  private def prepareAuditCreateRecordRequest(payload: CreateRecordPayload) =
+    AuditCreateRecordRequest(
+      payload.eori,
+      payload.actorId,
+      payload.goodsDescription,
+      payload.traderRef,
+      payload.category,
+      payload.comcode,
+      payload.countryOfOrigin,
+      payload.comcodeEffectiveFromDate,
+      payload.comcodeEffectiveToDate,
+      payload.supplementaryUnit,
+      payload.measurementUnit,
+      payload.assessments.map(as => as.iterator.size)
+    )
+
+  private def prepareAuditUpdateRecordRequest(payload: UpdateRecordPayload) =
+    AuditUpdateRecordRequest(
+      payload.eori,
+      payload.recordId,
+      payload.actorId,
+      payload.goodsDescription,
+      payload.traderRef,
+      payload.category,
+      payload.comcode,
+      payload.countryOfOrigin,
+      payload.comcodeEffectiveFromDate,
+      payload.comcodeEffectiveToDate,
+      payload.supplementaryUnit,
+      payload.measurementUnit,
+      payload.assessments.map(as => as.iterator.size)
+    )
+
+  private def prepareAuditCreateRecordResponse(response: Option[CreateOrUpdateRecordResponse]) =
+    response.map(res =>
+      AuditCreateRecordResponse(
+        res.recordId,
+        res.adviceStatus,
+        res.version,
+        res.active,
+        res.toReview,
+        res.reviewReason,
+        res.declarable,
+        res.ukimsNumber,
+        res.nirmsNumber,
+        res.niphlNumber
+      )
+    )
+
+  private def prepareAuditUpdateRecordResponse(response: Option[CreateOrUpdateRecordResponse]) =
+    response.map(res =>
+      AuditUpdateRecordResponse(
+        res.adviceStatus,
+        res.version,
+        res.active,
+        res.toReview,
+        res.reviewReason,
+        res.declarable,
+        res.ukimsNumber,
+        res.nirmsNumber,
+        res.niphlNumber
+      )
+    )
 }

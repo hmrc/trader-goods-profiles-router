@@ -17,9 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.factories
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditOutcome
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.AuditCreateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditCreateRecordRequest, AuditOutcome}
 
 case class AuditCreateRecordDetails(
   private val journey: String = "CreateRecord",
@@ -27,8 +26,8 @@ case class AuditCreateRecordDetails(
   requestDateTime: String,
   responseDateTime: String,
   outcome: AuditOutcome,
-  request: CreateRecordRequest,
-  response: Option[CreateOrUpdateRecordResponse] = None
+  request: AuditCreateRecordRequest,
+  response: Option[AuditCreateRecordResponse] = None
 )
 
 object AuditCreateRecordDetails {

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
 import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 
 trait CreateRecordDataSupport {
@@ -94,7 +95,6 @@ trait CreateRecordDataSupport {
   val createRecordRequest: CreateRecordRequest = Json
     .parse("""
              |{
-             |    "eori": "GB123456789012",
              |    "actorId": "GB098765432112",
              |    "traderRef": "BAN001001",
              |    "comcode": "10410100",
@@ -120,5 +120,35 @@ trait CreateRecordDataSupport {
              |}
              |""".stripMargin)
     .as[CreateRecordRequest]
+
+  val createRecordPayload: CreateRecordPayload = Json
+    .parse("""
+             |{
+             |    "eori": "GB123456789011",
+             |    "actorId": "GB098765432112",
+             |    "traderRef": "BAN001001",
+             |    "comcode": "10410100",
+             |    "goodsDescription": "Organic bananas",
+             |    "countryOfOrigin": "EC",
+             |    "category": 1,
+             |    "assessments": [
+             |        {
+             |            "assessmentId": "abc123",
+             |            "primaryCategory": 1,
+             |            "condition": {
+             |                "type": "abc123",
+             |                "conditionId": "Y923",
+             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |                "conditionTraderText": "Excluded product"
+             |            }
+             |        }
+             |    ],
+             |    "supplementaryUnit": 500,
+             |    "measurementUnit": "Square metre (m2)",
+             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+             |}
+             |""".stripMargin)
+    .as[CreateRecordPayload]
 
 }
