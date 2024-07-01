@@ -54,14 +54,14 @@ object EisHttpReader {
           .validate[T]
           .map(result => result)
           .recoverTotal { error: JsError =>
-            logger.error(
+            logger.warn(
               s"[EisConnector] - Failed to validate or parse JSON body of type: ${typeOf[T]}",
               error
             )
             throw new RuntimeException(s"Response body could not be read as type ${typeOf[T]}")
           }
       case Failure(exception) =>
-        logger.error(
+        logger.warn(
           s"[EisConnector] - Response body could not be parsed as JSON, body: ${response.body}",
           exception
         )
