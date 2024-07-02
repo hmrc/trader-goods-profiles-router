@@ -56,7 +56,7 @@ trait GetRecordsDataSupport {
         |    "declarable": "IMMI declarable",
         |    "ukimsNumber": "XIUKIM47699357400020231115081800",
         |    "nirmsNumber": "RMS-GB-123456",
-        |    "niphlNumber": "6 S12345",
+        |    "niphlNumber": "S12345",
         |    "locked": false,
         |    "createdDateTime": "2024-11-18T23:20:19Z",
         |    "updatedDateTime": "2024-11-18T23:20:19Z"
@@ -140,7 +140,7 @@ trait GetRecordsDataSupport {
               |    "declarable": "IMMI declarable",
               |    "ukimsNumber": "XIUKIM47699357400020231115081800",
               |    "nirmsNumber": "RMS-GB-123456",
-              |    "niphlNumber": "6 S12345",
+              |    "niphlNumber": "S12345",
               |    "locked": false,
               |    "createdDateTime": "2024-11-18T23:20:19Z",
               |    "updatedDateTime": "2024-11-18T23:20:19Z"
@@ -196,7 +196,7 @@ trait GetRecordsDataSupport {
                  |    "declarable": "IMMI declarable",
                  |    "ukimsNumber": "XIUKIM47699357400020231115081800",
                  |    "nirmsNumber": "RMS-GB-123456",
-                 |    "niphlNumber": "6 S12345",
+                 |    "niphlNumber": "--1234",
                  |    "locked": false,
                  |    "createdDateTime": "2024-11-18T23:20:19Z",
                  |    "updatedDateTime": "2024-11-18T23:20:19Z"

@@ -50,6 +50,13 @@ case class GoodsItemRecords(
 
 object GoodsItemRecords {
 
+  // TODO: This will need to be removed once EIS/B&T make the same validation on their side
+  private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
+    niphlNumber match {
+      case Some(niphl) => Some(niphl.dropWhile(_ == '-'))
+      case None        => None
+    }
+
   implicit val goodsItemRecordsReads: Reads[GoodsItemRecords] = (json: JsValue) =>
     JsSuccess(
       GoodsItemRecords(
@@ -106,7 +113,7 @@ object GoodsItemRecords {
         "declarable"               -> goodsItemRecords.declarable,
         "ukimsNumber"              -> goodsItemRecords.ukimsNumber,
         "nirmsNumber"              -> goodsItemRecords.nirmsNumber,
-        "niphlNumber"              -> goodsItemRecords.niphlNumber,
+        "niphlNumber"              -> removeLeadingDashes(goodsItemRecords.niphlNumber),
         "locked"                   -> goodsItemRecords.locked,
         "createdDateTime"          -> goodsItemRecords.createdDateTime,
         "updatedDateTime"          -> goodsItemRecords.updatedDateTime

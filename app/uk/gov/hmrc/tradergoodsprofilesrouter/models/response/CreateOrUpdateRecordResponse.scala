@@ -52,6 +52,13 @@ case class CreateOrUpdateRecordResponse(
 
 object CreateOrUpdateRecordResponse {
 
+  // TODO: This will need to be removed once EIS/B&T make the same validation on their side
+  private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
+    niphlNumber match {
+      case Some(niphl) => Some(niphl.dropWhile(_ == '-'))
+      case None        => None
+    }
+
   implicit val reads: Reads[CreateOrUpdateRecordResponse] = (json: JsValue) =>
     JsSuccess(
       CreateOrUpdateRecordResponse(
@@ -107,7 +114,7 @@ object CreateOrUpdateRecordResponse {
         "declarable"               -> response.declarable,
         "ukimsNumber"              -> response.ukimsNumber,
         "nirmsNumber"              -> response.nirmsNumber,
-        "niphlNumber"              -> response.niphlNumber,
+        "niphlNumber"              -> removeLeadingDashes(response.niphlNumber),
         "createdDateTime"          -> response.createdDateTime,
         "updatedDateTime"          -> response.updatedDateTime
       )
