@@ -40,7 +40,7 @@ Notice: You can use the run_local.sh script file to load all needed services and
       **Affinity Group**: Organisation or Individual<br>
       **Enrolment Key**: HMRC-CUS-ORG <br>
       **Identifier Name**: EORINumber <br>
-      **Identifier Value**: GB123456789001 (or any thing else similer). Refer to the service guide to get a list of EROI
+      **Identifier Value**: GB123456789001 (or anything else similar). Refer to the service guide to get a list of EROI
       number suitable for test or look at the stubs [README.md file](https://github.com/hmrc/trader-goods-profiles-stubs/blob/main/README.md)
       <br><br>
 * Press submit. This will redirect to a new page showing an access token.

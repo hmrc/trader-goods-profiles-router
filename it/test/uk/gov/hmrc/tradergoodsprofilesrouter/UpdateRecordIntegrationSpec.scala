@@ -776,7 +776,7 @@ class UpdateRecordIntegrationSpec
         |  "declarable": "SPIMM",
         |  "ukimsNumber": "XIUKIM47699357400020231115081800",
         |  "nirmsNumber": "RMS-GB-123456",
-        |  "niphlNumber": "6 S12345",
+        |  "niphlNumber": "12345",
         |  "createdDateTime": "2024-11-18T23:20:19Z",
         |  "updatedDateTime": "2024-11-18T23:20:19Z",
         |  "assessments": [
@@ -830,7 +830,7 @@ class UpdateRecordIntegrationSpec
                |  "declarable": "SPIMM",
                |  "ukimsNumber": "XIUKIM47699357400020231115081800",
                |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "6 S12345",
+               |  "niphlNumber": "12345",
                |  "createdDateTime": "2024-11-18T23:20:19Z",
                |  "updatedDateTime": "2024-11-18T23:20:19Z"
                |}
@@ -867,7 +867,7 @@ class UpdateRecordIntegrationSpec
                |  "declarable": "SPIMM",
                |  "ukimsNumber": "XIUKIM47699357400020231115081800",
                |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "6 S12345",
+               |  "niphlNumber": "12345",
                |  "createdDateTime": "2024-11-18T23:20:19Z",
                |  "updatedDateTime": "2024-11-18T23:20:19Z"
                |}
@@ -903,7 +903,7 @@ class UpdateRecordIntegrationSpec
                |  "declarable": "SPIMM",
                |  "ukimsNumber": "XIUKIM47699357400020231115081800",
                |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "6 S12345",
+               |  "niphlNumber": "12345",
                |  "createdDateTime": "2024-11-18T23:20:19Z",
                |  "updatedDateTime": "2024-11-18T23:20:19Z"
                |}
@@ -933,7 +933,7 @@ class UpdateRecordIntegrationSpec
                |  "declarable": "SPIMM",
                |  "ukimsNumber": "XIUKIM47699357400020231115081800",
                |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "6 S12345",
+               |  "niphlNumber": "12345",
                |  "createdDateTime": "2024-11-18T23:20:19Z",
                |  "updatedDateTime": "2024-11-18T23:20:19Z"
                |}
@@ -967,7 +967,7 @@ class UpdateRecordIntegrationSpec
                |  "declarable": "SPIMM",
                |  "ukimsNumber": "XIUKIM47699357400020231115081800",
                |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "6 S12345",
+               |  "niphlNumber": "12345",
                |  "createdDateTime": "2024-11-18T23:20:19Z",
                |  "updatedDateTime": "2024-11-18T23:20:19Z"
                |}
@@ -1162,7 +1162,7 @@ class UpdateRecordIntegrationSpec
           |    "declarable": "SPIMM",
           |    "ukimsNumber": "XIUKIM47699357400020231115081800",
           |    "nirmsNumber": "RMS-GB-123456",
-          |    "niphlNumber": "6 S12345",
+          |    "niphlNumber": "12345",
           |    "createdDateTime": "2024-11-18T23:20:19Z",
           |    "updatedDateTime": "2024-11-18T23:20:19Z"
           |}
