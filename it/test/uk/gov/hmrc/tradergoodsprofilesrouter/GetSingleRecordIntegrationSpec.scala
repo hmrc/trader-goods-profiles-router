@@ -62,10 +62,13 @@ class GetSingleRecordIntegrationSpec
           .futureValue
 
         response.status shouldBe OK
-        response.json   shouldBe Json.toJson(getEisRecordsResponseData.as[GetEisRecordsResponse].goodsItemRecords.head)
+        response.json   shouldBe Json.toJson(
+          getEisRecordsResponseDataWithNiphlStrippedOfDashes.as[GetEisRecordsResponse].goodsItemRecords.head
+        )
 
         verifyThatDownstreamApiWasCalled()
       }
+
       "valid but the integration call fails with response:" - {
         "Forbidden" in {
           stubForEis(FORBIDDEN)
