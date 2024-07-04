@@ -47,11 +47,17 @@ class GetRecordsConnector @Inject() (
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] =
     withMetricsTimerAsync("tgp.getrecord.connector") { _ =>
-      val url = s"${appConfig.eisConfig.getRecordsUrl}/$eori/$recordId"
+      val url = s"${appConfig.hawkConfig.getRecordsUrl}/$eori/$recordId"
 
       httpClientV2
         .get(url"$url")
-        .setHeader(buildHeadersForGetMethod(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
+        .setHeader(
+          buildHeadersForGetMethod(
+            correlationId,
+            appConfig.hawkConfig.getRecordBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
         .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
     }
 
@@ -65,11 +71,17 @@ class GetRecordsConnector @Inject() (
     withMetricsTimerAsync("tgp.getrecords.connector") { _ =>
       val formattedLastUpdateDate: Option[String] = lastUpdatedDate.map(_.asStringSeconds)
       val uri                                     =
-        uri"${appConfig.eisConfig.getRecordsUrl}/$eori?lastUpdatedDate=$formattedLastUpdateDate&page=$page&size=$size"
+        uri"${appConfig.hawkConfig.getRecordsUrl}/$eori?lastUpdatedDate=$formattedLastUpdateDate&page=$page&size=$size"
 
       httpClientV2
         .get(url"$uri")
-        .setHeader(buildHeadersForGetMethod(correlationId, appConfig.eisConfig.getRecordBearerToken): _*)
+        .setHeader(
+          buildHeadersForGetMethod(
+            correlationId,
+            appConfig.hawkConfig.getRecordBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
         .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
     }
 
