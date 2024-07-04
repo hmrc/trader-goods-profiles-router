@@ -32,14 +32,15 @@ class RemoveRecordIntegrationSpec
     with AuthTestSupport
     with BeforeAndAfterEach {
 
-  private val eori                               = "GB123456789001"
-  private val actorId                            = "GB123456789001"
-  private val recordId                           = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val dateTime                           = "2021-12-17T09:30:47.456Z"
-  private val timestamp                          = "Fri, 17 Dec 2021 09:30:47 GMT"
-  private val url                                = fullUrl(s"/traders/$eori/records/$recordId?actorId=$actorId")
-  override def hawkConnectorPath: Option[String] = Some(s"/tgp/removerecord/v1")
+  private val eori                   = "GB123456789001"
+  private val actorId                = "GB123456789001"
+  private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val dateTime               = "2021-12-17T09:30:47.456Z"
+  private val timestamp              = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val url                    = fullUrl(s"/traders/$eori/records/$recordId?actorId=$actorId")
+  override def connectorPath: String = s"/tgp/removerecord/v1"
+  override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -62,7 +63,7 @@ class RemoveRecordIntegrationSpec
 
         response.status shouldBe NO_CONTENT
 
-        verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        verifyThatDownstreamApiWasCalled()
       }
 
       "valid but the integration call fails with response:" - {
@@ -83,7 +84,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Forbidden"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Not Found" in {
           stubForEis(NOT_FOUND, removeEisRecordRequest)
@@ -101,7 +102,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Not Found"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Bad Gateway" in {
           stubForEis(BAD_GATEWAY, removeEisRecordRequest)
@@ -119,7 +120,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE, removeEisRecordRequest)
@@ -137,7 +138,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error  with 401 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, removeEisRecordRequest, Some(eisErrorResponse("401", "Unauthorised")))
@@ -155,7 +156,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Unauthorized"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error  with 500 errorCode" in {
           stubForEis(
@@ -177,7 +178,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Internal Server Error"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 404 errorCode" in {
           stubForEis(
@@ -199,7 +200,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Not Found"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 405 errorCode" in {
           stubForEis(
@@ -221,7 +222,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Method Not Allowed"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 502 errorCode" in {
           stubForEis(
@@ -243,7 +244,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEis(
@@ -265,7 +266,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with one error detail" in {
           stubForEis(
@@ -309,7 +310,7 @@ class RemoveRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with more than one error details" in {
           stubForEis(
@@ -371,7 +372,7 @@ class RemoveRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with unexpected error" in {
           stubForEis(
@@ -415,7 +416,7 @@ class RemoveRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with unable to parse the detail" in {
           stubForEis(
@@ -450,7 +451,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Unable to parse fault detail for correlation Id: d677693e-9981-4ee3-8574-654981ebe606"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with invalid json" in {
           stubForEis(
@@ -476,7 +477,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> "Unexpected Error"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
       }
       "invalid, specifically" - {
@@ -501,7 +502,7 @@ class RemoveRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasNotCalled()
         }
       }
       "forbidden with any of the following" - {
@@ -520,7 +521,7 @@ class RemoveRecordIntegrationSpec
             "message"       -> s"EORI number is incorrect"
           )
 
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasNotCalled()
         }
 
         "incorrect enrolment key is used to authorise " in {
@@ -539,32 +540,29 @@ class RemoveRecordIntegrationSpec
             "message"       -> s"EORI number is incorrect"
           )
 
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasNotCalled()
         }
       }
     }
   }
 
-  private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) =
-    hawkConnectorPath.foreach { path =>
-      stubFor(
-        put(urlEqualTo(s"$path"))
-          .withRequestBody(equalToJson(requestBody))
-          .withHeader("Content-Type", equalTo("application/json"))
-          .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-          .withHeader("X-Correlation-ID", equalTo(correlationId))
-          .withHeader("Date", equalTo(timestamp))
-          .withHeader("Accept", equalTo("application/json"))
-          .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-          .withHeader("X-Client-ID", equalTo("tss"))
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", "application/json")
-              .withStatus(httpStatus)
-              .withBody(responseBody.orNull)
-          )
+  private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) = stubFor(
+    put(urlEqualTo(s"$connectorPath"))
+      .withRequestBody(equalToJson(requestBody))
+      .withHeader("Content-Type", equalTo("application/json"))
+      .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+      .withHeader("X-Correlation-ID", equalTo(correlationId))
+      .withHeader("Date", equalTo(timestamp))
+      .withHeader("Accept", equalTo("application/json"))
+      .withHeader("Authorization", equalTo("Bearer dummyRecordRemoveBearerToken"))
+      .withHeader("X-Client-ID", equalTo("tss"))
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(httpStatus)
+          .withBody(responseBody.orNull)
       )
-    }
+  )
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

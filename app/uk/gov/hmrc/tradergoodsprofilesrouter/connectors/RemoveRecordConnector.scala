@@ -46,16 +46,10 @@ class RemoveRecordConnector @Inject() (
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] =
     withMetricsTimerAsync("tgp.removerecord.connector") { _ =>
-      val url = appConfig.hawkConfig.removeRecordUrl
+      val url = appConfig.eisConfig.removeRecordUrl
       httpClientV2
         .put(url"$url")
-        .setHeader(
-          buildHeaders(
-            correlationId,
-            appConfig.hawkConfig.removeRecordBearerToken,
-            appConfig.hawkConfig.forwardedHost
-          ): _*
-        )
+        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.removeRecordBearerToken): _*)
         .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
         .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
     }

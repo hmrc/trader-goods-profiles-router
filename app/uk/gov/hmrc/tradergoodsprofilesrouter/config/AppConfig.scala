@@ -23,6 +23,5 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class AppConfig @Inject() (config: Configuration) {
 
-  val hawkConfig: HawkInstanceConfig = config.get[HawkInstanceConfig]("microservice.services.hawk")
-  val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
+  val eisConfig: EISInstanceConfig = config.get[EISInstanceConfig]("microservice.services.eis")
 }

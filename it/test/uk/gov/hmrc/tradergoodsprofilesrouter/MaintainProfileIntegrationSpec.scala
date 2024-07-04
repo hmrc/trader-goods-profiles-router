@@ -38,7 +38,9 @@ class MaintainProfileIntegrationSpec
   val dateTime      = "2021-12-17T09:30:47.456Z"
   val timestamp     = "Fri, 17 Dec 2021 09:30:47 Z"
 
-  override def hawkConnectorPath: Option[String] = Some("/tgp/maintainprofile/v1")
+  override def connectorPath: String = "/tgp/maintainprofile/v1"
+
+  override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -61,7 +63,7 @@ class MaintainProfileIntegrationSpec
       response.status shouldBe OK
       response.json   shouldBe toJson(maintainProfileResponse.as[MaintainProfileResponse])
 
-      verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+      verifyThatDownstreamApiWasCalled()
     }
 
     "it should return a 200 ok when the request is successful with optional null fields" in {
@@ -76,7 +78,7 @@ class MaintainProfileIntegrationSpec
       response.status shouldBe OK
       response.json   shouldBe toJson(maintainProfileResponseWithoutOptionalNullFields.as[MaintainProfileResponse])
 
-      verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+      verifyThatDownstreamApiWasCalled()
     }
 
     "it should return a 500 internal server error if EIS is unavailable" in {
@@ -98,7 +100,7 @@ class MaintainProfileIntegrationSpec
         "message"       -> "Internal Server Error"
       )
 
-      verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+      verifyThatDownstreamApiWasCalled()
     }
 
     "it should return a 403 forbidden if the request is valid but EIS reject the request" in {
@@ -117,7 +119,7 @@ class MaintainProfileIntegrationSpec
         "message"       -> "Forbidden"
       )
 
-      verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+      verifyThatDownstreamApiWasCalled()
     }
 
     "it should return a 403 forbidden in the following instances" - {
@@ -136,7 +138,7 @@ class MaintainProfileIntegrationSpec
           "message"       -> s"EORI number is incorrect"
         )
 
-        verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+        verifyThatDownstreamApiWasNotCalled()
       }
 
       "incorrect enrolment key is used to authorise " in {
@@ -155,23 +157,20 @@ class MaintainProfileIntegrationSpec
           "message"       -> s"EORI number is incorrect"
         )
 
-        verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+        verifyThatDownstreamApiWasNotCalled()
       }
     }
   }
 
-  private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
-    hawkConnectorPath.foreach { path =>
-      stubFor(
-        put(urlEqualTo(s"$path"))
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", "application/json")
-              .withStatus(httpStatus)
-              .withBody(responseBody.orNull)
-          )
+  private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) = stubFor(
+    put(urlEqualTo(s"$connectorPath"))
+      .willReturn(
+        aResponse()
+          .withHeader("Content-Type", "application/json")
+          .withStatus(httpStatus)
+          .withBody(responseBody.orNull)
       )
-    }
+  )
 
   lazy val maintainProfileRequest: String =
     """
@@ -193,16 +192,27 @@ class MaintainProfileIntegrationSpec
       |}
       |""".stripMargin
 
+  lazy val maintainProfileEisRequest: String =
+    """
+        |{
+        |"eori" : "GB123456789001",
+        |"actorId":"GB098765432112",
+        |"ukimsNumber":"XIUKIM47699357400020231115081800",
+        |"nirmsNumber":"RMS-GB-123456",
+        |"niphlNumber": "6S123456"
+        |}
+        |""".stripMargin
+
   lazy val maintainProfileResponse: JsValue =
     Json.parse("""
-                 |{
-                 |"eori": "GB123456789012",
-                 |"actorId":"GB098765432112",
-                 |"ukimsNumber":"XIUKIM47699357400020231115081800",
-                 |"nirmsNumber":"RMS-GB-123456",
-                 |"niphlNumber": "--1234"
-                 |}
-                 |""".stripMargin)
+        |{
+        |"eori": "GB123456789012",
+        |"actorId":"GB098765432112",
+        |"ukimsNumber":"XIUKIM47699357400020231115081800",
+        |"nirmsNumber":"RMS-GB-123456",
+        |"niphlNumber": "--1234"
+        |}
+        |""".stripMargin)
 
   lazy val maintainProfileResponseWithoutOptionalNullFields: JsValue =
     Json.parse("""
