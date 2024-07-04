@@ -36,8 +36,7 @@ class CreateRecordIntegrationSpec
   private val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
   private val url           = fullUrl("/traders/GB123456789001/records")
 
-  override def connectorPath: String = "/tgp/createrecord/v1"
-  override def connectorName: String = "eis"
+  override def hawkConnectorPath: Option[String] = Some("/tgp/createrecord/v1")
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -64,7 +63,7 @@ class CreateRecordIntegrationSpec
             createRecordResponseData.as[CreateOrUpdateRecordResponse]
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with optional null request fields" in {
           stubForEis(CREATED, Some(createEisRecordResponseDataWithOptionalNullFields.toString()))
@@ -80,7 +79,7 @@ class CreateRecordIntegrationSpec
             createRecordResponseDataWithOptionalNullFields.as[CreateOrUpdateRecordResponse]
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with optional condition null request fields" in {
           stubForEis(CREATED, Some(createEisRecordResponseDataWithConditionOptionalNullFields.toString()))
@@ -96,7 +95,7 @@ class CreateRecordIntegrationSpec
             createRecordResponseDataWithOptionalNullFields.as[CreateOrUpdateRecordResponse]
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with optional some optional null request fields" in {
           stubForEis(CREATED, Some(createEisRecordResponseDataWithSomeOptionalNullFields.toString()))
@@ -112,7 +111,7 @@ class CreateRecordIntegrationSpec
             createRecordResponseDataWithSomeOptionalNullFields.as[CreateOrUpdateRecordResponse]
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with only required fields" in {
           stubForEis(CREATED, Some(createRecordRequiredResponseData.toString()))
@@ -126,7 +125,7 @@ class CreateRecordIntegrationSpec
           response.status shouldBe CREATED
           response.json   shouldBe toJson(createRecordRequiredResponseData.as[CreateOrUpdateRecordResponse])
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
       }
       "valid but the integration call fails with response:" - {
@@ -146,7 +145,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Forbidden"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Not Found" in {
           stubForEis(NOT_FOUND)
@@ -164,7 +163,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Not Found"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Gateway" in {
           stubForEis(BAD_GATEWAY)
@@ -182,7 +181,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
@@ -200,7 +199,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error  with 201 errorCode" in {
           stubForEis(
@@ -221,7 +220,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Invalid Response Payload or Empty payload"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error  with 401 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
@@ -239,7 +238,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Unauthorized"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error  with 500 errorCode" in {
           stubForEis(
@@ -260,7 +259,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Internal Server Error"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 404 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
@@ -278,7 +277,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Not Found"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 405 errorCode" in {
           stubForEis(
@@ -299,7 +298,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Method Not Allowed"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 502 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
@@ -317,7 +316,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEis(
@@ -338,7 +337,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with one error detail" in {
           stubForEis(
@@ -381,7 +380,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with more than one error details" in {
           stubForEis(
@@ -430,7 +429,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with unexpected error" in {
           stubForEis(
@@ -473,7 +472,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with unable to parse the detail" in {
           stubForEis(
@@ -507,7 +506,7 @@ class CreateRecordIntegrationSpec
             "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with invalid json" in {
           stubForEis(
@@ -532,7 +531,7 @@ class CreateRecordIntegrationSpec
             "message"       -> "Unexpected Error"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
       }
       "invalid, specifically" - {
@@ -557,7 +556,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "missing required request field" in {
           val response = wsClient
@@ -580,7 +579,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "category field is out of range" in {
           val response = wsClient
@@ -603,7 +602,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "missing required field from assessment" in {
           stubForEis(
@@ -670,7 +669,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "supplementaryUnit is out of range" in {
           stubForEis(
@@ -713,7 +712,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "for optional fields" in {
           val response = wsClient
@@ -761,7 +760,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "for optional assessment array fields" in {
           val response = wsClient
@@ -804,7 +803,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "for mandatory fields actorId and comcode" in {
           val response = wsClient
@@ -832,7 +831,7 @@ class CreateRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "forbidden with any of the following" - {
           "EORI number is not authorized" in {
@@ -850,7 +849,7 @@ class CreateRecordIntegrationSpec
               "message"       -> s"EORI number is incorrect"
             )
 
-            verifyThatDownstreamApiWasNotCalled()
+            verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
           }
 
           "incorrect enrolment key is used to authorise " in {
@@ -869,22 +868,25 @@ class CreateRecordIntegrationSpec
               "message"       -> s"EORI number is incorrect"
             )
 
-            verifyThatDownstreamApiWasNotCalled()
+            verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
           }
         }
       }
     }
   }
 
-  private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) = stubFor(
-    post(urlEqualTo(s"$connectorPath"))
-      .willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(httpStatus)
-          .withBody(responseBody.orNull)
+  private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
+    hawkConnectorPath.foreach { path =>
+      stubFor(
+        post(urlEqualTo(s"$path"))
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", "application/json")
+              .withStatus(httpStatus)
+              .withBody(responseBody.orNull)
+          )
       )
-  )
+    }
 
   lazy val createRecordResponseData: JsValue =
     Json

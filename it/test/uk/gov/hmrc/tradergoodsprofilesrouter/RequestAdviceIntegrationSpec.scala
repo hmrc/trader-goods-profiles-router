@@ -33,14 +33,13 @@ class RequestAdviceIntegrationSpec
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
 
-  private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val timestamp              = "2021-12-17T09:30:47Z"
-  private val eori                   = "GB123456789001"
-  private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val url                    = fullUrl(s"/traders/$eori/records/$recordId/advice")
-  override def connectorPath: String = "/tgp/createaccreditation/v1"
-  def connectorPathGetRecord: String = "/tgp/getrecords/v1"
-  override def connectorName: String = "eis"
+  private val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val timestamp                          = "2021-12-17T09:30:47Z"
+  private val eori                               = "GB123456789001"
+  private val recordId                           = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val url                                = fullUrl(s"/traders/$eori/records/$recordId/advice")
+  override def hawkConnectorPath: Option[String] = Some("/tgp/getrecords/v1")
+  override def pegaConnectorPath: Option[String] = Some("/tgp/createaccreditation/v1")
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -168,7 +167,7 @@ class RequestAdviceIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(pegaConnectorPath)
         }
         "Service Unavailable" in {
           stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
@@ -385,7 +384,7 @@ class RequestAdviceIntegrationSpec
 
           val response = await(
             wsClient
-              .url(fullUrl("/traders/GB123456789015/records/$recordId/advice"))
+              .url(fullUrl(s"/traders/GB123456789015/records/$recordId/advice"))
               .withHttpHeaders(
                 ("Content-Type", "application/json"),
                 ("Accept", "application/json"),
@@ -401,7 +400,7 @@ class RequestAdviceIntegrationSpec
             "message"       -> s"EORI number is incorrect"
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(pegaConnectorPath)
         }
 
         "incorrect enrolment key is used to authorise " in {
@@ -425,7 +424,7 @@ class RequestAdviceIntegrationSpec
             "message"       -> s"EORI number is incorrect"
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(pegaConnectorPath)
         }
       }
     }
@@ -451,25 +450,31 @@ class RequestAdviceIntegrationSpec
       )
       .toString()
 
-  private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) = stubFor(
-    post(urlEqualTo(s"$connectorPath"))
-      .withRequestBody(equalToJson(requestBody))
-      .willReturn(
-        aResponse()
-          .withHeader("Content-Type", "application/json")
-          .withStatus(httpStatus)
-          .withBody(responseBody.orNull)
+  private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) =
+    pegaConnectorPath.foreach { path =>
+      stubFor(
+        post(urlEqualTo(path))
+          .withRequestBody(equalToJson(requestBody))
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", "application/json")
+              .withStatus(httpStatus)
+              .withBody(responseBody.orNull)
+          )
       )
-  )
+    }
 
-  private def stubForEisFetchRecords(httpStatus: Int, body: String) = stubFor(
-    get(urlEqualTo(s"$connectorPathGetRecord/$eori/$recordId"))
-      .willReturn(
-        aResponse()
-          .withStatus(httpStatus)
-          .withBody(body)
+  private def stubForEisFetchRecords(httpStatus: Int, body: String) =
+    hawkConnectorPath.foreach { path =>
+      stubFor(
+        get(urlEqualTo(s"$path/$eori/$recordId"))
+          .willReturn(
+            aResponse()
+              .withStatus(httpStatus)
+              .withBody(body)
+          )
       )
-  )
+    }
 
   private def createAccreditationRequestData: String =
     s"""

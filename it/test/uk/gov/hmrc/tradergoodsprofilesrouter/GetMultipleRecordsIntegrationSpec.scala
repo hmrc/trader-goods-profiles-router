@@ -34,13 +34,12 @@ class GetMultipleRecordsIntegrationSpec
     with AuthTestSupport
     with BeforeAndAfterEach {
 
-  private val eori                   = "GB123456789001"
-  private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val dateTime               = Instant.parse("2021-12-17T09:30:47Z")
-  private val timestamp              = "Fri, 17 Dec 2021 09:30:47 GMT"
-  override def connectorPath: String = s"/tgp/getrecords/v1"
-  override def connectorName: String = "eis"
-  private val url                    = fullUrl(s"/traders/$eori/records")
+  private val eori                               = "GB123456789001"
+  private val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val dateTime                           = Instant.parse("2021-12-17T09:30:47Z")
+  private val timestamp                          = "Fri, 17 Dec 2021 09:30:47 GMT"
+  override def hawkConnectorPath: Option[String] = Some(s"/tgp/getrecords/v1")
+  private val url                                = fullUrl(s"/traders/$eori/records")
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -65,7 +64,7 @@ class GetMultipleRecordsIntegrationSpec
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
 
-        verifyThatDownstreamApiWasCalled()
+        verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid with optional query parameter lastUpdatedDate, page and size" in {
         stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime.toString), Some(1), Some(1))
@@ -79,7 +78,7 @@ class GetMultipleRecordsIntegrationSpec
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
 
-        verifyThatDownstreamApiWasCalled()
+        verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid with optional query parameter page and size" in {
         stubForEis(OK, Some(getMultipleRecordResponseData.toString()), None, Some(1), Some(1))
@@ -93,7 +92,7 @@ class GetMultipleRecordsIntegrationSpec
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
 
-        verifyThatDownstreamApiWasCalled()
+        verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid with optional query parameter page" in {
         stubForEis(OK, Some(getMultipleRecordResponseData.toString()), None, Some(1), None)
@@ -107,7 +106,7 @@ class GetMultipleRecordsIntegrationSpec
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
 
-        verifyThatDownstreamApiWasCalled()
+        verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid with optional query parameter lastUpdatedDate" in {
         stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime.toString))
@@ -121,7 +120,7 @@ class GetMultipleRecordsIntegrationSpec
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
 
-        verifyThatDownstreamApiWasCalled()
+        verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid but the integration call fails with response:" - {
         "Forbidden" in {
@@ -141,7 +140,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Forbidden"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Not Found" in {
           stubForEis(NOT_FOUND)
@@ -160,7 +159,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Not Found"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Method Not Allowed" in {
           stubForEis(METHOD_NOT_ALLOWED)
@@ -179,7 +178,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Method Not Allowed"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
@@ -198,7 +197,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("500", "Internal Server Error")))
@@ -217,7 +216,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Internal Server Error"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 200 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("200", "Internal Server Error")))
@@ -236,7 +235,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Invalid Response Payload or Empty payload"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 400 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("400", "Internal Error Response")))
@@ -255,7 +254,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Internal Error Response"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 401 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
@@ -274,7 +273,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Unauthorized"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 404 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
@@ -293,7 +292,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Not Found"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 405 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("405", "Method Not Allowed")))
@@ -312,7 +311,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Method Not Allowed"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 502 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
@@ -331,7 +330,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("503", "Service Unavailable")))
@@ -350,7 +349,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with unknown errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("501", "Not Implemented")))
@@ -369,7 +368,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Unknown Error"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with unexpected error" in {
           val eisErrorResponseBody = s"""
@@ -394,23 +393,24 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Unexpected Error"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
 
         "Bad Request with unexpected error" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
+          hawkConnectorPath.foreach { path =>
+            stubFor(
+              get(urlEqualTo(s"$path/$eori"))
+                .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+                .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+                .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+                .withHeader("X-Client-ID", equalTo("tss"))
+                .willReturn(
+                  aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withStatus(BAD_REQUEST)
+                    .withBody(s"""
                                |{
                                |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
@@ -426,8 +426,9 @@ class GetMultipleRecordsIntegrationSpec
                                |  }
                                |}
                                |""".stripMargin)
-              )
-          )
+                )
+            )
+          }
 
           val response = await(
             wsClient
@@ -450,22 +451,23 @@ class GetMultipleRecordsIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with unable to parse the detail" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
+          hawkConnectorPath.foreach { path =>
+            stubFor(
+              get(urlEqualTo(s"$path/$eori"))
+                .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+                .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+                .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+                .withHeader("X-Client-ID", equalTo("tss"))
+                .willReturn(
+                  aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withStatus(BAD_REQUEST)
+                    .withBody(s"""
                                |{
                                |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
@@ -479,8 +481,9 @@ class GetMultipleRecordsIntegrationSpec
                                |  }
                                |}
                                |""".stripMargin)
-              )
-          )
+                )
+            )
+          }
 
           val response = await(
             wsClient
@@ -496,28 +499,30 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with invalid json" in {
-          stubFor(
-            get(urlEqualTo(s"$connectorPath/$eori"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
+          hawkConnectorPath.foreach { path =>
+            stubFor(
+              get(urlEqualTo(s"$path/$eori"))
+                .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+                .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+                .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+                .withHeader("X-Client-ID", equalTo("tss"))
+                .willReturn(
+                  aResponse()
+                    .withHeader("Content-Type", "application/json")
+                    .withStatus(BAD_REQUEST)
+                    .withBody(s"""
                                | {
                                |    "invalid": "error"
                                |  }
                                |""".stripMargin)
-              )
-          )
+                )
+            )
+          }
 
           val response = await(
             wsClient
@@ -533,7 +538,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> "Unexpected Error"
           )
 
-          verifyThatDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
       }
       "invalid with missing mandatory header" in {
@@ -557,7 +562,7 @@ class GetMultipleRecordsIntegrationSpec
           )
         )
 
-        verifyThatDownstreamApiWasNotCalled()
+        verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
       }
       "forbidden with any of the following" - {
         "EORI number is not authorized" in {
@@ -575,7 +580,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> s"EORI number is incorrect"
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
 
         "incorrect enrolment key is used to authorise " in {
@@ -594,7 +599,7 @@ class GetMultipleRecordsIntegrationSpec
             "message"       -> s"EORI number is incorrect"
           )
 
-          verifyThatDownstreamApiWasNotCalled()
+          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
       }
     }
@@ -624,26 +629,27 @@ class GetMultipleRecordsIntegrationSpec
     lastUpdatedDate: Option[String] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  ) = {
+  ) =
+    hawkConnectorPath.foreach { path =>
+      val uri =
+        uri"$path/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
 
-    val uri =
-      uri"$connectorPath/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
-    stubFor(
-      get(urlEqualTo(s"$uri"))
-        .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-        .withHeader("X-Correlation-ID", equalTo(correlationId))
-        .withHeader("Date", equalTo(timestamp))
-        .withHeader("Accept", equalTo("application/json"))
-        .withHeader("Authorization", equalTo("Bearer dummyRecordGetBearerToken"))
-        .withHeader("X-Client-ID", equalTo("tss"))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(httpStatus)
-            .withBody(body.orNull)
-        )
-    )
-  }
+      stubFor(
+        get(urlEqualTo(s"$uri"))
+          .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+          .withHeader("X-Correlation-ID", equalTo(correlationId))
+          .withHeader("Date", equalTo(timestamp))
+          .withHeader("Accept", equalTo("application/json"))
+          .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+          .withHeader("X-Client-ID", equalTo("tss"))
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", "application/json")
+              .withStatus(httpStatus)
+              .withBody(body.orNull)
+          )
+      )
+    }
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json
