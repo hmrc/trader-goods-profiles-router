@@ -26,7 +26,7 @@ import play.api.http.MimeTypes
 import play.api.mvc.Result
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, HawkInstanceConfig, PegaInstanceConfig}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, EISInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -44,13 +44,9 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   val requestBuilder: RequestBuilder   = mock[RequestBuilder]
   val dateTimeService: DateTimeService = mock[DateTimeService]
 
-  def expectedHeader(
-    correlationId: String,
-    accessToken: String,
-    forwardedHost: String = "MDTP"
-  ): Seq[(String, String)] = Seq(
+  def expectedHeader(correlationId: String, accessToken: String): Seq[(String, String)] = Seq(
     "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> forwardedHost,
+    "X-Forwarded-Host" -> "MDTP",
     "Accept"           -> MimeTypes.JSON,
     "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
     "X-Client-ID"      -> "TSS",
@@ -58,49 +54,36 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     "Content-Type"     -> MimeTypes.JSON
   )
 
-  def expectedHeaderForGetMethod(
-    correlationId: String,
-    accessToken: String,
-    forwardedHost: String = "MDTP"
-  ): Seq[(String, String)] = Seq(
+  def expectedHeaderForGetMethod(correlationId: String, accessToken: String): Seq[(String, String)] = Seq(
     "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> forwardedHost,
+    "X-Forwarded-Host" -> "MDTP",
     "Accept"           -> MimeTypes.JSON,
     "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
     "X-Client-ID"      -> "TSS",
     "Authorization"    -> s"Bearer $accessToken"
   )
 
-  def setUpAppConfig(): Unit = {
-    val hawkConfig = new HawkInstanceConfig(
-      protocol = "http",
-      host = "localhost",
-      port = 1234,
-      getRecords = "/tgp/getrecords/v1",
-      createRecord = "/tgp/createrecord/v1",
-      removeRecord = "/tgp/removerecord/v1",
-      updateRecord = "/tgp/updaterecord/v1",
-      maintainProfile = "/tgp/maintainprofile/v1",
-      forwardedHost = "MDTP",
-      updateRecordToken = "dummyRecordUpdateBearerToken",
-      recordGetToken = "dummyRecordGetBearerToken",
-      recordCreateToken = "dummyRecordCreateBearerToken",
-      recordRemoveToken = "dummyRecordRemoveBearerToken",
-      maintainProfileToken = "dummyMaintainProfileBearerToken"
+  def setUpAppConfig(): Unit =
+    when(appConfig.eisConfig).thenReturn(
+      new EISInstanceConfig(
+        "http",
+        "localhost",
+        1234,
+        "/tgp/getrecords/v1",
+        "/tgp/createrecord/v1",
+        "/tgp/removerecord/v1",
+        "/tgp/updaterecord/v1",
+        "/tgp/maintainprofile/v1",
+        "/tgp/createaccreditation/v1",
+        "MDTP",
+        "dummyRecordUpdateBearerToken",
+        "dummyRecordGetBearerToken",
+        "dummyRecordCreateBearerToken",
+        "dummyRecordRemoveBearerToken",
+        "dummyAccreditationCreateBearerToken",
+        "dummyMaintainProfileBearerToken"
+      )
     )
-
-    val pegaConfig = new PegaInstanceConfig(
-      protocol = "http",
-      host = "localhost",
-      port = 1234,
-      requestAdvice = "/tgp/createaccreditation/v1",
-      forwardedHost = "MDTP",
-      requestAdviceToken = "dummyAccreditationCreateBearerToken"
-    )
-
-    when(appConfig.hawkConfig).thenReturn(hawkConfig)
-    when(appConfig.pegaConfig).thenReturn(pegaConfig)
-  }
 
   def verifyExecuteWithParams(expectedCorrelationId: String): Assertion = {
     val captor = ArgCaptor[HttpReader[Either[Result, GetEisRecordsResponse]]]

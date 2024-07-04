@@ -33,12 +33,13 @@ class GetSingleRecordIntegrationSpec
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
 
-  private val eori                               = "GB123456789001"
-  private val recordId                           = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val dateTime                           = "2021-12-17T09:30:47.456Z"
-  private val url                                = fullUrl(s"/traders/$eori/records/$recordId")
-  override def hawkConnectorPath: Option[String] = Some(s"/tgp/getrecords/v1")
+  private val eori                   = "GB123456789001"
+  private val recordId               = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val correlationId          = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val dateTime               = "2021-12-17T09:30:47.456Z"
+  private val url                    = fullUrl(s"/traders/$eori/records/$recordId")
+  override def connectorPath: String = s"/tgp/getrecords/v1"
+  override def connectorName: String = "eis"
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -65,7 +66,7 @@ class GetSingleRecordIntegrationSpec
           getEisRecordsResponseDataWithNiphlStrippedOfDashes.as[GetEisRecordsResponse].goodsItemRecords.head
         )
 
-        verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        verifyThatDownstreamApiWasCalled()
       }
 
       "valid but the integration call fails with response:" - {
@@ -86,7 +87,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Forbidden"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Not Found" in {
           stubForEis(NOT_FOUND)
@@ -105,7 +106,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Not Found"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Method Not Allowed" in {
           stubForEis(METHOD_NOT_ALLOWED)
@@ -124,7 +125,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Method Not Allowed"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
@@ -143,7 +144,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("500", "Internal Server Error")))
@@ -162,7 +163,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Internal Server Error"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 200 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("200", "Internal Server Error")))
@@ -181,7 +182,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Invalid Response Payload or Empty payload"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 400 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("400", "Internal Error Response")))
@@ -200,7 +201,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Internal Error Response"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 401 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
@@ -219,7 +220,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Unauthorized"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 404 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
@@ -238,7 +239,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Not Found"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 405 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("405", "Method Not Allowed")))
@@ -257,7 +258,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Method Not Allowed"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 502 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
@@ -276,7 +277,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("503", "Service Unavailable")))
@@ -295,7 +296,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Service Unavailable"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with unknown errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("501", "Not Implemented")))
@@ -314,7 +315,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Unknown Error"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Internal Server Error with unexpected error" in {
           val eisErrorResponseBody = s"""
@@ -339,7 +340,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Unexpected Error"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
 
         "Bad Request if recordId is invalid" in {
@@ -365,16 +366,15 @@ class GetSingleRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasNotCalled()
         }
         "Bad Request with unexpected error if error code is ot supported" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori/$recordId"))
-                .willReturn(
-                  aResponse()
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+          stubFor(
+            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+              .willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                |{
                                |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
@@ -390,9 +390,8 @@ class GetSingleRecordIntegrationSpec
                                |  }
                                |}
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -415,16 +414,15 @@ class GetSingleRecordIntegrationSpec
             )
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with unable to parse the detail" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori/$recordId"))
-                .willReturn(
-                  aResponse()
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+          stubFor(
+            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+              .willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                |{
                                |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
@@ -438,9 +436,8 @@ class GetSingleRecordIntegrationSpec
                                |  }
                                |}
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -456,23 +453,21 @@ class GetSingleRecordIntegrationSpec
             "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
         "Bad Request with invalid json" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori/$recordId"))
-                .willReturn(
-                  aResponse()
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+          stubFor(
+            get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+              .willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                | {
                                |    "invalid": "error"
                                |  }
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -488,7 +483,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Unexpected Error"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasCalled()
         }
       }
       "invalid with missing mandatory header" in {
@@ -512,7 +507,7 @@ class GetSingleRecordIntegrationSpec
           )
         )
 
-        verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+        verifyThatDownstreamApiWasNotCalled()
       }
       "forbidden with any of the following" - {
         "EORI number is not authorized" in {
@@ -530,7 +525,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> s"EORI number is incorrect"
           )
 
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasNotCalled()
         }
 
         "incorrect enrolment key is used to authorise " in {
@@ -549,23 +544,20 @@ class GetSingleRecordIntegrationSpec
             "message"       -> s"EORI number is incorrect"
           )
 
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasNotCalled()
         }
       }
     }
   }
 
-  private def stubForEis(httpStatus: Int, body: Option[String] = None) =
-    hawkConnectorPath.foreach { path =>
-      stubFor(
-        get(urlEqualTo(s"$path/$eori/$recordId"))
-          .willReturn(
-            aResponse()
-              .withStatus(httpStatus)
-              .withBody(body.orNull)
-          )
+  private def stubForEis(httpStatus: Int, body: Option[String] = None) = stubFor(
+    get(urlEqualTo(s"$connectorPath/$eori/$recordId"))
+      .willReturn(
+        aResponse()
+          .withStatus(httpStatus)
+          .withBody(body.orNull)
       )
-    }
+  )
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

@@ -45,17 +45,11 @@ class UpdateRecordConnector @Inject() (
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] =
     withMetricsTimerAsync("tgp.updaterecord.connector") { _ =>
-      val url = appConfig.hawkConfig.updateRecordUrl
+      val url = appConfig.eisConfig.updateRecordUrl
 
       httpClientV2
         .put(url"$url")
-        .setHeader(
-          buildHeaders(
-            correlationId,
-            appConfig.hawkConfig.updateRecordBearerToken,
-            appConfig.hawkConfig.forwardedHost
-          ): _*
-        )
+        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.updateRecordBearerToken): _*)
         .withBody(toJson(payload))
         .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
     }

@@ -43,18 +43,12 @@ class RequestAdviceConnector @Inject() (
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] =
     withMetricsTimerAsync("tgp.advice.connector") { _ =>
-      val url = appConfig.pegaConfig.requestAdviceUrl
+      val url = appConfig.eisConfig.requestAdviceUrl
 
       val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringSeconds)
       httpClientV2
         .post(url"$url")
-        .setHeader(
-          buildHeadersForAdvice(
-            correlationId,
-            appConfig.pegaConfig.requestAdviceBearerToken,
-            appConfig.pegaConfig.forwardedHost
-          ): _*
-        )
+        .setHeader(buildHeadersForAdvice(correlationId, appConfig.eisConfig.requestAdviceBearerToken): _*)
         .withBody(Json.toJson(adviceEisRequest))
         .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
     }

@@ -28,12 +28,10 @@ trait BaseConnector {
   def appConfig: AppConfig
   def dateTimeService: DateTimeService
 
-  protected def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] =
+  def buildHeaders(correlationId: String, accessToken: String)(implicit hc: HeaderCarrier): Seq[(String, String)] =
     Seq(
       HeaderNames.CorrelationId -> correlationId,
-      HeaderNames.ForwardedHost -> forwardedHost,
+      HeaderNames.ForwardedHost -> appConfig.eisConfig.forwardedHost,
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
       HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
@@ -41,13 +39,15 @@ trait BaseConnector {
       HeaderNames.ContentType   -> MimeTypes.JSON
     )
 
-  protected def buildHeadersForGetMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
+  def buildHeadersForGetMethod(correlationId: String, accessToken: String)(implicit
     hc: HeaderCarrier
   ): Seq[(String, String)] =
-    buildHeaders(correlationId, accessToken, forwardedHost).filterNot(_._1 == HeaderNames.ContentType)
+    buildHeaders(correlationId, accessToken).filterNot(_._1 == HeaderNames.ContentType)
 
-  protected def buildHeadersForAdvice(correlationId: String, bearerToken: String, forwardedHost: String)(implicit
+  def buildHeadersForAdvice(correlationId: String, bearerToken: String)(implicit
     hc: HeaderCarrier
   ): Seq[(String, String)] =
-    buildHeaders(correlationId, bearerToken, forwardedHost).filterNot(_._1 == HeaderNames.ClientId)
+    buildHeaders(correlationId, bearerToken).filterNot(elm =>
+      elm == HeaderNames.ClientId -> hc.headers(Seq(HeaderNames.ClientId)).head._2
+    )
 }
