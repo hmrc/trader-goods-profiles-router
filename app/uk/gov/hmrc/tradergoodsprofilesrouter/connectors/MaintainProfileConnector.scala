@@ -44,10 +44,16 @@ class MaintainProfileConnector @Inject() (
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, MaintainProfileResponse]] =
     withMetricsTimerAsync("tgp.maintainprofile.connector") { _ =>
-      val url = appConfig.eisConfig.maintainProfileUrl
+      val url = appConfig.hawkConfig.maintainProfileUrl
       httpClientV2
         .put(url"$url")
-        .setHeader(buildHeaders(correlationId, appConfig.eisConfig.maintainProfileBearerToken): _*)
+        .setHeader(
+          buildHeaders(
+            correlationId,
+            appConfig.hawkConfig.maintainProfileBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
         .withBody(Json.toJson(request))
         .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
     }

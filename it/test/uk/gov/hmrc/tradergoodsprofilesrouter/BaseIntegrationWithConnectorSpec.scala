@@ -22,23 +22,48 @@ import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 abstract class BaseIntegrationWithConnectorSpec extends BaseIntegrationSpec {
 
-  def connectorPath: String
-  def connectorName: String
+  def hawkConnectorPath: Option[String] = None
+  def pegaConnectorPath: Option[String] = None
 
-  override def extraApplicationConfig: Map[String, Any] = Map(
-    s"microservice.services.$connectorName.host" -> wireMockHost,
-    s"microservice.services.$connectorName.port" -> wireMockPort,
-    s"microservice.services.$connectorName.uri"  -> connectorPath
-  )
+  def hawkConnectorName: String = "hawk"
+  def pegaConnectorName: String = "pega"
 
-  def verifyThatDownstreamApiWasCalled(): Unit =
-    withClue("We expected a single downstream API (stub) to be called, but it wasn't.") {
-      getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 1
+  override def extraApplicationConfig: Map[String, Any] = {
+    val hawkConfig = hawkConnectorPath
+      .map(path =>
+        Map(
+          s"microservice.services.$hawkConnectorName.host" -> wireMockHost,
+          s"microservice.services.$hawkConnectorName.port" -> wireMockPort,
+          s"microservice.services.$hawkConnectorName.uri"  -> path
+        )
+      )
+      .getOrElse(Map.empty)
+
+    val pegaConfig = pegaConnectorPath
+      .map(path =>
+        Map(
+          s"microservice.services.$pegaConnectorName.host" -> wireMockHost,
+          s"microservice.services.$pegaConnectorName.port" -> wireMockPort,
+          s"microservice.services.$pegaConnectorName.uri"  -> path
+        )
+      )
+      .getOrElse(Map.empty)
+
+    hawkConfig ++ pegaConfig
+  }
+
+  def verifyThatDownstreamApiWasCalled(connectorPath: Option[String]): Unit    =
+    connectorPath.foreach { path =>
+      withClue(s"We expected a single downstream API (stub) to be called at $path, but it wasn't.") {
+        getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 1
+      }
     }
-  def verifyThatMultipleDownstreamApiWasCalled(): Unit =
-    withClue("We expected a multiple downstream API (stub) to be called, but it wasn't.") {
+  def verifyThatMultipleDownstreamApiWasCalled(): Unit                         =
+    withClue("We expected multiple downstream API (stub) to be called, but it wasn't.") {
       getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 2
     }
-  def verifyThatDownstreamApiWasNotCalled(): Unit =
-    verify(0, postRequestedFor(urlEqualTo(connectorPath)))
+  def verifyThatDownstreamApiWasNotCalled(connectorPath: Option[String]): Unit =
+    connectorPath.foreach { path =>
+      verify(0, postRequestedFor(urlEqualTo(path)))
+    }
 }
