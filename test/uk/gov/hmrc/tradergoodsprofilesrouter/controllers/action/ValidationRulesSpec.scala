@@ -21,7 +21,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json, OFormat}
-import play.api.mvc.ControllerComponents
+import play.api.mvc.{ControllerComponents, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
@@ -31,6 +31,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
+import scala.util.Random
 
 class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues with IntegrationPatience {
 
@@ -191,6 +192,67 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
       result.value mustBe TestClass("any-name")
     }
 
+  }
+
+  "validateWithdrawReason" should {
+
+    "return the withdraw reason"in new TestValidationRules(uuidService) {
+      validator =>
+
+      val withdrawReason = Random.alphanumeric.take(1000).mkString
+      val result: Either[Result, String] = validator.validateWithdrawReasonQueryParam(
+        FakeRequest("GET", s"/url?withdrawReason=$withdrawReason")
+      )
+
+      result.value mustBe withdrawReason
+    }
+
+    "return bad request error if withdrawreason is empty" in new TestValidationRules(uuidService) {
+      validator =>
+
+      val result = validator.validateWithdrawReasonQueryParam(FakeRequest())
+
+      result.left.value mustBe BadRequest(
+        Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
+            Json.obj(
+              "code"        -> "INVALID_QUERY_PARAMETER",
+              "message"     -> "Query parameter withdrawReason is in the wrong format",
+              "errorNumber" -> 6001
+            )
+          )
+        )
+      )
+    }
+
+    "return bad request error if withdrawreason is greader then 1000 char" in new TestValidationRules(uuidService) {
+      validator =>
+
+      val invalidWithdrawReason = Random.alphanumeric.take(1001).mkString
+      val result = validator.validateWithdrawReasonQueryParam(
+        FakeRequest("GET", s"/url?withdrawReason=$invalidWithdrawReason")
+        )
+
+      result.left.value mustBe BadRequest(
+        Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
+            Json.obj(
+              "code"        -> "INVALID_QUERY_PARAMETER",
+              "message"     -> "Query parameter withdrawReason is in the wrong format",
+              "errorNumber" -> 6001
+            )
+          )
+        )
+      )
+
+
+    }
   }
 
   "isValidCountryCode" should {

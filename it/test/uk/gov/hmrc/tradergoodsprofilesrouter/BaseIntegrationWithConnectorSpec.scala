@@ -34,7 +34,8 @@ abstract class BaseIntegrationWithConnectorSpec extends BaseIntegrationSpec {
         Map(
           s"microservice.services.$hawkConnectorName.host" -> wireMockHost,
           s"microservice.services.$hawkConnectorName.port" -> wireMockPort,
-          s"microservice.services.$hawkConnectorName.uri"  -> path
+          s"microservice.services.$hawkConnectorName.uri"  -> path,
+          "auditing.enabled" -> false
         )
       )
       .getOrElse(Map.empty)
@@ -44,7 +45,8 @@ abstract class BaseIntegrationWithConnectorSpec extends BaseIntegrationSpec {
         Map(
           s"microservice.services.$pegaConnectorName.host" -> wireMockHost,
           s"microservice.services.$pegaConnectorName.port" -> wireMockPort,
-          s"microservice.services.$pegaConnectorName.uri"  -> path
+          s"microservice.services.$pegaConnectorName.uri"  -> path,
+          "auditing.enabled" -> false
         )
       )
       .getOrElse(Map.empty)

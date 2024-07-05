@@ -123,6 +123,7 @@ object ApplicationConstants {
   val InvalidOrMissingUkimsNumberMessage = "Mandatory field ukimsNumber was missing from body or is in the wrong format"
   val InvalidOrMissingNirmsNumberMessage = "Optional field nirmsNumber is in the wrong format"
   val InvalidOrMissingNiphlNumberMessage = "Optional field niphlNumber is in the wrong format"
+  val invalidWithdrawReasonMessage = "Query parameter withdrawReason is in the wrong format"
 
   val InternalServerErrorCode                                  = "INTERNAL_SERVER_ERROR"
   val InternalServerErrorMessage                               = "Internal Server Error"
@@ -174,5 +175,6 @@ object ApplicationConstants {
   val InvalidOrMissingTraderReferenceCode    = "E013"
   val InvalidOrMissinggoodsDescriptionCode   = "E014"
   val InvalidOrMissingCommodityCodeCode      = "E015"
+  val invalidWithdrawReasonCode =  6001
 
 }

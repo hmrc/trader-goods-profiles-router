@@ -9,3 +9,4 @@ POST       /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.
 
 PUT        /traders/:eori                                           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)
 
+DELETE     /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.tradergoodsprofilesrouter.controllers.WithdrawAdviceController.delete(eori: String, recordId: String)

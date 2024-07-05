@@ -98,6 +98,20 @@ trait ValidationRules {
       errors.toList
     }
 
+  protected def validateWithdrawReasonQueryParam(implicit request: Request[_]): Either[Result, String] = {
+    request.getQueryString("withdrawReason")
+      .filter(_.length < 1001)
+      .toRight(
+        BadRequestErrorResponse(
+          uuidService.uuid,
+          Seq(Error(
+            InvalidQueryParameter,
+            invalidWithdrawReasonMessage,
+            invalidWithdrawReasonCode))
+        ).asPresentation
+      )
+  }
+
   private def convertError[T](
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
     fieldToErrorCodeTable: Map[String, (String, String)]

@@ -28,13 +28,15 @@ case class EISInstanceConfig(
   updateRecord: String,
   maintainProfile: String,
   requestAdvice: String,
+  withdrawAdvice: String,
   forwardedHost: String,
   updateRecordToken: String,
   recordGetToken: String,
   recordCreateToken: String,
   recordRemoveToken: String,
   requestAdviceToken: String,
-  maintainProfileToken: String
+  maintainProfileToken: String,
+  withdrawAdviceToken: String
 ) {
   lazy val getRecordsUrl: String      = s"$protocol://$host:$port$getRecords"
   lazy val createRecordUrl: String    = s"$protocol://$host:$port$createRecord"
@@ -42,6 +44,7 @@ case class EISInstanceConfig(
   lazy val updateRecordUrl: String    = s"$protocol://$host:$port$updateRecord"
   lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
   lazy val requestAdviceUrl: String   = s"$protocol://$host:$port$requestAdvice"
+  lazy val withdrawAdviceUrl = s"$protocol://$host:$port$withdrawAdvice"
 
   lazy val updateRecordBearerToken    = s"Bearer $updateRecordToken"
   lazy val getRecordBearerToken       = s"Bearer $recordGetToken"
@@ -49,6 +52,8 @@ case class EISInstanceConfig(
   lazy val removeRecordBearerToken    = s"Bearer $recordRemoveToken"
   lazy val requestAdviceBearerToken   = s"Bearer $requestAdviceToken"
   lazy val maintainProfileBearerToken = s"Bearer $maintainProfileToken"
+  lazy val withdrawAdviceBearerToken = s"Bearer $withdrawAdviceToken"
+
 
 }
 
@@ -67,13 +72,15 @@ object EISInstanceConfig {
         config.get[String]("update-record"),
         config.get[String]("maintain-profile"),
         config.get[String]("request-advice"),
+        config.get[String]("withdraw-advice"),
         config.get[String]("forwarded-host"),
         config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),
         config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
         config.getOptional[String]("record-create-token").getOrElse("dummyRecordCreateBearerToken"),
         config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),
         config.getOptional[String]("request-advice-token").getOrElse("dummyRequestAdviceBearerToken"),
-        config.getOptional[String]("maintain-profile-token").getOrElse("dummyMaintainProfileBearerToken")
+        config.getOptional[String]("maintain-profile-token").getOrElse("dummyMaintainProfileBearerToken"),
+        config.getOptional[String]("withdraw-advice-token").getOrElse("dummyWithdrawAdviceBearerToken")
       )
     }
 }

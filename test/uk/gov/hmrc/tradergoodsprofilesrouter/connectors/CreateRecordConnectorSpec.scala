@@ -90,7 +90,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec w
       verify(httpClientV2).post(url"$expectedUrl")
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordCreateBearerToken"): _*)
       verify(requestBuilder).withBody(createRecordEisPayload)
-      verifyExecuteWithParams(correlationId)
+      verifyExecuteForHttpReader(correlationId)
     }
   }
 

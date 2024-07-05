@@ -97,15 +97,25 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       forwardedHost = "MDTP",
       requestAdviceToken = "dummyAccreditationCreateBearerToken",
       getRecords = "/tgp/getrecords/v1",
-      recordGetToken = "dummyRecordGetBearerToken"
+      recordGetToken = "dummyRecordGetBearerToken",
+      withdrawAdvise = "/tgp/Withdrawaccreditation/v1",
+      withdrawAdviseToken = "dummyWithdrawAdviceBearerToken"
     )
 
     when(appConfig.hawkConfig).thenReturn(hawkConfig)
     when(appConfig.pegaConfig).thenReturn(pegaConfig)
   }
 
-  def verifyExecuteWithParams(expectedCorrelationId: String): Assertion = {
-    val captor = ArgCaptor[HttpReader[Either[Result, GetEisRecordsResponse]]]
+  protected def verifyExecuteForHttpReader(expectedCorrelationId: String): Assertion = {
+    val captor = ArgCaptor[HttpReader[Either[Result, Any]]]
+    verify(requestBuilder).execute(captor.capture, any)
+
+    val httpReader = captor.value
+    httpReader.correlationId mustBe expectedCorrelationId
+  }
+
+  protected def verifyExecuteForStatusHttpReader(expectedCorrelationId: String) = {
+    val captor = ArgCaptor[StatusHttpReader]
     verify(requestBuilder).execute(captor.capture, any)
 
     val httpReader = captor.value

@@ -60,5 +60,5 @@ abstract class BaseIntegrationSpec
         "metrics.enabled" -> false
       )
 
-  def fullUrl(path: String): String = baseUrl + "/trader-goods-profiles-router" + path
+  def fullUrl(path: String): String = s"$baseUrl/trader-goods-profiles-router$path"
 }
