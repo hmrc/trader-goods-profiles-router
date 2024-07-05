@@ -32,13 +32,13 @@ import java.time.Instant
 import java.util.UUID
 import scala.concurrent.Future
 
-class WithdrawAdviceConnectorSpec extends BaseConnectorSpec  with BeforeAndAfterEach {
+class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterEach {
 
-  private val uuidService = mock[UuidService]
+  private val uuidService   = mock[UuidService]
   private val correlationId = UUID.randomUUID().toString
 
-  private val withdrawDate = Instant.parse("2024-05-12T12:15:15.678Z")
-  private val recordId = "recordId"
+  private val withdrawDate   = Instant.parse("2024-05-12T12:15:15.678Z")
+  private val recordId       = "recordId"
   private val withdrawReason = "Withdraw Reason"
 
   val sut = new WithdrawAdviceConnector(appConfig, httpClientV2, uuidService, dateTimeService)
@@ -97,7 +97,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec  with BeforeAndAfter
     }
   }
 
-  private def createRequest: JsValue = {
+  private def createRequest: JsValue =
     Json.parse(s"""{
                  |   "withdrawRequest":{
                  |      "requestDetail":{
@@ -113,5 +113,4 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec  with BeforeAndAfter
                  |      }
                  |   }
                  |}""".stripMargin)
-  }
 }

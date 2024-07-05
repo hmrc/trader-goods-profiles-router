@@ -196,10 +196,9 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
   "validateWithdrawReason" should {
 
-    "return the withdraw reason"in new TestValidationRules(uuidService) {
+    "return the withdraw reason" in new TestValidationRules(uuidService) {
       validator =>
-
-      val withdrawReason = Random.alphanumeric.take(1000).mkString
+      val withdrawReason                 = Random.alphanumeric.take(1000).mkString
       val result: Either[Result, String] = validator.validateWithdrawReasonQueryParam(
         FakeRequest("GET", s"/url?withdrawReason=$withdrawReason")
       )
@@ -209,7 +208,6 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
     "return bad request error if withdrawreason is empty" in new TestValidationRules(uuidService) {
       validator =>
-
       val result = validator.validateWithdrawReasonQueryParam(FakeRequest())
 
       result.left.value mustBe BadRequest(
@@ -230,11 +228,10 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
     "return bad request error if withdrawreason is greader then 1000 char" in new TestValidationRules(uuidService) {
       validator =>
-
       val invalidWithdrawReason = Random.alphanumeric.take(1001).mkString
-      val result = validator.validateWithdrawReasonQueryParam(
+      val result                = validator.validateWithdrawReasonQueryParam(
         FakeRequest("GET", s"/url?withdrawReason=$invalidWithdrawReason")
-        )
+      )
 
       result.left.value mustBe BadRequest(
         Json.obj(
@@ -250,7 +247,6 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
           )
         )
       )
-
 
     }
   }

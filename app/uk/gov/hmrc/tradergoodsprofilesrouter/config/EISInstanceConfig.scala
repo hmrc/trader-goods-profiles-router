@@ -44,7 +44,7 @@ case class EISInstanceConfig(
   lazy val updateRecordUrl: String    = s"$protocol://$host:$port$updateRecord"
   lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
   lazy val requestAdviceUrl: String   = s"$protocol://$host:$port$requestAdvice"
-  lazy val withdrawAdviceUrl = s"$protocol://$host:$port$withdrawAdvice"
+  lazy val withdrawAdviceUrl          = s"$protocol://$host:$port$withdrawAdvice"
 
   lazy val updateRecordBearerToken    = s"Bearer $updateRecordToken"
   lazy val getRecordBearerToken       = s"Bearer $recordGetToken"
@@ -52,8 +52,7 @@ case class EISInstanceConfig(
   lazy val removeRecordBearerToken    = s"Bearer $recordRemoveToken"
   lazy val requestAdviceBearerToken   = s"Bearer $requestAdviceToken"
   lazy val maintainProfileBearerToken = s"Bearer $maintainProfileToken"
-  lazy val withdrawAdviceBearerToken = s"Bearer $withdrawAdviceToken"
-
+  lazy val withdrawAdviceBearerToken  = s"Bearer $withdrawAdviceToken"
 
 }
 

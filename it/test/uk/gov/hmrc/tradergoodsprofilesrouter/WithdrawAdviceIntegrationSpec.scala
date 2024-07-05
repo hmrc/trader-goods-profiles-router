@@ -34,11 +34,10 @@ class WithdrawAdviceIntegrationSpec
 
 
   override def connectorPath: String = "/tgp/Withdrawaccreditation/v1"
-  private val url           = fullUrl(s"/traders/$eori/records/$recordId/advice?withdrawReason=didnotlikeit")
   private val eori = "GB123456789001"
   private val recordId = UUID.randomUUID().toString
   private val correlationId = UUID.randomUUID().toString
-
+  private val url           = fullUrl(s"/traders/$eori/records/$recordId/advice?withdrawReason=didnotlikeit")
 
   override def beforeEach(): Unit = {
     super.beforeEach()

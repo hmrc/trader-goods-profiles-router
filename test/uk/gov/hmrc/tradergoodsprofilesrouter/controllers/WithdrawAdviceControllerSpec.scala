@@ -37,12 +37,12 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  private val eoriNumber        = "GB123456789001"
-  private val recordId = UUID.randomUUID().toString
+  private val eoriNumber    = "GB123456789001"
+  private val recordId      = UUID.randomUUID().toString
   private val correlationId = UUID.randomUUID().toString
-  private val connector = mock[WithdrawAdviceConnector]
-  private val uuidService = mock[UuidService]
-  private val url = Call(DELETE, s"url?withdrawReason=valid reason")
+  private val connector     = mock[WithdrawAdviceConnector]
+  private val uuidService   = mock[UuidService]
+  private val url           = Call(DELETE, s"url?withdrawReason=valid reason")
 
   val sut = new WithdrawAdviceController(
     new FakeSuccessAuthAction(),
@@ -78,12 +78,12 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
         status(result) mustBe BAD_REQUEST
         contentAsJson(result) mustBe Json.obj(
           "correlationId" -> correlationId,
-          "code" -> "BAD_REQUEST",
-          "message" -> "Bad Request",
-          "errors" -> Json.arr(
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
             Json.obj(
-              "code" -> "INVALID_QUERY_PARAMETER",
-              "message" -> "Query parameter recordId is in the wrong format",
+              "code"        -> "INVALID_QUERY_PARAMETER",
+              "message"     -> "Query parameter recordId is in the wrong format",
               "errorNumber" -> 25
             )
           )
@@ -97,12 +97,12 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.obj(
         "correlationId" -> correlationId,
-        "code" -> "BAD_REQUEST",
-        "message" -> "Bad Request",
-        "errors" -> Json.arr(
+        "code"          -> "BAD_REQUEST",
+        "message"       -> "Bad Request",
+        "errors"        -> Json.arr(
           Json.obj(
-            "code" -> "INVALID_HEADER",
-            "message" -> "Missing mandatory header X-Client-ID",
+            "code"        -> "INVALID_HEADER",
+            "message"     -> "Missing mandatory header X-Client-ID",
             "errorNumber" -> 6000
           )
         )
@@ -117,12 +117,12 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.obj(
         "correlationId" -> correlationId,
-        "code" -> "BAD_REQUEST",
-        "message" -> "Bad Request",
-        "errors" -> Json.arr(
+        "code"          -> "BAD_REQUEST",
+        "message"       -> "Bad Request",
+        "errors"        -> Json.arr(
           Json.obj(
-            "code" -> "INVALID_QUERY_PARAMETER",
-            "message" -> "Query parameter withdrawReason is in the wrong format",
+            "code"        -> "INVALID_QUERY_PARAMETER",
+            "message"     -> "Query parameter withdrawReason is in the wrong format",
             "errorNumber" -> 6001
           )
         )
@@ -131,7 +131,6 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
 
   }
 
-
 //  def urlWithINvali: Call = {
 //
 //    val base = routes.WithdrawAdviceController.delete(eoriNumber, recordId).url
@@ -139,6 +138,5 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
 //
 //    Call(DELETE, s"url?withdrawReason=$reason")
 //  }
-
 
 }

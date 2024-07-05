@@ -20,13 +20,9 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.Instant
 
-
-
 object WithdrawAdvice {
 
-  val payload = {
-
-  }
+  val payload = {}
   case class WithdrawDetail(withdrawDate: Instant, withdrawReason: Option[String])
 
   object WithdrawDetail {

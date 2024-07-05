@@ -31,15 +31,19 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.Unexpect
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class WithdrawAdviceConnector @Inject()
-(
+class WithdrawAdviceConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   uuidService: UuidService,
-  override val dateTimeService: DateTimeService,
-)(implicit val ec: ExecutionContext) extends BaseConnector with EisHttpErrorHandler with Logging {
+  override val dateTimeService: DateTimeService
+)(implicit val ec: ExecutionContext)
+    extends BaseConnector
+    with EisHttpErrorHandler
+    with Logging {
 
-  def delete(recordId: String, withdrawReason: String)(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] = {
+  def delete(recordId: String, withdrawReason: String)(implicit
+    hc: HeaderCarrier
+  ): Future[Either[EisHttpErrorResponse, Int]] = {
     val url = appConfig.eisConfig.withdrawAdviceUrl
 
     val correlationId = uuidService.uuid
@@ -49,31 +53,29 @@ class WithdrawAdviceConnector @Inject()
       .setHeader(buildHeaders(correlationId, appConfig.eisConfig.withdrawAdviceBearerToken): _*)
       .withBody(createPayload(recordId, withdrawReason))
       .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
-      .recover {
-        case ex: Throwable => {
-          logger.error(s"[WithdrawAdviceConnector] - Error withdrawing Advice, recordId $recordId, message ${ex.getMessage}", ex)
+      .recover { case ex: Throwable =>
+        logger.error(
+          s"[WithdrawAdviceConnector] - Error withdrawing Advice, recordId $recordId, message ${ex.getMessage}",
+          ex
+        )
 
-          Left(EisHttpErrorResponse(
-            INTERNAL_SERVER_ERROR,
-            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
-          )
-        }
+        Left(
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage))
+        )
       }
   }
 
-  private def createPayload(publicRecordID: String, withdrawReason: String): JsObject = {
+  private def createPayload(publicRecordID: String, withdrawReason: String): JsObject =
     Json.obj(
       "withdrawRequest" -> Json.obj(
         "requestDetail" -> Json.obj(
           "withdrawDetail" -> Json.obj(
-            "withdrawDate" -> dateTimeService.timestamp.asStringSeconds,
+            "withdrawDate"   -> dateTimeService.timestamp.asStringSeconds,
             "withdrawReason" -> withdrawReason
           ),
-          "goodsItems" -> Json.arr(Json.obj("publicRecordID" -> publicRecordID))
+          "goodsItems"     -> Json.arr(Json.obj("publicRecordID" -> publicRecordID))
         )
       )
     )
-  }
-
 
 }
