@@ -95,7 +95,9 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       port = 1234,
       requestAdvice = "/tgp/createaccreditation/v1",
       forwardedHost = "MDTP",
-      requestAdviceToken = "dummyAccreditationCreateBearerToken"
+      requestAdviceToken = "dummyAccreditationCreateBearerToken",
+      getRecords = "/tgp/getrecords/v1",
+      recordGetToken = "dummyRecordGetBearerToken"
     )
 
     when(appConfig.hawkConfig).thenReturn(hawkConfig)

@@ -104,7 +104,7 @@ class GetRecordsController @Inject() (
     recordId: String
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords] =
     EitherT(
-      getRecordService.fetchRecord(eori, recordId)
+      getRecordService.fetchRecord(eori, recordId, true)
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 }
