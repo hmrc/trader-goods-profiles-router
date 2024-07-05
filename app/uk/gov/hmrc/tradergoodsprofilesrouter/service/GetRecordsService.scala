@@ -32,12 +32,12 @@ class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidServic
   ec: ExecutionContext
 ) extends Logging {
 
-  def fetchRecord(eori: String, recordId: String)(implicit
+  def fetchRecord(eori: String, recordId: String, isHawk: Boolean)(implicit
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, GoodsItemRecords]] = {
     val correlationId: String = uuidService.uuid
     eisConnector
-      .fetchRecord(eori, recordId, correlationId)
+      .fetchRecord(eori, recordId, correlationId, isHawk)
       .map {
         case Right(response) => Right(response.goodsItemRecords.head)
         case Left(error)     => Left(error)

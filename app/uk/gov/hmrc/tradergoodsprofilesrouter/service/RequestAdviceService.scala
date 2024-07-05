@@ -46,7 +46,7 @@ class RequestAdviceService @Inject() (
     val correlationId = uuidService.uuid
 
     for {
-      goodsItemRecords <- EitherT(routerService.fetchRecord(eori, recordId)).leftMap(o => o)
+      goodsItemRecords <- EitherT(routerService.fetchRecord(eori, recordId, false)).leftMap(o => o)
       response         <- EitherT(validateAndRequestAdvice(eori, goodsItemRecords, request, correlationId)).leftMap(o => o)
     } yield response
 

@@ -66,7 +66,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
     "return a successful JSON response for a single record" in {
 
-      when(getRecordsService.fetchRecord(any, any)(any))
+      when(getRecordsService.fetchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(
@@ -91,7 +91,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       val errorResponseJson =
         EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
 
-      when(getRecordsService.fetchRecord(any, any)(any))
+      when(getRecordsService.fetchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Left(errorResponseJson)))
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(

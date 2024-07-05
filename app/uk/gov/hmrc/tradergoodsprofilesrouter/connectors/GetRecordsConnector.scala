@@ -44,18 +44,26 @@ class GetRecordsConnector @Inject() (
   def fetchRecord(
     eori: String,
     recordId: String,
-    correlationId: String
+    correlationId: String,
+    isHawk: Boolean
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] =
     withMetricsTimerAsync("tgp.getrecord.connector") { _ =>
-      val url = s"${appConfig.hawkConfig.getRecordsUrl}/$eori/$recordId"
+      val url =
+        if (isHawk) s"${appConfig.hawkConfig.getRecordsUrl}/$eori/$recordId"
+        else s"${appConfig.pegaConfig.getRecordsUrl}/$eori/$recordId"
+
+      val bearerToken =
+        if (isHawk) appConfig.hawkConfig.getRecordBearerToken else appConfig.pegaConfig.getRecordBearerToken
+
+      val forwardedHost = if (isHawk) appConfig.hawkConfig.forwardedHost else appConfig.pegaConfig.forwardedHost
 
       httpClientV2
         .get(url"$url")
         .setHeader(
           buildHeadersForGetMethod(
             correlationId,
-            appConfig.hawkConfig.getRecordBearerToken,
-            appConfig.hawkConfig.forwardedHost
+            bearerToken,
+            forwardedHost
           ): _*
         )
         .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
