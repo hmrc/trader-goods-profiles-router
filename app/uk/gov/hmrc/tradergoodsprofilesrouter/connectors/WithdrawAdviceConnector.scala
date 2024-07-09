@@ -44,13 +44,13 @@ class WithdrawAdviceConnector @Inject() (
   def delete(recordId: String, withdrawReason: String)(implicit
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] = {
-    val url = appConfig.eisConfig.withdrawAdviceUrl
+    val url = appConfig.pegaConfig.getWithdrawAdviseUrl
 
     val correlationId = uuidService.uuid
 
     httpClientV2
       .delete(url"$url")
-      .setHeader(buildHeaders(correlationId, appConfig.eisConfig.withdrawAdviceBearerToken): _*)
+      .setHeader(buildHeaders(correlationId, appConfig.pegaConfig.getWithdrawAdviceBearerToken, appConfig.pegaConfig.forwardedHost): _*)
       .withBody(createPayload(recordId, withdrawReason))
       .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
       .recover { case ex: Throwable =>

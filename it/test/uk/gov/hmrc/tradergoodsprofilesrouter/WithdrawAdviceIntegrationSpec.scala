@@ -33,7 +33,7 @@ class WithdrawAdviceIntegrationSpec
     with BeforeAndAfterEach {
 
 
-  override def connectorPath: String = "/tgp/Withdrawaccreditation/v1"
+  override def pegaConnectorPath: Option[String] = Some("/tgp/Withdrawaccreditation/v1")
   private val eori = "GB123456789001"
   private val recordId = UUID.randomUUID().toString
   private val correlationId = UUID.randomUUID().toString
@@ -89,7 +89,7 @@ class WithdrawAdviceIntegrationSpec
   }
 
   private def stubForEisRequest = {
-    stubFor(delete(urlEqualTo(s"$connectorPath"))
+    stubFor(delete(urlEqualTo(s"${pegaConnectorPath.get}"))
       .willReturn(
         aResponse()
           .withStatus(NO_CONTENT)
@@ -97,7 +97,7 @@ class WithdrawAdviceIntegrationSpec
   }
 
   private def stubForEisBadRequest = {
-    stubFor(delete(urlEqualTo(s"$connectorPath"))
+    stubFor(delete(urlEqualTo(s"${pegaConnectorPath.get}"))
       .willReturn(
         aResponse()
           .withStatus(BAD_REQUEST)
