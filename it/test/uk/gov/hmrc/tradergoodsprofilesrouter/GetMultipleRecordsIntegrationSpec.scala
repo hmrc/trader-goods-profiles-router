@@ -25,21 +25,18 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
 
-class GetMultipleRecordsIntegrationSpec
-    extends BaseIntegrationWithConnectorSpec
-    with AuthTestSupport
-    with BeforeAndAfterEach {
+class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
-  private val eori                               = "GB123456789001"
-  private val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val dateTime                           = Instant.parse("2021-12-17T09:30:47Z")
-  private val timestamp                          = "Fri, 17 Dec 2021 09:30:47 GMT"
-  override def hawkConnectorPath: Option[String] = Some(s"/tgp/getrecords/v1")
-  private val url                                = fullUrl(s"/traders/$eori/records")
+  private val eori                       = "GB123456789001"
+  private val correlationId              = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val dateTime                   = Instant.parse("2021-12-17T09:30:47Z")
+  private val timestamp                  = "Fri, 17 Dec 2021 09:30:47 GMT"
+  override def hawkConnectorPath: String = s"/tgp/getrecords/v1"
+  private val url                        = fullUrl(s"/traders/$eori/records")
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -397,20 +394,19 @@ class GetMultipleRecordsIntegrationSpec
         }
 
         "Bad Request with unexpected error" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori"))
-                .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-                .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-                .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-                .withHeader("X-Client-ID", equalTo("tss"))
-                .willReturn(
-                  aResponse()
-                    .withHeader("Content-Type", "application/json")
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+          stubFor(
+            get(urlEqualTo(s"$hawkConnectorPath/$eori"))
+              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
+              .withHeader("Accept", equalTo("application/json"))
+              .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+              .withHeader("X-Client-ID", equalTo("tss"))
+              .willReturn(
+                aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                |{
                                |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
@@ -426,9 +422,8 @@ class GetMultipleRecordsIntegrationSpec
                                |  }
                                |}
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -454,20 +449,19 @@ class GetMultipleRecordsIntegrationSpec
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with unable to parse the detail" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori"))
-                .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-                .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-                .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-                .withHeader("X-Client-ID", equalTo("tss"))
-                .willReturn(
-                  aResponse()
-                    .withHeader("Content-Type", "application/json")
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+          stubFor(
+            get(urlEqualTo(s"$hawkConnectorPath/$eori"))
+              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
+              .withHeader("Accept", equalTo("application/json"))
+              .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+              .withHeader("X-Client-ID", equalTo("tss"))
+              .willReturn(
+                aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                |{
                                |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
@@ -481,9 +475,8 @@ class GetMultipleRecordsIntegrationSpec
                                |  }
                                |}
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -502,27 +495,25 @@ class GetMultipleRecordsIntegrationSpec
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with invalid json" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori"))
-                .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-                .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-                .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-                .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-                .withHeader("X-Client-ID", equalTo("tss"))
-                .willReturn(
-                  aResponse()
-                    .withHeader("Content-Type", "application/json")
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+          stubFor(
+            get(urlEqualTo(s"$hawkConnectorPath/$eori"))
+              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
+              .withHeader("Accept", equalTo("application/json"))
+              .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+              .withHeader("X-Client-ID", equalTo("tss"))
+              .willReturn(
+                aResponse()
+                  .withHeader("Content-Type", "application/json")
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                | {
                                |    "invalid": "error"
                                |  }
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -629,27 +620,26 @@ class GetMultipleRecordsIntegrationSpec
     lastUpdatedDate: Option[String] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  ) =
-    hawkConnectorPath.foreach { path =>
-      val uri =
-        uri"$path/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
+  ) = {
+    val uri =
+      uri"$hawkConnectorPath/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
 
-      stubFor(
-        get(urlEqualTo(s"$uri"))
-          .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-          .withHeader("X-Correlation-ID", equalTo(correlationId))
-          .withHeader("Date", equalTo(timestamp))
-          .withHeader("Accept", equalTo("application/json"))
-          .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-          .withHeader("X-Client-ID", equalTo("tss"))
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", "application/json")
-              .withStatus(httpStatus)
-              .withBody(body.orNull)
-          )
-      )
-    }
+    stubFor(
+      get(urlEqualTo(s"$uri"))
+        .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+        .withHeader("X-Correlation-ID", equalTo(correlationId))
+        .withHeader("Date", equalTo(timestamp))
+        .withHeader("Accept", equalTo("application/json"))
+        .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+        .withHeader("X-Client-ID", equalTo("tss"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(httpStatus)
+            .withBody(body.orNull)
+        )
+    )
+  }
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

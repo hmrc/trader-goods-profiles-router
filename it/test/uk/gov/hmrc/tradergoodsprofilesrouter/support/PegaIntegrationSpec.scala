@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter
+package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseIntegrationSpec
+abstract class PegaIntegrationSpec extends BaseIntegrationSpec{
 
-class HealthEndpointIntegrationSpec extends BaseIntegrationSpec {
+  def pegaConnectorPath: String
 
-  "service health endpoint" - {
-    "respond with 200 status" - {
-      val response =
-        wsClient
-          .url(s"$baseUrl/ping/ping")
-          .get()
-          .futureValue
-
-      response.status shouldBe 200
-    }
+  override def extraApplicationConfig: Map[String, Any] = {
+    Map(
+      s"microservice.services.pega.host" -> wireMockHost,
+      s"microservice.services.pega.port" -> wireMockPort,
+      s"microservice.services.pega.uri" -> pegaConnectorPath,
+      "auditing.enabled" -> false
+    )
   }
 }

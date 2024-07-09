@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter
+package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseIntegrationSpec
+abstract class HawkIntegrationSpec extends BaseIntegrationSpec {
 
-class HealthEndpointIntegrationSpec extends BaseIntegrationSpec {
+  def hawkConnectorPath: String
 
-  "service health endpoint" - {
-    "respond with 200 status" - {
-      val response =
-        wsClient
-          .url(s"$baseUrl/ping/ping")
-          .get()
-          .futureValue
-
-      response.status shouldBe 200
-    }
+  override def extraApplicationConfig: Map[String, Any] = {
+    Map(
+      s"microservice.services.hawk.host" -> wireMockHost,
+      s"microservice.services.hawk.port" -> wireMockPort,
+      s"microservice.services.hawk.uri" -> hawkConnectorPath,
+      "auditing.enabled" -> false
+    )
   }
+
 }
