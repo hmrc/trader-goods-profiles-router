@@ -19,8 +19,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, put, stubFor, urlEqualTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status.{BAD_REQUEST, NO_CONTENT}
-import play.api.libs.json.Json
+import org.scalatest.prop.TableDrivenPropertyChecks._
+import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, METHOD_NOT_ALLOWED, NOT_FOUND, NO_CONTENT, SERVICE_UNAVAILABLE}
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, PegaIntegrationSpec}
 
@@ -49,18 +50,19 @@ class WithdrawAdviceIntegrationSpec
   }
   "withdraw advice" - {
     "withdraw advice successfully" in {
-      stubForEisRequest
+      stubForEis(NO_CONTENT)
 
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
         .delete())
 
       result.status shouldBe NO_CONTENT
+      verifyThatDownstreamApiWasCalled(pegaConnectorPath)
     }
 
-    "return an error" - {
+    "return a BAD_REQUEST error" - {
       "eis return BAD_REQUEST" in {
-        stubForEisBadRequest
+        stubForEis(BAD_REQUEST, badRequestErrorResponse)
 
         val result = await(wsClient.url(url)
           .withHttpHeaders("X-Client-ID" -> "tss")
@@ -110,23 +112,175 @@ class WithdrawAdviceIntegrationSpec
           )
         )
       }
+
+      "eis return BAD_REQUEST when EIS has not error message" in {
+        stubForEis(BAD_REQUEST, badRequestErrorResponseWithoutError)
+
+        val result = await(wsClient.url(url)
+          .withHttpHeaders("X-Client-ID" -> "tss")
+          .delete())
+
+        result.status shouldBe BAD_REQUEST
+        result.json shouldBe Json.obj(
+          "correlationId" -> correlationId,
+          "code" -> "BAD_REQUEST",
+          "message" -> "Bad Request"
+        )
+      }
+    }
+
+    "return a FORBIDDEN error when EIS return a 403 with no payload" in {
+        stubForEis(FORBIDDEN)
+
+        val result = await(wsClient.url(url)
+          .withHttpHeaders("X-Client-ID" -> "tss")
+          .delete())
+
+        result.status shouldBe FORBIDDEN
+        result.json   shouldBe Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> "FORBIDDEN",
+          "message"       -> "Forbidden"
+        )
+    }
+
+    "return a NOT_FOUND error when EIS return a 404 with no payload" in {
+      stubForEis(NOT_FOUND)
+
+      val result = await(wsClient.url(url)
+        .withHttpHeaders("X-Client-ID" -> "tss")
+        .delete())
+
+      result.status shouldBe NOT_FOUND
+      result.json shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "NOT_FOUND",
+        "message"       -> "Not Found"
+      )
+    }
+
+    "return a BAD_GATEWAY error when EIS return a 502 with no payload" in {
+      stubForEis(BAD_GATEWAY)
+
+      val result = await(wsClient.url(url)
+        .withHttpHeaders("X-Client-ID" -> "tss")
+        .delete())
+
+      result.status shouldBe BAD_GATEWAY
+      result.json shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "BAD_GATEWAY",
+        "message"       -> "Bad Gateway"
+      )
+    }
+
+    "return a SERVICE_UNAVAILABLE error when EIS return a 503 with no payload" in {
+      stubForEis(SERVICE_UNAVAILABLE)
+
+      val result = await(wsClient.url(url)
+        .withHttpHeaders("X-Client-ID" -> "tss")
+        .delete())
+
+      result.status shouldBe SERVICE_UNAVAILABLE
+      result.json shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "SERVICE_UNAVAILABLE",
+        "message"       -> "Service Unavailable"
+      )
+    }
+
+    "return a METHOD_NOT_ALLOWED error when EIS return a 405 with no payload" in {
+      stubForEis(METHOD_NOT_ALLOWED)
+
+      val result = await(wsClient.url(url)
+        .withHttpHeaders("X-Client-ID" -> "tss")
+        .delete())
+
+      result.status shouldBe METHOD_NOT_ALLOWED
+      result.json shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "METHOD_NOT_ALLOWED",
+        "message"       -> "Method Not Allowed"
+      )
+    }
+
+    "return a Internal Server error" in {
+      stubForEis(INTERNAL_SERVER_ERROR, internalServerErrorResponse(500))
+
+      val result = await(wsClient.url(url)
+        .withHttpHeaders("X-Client-ID" -> "tss")
+        .delete())
+
+      result.status shouldBe INTERNAL_SERVER_ERROR
+      result.json shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "INTERNAL_SERVER_ERROR",
+        "message"       -> "Internal Server Error"
+      )
+    }
+
+    val table = Table(
+      ("errodCode", "code", "message"),
+      (401, "UNAUTHORIZED", "Unauthorized"),
+      (405, "METHOD_NOT_ALLOWED", "Method Not Allowed"),
+      (500, "INTERNAL_SERVER_ERROR", "Internal Server Error"),
+      (502, "BAD_GATEWAY", "Bad Gateway"),
+      (503, "SERVICE_UNAVAILABLE", "Service Unavailable")
+    )
+
+    forAll(table) {(errorCode, code, message) =>
+      s"return a Internal Server error when error code is $errorCode" in {
+        stubForEis(INTERNAL_SERVER_ERROR, internalServerErrorResponse(errorCode))
+
+        val result = await(wsClient.url(url)
+          .withHttpHeaders("X-Client-ID" -> "tss")
+          .delete())
+
+        result.status shouldBe INTERNAL_SERVER_ERROR
+        result.json shouldBe Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> code,
+          "message"       -> message
+        )
+      }
+    }
+
+    "return an error if error response contains unrecognised error code" in {
+     stubForEis(400, badRequestResponseWithUnrecognisedError)
+
+      val result = await(wsClient.url(url)
+        .withHttpHeaders("X-Client-ID" -> "tss")
+        .delete())
+
+      result.json shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "BAD_REQUEST",
+        "message"       -> "Bad Request",
+        "errors" -> Json.arr(
+          Json.obj(
+            "code" -> "UNEXPECTED_ERROR",
+            "message" -> "Unrecognised error number",
+            "errorNumber" -> 6
+          )
+        )
+      )
     }
   }
 
-  private def stubForEisRequest = {
+  private def stubForEis(httpStatus: Int) = {
     stubFor(put(urlEqualTo(s"$pegaConnectorPath"))
       .willReturn(
         aResponse()
-          .withStatus(NO_CONTENT)
+          .withStatus(httpStatus)
       ))
   }
 
-  private def stubForEisBadRequest = {
+  private def stubForEis(httpStatus: Int, responseBody: JsValue) = {
     stubFor(put(urlEqualTo(s"$pegaConnectorPath"))
       .willReturn(
         aResponse()
-          .withStatus(BAD_REQUEST)
-          .withBody(badRequestErrorResponse.toString())
+          .withStatus(httpStatus)
+          .withBody(responseBody.toString())
       ))
   }
 
@@ -155,4 +309,57 @@ class WithdrawAdviceIntegrationSpec
         | }
         |}
         |""".stripMargin)
+
+  def badRequestErrorResponseWithoutError =
+    Json.parse(
+      s"""
+         |{
+         | "errorDetail": {
+         |   "timestamp": "2024-03-18T16:42:28Z",
+         |   "correlationId": "7ba38231-1848-407e-a242-4ff748068ddf",
+         |   "errorCode": "400",
+         |   "errorMessage": "Bad Request",
+         |   "source": "BACKEND",
+         |   "sourceFaultDetail": {
+         |   "detail": ["status: Fail"]
+         |   }
+         | }
+         |}
+         |""".stripMargin)
+
+  def internalServerErrorResponse(errorCode: Int) =
+    Json.parse(
+      s"""
+         |{
+         | "errorDetail": {
+         |   "timestamp": "2024-03-18T16:42:28Z",
+         |   "correlationId": "7ba38231-1848-407e-a242-4ff748068ddf",
+         |   "errorCode": "$errorCode",
+         |   "errorMessage": "Bad Request",
+         |   "source": "BACKEND",
+         |   "sourceFaultDetail": {
+         |   "detail": null
+         |   }
+         | }
+         |}
+         |""".stripMargin)
+
+  def badRequestResponseWithUnrecognisedError = Json.parse(
+    s"""
+       |{
+       | "errorDetail": {
+       |   "timestamp": "2024-03-18T16:42:28Z",
+       |   "correlationId": "$correlationId",
+       |   "errorCode": "400",
+       |   "errorMessage": "Bad Request",
+       |   "source": "BACKEND",
+       |   "sourceFaultDetail": {
+       |   "detail": [
+       |     "error: 006, message: Header parameter XCorrelationID is mandatory",
+       |     "status: Fail"
+       |     ]
+       |   }
+       | }
+       |}
+       |""".stripMargin)
 }

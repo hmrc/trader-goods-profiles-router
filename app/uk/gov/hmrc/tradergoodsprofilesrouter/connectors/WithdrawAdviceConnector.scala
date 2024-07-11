@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
-import play.api.Logging
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.{JsObject, Json}
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -41,8 +40,7 @@ class WithdrawAdviceConnector @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with EisHttpErrorHandler
-    with Logging {
+    with EisHttpErrorHandler {
 
   def delete(recordId: String, withdrawReason: String)(implicit
     hc: HeaderCarrier
@@ -107,7 +105,9 @@ class WithdrawAdviceConnector @Inject() (
           invalidRequestParameterError(InvalidGoodsItemsMsg, 1014)
         case MissingRecordIdCode               => invalidRequestParameterError(InvalidRecordIdMsg, 25)
         case DecisionAlreadyMadeCode           => invalidRequestParameterError(InvalidRecordIdMsg, 1017)
-        //todo: add "case _"
+        case other                             =>
+          logger.warn(s"[WithdrawAdviceConnector] - Error code $other is not supported")
+          unexpectedError("Unrecognised error number", other.toInt)
       }
   }
 
