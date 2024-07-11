@@ -256,12 +256,16 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse  = createEisErrorResponseWithDetailsAsJson("400", "Bad Request", "002, unknown")
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
-        val exception = intercept[IllegalArgumentException] {
-          handler.handleErrorResponse(httpResponse, correlationId)
-        }
+        val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        exception.getMessage mustBe s"Unable to parse fault detail for correlation Id: $correlationId"
-
+        result mustBe EisHttpErrorResponse(
+          BAD_REQUEST,
+          ErrorResponse(
+            correlationId,
+            "BAD_REQUEST",
+            "Bad Request"
+          )
+        )
       }
     }
 

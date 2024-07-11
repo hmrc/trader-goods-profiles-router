@@ -89,7 +89,7 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
         result.left.value mustBe Error(
           "INVALID_QUERY_PARAMETER",
-          "Query parameter recordId is in the wrong format",
+          "The recordId has been provided in the wrong format",
           25
         )
       }
@@ -99,7 +99,7 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
         result.left.value mustBe Error(
           "INVALID_QUERY_PARAMETER",
-          "Query parameter recordId is in the wrong format",
+          "The recordId has been provided in the wrong format",
           25
         )
       }
@@ -132,7 +132,7 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
           result.left.value.length mustBe 1
           result.left.value.head mustBe Error(
             "INVALID_QUERY_PARAMETER",
-            "Query parameter recordId is in the wrong format",
+            "The recordId has been provided in the wrong format",
             25
           )
         }
@@ -150,7 +150,7 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
             ),
             Error(
               "INVALID_QUERY_PARAMETER",
-              "Query parameter recordId is in the wrong format",
+              "The recordId has been provided in the wrong format",
               25
             )
           )
@@ -218,17 +218,17 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
           "errors"        -> Json.arr(
             Json.obj(
               "code"        -> "INVALID_QUERY_PARAMETER",
-              "message"     -> "Query parameter withdrawReason is in the wrong format",
-              "errorNumber" -> 6001
+              "message"     -> "Digital checked that withdraw reason is > 4000",
+              "errorNumber" -> 1018
             )
           )
         )
       )
     }
 
-    "return bad request error if withdrawreason is greader then 1000 char" in new TestValidationRules(uuidService) {
+    "return bad request error if withdrawreason is greader then 4000 char" in new TestValidationRules(uuidService) {
       validator =>
-      val invalidWithdrawReason = Random.alphanumeric.take(1001).mkString
+      val invalidWithdrawReason = Random.alphanumeric.take(4001).mkString
       val result                = validator.validateWithdrawReasonQueryParam(
         FakeRequest("GET", s"/url?withdrawReason=$invalidWithdrawReason")
       )
@@ -241,8 +241,8 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
           "errors"        -> Json.arr(
             Json.obj(
               "code"        -> "INVALID_QUERY_PARAMETER",
-              "message"     -> "Query parameter withdrawReason is in the wrong format",
-              "errorNumber" -> 6001
+              "message"     -> "Digital checked that withdraw reason is > 4000",
+              "errorNumber" -> 1018
             )
           )
         )

@@ -18,7 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.utils
 
 object ApplicationConstants {
   val InvalidHeader                                        = "INVALID_HEADER"
-  val InvalidRecordIdQueryParameter                        = "Query parameter recordId is in the wrong format"
   val InvalidActorIdQueryParameter                         = "Query parameter actorId is in the wrong format"
   val InvalidRequestParameters                             = "INVALID_REQUEST_PARAMETER"
   val InvalidQueryParameter                                = "INVALID_QUERY_PARAMETER"
@@ -123,7 +122,6 @@ object ApplicationConstants {
   val InvalidOrMissingUkimsNumberMessage = "Mandatory field ukimsNumber was missing from body or is in the wrong format"
   val InvalidOrMissingNirmsNumberMessage = "Optional field nirmsNumber is in the wrong format"
   val InvalidOrMissingNiphlNumberMessage = "Optional field niphlNumber is in the wrong format"
-  val invalidWithdrawReasonMessage       = "Query parameter withdrawReason is in the wrong format"
 
   val InternalServerErrorCode                                  = "INTERNAL_SERVER_ERROR"
   val InternalServerErrorMessage                               = "Internal Server Error"
@@ -175,6 +173,34 @@ object ApplicationConstants {
   val InvalidOrMissingTraderReferenceCode    = "E013"
   val InvalidOrMissinggoodsDescriptionCode   = "E014"
   val InvalidOrMissingCommodityCodeCode      = "E015"
-  val invalidWithdrawReasonCode              = 6001
+  val invalidWithdrawReasonCode              = 1018
 
+}
+
+object WithdrawAdviceConstant {
+  val InvalidOrMissingCorrelationIdCode: String = "E001"
+  val InvalidOrMissingCorrelationIdMsg: String  =
+    "X-Correlation-ID was missing from Header or is in the wrong format"
+
+  val InvalidOrMissingForwardedHostCode: String = "E002"
+  val InvalidOrMissingForwardedHostMsg: String  =
+    "X-Forwarded-Host was missing from Header os is in the wrong format"
+
+  val InvalidOrMissingContentTypeCode: String = "E003"
+  val InvalidOrMissingContentTypeMsg: String  = "Content-Type was missing from Header or is in the wrong format"
+
+  val InvalidOrMissingAcceptCode: String = "E004"
+  val InvalidOrMissingAcceptMsg: String  = "Accept was missing from Header or is in the wrong format"
+
+  val InvalidWithdrawDateCode: String = "E005"
+  val InvalidWithdrawDateMsg: String  = "Mandatory withdrawDate was missing from body"
+
+  val InvalidGoodsItemsCode: String = "E006"
+  val InvalidGoodsItemsMsg: String  = "Mandatory goodsItems was missing from body"
+
+  val MissingRecordIdCode: String = "E007"
+  val InvalidRecordIdMsg: String  = "The recordId has been provided in the wrong format"
+
+  val DecisionAlreadyMadeCode: String      = "E009"
+  val invalidWithdrawReasonMessage: String = "Digital checked that withdraw reason is > 4000"
 }

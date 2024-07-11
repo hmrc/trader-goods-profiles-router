@@ -499,11 +499,11 @@ class CreateRecordIntegrationSpec
             .post(createRecordRequestData)
             .futureValue
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
+            "code"          -> "BAD_REQUEST",
+            "message"       -> s"Bad Request"
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)

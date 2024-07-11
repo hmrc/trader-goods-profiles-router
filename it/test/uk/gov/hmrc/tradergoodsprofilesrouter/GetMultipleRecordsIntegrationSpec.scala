@@ -451,12 +451,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Bad Request with unable to parse the detail" in {
           stubFor(
             get(urlEqualTo(s"$hawkConnectorPath/$eori"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -485,11 +479,11 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
               .get()
           )
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
+            "code"          -> "BAD_REQUEST",
+            "message"       -> s"Bad Request"
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)

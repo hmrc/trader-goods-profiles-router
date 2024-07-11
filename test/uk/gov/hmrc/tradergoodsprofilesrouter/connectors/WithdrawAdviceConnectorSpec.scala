@@ -51,7 +51,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
     setUpAppConfig()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(withdrawDate)
-    when(httpClientV2.delete(any)(any)).thenReturn(requestBuilder)
+    when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
@@ -66,7 +66,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
 
       withClue("should send request to EIS with the right parameters") {
         val expectedUrl = s"http://localhost:1234/tgp/Withdrawaccreditation/v1"
-        verify(httpClientV2).delete(url"$expectedUrl")
+        verify(httpClientV2).put(url"$expectedUrl")
         verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyWithdrawAdviceBearerToken"): _*)
         verify(requestBuilder).withBody(createRequest.as[JsObject])
         verifyExecuteForStatusHttpReader(correlationId)

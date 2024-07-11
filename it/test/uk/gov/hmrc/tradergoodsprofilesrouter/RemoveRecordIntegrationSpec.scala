@@ -414,7 +414,7 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
-        "Bad Request with unable to parse the detail" in {
+        "Bad Request when no error message are found" in {
           stubForEis(
             BAD_REQUEST,
             removeEisRecordRequest,
@@ -440,11 +440,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             .delete()
             .futureValue
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "Unable to parse fault detail for correlation Id: d677693e-9981-4ee3-8574-654981ebe606"
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request"
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)

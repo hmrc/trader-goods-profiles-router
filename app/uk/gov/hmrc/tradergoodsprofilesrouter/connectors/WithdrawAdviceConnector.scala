@@ -24,10 +24,13 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DateTimeService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -49,8 +52,14 @@ class WithdrawAdviceConnector @Inject() (
     val correlationId = uuidService.uuid
 
     httpClientV2
-      .delete(url"$url")
-      .setHeader(buildHeaders(correlationId, appConfig.pegaConfig.getWithdrawAdviceBearerToken, appConfig.pegaConfig.forwardedHost): _*)
+      .put(url"$url")
+      .setHeader(
+        buildHeaders(
+          correlationId,
+          appConfig.pegaConfig.getWithdrawAdviceBearerToken,
+          appConfig.pegaConfig.forwardedHost
+        ): _*
+      )
       .withBody(createPayload(recordId, withdrawReason))
       .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
       .recover { case ex: Throwable =>
@@ -77,5 +86,29 @@ class WithdrawAdviceConnector @Inject() (
         )
       )
     )
+
+  override def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {
+    val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r
+    regex
+      .findFirstMatchIn(rawDetail)
+      .map(_ group 1)
+      .collect {
+        case InvalidOrMissingCorrelationIdCode =>
+          invalidRequestParameterError(InvalidOrMissingCorrelationIdMsg, 1)
+        case InvalidOrMissingForwardedHostCode =>
+          invalidRequestParameterError(InvalidOrMissingForwardedHostMsg, 5)
+        case InvalidOrMissingContentTypeCode   =>
+          invalidRequestParameterError(InvalidOrMissingContentTypeMsg, 3)
+        case InvalidOrMissingAcceptCode        =>
+          invalidRequestParameterError(InvalidOrMissingAcceptMsg, 4)
+        case InvalidWithdrawDateCode           =>
+          invalidRequestParameterError(InvalidWithdrawDateMsg, 1013)
+        case InvalidGoodsItemsCode             =>
+          invalidRequestParameterError(InvalidGoodsItemsMsg, 1014)
+        case MissingRecordIdCode               => invalidRequestParameterError(InvalidRecordIdMsg, 25)
+        case DecisionAlreadyMadeCode           => invalidRequestParameterError(InvalidRecordIdMsg, 1017)
+        //todo: add "case _"
+      }
+  }
 
 }

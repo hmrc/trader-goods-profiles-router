@@ -32,17 +32,20 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAct
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Random
 
 class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  private val eoriNumber    = "GB123456789001"
-  private val recordId      = UUID.randomUUID().toString
-  private val correlationId = UUID.randomUUID().toString
-  private val connector     = mock[WithdrawAdviceConnector]
-  private val uuidService   = mock[UuidService]
-  private val url           = Call(DELETE, s"url?withdrawReason=valid reason")
+  private val eoriNumber                  = "GB123456789001"
+  private val recordId                    = UUID.randomUUID().toString
+  private val correlationId               = UUID.randomUUID().toString
+  private val connector                   = mock[WithdrawAdviceConnector]
+  private val uuidService                 = mock[UuidService]
+  private val invalidWithdrawReasonFormat = Random.alphanumeric.take(4001).mkString
+  private val validWithdrawReason         = invalidWithdrawReasonFormat.take(4000)
+  private val url                         = Call(DELETE, s"url?withdrawReason=$validWithdrawReason")
 
   val sut = new WithdrawAdviceController(
     new FakeSuccessAuthAction(),
@@ -66,7 +69,7 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       status(result) mustBe NO_CONTENT
-      verify(connector).delete(eqTo(recordId), eqTo("valid reason"))(any)
+      verify(connector).delete(eqTo(recordId), eqTo(validWithdrawReason))(any)
 
     }
     "return an error" when {
@@ -83,7 +86,7 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
           "errors"        -> Json.arr(
             Json.obj(
               "code"        -> "INVALID_QUERY_PARAMETER",
-              "message"     -> "Query parameter recordId is in the wrong format",
+              "message"     -> "The recordId has been provided in the wrong format",
               "errorNumber" -> 25
             )
           )
@@ -109,7 +112,7 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
       )
     }
 
-    "withdrawReason query parameter is invalid" in {
+    "withdrawReason query parameter is missing" in {
       val result = sut.delete(eoriNumber, recordId)(
         FakeRequest().withHeaders("X-Client-ID" -> "TSS")
       )
@@ -122,21 +125,35 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
         "errors"        -> Json.arr(
           Json.obj(
             "code"        -> "INVALID_QUERY_PARAMETER",
-            "message"     -> "Query parameter withdrawReason is in the wrong format",
-            "errorNumber" -> 6001
+            "message"     -> "Digital checked that withdraw reason is > 4000",
+            "errorNumber" -> 1018
+          )
+        )
+      )
+    }
+
+    "withdrawReason query parameter is less the 4000 char" in {
+
+      val urlWithInvalidParam = Call(DELETE, s"url?withdrawReason=$invalidWithdrawReasonFormat")
+
+      val result = sut.delete(eoriNumber, recordId)(
+        FakeRequest(urlWithInvalidParam).withHeaders("X-Client-ID" -> "TSS")
+      )
+
+      status(result) mustBe BAD_REQUEST
+      contentAsJson(result) mustBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "BAD_REQUEST",
+        "message"       -> "Bad Request",
+        "errors"        -> Json.arr(
+          Json.obj(
+            "code"        -> "INVALID_QUERY_PARAMETER",
+            "message"     -> "Digital checked that withdraw reason is > 4000",
+            "errorNumber" -> 1018
           )
         )
       )
     }
 
   }
-
-//  def urlWithINvali: Call = {
-//
-//    val base = routes.WithdrawAdviceController.delete(eoriNumber, recordId).url
-//    val reason =Random.alphanumeric.take(1001).mkString
-//
-//    Call(DELETE, s"url?withdrawReason=$reason")
-//  }
-
 }

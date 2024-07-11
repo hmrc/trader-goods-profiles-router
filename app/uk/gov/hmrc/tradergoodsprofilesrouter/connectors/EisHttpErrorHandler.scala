@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import play.api.Logging
 import play.api.http.Status._
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.http.HttpResponse
@@ -25,7 +26,8 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
-trait EisHttpErrorHandler {
+trait EisHttpErrorHandler extends Logging {
+
   def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): EisHttpErrorResponse =
     httpResponse.status match {
 
@@ -165,147 +167,157 @@ trait EisHttpErrorHandler {
         )
     }
 
-  private def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse =
+  private def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse = {
+
+    val extractErrors: Option[Seq[errors.Error]] = (for {
+      o      <- detail.sourceFaultDetail
+      errors <- o.detail
+    } yield errors.map(detail => parseFaultDetail(detail, correlationId)))
+      .map((s: Seq[Option[errors.Error]]) => s.flatten)
+      .filter(_.nonEmpty)
+
     ErrorResponse(
       correlationId,
       BadRequestCode,
-      BadRequestMessage,
-      detail.sourceFaultDetail.map { sfd =>
-        sfd.detail.fold[Seq[errors.Error]](Seq())(s => s.map(detail => parseFaultDetail(detail, correlationId)))
-      }
+      BadRequestMessage, // Todo: would not be better to add details.errorMessage here instead of bad request as we already node that is a bad request
+      extractErrors
     )
-
-  private def parseFaultDetail(rawDetail: String, correlationId: String) = {
-    val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r
-    rawDetail match {
-      case regex(code, _) =>
-        code match {
-          case InvalidOrMissingEoriCode                                 =>
-            invalidRequestParameterError(
-              InvalidOrMissingEori,
-              code.toInt
-            )
-          case EoriDoesNotExistsCode                                    =>
-            invalidRequestParameterError(EoriDoesNotExists, code.toInt)
-          case InvalidOrMissingActorIdCode                              =>
-            invalidRequestParameterError(InvalidOrMissingActorId, code.toInt)
-          case InvalidOrMissingTraderRefCode                            =>
-            invalidRequestParameterError(InvalidOrMissingTraderRef, code.toInt)
-          case TraderRefIsNotUniqueCode                                 =>
-            invalidRequestParameterError(TraderRefIsNotUnique, code.toInt)
-          case InvalidOrMissingComcodeCode                              =>
-            invalidRequestParameterError(InvalidOrMissingComcode, code.toInt)
-          case InvalidOrMissingGoodsDescriptionCode                     =>
-            invalidRequestParameterError(
-              InvalidOrMissingGoodsDescription,
-              code.toInt
-            )
-          case InvalidOrMissingCountryOfOriginCode                      =>
-            invalidRequestParameterError(
-              InvalidOrMissingCountryOfOrigin,
-              code.toInt
-            )
-          case InvalidOrMissingCategoryCode                             =>
-            invalidRequestParameterError(InvalidOrMissingCategory, code.toInt)
-          case InvalidOrMissingAssessmentIdCode                         =>
-            invalidRequestParameterError(
-              InvalidOrMissingAssessmentId,
-              code.toInt
-            )
-          case InvalidAssessmentPrimaryCategoryCode                     =>
-            invalidRequestParameterError(
-              InvalidAssessmentPrimaryCategory,
-              code.toInt
-            )
-          case InvalidAssessmentPrimaryCategoryConditionTypeCode        =>
-            invalidRequestParameterError(
-              InvalidAssessmentPrimaryCategoryConditionType,
-              code.toInt
-            )
-          case InvalidAssessmentPrimaryCategoryConditionIdCode          =>
-            invalidRequestParameterError(
-              InvalidAssessmentPrimaryCategoryConditionId,
-              code.toInt
-            )
-          case InvalidAssessmentPrimaryCategoryConditionDescriptionCode =>
-            invalidRequestParameterError(
-              InvalidAssessmentPrimaryCategoryConditionDescription,
-              code.toInt
-            )
-          case InvalidAssessmentPrimaryCategoryConditionTraderTextCode  =>
-            invalidRequestParameterError(
-              InvalidAssessmentPrimaryCategoryConditionTraderText,
-              code.toInt
-            )
-          case InvalidOrMissingSupplementaryUnitCode                    =>
-            invalidRequestParameterError(
-              InvalidOrMissingSupplementaryUnit,
-              code.toInt
-            )
-          case InvalidOrMissingMeasurementUnitCode                      =>
-            invalidRequestParameterError(
-              InvalidOrMissingMeasurementUnit,
-              code.toInt
-            )
-          case InvalidOrMissingComcodeEffectiveFromDateCode             =>
-            invalidRequestParameterError(
-              InvalidOrMissingComcodeEffectiveFromDate,
-              code.toInt
-            )
-          case InvalidOrMissingComcodeEffectiveToDateCode               =>
-            invalidRequestParameterError(
-              InvalidOrMissingComcodeEffectiveToDate,
-              code.toInt
-            )
-          case InvalidRecordIdCode                                      =>
-            invalidRequestParameterError(InvalidRecordId, code.toInt)
-          case RecordIdDoesNotExistsCode                                =>
-            invalidRequestParameterError(RecordIdDoesNotExists, code.toInt)
-          case InvalidLastUpdatedDateCode                               =>
-            invalidRequestParameterError(InvalidLastUpdatedDate, code.toInt)
-          case InvalidPageCode                                          =>
-            invalidRequestParameterError(InvalidPage, code.toInt)
-          case InvalidSizeCode                                          =>
-            invalidRequestParameterError(InvalidSize, code.toInt)
-          case AdviceRequestInProgressCode                              =>
-            invalidRequestParameterError(AdviceRequestInProgressMessage, code.toInt)
-          case RecordRemovedAndCanNotBeUpdatedCode                      =>
-            invalidRequestParameterError(RecordRemovedAndCanNotBeUpdatedMessage, code.toInt)
-          case InvalidOrMissingCorrelationIdCode                        =>
-            invalidRequestParameterError(InvalidOrMissingCorrelationID, 1001)
-          case InvalidOrMissingRequestDateCode                          =>
-            invalidRequestParameterError(InvalidOrMissingRequestDate, 1002)
-          case InvalidOrMissingForwardedHostCode                        =>
-            invalidRequestParameterError(InvalidOrMissingForwardedHost, 1003)
-          case InvalidOrMissingContentTypeCode                          =>
-            invalidRequestParameterError(InvalidOrMissingContentType, 1004)
-          case InvalidOrMissingAcceptCode                               =>
-            invalidRequestParameterError(InvalidOrMissingAccept, 1005)
-          case InvalidOrMissingReceiptDateCode                          =>
-            invalidRequestParameterError(InvalidOrMissingReceiptDate, 1006)
-          case InvalidOrMissingTraderEORICode                           =>
-            invalidRequestParameterError(InvalidOrMissingTraderEORI, 1007)
-          case InvalidOrMissingRequestorNameCode                        =>
-            invalidRequestParameterError(InvalidOrMissingRequestorName, 1008)
-          case InvalidOrMissingRequestorEmailCode                       =>
-            invalidRequestParameterError(InvalidOrMissingRequestorEmail, 1009)
-          case InvalidOrMissingUkimsAuthorisationCode                   =>
-            invalidRequestParameterError(InvalidOrMissingUkimsAuthorisation, 1010)
-          case InvalidOrMissingGoodsItemsCode                           =>
-            invalidRequestParameterError(InvalidOrMissingGoodsItems, 1011)
-          case InvalidOrMissingPublicRecordIDCode                       =>
-            invalidRequestParameterError(InvalidOrMissingPublicRecordID, 1012)
-          case InvalidOrMissingTraderReferenceCode                      =>
-            invalidRequestParameterError(InvalidOrMissingTraderReference, 1013)
-          case InvalidOrMissinggoodsDescriptionCode                     =>
-            invalidRequestParameterError(InvalidOrMissingGoodsDescription, 1014)
-          case InvalidOrMissingCommodityCodeCode                        =>
-            invalidRequestParameterError(InvalidOrMissingCommodityCode, 1015)
-
-          case _ => unexpectedError("Unrecognised error number", code.toInt)
-        }
-      case _              =>
-        throw new IllegalArgumentException(s"Unable to parse fault detail for correlation Id: $correlationId")
-    }
   }
+
+  protected def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {
+    val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r
+    regex
+      .findFirstMatchIn(rawDetail)
+      .map(_ group 1)
+      .collect {
+        case InvalidOrMissingEoriCode                                 =>
+          invalidRequestParameterError(
+            InvalidOrMissingEori,
+            InvalidOrMissingEoriCode.toInt
+          )
+        case EoriDoesNotExistsCode                                    =>
+          invalidRequestParameterError(EoriDoesNotExists, EoriDoesNotExistsCode.toInt)
+        case InvalidOrMissingActorIdCode                              =>
+          invalidRequestParameterError(InvalidOrMissingActorId, InvalidOrMissingActorIdCode.toInt)
+        case InvalidOrMissingTraderRefCode                            =>
+          invalidRequestParameterError(InvalidOrMissingTraderRef, InvalidOrMissingTraderRefCode.toInt)
+        case TraderRefIsNotUniqueCode                                 =>
+          invalidRequestParameterError(TraderRefIsNotUnique, TraderRefIsNotUniqueCode.toInt)
+        case InvalidOrMissingComcodeCode                              =>
+          invalidRequestParameterError(InvalidOrMissingComcode, InvalidOrMissingComcodeCode.toInt)
+        case InvalidOrMissingGoodsDescriptionCode                     =>
+          invalidRequestParameterError(
+            InvalidOrMissingGoodsDescription,
+            InvalidOrMissingGoodsDescriptionCode.toInt
+          )
+        case InvalidOrMissingCountryOfOriginCode                      =>
+          invalidRequestParameterError(
+            InvalidOrMissingCountryOfOrigin,
+            InvalidOrMissingCountryOfOriginCode.toInt
+          )
+        case InvalidOrMissingCategoryCode                             =>
+          invalidRequestParameterError(InvalidOrMissingCategory, InvalidOrMissingCategoryCode.toInt)
+        case InvalidOrMissingAssessmentIdCode                         =>
+          invalidRequestParameterError(
+            InvalidOrMissingAssessmentId,
+            InvalidOrMissingAssessmentIdCode.toInt
+          )
+        case InvalidAssessmentPrimaryCategoryCode                     =>
+          invalidRequestParameterError(
+            InvalidAssessmentPrimaryCategory,
+            InvalidAssessmentPrimaryCategoryCode.toInt
+          )
+        case InvalidAssessmentPrimaryCategoryConditionTypeCode        =>
+          invalidRequestParameterError(
+            InvalidAssessmentPrimaryCategoryConditionType,
+            InvalidAssessmentPrimaryCategoryConditionTypeCode.toInt
+          )
+        case InvalidAssessmentPrimaryCategoryConditionIdCode          =>
+          invalidRequestParameterError(
+            InvalidAssessmentPrimaryCategoryConditionId,
+            InvalidAssessmentPrimaryCategoryConditionIdCode.toInt
+          )
+        case InvalidAssessmentPrimaryCategoryConditionDescriptionCode =>
+          invalidRequestParameterError(
+            InvalidAssessmentPrimaryCategoryConditionDescription,
+            InvalidAssessmentPrimaryCategoryConditionDescriptionCode.toInt
+          )
+        case InvalidAssessmentPrimaryCategoryConditionTraderTextCode  =>
+          invalidRequestParameterError(
+            InvalidAssessmentPrimaryCategoryConditionTraderText,
+            InvalidAssessmentPrimaryCategoryConditionTraderTextCode.toInt
+          )
+        case InvalidOrMissingSupplementaryUnitCode                    =>
+          invalidRequestParameterError(
+            InvalidOrMissingSupplementaryUnit,
+            InvalidOrMissingSupplementaryUnitCode.toInt
+          )
+        case InvalidOrMissingMeasurementUnitCode                      =>
+          invalidRequestParameterError(
+            InvalidOrMissingMeasurementUnit,
+            InvalidOrMissingMeasurementUnitCode.toInt
+          )
+        case InvalidOrMissingComcodeEffectiveFromDateCode             =>
+          invalidRequestParameterError(
+            InvalidOrMissingComcodeEffectiveFromDate,
+            InvalidOrMissingComcodeEffectiveFromDateCode.toInt
+          )
+        case InvalidOrMissingComcodeEffectiveToDateCode               =>
+          invalidRequestParameterError(
+            InvalidOrMissingComcodeEffectiveToDate,
+            InvalidOrMissingComcodeEffectiveToDateCode.toInt
+          )
+        case InvalidRecordIdCode                                      =>
+          invalidRequestParameterError(InvalidRecordId, InvalidRecordIdCode.toInt)
+        case RecordIdDoesNotExistsCode                                =>
+          invalidRequestParameterError(RecordIdDoesNotExists, RecordIdDoesNotExistsCode.toInt)
+        case InvalidLastUpdatedDateCode                               =>
+          invalidRequestParameterError(InvalidLastUpdatedDate, InvalidLastUpdatedDateCode.toInt)
+        case InvalidPageCode                                          =>
+          invalidRequestParameterError(InvalidPage, InvalidPageCode.toInt)
+        case InvalidSizeCode                                          =>
+          invalidRequestParameterError(InvalidSize, InvalidSizeCode.toInt)
+        case AdviceRequestInProgressCode                              =>
+          invalidRequestParameterError(AdviceRequestInProgressMessage, AdviceRequestInProgressCode.toInt)
+        case RecordRemovedAndCanNotBeUpdatedCode                      =>
+          invalidRequestParameterError(
+            RecordRemovedAndCanNotBeUpdatedMessage,
+            RecordRemovedAndCanNotBeUpdatedCode.toInt
+          )
+        case InvalidOrMissingCorrelationIdCode                        =>
+          invalidRequestParameterError(InvalidOrMissingCorrelationID, 1001)
+        case InvalidOrMissingRequestDateCode                          =>
+          invalidRequestParameterError(InvalidOrMissingRequestDate, 1002)
+        case InvalidOrMissingForwardedHostCode                        =>
+          invalidRequestParameterError(InvalidOrMissingForwardedHost, 1003)
+        case InvalidOrMissingContentTypeCode                          =>
+          invalidRequestParameterError(InvalidOrMissingContentType, 1004)
+        case InvalidOrMissingAcceptCode                               =>
+          invalidRequestParameterError(InvalidOrMissingAccept, 1005)
+        case InvalidOrMissingReceiptDateCode                          =>
+          invalidRequestParameterError(InvalidOrMissingReceiptDate, 1006)
+        case InvalidOrMissingTraderEORICode                           =>
+          invalidRequestParameterError(InvalidOrMissingTraderEORI, 1007)
+        case InvalidOrMissingRequestorNameCode                        =>
+          invalidRequestParameterError(InvalidOrMissingRequestorName, 1008)
+        case InvalidOrMissingRequestorEmailCode                       =>
+          invalidRequestParameterError(InvalidOrMissingRequestorEmail, 1009)
+        case InvalidOrMissingUkimsAuthorisationCode                   =>
+          invalidRequestParameterError(InvalidOrMissingUkimsAuthorisation, 1010)
+        case InvalidOrMissingGoodsItemsCode                           =>
+          invalidRequestParameterError(InvalidOrMissingGoodsItems, 1011)
+        case InvalidOrMissingPublicRecordIDCode                       =>
+          invalidRequestParameterError(InvalidOrMissingPublicRecordID, 1012)
+        case InvalidOrMissingTraderReferenceCode                      =>
+          invalidRequestParameterError(InvalidOrMissingTraderReference, 1013)
+        case InvalidOrMissinggoodsDescriptionCode                     =>
+          invalidRequestParameterError(InvalidOrMissingGoodsDescription, 1014)
+        case InvalidOrMissingCommodityCodeCode                        =>
+          invalidRequestParameterError(InvalidOrMissingCommodityCode, 1015)
+        case other                                                    =>
+          logger.warn(s"[EisHttpErrorHandler] - Error code $other is not supported")
+          unexpectedError("Unrecognised error number", other.toInt)
+      }
+  }
+
 }

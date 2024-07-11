@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, delete, stubFor, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, put, stubFor, urlEqualTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status.{BAD_REQUEST, NO_CONTENT}
@@ -75,12 +75,37 @@ class WithdrawAdviceIntegrationSpec
             Json.obj(
               "code" -> "INVALID_REQUEST_PARAMETER",
               "message" -> "X-Correlation-ID was missing from Header or is in the wrong format",
-              "errorNumber" -> 1001
+              "errorNumber" -> 1
             ),
             Json.obj(
               "code" -> "INVALID_REQUEST_PARAMETER",
               "message" -> "X-Forwarded-Host was missing from Header os is in the wrong format",
-              "errorNumber" -> 1002
+              "errorNumber" -> 5
+            ),
+            Json.obj(
+              "code" -> "INVALID_REQUEST_PARAMETER",
+              "message" -> "Content-Type was missing from Header or is in the wrong format",
+              "errorNumber" -> 3
+            ),
+            Json.obj(
+              "code" -> "INVALID_REQUEST_PARAMETER",
+              "message" -> "Accept was missing from Header or is in the wrong format",
+              "errorNumber" -> 4
+            ),
+            Json.obj(
+              "code" -> "INVALID_REQUEST_PARAMETER",
+              "message" -> "Mandatory withdrawDate was missing from body",
+              "errorNumber" -> 1013
+            ),
+            Json.obj(
+              "code" -> "INVALID_REQUEST_PARAMETER",
+              "message" -> "Mandatory goodsItems was missing from body",
+              "errorNumber" -> 1014
+            ),
+            Json.obj(
+              "code" -> "INVALID_REQUEST_PARAMETER",
+              "message" -> "The recordId has been provided in the wrong format",
+              "errorNumber" -> 1017
             )
           )
         )
@@ -89,7 +114,7 @@ class WithdrawAdviceIntegrationSpec
   }
 
   private def stubForEisRequest = {
-    stubFor(delete(urlEqualTo(s"$pegaConnectorPath"))
+    stubFor(put(urlEqualTo(s"$pegaConnectorPath"))
       .willReturn(
         aResponse()
           .withStatus(NO_CONTENT)
@@ -97,7 +122,7 @@ class WithdrawAdviceIntegrationSpec
   }
 
   private def stubForEisBadRequest = {
-    stubFor(delete(urlEqualTo(s"$pegaConnectorPath"))
+    stubFor(put(urlEqualTo(s"$pegaConnectorPath"))
       .willReturn(
         aResponse()
           .withStatus(BAD_REQUEST)
@@ -117,8 +142,14 @@ class WithdrawAdviceIntegrationSpec
         |   "source": "BACKEND",
         |   "sourceFaultDetail": {
         |   "detail": [
-        |     "error: E001, message: Header parameter XCorrelationID is mandatory.",
-        |     "error: E002, message: Header parameter XForwardedHost is mandatory."
+        |     "error: E001, message: Header parameter XCorrelationID is mandatory",
+        |     "error: E002, message: Header parameter XForwardedHost is mandatory",
+        |     "error: E003, message: Header parameter Content Type is mandatory",
+        |     "error: E004, message: Header parameter Accept is mandatory",
+        |     "error: E005, message: Withdraw Date is mandatory",
+        |     "error: E006, message: At least one goods Item is mandatory",
+        |     "error: E009, message: The decision is already made",
+        |     "status: Fail"
         |     ]
         |   }
         | }

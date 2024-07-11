@@ -359,7 +359,7 @@ class GetSingleRecordIntegrationSpec
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_QUERY_PARAMETER",
-                "message"     -> "Query parameter recordId is in the wrong format",
+                "message"     -> "The recordId has been provided in the wrong format",
                 "errorNumber" -> 25
               )
             )
@@ -415,7 +415,7 @@ class GetSingleRecordIntegrationSpec
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
-        "Bad Request with unable to parse the detail" in {
+        "Bad Request when no error message are found" in {
           stubFor(
             get(urlEqualTo(s"$hawkConnectorPath/$eori/$recordId"))
               .willReturn(
@@ -430,7 +430,7 @@ class GetSingleRecordIntegrationSpec
                                |    "errorMessage": "Invalid request parameter",
                                |    "source": "BACKEND",
                                |    "sourceFaultDetail": {
-                               |      "detail": ["error"]
+                               |      "detail": ["status: fails"]
                                |    }
                                |  }
                                |}
@@ -445,11 +445,11 @@ class GetSingleRecordIntegrationSpec
               .get()
           )
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
+            "code"          -> "BAD_REQUEST",
+            "message"       -> s"Bad Request"
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)

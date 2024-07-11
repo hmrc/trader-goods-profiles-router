@@ -30,6 +30,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, Erro
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant.invalidWithdrawReasonMessage
 
 import java.util.{Locale, UUID}
 import scala.concurrent.ExecutionContext
@@ -55,7 +56,7 @@ trait ValidationRules {
     Try(UUID.fromString(recordId).toString).toOption.toRight(
       Error(
         InvalidQueryParameter,
-        InvalidRecordIdQueryParameter,
+        InvalidRecordId,
         InvalidRecordIdCode.toInt
       )
     )
@@ -101,7 +102,7 @@ trait ValidationRules {
   protected def validateWithdrawReasonQueryParam(implicit request: Request[_]): Either[Result, String] =
     request
       .getQueryString("withdrawReason")
-      .filter(_.length < 1001)
+      .filter(_.length < 4001)
       .toRight(
         BadRequestErrorResponse(
           uuidService.uuid,
