@@ -26,6 +26,7 @@ import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
 import play.api.mvc.{BaseController, Request, Result}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, ValidatedQueryParameters, ValidatedWithdrawAdviceQueryParameters, WithdrawReasonCharLimit, extractSimplePaths, isValidActorId}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.WithdrawReasonRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
@@ -90,12 +91,12 @@ trait ValidationRules {
 
   protected def validateWithdrawAdviceQueryParam(
     recordId: String
-  )(implicit request: Request[_]): Either[List[Error], ValidatedWithdrawAdviceQueryParameters] =
+  )(implicit request: Request[JsValue]): Either[List[Error], ValidatedWithdrawAdviceQueryParameters] =
     (
       validateWithdrawReasonQueryParam.toEitherNec,
       validateRecordId(recordId).toEitherNec
     ).parMapN { (validatedWithdrawReason, validatedRecordId) =>
-      ValidatedWithdrawAdviceQueryParameters(validatedWithdrawReason, validatedRecordId)
+      ValidatedWithdrawAdviceQueryParameters(validatedWithdrawReason.withdrawReason, validatedRecordId)
     } leftMap { errors =>
       errors.toList
     }
@@ -111,11 +112,12 @@ trait ValidationRules {
         )
       )
 
-  private def validateWithdrawReasonQueryParam(implicit request: Request[_]): Either[Error, String] =
-    request
-      .getQueryString("withdrawReason")
-      .orElse(Some(""))
-      .filter(_.length < WithdrawReasonCharLimit + 1)
+  private def validateWithdrawReasonQueryParam(implicit
+    request: Request[JsValue]
+  ): Either[Error, WithdrawReasonRequest] =
+    Try(request.body.as[WithdrawReasonRequest]).toOption
+      .orElse(Some(WithdrawReasonRequest(None)))
+      .filter(_.withdrawReason.getOrElse("").length < WithdrawReasonCharLimit + 1)
       .toRight(
         Error(InvalidQueryParameter, invalidWithdrawReasonMessage, invalidWithdrawReasonCode)
       )
@@ -133,7 +135,7 @@ trait ValidationRules {
 object ValidationRules {
 
   final case class ValidatedQueryParameters(actorId: String, recordId: String)
-  final case class ValidatedWithdrawAdviceQueryParameters(withdrawReason: String, recordId: String)
+  final case class ValidatedWithdrawAdviceQueryParameters(withdrawReason: Option[String], recordId: String)
 
   private val WithdrawReasonCharLimit = 512
   private val actorIdPattern: Regex   = raw"[A-Z]{2}\d{12,15}".r

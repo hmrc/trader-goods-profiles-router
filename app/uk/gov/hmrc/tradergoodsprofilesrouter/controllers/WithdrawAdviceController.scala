@@ -18,8 +18,8 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import cats.data.EitherT
 import com.google.inject.Inject
-import play.api.libs.json.Json
-import play.api.mvc.{Action, AnyContent, ControllerComponents, Request}
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.WithdrawAdviceConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
@@ -39,14 +39,14 @@ class WithdrawAdviceController @Inject() (
     extends BackendBaseController
     with ValidationRules {
 
-  def delete(eori: String, recordId: String): Action[AnyContent] = authAction(eori).async {
-    implicit request: Request[AnyContent] =>
+  def withdrawAdvice(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) {
+    implicit request =>
       val result = for {
         _               <- EitherT.fromEither[Future](validateClientId)
         validatedParams <- EitherT
                              .fromEither[Future](validateWithdrawAdviceQueryParam(recordId))
                              .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
-        _               <- EitherT(withdrawAdviceConnector.delete(recordId, validatedParams.withdrawReason))
+        _               <- EitherT(withdrawAdviceConnector.put(recordId, validatedParams.withdrawReason))
                              .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
       } yield NoContent
 

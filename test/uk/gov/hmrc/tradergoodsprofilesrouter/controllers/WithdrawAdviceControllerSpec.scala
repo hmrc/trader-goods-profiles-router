@@ -25,7 +25,7 @@ import play.api.http.Status.{BAD_REQUEST, NO_CONTENT}
 import play.api.libs.json.Json
 import play.api.mvc.Call
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{DELETE, contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import play.api.test.Helpers.{PUT, contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.WithdrawAdviceConnector
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
@@ -45,7 +45,7 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
   private val uuidService                 = mock[UuidService]
   private val invalidWithdrawReasonFormat = Random.alphanumeric.take(513).mkString
   private val validWithdrawReason         = invalidWithdrawReasonFormat.take(512)
-  private val url                         = Call(DELETE, s"url?withdrawReason=$validWithdrawReason")
+  private val url                         = Call(PUT, s"url")
 
   val sut = new WithdrawAdviceController(
     new FakeSuccessAuthAction(),
@@ -59,31 +59,36 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
 
     reset(uuidService, connector)
     when(uuidService.uuid).thenReturn(correlationId)
-    when(connector.delete(any, any)(any)).thenReturn(Future.successful(Right(NO_CONTENT)))
+    when(connector.put(any, any)(any)).thenReturn(Future.successful(Right(NO_CONTENT)))
   }
   "delete" should {
 
     "send the request to EIS" in {
-      val result = sut.delete(eoriNumber, recordId)(
-        FakeRequest(url).withHeaders("X-Client-ID" -> "TSS")
-      )
+      val request = FakeRequest(url)
+        .withBody(Json.obj("withdrawReason" -> validWithdrawReason))
+        .withHeaders("X-Client-ID" -> "TSS")
+
+      val result  = sut.withdrawAdvice(eoriNumber, recordId)(request)
 
       status(result) mustBe NO_CONTENT
-      verify(connector).delete(eqTo(recordId), eqTo(validWithdrawReason))(any)
+      verify(connector).put(eqTo(recordId), eqTo(Some(validWithdrawReason)))(any)
     }
 
     "withdrawReason query parameter is missing" in {
-      val result = sut.delete(eoriNumber, recordId)(
-        FakeRequest(Call(DELETE, s"url")).withHeaders("X-Client-ID" -> "TSS")
+      val result = sut.withdrawAdvice(eoriNumber, recordId)(
+        FakeRequest()
+          .withBody(Json.obj())
+          .withHeaders("X-Client-ID" -> "TSS")
       )
 
       status(result) mustBe NO_CONTENT
+      verify(connector).put(eqTo(recordId), eqTo(None))(any)
     }
 
     "return an error" when {
       "recordId is not valid " in {
-        val result = sut.delete(eoriNumber, "invalid-recordId")(
-          FakeRequest(url).withHeaders("X-Client-ID" -> "TSS")
+        val result = sut.withdrawAdvice(eoriNumber, "invalid-recordId")(
+          FakeRequest(url).withBody(Json.obj()).withHeaders("X-Client-ID" -> "TSS")
         )
 
         status(result) mustBe BAD_REQUEST
@@ -103,7 +108,7 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
     }
 
     "client Id is missing" in {
-      val result = sut.delete(eoriNumber, recordId)(FakeRequest(url))
+      val result = sut.withdrawAdvice(eoriNumber, recordId)(FakeRequest(url).withBody(Json.obj()))
 
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.obj(
@@ -122,10 +127,10 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
 
     "withdrawReason query parameter is more than 512 char" in {
 
-      val urlWithInvalidParam = Call(DELETE, s"url?withdrawReason=$invalidWithdrawReasonFormat")
-
-      val result = sut.delete(eoriNumber, recordId)(
-        FakeRequest(urlWithInvalidParam).withHeaders("X-Client-ID" -> "TSS")
+      val result = sut.withdrawAdvice(eoriNumber, recordId)(
+        FakeRequest()
+          .withBody(Json.obj("withdrawReason" -> invalidWithdrawReasonFormat))
+          .withHeaders("X-Client-ID" -> "TSS")
       )
 
       status(result) mustBe BAD_REQUEST

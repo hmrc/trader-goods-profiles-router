@@ -27,7 +27,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, PegaInteg
 
 import java.time.Instant
 import java.util.UUID
-import scala.util.Random
 
 class WithdrawAdviceIntegrationSpec
   extends PegaIntegrationSpec
@@ -39,7 +38,7 @@ class WithdrawAdviceIntegrationSpec
   private val eori = "GB123456789001"
   private val recordId = UUID.randomUUID().toString
   private val correlationId = UUID.randomUUID().toString
-  private val url           = fullUrl(s"/traders/$eori/records/$recordId/advice?withdrawReason=didnotlikeit")
+  private val url           = fullUrl(s"/traders/$eori/records/$recordId/advice")
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -55,24 +54,12 @@ class WithdrawAdviceIntegrationSpec
 
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
-        .delete())
+        .put(Json.obj()))
 
       result.status shouldBe NO_CONTENT
       verifyThatDownstreamApiWasCalled(pegaConnectorPath)
     }
 
-
-    "withdraw advice successfully when withdraw reason contains encoded spaces" in {
-      stubForEis(NO_CONTENT)
-      val withdrawReason = Random.alphanumeric.take(512).mkString.patch(20, "%20", 1)
-      val url           = fullUrl(s"/traders/$eori/records/$recordId/advice?withdrawReason=$withdrawReason")
-
-      val result = await(wsClient.url(url)
-        .withHttpHeaders("X-Client-ID" -> "tss")
-        .delete())
-
-      result.status shouldBe NO_CONTENT
-    }
 
     "return a BAD_REQUEST error" - {
       "eis return BAD_REQUEST" in {
@@ -80,7 +67,7 @@ class WithdrawAdviceIntegrationSpec
 
         val result = await(wsClient.url(url)
           .withHttpHeaders("X-Client-ID" -> "tss")
-          .delete())
+          .put(Json.obj()))
 
         result.status shouldBe BAD_REQUEST
         result.json shouldBe Json.obj(
@@ -132,7 +119,7 @@ class WithdrawAdviceIntegrationSpec
 
         val result = await(wsClient.url(url)
           .withHttpHeaders("X-Client-ID" -> "tss")
-          .delete())
+          .put(Json.obj()))
 
         result.status shouldBe BAD_REQUEST
         result.json shouldBe Json.obj(
@@ -148,7 +135,7 @@ class WithdrawAdviceIntegrationSpec
 
         val result = await(wsClient.url(url)
           .withHttpHeaders("X-Client-ID" -> "tss")
-          .delete())
+          .put(Json.obj()))
 
         result.status shouldBe FORBIDDEN
         result.json   shouldBe Json.obj(
@@ -163,7 +150,7 @@ class WithdrawAdviceIntegrationSpec
 
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
-        .delete())
+        .put(Json.obj()))
 
       result.status shouldBe NOT_FOUND
       result.json shouldBe Json.obj(
@@ -178,7 +165,7 @@ class WithdrawAdviceIntegrationSpec
 
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
-        .delete())
+        .put(Json.obj()))
 
       result.status shouldBe BAD_GATEWAY
       result.json shouldBe Json.obj(
@@ -193,7 +180,7 @@ class WithdrawAdviceIntegrationSpec
 
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
-        .delete())
+        .put(Json.obj()))
 
       result.status shouldBe SERVICE_UNAVAILABLE
       result.json shouldBe Json.obj(
@@ -208,7 +195,7 @@ class WithdrawAdviceIntegrationSpec
 
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
-        .delete())
+        .put(Json.obj()))
 
       result.status shouldBe METHOD_NOT_ALLOWED
       result.json shouldBe Json.obj(
@@ -223,7 +210,7 @@ class WithdrawAdviceIntegrationSpec
 
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
-        .delete())
+        .put(Json.obj()))
 
       result.status shouldBe INTERNAL_SERVER_ERROR
       result.json shouldBe Json.obj(
@@ -248,7 +235,7 @@ class WithdrawAdviceIntegrationSpec
 
         val result = await(wsClient.url(url)
           .withHttpHeaders("X-Client-ID" -> "tss")
-          .delete())
+          .put(Json.obj()))
 
         result.status shouldBe INTERNAL_SERVER_ERROR
         result.json shouldBe Json.obj(
@@ -264,7 +251,7 @@ class WithdrawAdviceIntegrationSpec
 
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
-        .delete())
+        .put(Json.obj()))
 
       result.json shouldBe Json.obj(
         "correlationId" -> correlationId,

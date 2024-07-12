@@ -18,15 +18,15 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
 import play.api.http.Status.INTERNAL_SERVER_ERROR
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice.withdrawAdvice._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DateTimeService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant._
@@ -42,7 +42,7 @@ class WithdrawAdviceConnector @Inject() (
     extends BaseConnector
     with EisHttpErrorHandler {
 
-  def delete(recordId: String, withdrawReason: String)(implicit
+  def put(recordId: String, withdrawReason: Option[String])(implicit
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] = {
     val url = appConfig.pegaConfig.getWithdrawAdviseUrl
@@ -58,7 +58,7 @@ class WithdrawAdviceConnector @Inject() (
           appConfig.pegaConfig.forwardedHost
         ): _*
       )
-      .withBody(createPayload(recordId, withdrawReason))
+      .withBody(Json.toJson(createPayload(recordId, withdrawReason)))
       .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
       .recover { case ex: Throwable =>
         logger.error(
@@ -72,15 +72,16 @@ class WithdrawAdviceConnector @Inject() (
       }
   }
 
-  private def createPayload(publicRecordID: String, withdrawReason: String): JsObject =
-    Json.obj(
-      "withdrawRequest" -> Json.obj(
-        "requestDetail" -> Json.obj(
-          "withdrawDetail" -> Json.obj(
-            "withdrawDate"   -> dateTimeService.timestamp.asStringSeconds,
-            "withdrawReason" -> withdrawReason
-          ),
-          "goodsItems"     -> Json.arr(Json.obj("publicRecordID" -> publicRecordID))
+  private def createPayload(
+    publicRecordID: String,
+    withdrawReason: Option[String]
+  )(implicit hc: HeaderCarrier): WithdrawAdvicePayload =
+    WithdrawAdvicePayload(
+      WithdrawRequest(
+        Some(RequestCommon(Some(getClientId))),
+        RequestDetail(
+          WithdrawDetail(dateTimeService.timestamp, withdrawReason),
+          Seq(PublicRecordID(publicRecordID))
         )
       )
     )

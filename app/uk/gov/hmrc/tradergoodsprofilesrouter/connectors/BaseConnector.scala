@@ -36,7 +36,7 @@ trait BaseConnector {
       HeaderNames.ForwardedHost -> forwardedHost,
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.ClientId      -> hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      HeaderNames.ClientId      -> getClientId,
       HeaderNames.Authorization -> accessToken,
       HeaderNames.ContentType   -> MimeTypes.JSON
     )
@@ -50,4 +50,10 @@ trait BaseConnector {
     hc: HeaderCarrier
   ): Seq[(String, String)] =
     buildHeaders(correlationId, bearerToken, forwardedHost).filterNot(_._1 == HeaderNames.ClientId)
+
+  def getClientId(implicit hc: HeaderCarrier): String =
+    hc.headers(Seq(HeaderNames.ClientId))
+      .headOption
+      .getOrElse(throw new RuntimeException("Client ID is null"))
+      ._2
 }

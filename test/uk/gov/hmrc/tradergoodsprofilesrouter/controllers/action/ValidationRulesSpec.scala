@@ -200,24 +200,24 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
       validator =>
       val withdrawReason = Random.alphanumeric.take(512).mkString
       val result         = validator.validateWithdrawAdviceQueryParam(recordId)(
-        FakeRequest("GET", s"/url?withdrawReason=$withdrawReason")
+        FakeRequest().withBody(Json.obj("withdrawReason" -> withdrawReason))
       )
 
-      result.value mustBe ValidatedWithdrawAdviceQueryParameters(withdrawReason, recordId)
+      result.value mustBe ValidatedWithdrawAdviceQueryParameters(Some(withdrawReason), recordId)
     }
 
     "return empty string if withdraw reason is empty" in new TestValidationRules(uuidService) {
       validator =>
-      val result = validator.validateWithdrawAdviceQueryParam(recordId)(FakeRequest())
+      val result = validator.validateWithdrawAdviceQueryParam(recordId)(FakeRequest().withBody(Json.obj()))
 
-      result.value mustBe ValidatedWithdrawAdviceQueryParameters("", recordId)
+      result.value mustBe ValidatedWithdrawAdviceQueryParameters(None, recordId)
     }
 
     "return a list of errors if withdrawreason and recordId are invalid" in new TestValidationRules(uuidService) {
       validator =>
-      val invalidWithdrawReason = Random.alphanumeric.take(4001).mkString
+      val invalidWithdrawReason = Random.alphanumeric.take(513).mkString
       val result                = validator.validateWithdrawAdviceQueryParam("recordId")(
-        FakeRequest("GET", s"/url?withdrawReason=$invalidWithdrawReason")
+        FakeRequest().withBody(Json.obj("withdrawReason" -> invalidWithdrawReason))
       )
 
       result.left.value.size mustBe 2

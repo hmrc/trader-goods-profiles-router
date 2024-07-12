@@ -21,7 +21,7 @@ import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
@@ -55,12 +55,12 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
-  "delete" should {
+  "put" should {
     "return 204" in {
       when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
 
-      val result = await(sut.delete(recordId, withdrawReason))
+      val result = await(sut.put(recordId, Some(withdrawReason)))
 
       result.value mustBe NO_CONTENT
 
@@ -68,9 +68,19 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
         val expectedUrl = s"http://localhost:1234/tgp/Withdrawaccreditation/v1"
         verify(httpClientV2).put(url"$expectedUrl")
         verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyWithdrawAdviceBearerToken"): _*)
-        verify(requestBuilder).withBody(createRequest.as[JsObject])
+        verify(requestBuilder).withBody(createExpectedPayload)
         verifyExecuteForStatusHttpReader(correlationId)
       }
+    }
+
+    "send a request with an empty withdraw reason" in {
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
+        .thenReturn(Future.successful(Right(NO_CONTENT)))
+
+      val result = await(sut.put(recordId, None))
+
+      result.value mustBe NO_CONTENT
+      verify(requestBuilder).withBody(createExpectedPayloadWithoutWithdrawReason)
     }
 
     "return an error when EIS httpclient return an error" in {
@@ -79,7 +89,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Left(errorResponse)))
 
-      val result = await(sut.delete(recordId, withdrawReason))
+      val result = await(sut.put(recordId, Some(withdrawReason)))
 
       result.left.value mustBe errorResponse
     }
@@ -88,7 +98,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.failed(new RuntimeException("error")))
 
-      val result = await(sut.delete(recordId, withdrawReason))
+      val result = await(sut.put(recordId, Some(withdrawReason)))
 
       result.left.value mustBe EisHttpErrorResponse(
         INTERNAL_SERVER_ERROR,
@@ -97,9 +107,12 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
     }
   }
 
-  private def createRequest: JsValue =
+  private def createExpectedPayload: JsValue =
     Json.parse(s"""{
                  |   "withdrawRequest":{
+                 |      "requestCommon": {
+                 |        "clientID": "TSS"
+                 |      },
                  |      "requestDetail":{
                  |         "withdrawDetail":{
                  |            "withdrawDate":"2024-05-12T12:15:15Z",
@@ -113,4 +126,23 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
                  |      }
                  |   }
                  |}""".stripMargin)
+
+  private def createExpectedPayloadWithoutWithdrawReason: JsValue =
+    Json.parse(s"""{
+                  |   "withdrawRequest":{
+                  |      "requestCommon": {
+                  |        "clientID": "TSS"
+                  |      },
+                  |      "requestDetail":{
+                  |         "withdrawDetail":{
+                  |            "withdrawDate":"2024-05-12T12:15:15Z"
+                  |         },
+                  |         "goodsItems":[
+                  |            {
+                  |               "publicRecordID":"$recordId"
+                  |            }
+                  |         ]
+                  |      }
+                  |   }
+                  |}""".stripMargin)
 }
