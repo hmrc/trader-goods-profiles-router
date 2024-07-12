@@ -27,6 +27,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, PegaInteg
 
 import java.time.Instant
 import java.util.UUID
+import scala.util.Random
 
 class WithdrawAdviceIntegrationSpec
   extends PegaIntegrationSpec
@@ -63,9 +64,9 @@ class WithdrawAdviceIntegrationSpec
 
     "withdraw advice successfully when withdraw reason contains encoded spaces" in {
       stubForEis(NO_CONTENT)
+      val withdrawReason = Random.alphanumeric.take(512).mkString.patch(20, "%20", 1)
+      val url           = fullUrl(s"/traders/$eori/records/$recordId/advice?withdrawReason=$withdrawReason")
 
-      val withdrawReason = "create%20Withdraw%20Reason%20With%20encoded%20Spaces"
-      val url           = fullUrl(s"/traders/$eori/records/$recordId/advice?$withdrawReason")
       val result = await(wsClient.url(url)
         .withHttpHeaders("X-Client-ID" -> "tss")
         .delete())

@@ -111,7 +111,7 @@ trait ValidationRules {
         )
       )
 
-  private def validateWithdrawReasonQueryParam(implicit request: Request[_]): Either[Error, String] = {
+  private def validateWithdrawReasonQueryParam(implicit request: Request[_]): Either[Error, String] =
     request
       .getQueryString("withdrawReason")
       .orElse(Some(""))
@@ -119,7 +119,6 @@ trait ValidationRules {
       .toRight(
         Error(InvalidQueryParameter, invalidWithdrawReasonMessage, invalidWithdrawReasonCode)
       )
-  }
 
   private def convertError[T](
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
@@ -137,9 +136,9 @@ object ValidationRules {
   final case class ValidatedWithdrawAdviceQueryParameters(withdrawReason: String, recordId: String)
 
   private val WithdrawReasonCharLimit = 512
-  private val actorIdPattern: Regex = raw"[A-Z]{2}\d{12,15}".r
-  private val comcodePattern: Regex = raw".{6}(.{2}(.{2})?)?".r
-  private val niphlPattern: Regex   = raw"([0-9]{4,6}|[a-zA-Z]{1,2}[0-9]{5})".r
+  private val actorIdPattern: Regex   = raw"[A-Z]{2}\d{12,15}".r
+  private val comcodePattern: Regex   = raw".{6}(.{2}(.{2})?)?".r
+  private val niphlPattern: Regex     = raw"([0-9]{4,6}|[a-zA-Z]{1,2}[0-9]{5})".r
 
   def isValidCountryCode(rawCountryCode: String): Boolean =
     Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)
