@@ -42,13 +42,12 @@ class WithdrawAdviceController @Inject() (
   def delete(eori: String, recordId: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _              <- EitherT
-                            .fromEither[Future](validateRecordId(recordId))
-                            .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-        _              <- EitherT.fromEither[Future](validateClientId)
-        withdrawReason <- EitherT.fromEither[Future](validateWithdrawReasonQueryParam)
-        _              <- EitherT(withdrawAdviceConnector.delete(recordId, withdrawReason))
-                            .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+        _               <- EitherT.fromEither[Future](validateClientId)
+        validatedParams <- EitherT
+                             .fromEither[Future](validateWithdrawAdviceQueryParam(recordId))
+                             .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
+        _               <- EitherT(withdrawAdviceConnector.delete(recordId, validatedParams.withdrawReason))
+                             .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
       } yield NoContent
 
       result.merge

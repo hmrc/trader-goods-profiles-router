@@ -20,7 +20,7 @@ import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, put, stubFor,
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks._
-import play.api.http.Status.{BAD_GATEWAY, BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, METHOD_NOT_ALLOWED, NOT_FOUND, NO_CONTENT, SERVICE_UNAVAILABLE}
+import play.api.http.Status._
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, PegaIntegrationSpec}
@@ -34,7 +34,7 @@ class WithdrawAdviceIntegrationSpec
     with BeforeAndAfterEach {
 
 
-  override def pegaConnectorPath: String = "/tgp/Withdrawaccreditation/v1"
+  override def pegaConnectorPath: String = "/tgp/withdrawaccreditation/v1"
   private val eori = "GB123456789001"
   private val recordId = UUID.randomUUID().toString
   private val correlationId = UUID.randomUUID().toString
@@ -58,6 +58,19 @@ class WithdrawAdviceIntegrationSpec
 
       result.status shouldBe NO_CONTENT
       verifyThatDownstreamApiWasCalled(pegaConnectorPath)
+    }
+
+
+    "withdraw advice successfully when withdraw reason contains encoded spaces" in {
+      stubForEis(NO_CONTENT)
+
+      val withdrawReason = "create%20Withdraw%20Reason%20With%20encoded%20Spaces"
+      val url           = fullUrl(s"/traders/$eori/records/$recordId/advice?$withdrawReason")
+      val result = await(wsClient.url(url)
+        .withHttpHeaders("X-Client-ID" -> "tss")
+        .delete())
+
+      result.status shouldBe NO_CONTENT
     }
 
     "return a BAD_REQUEST error" - {
@@ -284,7 +297,7 @@ class WithdrawAdviceIntegrationSpec
       ))
   }
 
-  def badRequestErrorResponse =
+  private def badRequestErrorResponse =
     Json.parse(
       s"""
         |{
@@ -310,7 +323,7 @@ class WithdrawAdviceIntegrationSpec
         |}
         |""".stripMargin)
 
-  def badRequestErrorResponseWithoutError =
+  private def badRequestErrorResponseWithoutError =
     Json.parse(
       s"""
          |{
@@ -327,7 +340,7 @@ class WithdrawAdviceIntegrationSpec
          |}
          |""".stripMargin)
 
-  def internalServerErrorResponse(errorCode: Int) =
+  private def internalServerErrorResponse(errorCode: Int) =
     Json.parse(
       s"""
          |{
@@ -344,7 +357,7 @@ class WithdrawAdviceIntegrationSpec
          |}
          |""".stripMargin)
 
-  def badRequestResponseWithUnrecognisedError = Json.parse(
+  private def badRequestResponseWithUnrecognisedError = Json.parse(
     s"""
        |{
        | "errorDetail": {

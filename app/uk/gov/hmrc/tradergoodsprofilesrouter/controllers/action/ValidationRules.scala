@@ -25,7 +25,7 @@ import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
 import play.api.mvc.{BaseController, Request, Result}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, ValidatedQueryParameters, extractSimplePaths, isValidActorId}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, ValidatedQueryParameters, ValidatedWithdrawAdviceQueryParameters, WithdrawReasonCharLimit, extractSimplePaths, isValidActorId}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
@@ -61,17 +61,6 @@ trait ValidationRules {
       )
     )
 
-  protected def validateActorId(actorId: String): Either[Error, String] =
-    if (isValidActorId(actorId)) Right(actorId)
-    else
-      Left(
-        Error(
-          InvalidQueryParameter,
-          InvalidActorIdQueryParameter,
-          InvalidOrMissingActorIdCode.toInt
-        )
-      )
-
   protected def validateRequestBody[A: Reads](
     fieldToErrorCodeTable: Map[String, (String, String)]
   )(implicit request: Request[JsValue]): Either[Result, A] =
@@ -99,16 +88,38 @@ trait ValidationRules {
       errors.toList
     }
 
-  protected def validateWithdrawReasonQueryParam(implicit request: Request[_]): Either[Result, String] =
+  protected def validateWithdrawAdviceQueryParam(
+    recordId: String
+  )(implicit request: Request[_]): Either[List[Error], ValidatedWithdrawAdviceQueryParameters] =
+    (
+      validateWithdrawReasonQueryParam.toEitherNec,
+      validateRecordId(recordId).toEitherNec
+    ).parMapN { (validatedWithdrawReason, validatedRecordId) =>
+      ValidatedWithdrawAdviceQueryParameters(validatedWithdrawReason, validatedRecordId)
+    } leftMap { errors =>
+      errors.toList
+    }
+
+  private def validateActorId(actorId: String): Either[Error, String] =
+    if (isValidActorId(actorId)) Right(actorId)
+    else
+      Left(
+        Error(
+          InvalidQueryParameter,
+          InvalidActorIdQueryParameter,
+          InvalidOrMissingActorIdCode.toInt
+        )
+      )
+
+  private def validateWithdrawReasonQueryParam(implicit request: Request[_]): Either[Error, String] = {
     request
       .getQueryString("withdrawReason")
-      .filter(_.length < 4001)
+      .orElse(Some(""))
+      .filter(_.length < WithdrawReasonCharLimit + 1)
       .toRight(
-        BadRequestErrorResponse(
-          uuidService.uuid,
-          Seq(Error(InvalidQueryParameter, invalidWithdrawReasonMessage, invalidWithdrawReasonCode))
-        ).asPresentation
+        Error(InvalidQueryParameter, invalidWithdrawReasonMessage, invalidWithdrawReasonCode)
       )
+  }
 
   private def convertError[T](
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
@@ -123,7 +134,9 @@ trait ValidationRules {
 object ValidationRules {
 
   final case class ValidatedQueryParameters(actorId: String, recordId: String)
+  final case class ValidatedWithdrawAdviceQueryParameters(withdrawReason: String, recordId: String)
 
+  private val WithdrawReasonCharLimit = 512
   private val actorIdPattern: Regex = raw"[A-Z]{2}\d{12,15}".r
   private val comcodePattern: Regex = raw".{6}(.{2}(.{2})?)?".r
   private val niphlPattern: Regex   = raw"([0-9]{4,6}|[a-zA-Z]{1,2}[0-9]{5})".r

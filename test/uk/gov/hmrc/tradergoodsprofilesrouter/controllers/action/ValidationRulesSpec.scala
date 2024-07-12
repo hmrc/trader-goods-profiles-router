@@ -21,11 +21,11 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json, OFormat}
-import play.api.mvc.{ControllerComponents, Result}
+import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{ValidatedQueryParameters, isValidActorId, isValidComcode, isValidCountryCode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 
@@ -194,60 +194,37 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
   }
 
-  "validateWithdrawReason" should {
+  "validateWithdrawAdviceQueryParam" should {
 
-    "return the withdraw reason" in new TestValidationRules(uuidService) {
+    "validate all the parameters" in new TestValidationRules(uuidService) {
       validator =>
-      val withdrawReason                 = Random.alphanumeric.take(1000).mkString
-      val result: Either[Result, String] = validator.validateWithdrawReasonQueryParam(
+      val withdrawReason = Random.alphanumeric.take(512).mkString
+      val result         = validator.validateWithdrawAdviceQueryParam(recordId)(
         FakeRequest("GET", s"/url?withdrawReason=$withdrawReason")
       )
 
-      result.value mustBe withdrawReason
+      result.value mustBe ValidatedWithdrawAdviceQueryParameters(withdrawReason, recordId)
     }
 
-    "return bad request error if withdrawreason is empty" in new TestValidationRules(uuidService) {
+    "return empty string if withdraw reason is empty" in new TestValidationRules(uuidService) {
       validator =>
-      val result = validator.validateWithdrawReasonQueryParam(FakeRequest())
+      val result = validator.validateWithdrawAdviceQueryParam(recordId)(FakeRequest())
 
-      result.left.value mustBe BadRequest(
-        Json.obj(
-          "correlationId" -> correlationId,
-          "code"          -> "BAD_REQUEST",
-          "message"       -> "Bad Request",
-          "errors"        -> Json.arr(
-            Json.obj(
-              "code"        -> "INVALID_QUERY_PARAMETER",
-              "message"     -> "Digital checked that withdraw reason is > 4000",
-              "errorNumber" -> 1018
-            )
-          )
-        )
-      )
+      result.value mustBe ValidatedWithdrawAdviceQueryParameters("", recordId)
     }
 
-    "return bad request error if withdrawreason is greader then 4000 char" in new TestValidationRules(uuidService) {
+    "return a list of errors if withdrawreason and recordId are invalid" in new TestValidationRules(uuidService) {
       validator =>
       val invalidWithdrawReason = Random.alphanumeric.take(4001).mkString
-      val result                = validator.validateWithdrawReasonQueryParam(
+      val result                = validator.validateWithdrawAdviceQueryParam("recordId")(
         FakeRequest("GET", s"/url?withdrawReason=$invalidWithdrawReason")
       )
 
-      result.left.value mustBe BadRequest(
-        Json.obj(
-          "correlationId" -> correlationId,
-          "code"          -> "BAD_REQUEST",
-          "message"       -> "Bad Request",
-          "errors"        -> Json.arr(
-            Json.obj(
-              "code"        -> "INVALID_QUERY_PARAMETER",
-              "message"     -> "Digital checked that withdraw reason is > 4000",
-              "errorNumber" -> 1018
-            )
-          )
-        )
+      result.left.value.size mustBe 2
+      result.left.value mustBe Seq(
+        Error("INVALID_QUERY_PARAMETER", "Digital checked that withdraw reason is > 4000", 1018),
+        Error("INVALID_QUERY_PARAMETER", "The recordId has been provided in the wrong format", 25)
       )
-
     }
   }
 

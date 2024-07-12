@@ -43,8 +43,8 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
   private val correlationId               = UUID.randomUUID().toString
   private val connector                   = mock[WithdrawAdviceConnector]
   private val uuidService                 = mock[UuidService]
-  private val invalidWithdrawReasonFormat = Random.alphanumeric.take(4001).mkString
-  private val validWithdrawReason         = invalidWithdrawReasonFormat.take(4000)
+  private val invalidWithdrawReasonFormat = Random.alphanumeric.take(513).mkString
+  private val validWithdrawReason         = invalidWithdrawReasonFormat.take(512)
   private val url                         = Call(DELETE, s"url?withdrawReason=$validWithdrawReason")
 
   val sut = new WithdrawAdviceController(
@@ -70,8 +70,16 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
 
       status(result) mustBe NO_CONTENT
       verify(connector).delete(eqTo(recordId), eqTo(validWithdrawReason))(any)
-
     }
+
+    "withdrawReason query parameter is missing" in {
+      val result = sut.delete(eoriNumber, recordId)(
+        FakeRequest(Call(DELETE, s"url")).withHeaders("X-Client-ID" -> "TSS")
+      )
+
+      status(result) mustBe NO_CONTENT
+    }
+
     "return an error" when {
       "recordId is not valid " in {
         val result = sut.delete(eoriNumber, "invalid-recordId")(
@@ -112,27 +120,7 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
       )
     }
 
-    "withdrawReason query parameter is missing" in {
-      val result = sut.delete(eoriNumber, recordId)(
-        FakeRequest().withHeaders("X-Client-ID" -> "TSS")
-      )
-
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.obj(
-        "correlationId" -> correlationId,
-        "code"          -> "BAD_REQUEST",
-        "message"       -> "Bad Request",
-        "errors"        -> Json.arr(
-          Json.obj(
-            "code"        -> "INVALID_QUERY_PARAMETER",
-            "message"     -> "Digital checked that withdraw reason is > 4000",
-            "errorNumber" -> 1018
-          )
-        )
-      )
-    }
-
-    "withdrawReason query parameter is less the 4000 char" in {
+    "withdrawReason query parameter is more than 512 char" in {
 
       val urlWithInvalidParam = Call(DELETE, s"url?withdrawReason=$invalidWithdrawReasonFormat")
 
