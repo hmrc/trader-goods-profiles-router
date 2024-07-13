@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
@@ -32,11 +30,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class RemoveRecordConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService,
-  override val metricsRegistry: MetricRegistry
+  override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with MetricsSupport
     with EisHttpErrorHandler {
 
   def removeRecord(
@@ -44,19 +40,18 @@ class RemoveRecordConnector @Inject() (
     recordId: String,
     actorId: String,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] =
-    withMetricsTimerAsync("tgp.removerecord.connector") { _ =>
-      val url = appConfig.hawkConfig.removeRecordUrl
-      httpClientV2
-        .put(url"$url")
-        .setHeader(
-          buildHeaders(
-            correlationId,
-            appConfig.hawkConfig.removeRecordBearerToken,
-            appConfig.hawkConfig.forwardedHost
-          ): _*
-        )
-        .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
-        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
-    }
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] = {
+    val url = appConfig.hawkConfig.removeRecordUrl
+    httpClientV2
+      .put(url"$url")
+      .setHeader(
+        buildHeaders(
+          correlationId,
+          appConfig.hawkConfig.removeRecordBearerToken,
+          appConfig.hawkConfig.forwardedHost
+        ): _*
+      )
+      .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
+      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+  }
 }

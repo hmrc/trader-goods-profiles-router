@@ -15,13 +15,11 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
-import com.codahale.metrics.MetricRegistry
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{RequestEisAccreditationRequest, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -32,31 +30,28 @@ import scala.concurrent.{ExecutionContext, Future}
 class RequestAdviceConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService,
-  override val metricsRegistry: MetricRegistry
+  override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with MetricsSupport
     with EisHttpErrorHandler {
 
   def requestAdvice(request: TraderDetails, correlationId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Either[EisHttpErrorResponse, Int]] =
-    withMetricsTimerAsync("tgp.advice.connector") { _ =>
-      val url = appConfig.pegaConfig.requestAdviceUrl
+  ): Future[Either[EisHttpErrorResponse, Int]] = {
+    val url = appConfig.pegaConfig.requestAdviceUrl
 
-      val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringSeconds)
-      httpClientV2
-        .post(url"$url")
-        .setHeader(
-          buildHeadersForAdvice(
-            correlationId,
-            appConfig.pegaConfig.requestAdviceBearerToken,
-            appConfig.pegaConfig.forwardedHost
-          ): _*
-        )
-        .withBody(Json.toJson(adviceEisRequest))
-        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
-    }
+    val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringSeconds)
+    httpClientV2
+      .post(url"$url")
+      .setHeader(
+        buildHeadersForAdvice(
+          correlationId,
+          appConfig.pegaConfig.requestAdviceBearerToken,
+          appConfig.pegaConfig.forwardedHost
+        ): _*
+      )
+      .withBody(Json.toJson(adviceEisRequest))
+      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+  }
 
 }

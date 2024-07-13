@@ -25,25 +25,24 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class MaintainProfileConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
+class MaintainProfileConnectorSpec extends BaseConnectorSpec {
 
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
 
-  private val connector = new MaintainProfileConnector(appConfig, httpClientV2, dateTimeService, metricsRegistry)
+  private val connector = new MaintainProfileConnector(appConfig, httpClientV2, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
+    reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
     setUpAppConfig()
-    setUpMetrics()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
@@ -66,9 +65,6 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec with BaseMetricsSpe
       verifyExecuteForHttpReader(correlationId)
 
       result.value mustBe maintainProfileResponse
-      withClue("process the response within a timer") {
-        verifyMetrics("tgp.maintainprofile.connector")
-      }
     }
 
     "return an error if EIS returns one" in {

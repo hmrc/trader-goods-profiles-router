@@ -25,24 +25,23 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec, CreateRecordDataSupport}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class UpdateRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec with CreateRecordDataSupport {
+class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataSupport {
 
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
-  private val eisConnector          = new UpdateRecordConnector(appConfig, httpClientV2, dateTimeService, metricsRegistry)
+  private val eisConnector          = new UpdateRecordConnector(appConfig, httpClientV2, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
+    reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
     setUpAppConfig()
-    setUpMetrics()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
@@ -62,10 +61,6 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec w
       val result  = await(eisConnector.updateRecord(request, correlationId))
 
       result.value mustBe expectedResponse
-
-      withClue("process the response within a timer") {
-        verifyMetrics("tgp.updaterecord.connector")
-      }
     }
 
     "return an error if EIS return an error" in {

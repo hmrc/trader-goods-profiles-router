@@ -16,13 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import com.codahale.metrics.MetricRegistry
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -34,11 +32,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetRecordsConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService,
-  override val metricsRegistry: MetricRegistry
+  override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with MetricsSupport
     with EisHttpErrorHandler {
 
   def fetchRecord(
@@ -46,28 +42,27 @@ class GetRecordsConnector @Inject() (
     recordId: String,
     correlationId: String,
     isHawk: Boolean
-  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] =
-    withMetricsTimerAsync("tgp.getrecord.connector") { _ =>
-      val url =
-        if (isHawk) s"${appConfig.hawkConfig.getRecordsUrl}/$eori/$recordId"
-        else s"${appConfig.pegaConfig.getRecordsUrl}/$eori/$recordId"
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
+    val url =
+      if (isHawk) s"${appConfig.hawkConfig.getRecordsUrl}/$eori/$recordId"
+      else s"${appConfig.pegaConfig.getRecordsUrl}/$eori/$recordId"
 
-      val bearerToken =
-        if (isHawk) appConfig.hawkConfig.getRecordBearerToken else appConfig.pegaConfig.getRecordBearerToken
+    val bearerToken =
+      if (isHawk) appConfig.hawkConfig.getRecordBearerToken else appConfig.pegaConfig.getRecordBearerToken
 
-      val forwardedHost = if (isHawk) appConfig.hawkConfig.forwardedHost else appConfig.pegaConfig.forwardedHost
+    val forwardedHost = if (isHawk) appConfig.hawkConfig.forwardedHost else appConfig.pegaConfig.forwardedHost
 
-      httpClientV2
-        .get(url"$url")
-        .setHeader(
-          buildHeadersForGetMethod(
-            correlationId,
-            bearerToken,
-            forwardedHost
-          ): _*
-        )
-        .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
-    }
+    httpClientV2
+      .get(url"$url")
+      .setHeader(
+        buildHeadersForGetMethod(
+          correlationId,
+          bearerToken,
+          forwardedHost
+        ): _*
+      )
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+  }
 
   def fetchRecords(
     eori: String,
@@ -75,22 +70,21 @@ class GetRecordsConnector @Inject() (
     lastUpdatedDate: Option[Instant] = None,
     page: Option[Int] = None,
     size: Option[Int] = None
-  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] =
-    withMetricsTimerAsync("tgp.getrecords.connector") { _ =>
-      val formattedLastUpdateDate: Option[String] = lastUpdatedDate.map(_.asStringSeconds)
-      val uri                                     =
-        uri"${appConfig.hawkConfig.getRecordsUrl}/$eori?lastUpdatedDate=$formattedLastUpdateDate&page=$page&size=$size"
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
+    val formattedLastUpdateDate: Option[String] = lastUpdatedDate.map(_.asStringSeconds)
+    val uri                                     =
+      uri"${appConfig.hawkConfig.getRecordsUrl}/$eori?lastUpdatedDate=$formattedLastUpdateDate&page=$page&size=$size"
 
-      httpClientV2
-        .get(url"$uri")
-        .setHeader(
-          buildHeadersForGetMethod(
-            correlationId,
-            appConfig.hawkConfig.getRecordBearerToken,
-            appConfig.hawkConfig.forwardedHost
-          ): _*
-        )
-        .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
-    }
+    httpClientV2
+      .get(url"$uri")
+      .setHeader(
+        buildHeadersForGetMethod(
+          correlationId,
+          appConfig.hawkConfig.getRecordBearerToken,
+          appConfig.hawkConfig.forwardedHost
+        ): _*
+      )
+      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+  }
 
 }
