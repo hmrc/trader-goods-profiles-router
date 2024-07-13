@@ -39,7 +39,7 @@ object withdrawAdvice {
     implicit val write: Writes[WithdrawDetail] = (
       (JsPath \ "withdrawDate").write[String] and
         (JsPath \ "withdrawReason").writeNullable[String]
-      )(e => (e.withdrawDate.asStringSeconds, e.withdrawReason))
+    )(e => (e.withdrawDate.asStringSeconds, e.withdrawReason))
   }
 
   case class PublicRecordID(publicRecordID: String)

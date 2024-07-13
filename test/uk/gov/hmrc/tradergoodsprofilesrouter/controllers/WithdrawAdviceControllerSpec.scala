@@ -141,7 +141,7 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
         "errors"        -> Json.arr(
           Json.obj(
             "code"        -> "INVALID_QUERY_PARAMETER",
-            "message"     -> "Digital checked that withdraw reason is > 4000",
+            "message"     -> "Digital checked that withdraw reason is > 512",
             "errorNumber" -> 1018
           )
         )

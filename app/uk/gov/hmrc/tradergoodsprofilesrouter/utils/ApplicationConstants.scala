@@ -202,5 +202,5 @@ object WithdrawAdviceConstant {
   val InvalidRecordIdMsg: String  = "The recordId has been provided in the wrong format"
 
   val DecisionAlreadyMadeCode: String      = "E009"
-  val invalidWithdrawReasonMessage: String = "Digital checked that withdraw reason is > 4000"
+  val invalidWithdrawReasonMessage: String = "Digital checked that withdraw reason is > 512"
 }
