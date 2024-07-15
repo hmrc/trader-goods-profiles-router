@@ -328,7 +328,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
     }
   }
 
-  def convertCode(code: String): Int                                                                       =
+  def convertCode(code: String): Int                                                                               =
     if (code.startsWith("E")) {
       code.drop(1).toInt + 1000
     } else {
@@ -349,7 +349,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
        |  }
        |}
         """.stripMargin
-  private def createEisErrorResponseAsJson(errorCode: String, message: String)                             =
+  private def createEisErrorResponseAsJson(errorCode: String, message: String)                                     =
     s"""
        |{
        |  "errorDetail": {
