@@ -23,22 +23,22 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport, HawkIntegrationSpec}
 
 import java.time.Instant
 
 class GetSingleRecordIntegrationSpec
-    extends BaseIntegrationWithConnectorSpec
+    extends HawkIntegrationSpec
     with AuthTestSupport
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
 
-  private val eori                               = "GB123456789001"
-  private val recordId                           = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val dateTime                           = "2021-12-17T09:30:47.456Z"
-  private val url                                = fullUrl(s"/traders/$eori/records/$recordId")
-  override def hawkConnectorPath: Option[String] = Some(s"/tgp/getrecords/v1")
+  private val eori                       = "GB123456789001"
+  private val recordId                   = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val correlationId              = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val dateTime                   = "2021-12-17T09:30:47.456Z"
+  private val url                        = fullUrl(s"/traders/$eori/records/$recordId")
+  override def hawkConnectorPath: String = s"/tgp/getrecords/v1"
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -359,7 +359,7 @@ class GetSingleRecordIntegrationSpec
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_QUERY_PARAMETER",
-                "message"     -> "Query parameter recordId is in the wrong format",
+                "message"     -> "The recordId has been provided in the wrong format",
                 "errorNumber" -> 25
               )
             )
@@ -368,13 +368,12 @@ class GetSingleRecordIntegrationSpec
           verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "Bad Request with unexpected error if error code is ot supported" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori/$recordId"))
-                .willReturn(
-                  aResponse()
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+          stubFor(
+            get(urlEqualTo(s"$hawkConnectorPath/$eori/$recordId"))
+              .willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                |{
                                |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
@@ -390,9 +389,8 @@ class GetSingleRecordIntegrationSpec
                                |  }
                                |}
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -417,14 +415,13 @@ class GetSingleRecordIntegrationSpec
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
-        "Bad Request with unable to parse the detail" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori/$recordId"))
-                .willReturn(
-                  aResponse()
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+        "Bad Request when no error message are found" in {
+          stubFor(
+            get(urlEqualTo(s"$hawkConnectorPath/$eori/$recordId"))
+              .willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                |{
                                |  "errorDetail": {
                                |    "timestamp": "2023-09-14T11:29:18Z",
@@ -433,14 +430,13 @@ class GetSingleRecordIntegrationSpec
                                |    "errorMessage": "Invalid request parameter",
                                |    "source": "BACKEND",
                                |    "sourceFaultDetail": {
-                               |      "detail": ["error"]
+                               |      "detail": ["status: fails"]
                                |    }
                                |  }
                                |}
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -449,30 +445,28 @@ class GetSingleRecordIntegrationSpec
               .get()
           )
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
+            "code"          -> "BAD_REQUEST",
+            "message"       -> s"Bad Request"
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with invalid json" in {
-          hawkConnectorPath.foreach { path =>
-            stubFor(
-              get(urlEqualTo(s"$path/$eori/$recordId"))
-                .willReturn(
-                  aResponse()
-                    .withStatus(BAD_REQUEST)
-                    .withBody(s"""
+          stubFor(
+            get(urlEqualTo(s"$hawkConnectorPath/$eori/$recordId"))
+              .willReturn(
+                aResponse()
+                  .withStatus(BAD_REQUEST)
+                  .withBody(s"""
                                | {
                                |    "invalid": "error"
                                |  }
                                |""".stripMargin)
-                )
-            )
-          }
+              )
+          )
 
           val response = await(
             wsClient
@@ -556,16 +550,14 @@ class GetSingleRecordIntegrationSpec
   }
 
   private def stubForEis(httpStatus: Int, body: Option[String] = None) =
-    hawkConnectorPath.foreach { path =>
-      stubFor(
-        get(urlEqualTo(s"$path/$eori/$recordId"))
-          .willReturn(
-            aResponse()
-              .withStatus(httpStatus)
-              .withBody(body.orNull)
-          )
-      )
-    }
+    stubFor(
+      get(urlEqualTo(s"$hawkConnectorPath/$eori/$recordId"))
+        .willReturn(
+          aResponse()
+            .withStatus(httpStatus)
+            .withBody(body.orNull)
+        )
+    )
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

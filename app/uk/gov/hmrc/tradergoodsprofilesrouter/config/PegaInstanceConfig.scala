@@ -26,12 +26,16 @@ case class PegaInstanceConfig(
   forwardedHost: String,
   requestAdviceToken: String,
   getRecords: String,
-  recordGetToken: String
+  recordGetToken: String,
+  withdrawAdvise: String,
+  withdrawAdviseToken: String
 ) {
-  lazy val getRecordsUrl: String    = s"$protocol://$host:$port$getRecords"
-  lazy val requestAdviceUrl: String = s"$protocol://$host:$port$requestAdvice"
-  lazy val requestAdviceBearerToken = s"Bearer $requestAdviceToken"
-  lazy val getRecordBearerToken     = s"Bearer $recordGetToken"
+  lazy val getRecordsUrl: String        = s"$protocol://$host:$port$getRecords"
+  lazy val requestAdviceUrl: String     = s"$protocol://$host:$port$requestAdvice"
+  lazy val requestAdviceBearerToken     = s"Bearer $requestAdviceToken"
+  lazy val getRecordBearerToken         = s"Bearer $recordGetToken"
+  lazy val getWithdrawAdviseUrl         = s"$protocol://$host:$port$withdrawAdvise"
+  lazy val getWithdrawAdviceBearerToken = s"Bearer $withdrawAdviseToken"
 }
 
 object PegaInstanceConfig {
@@ -45,9 +49,11 @@ object PegaInstanceConfig {
         config.get[Int]("port"),
         config.get[String]("request-advice"),
         config.get[String]("forwarded-host"),
-        config.getOptional[String]("request-advice-token").getOrElse("dummyRequestAdviceBearerToken"),
+        config.getOptional[String]("request-advice-token").getOrElse("dummyWithdrawAdviceBearerToken"),
         config.get[String]("get-records"),
-        config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken")
+        config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
+        config.get[String]("withdraw-advice"),
+        config.getOptional[String]("withdraw-advice-token").getOrElse("dummyWithdrawAdviceBearerToken")
       )
     }
 }

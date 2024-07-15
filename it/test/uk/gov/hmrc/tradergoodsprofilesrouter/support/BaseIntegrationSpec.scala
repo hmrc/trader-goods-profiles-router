@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter
+package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
+import com.github.tomakehurst.wiremock.client.WireMock.{getAllServeEvents, postRequestedFor, urlEqualTo, verify}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.should.Matchers
@@ -27,7 +28,8 @@ import play.api.{Application, inject}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DateTimeService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
+
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 abstract class BaseIntegrationSpec
     extends AnyFreeSpec
@@ -60,5 +62,17 @@ abstract class BaseIntegrationSpec
         "metrics.enabled" -> false
       )
 
-  def fullUrl(path: String): String = baseUrl + "/trader-goods-profiles-router" + path
+  def fullUrl(path: String): String = s"$baseUrl/trader-goods-profiles-router$path"
+
+  def verifyThatDownstreamApiWasCalled(connectorPath: String): Unit    =
+    withClue(s"We expected a single downstream API (stub) to be called at $connectorPath, but it wasn't.") {
+      getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 1
+    }
+
+  def verifyThatMultipleDownstreamApiWasCalled(): Unit                         =
+    withClue("We expected multiple downstream API (stub) to be called, but it wasn't.") {
+      getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 2
+    }
+  def verifyThatDownstreamApiWasNotCalled(connectorPath: String): Unit =
+    verify(0, postRequestedFor(urlEqualTo(connectorPath)))
 }

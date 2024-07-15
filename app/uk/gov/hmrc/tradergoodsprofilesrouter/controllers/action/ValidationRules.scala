@@ -25,11 +25,13 @@ import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
 import play.api.mvc.{BaseController, Request, Result}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, ValidatedQueryParameters, extractSimplePaths, isValidActorId}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, ValidatedQueryParameters, ValidatedWithdrawAdviceQueryParameters, WithdrawReasonCharLimit, extractSimplePaths, isValidActorId}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.WithdrawReasonRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant.invalidWithdrawReasonMessage
 
 import java.util.{Locale, UUID}
 import scala.concurrent.ExecutionContext
@@ -55,21 +57,10 @@ trait ValidationRules {
     Try(UUID.fromString(recordId).toString).toOption.toRight(
       Error(
         InvalidQueryParameter,
-        InvalidRecordIdQueryParameter,
+        InvalidRecordId,
         InvalidRecordIdCode.toInt
       )
     )
-
-  protected def validateActorId(actorId: String): Either[Error, String] =
-    if (isValidActorId(actorId)) Right(actorId)
-    else
-      Left(
-        Error(
-          InvalidQueryParameter,
-          InvalidActorIdQueryParameter,
-          InvalidOrMissingActorIdCode.toInt
-        )
-      )
 
   protected def validateRequestBody[A: Reads](
     fieldToErrorCodeTable: Map[String, (String, String)]
@@ -98,6 +89,39 @@ trait ValidationRules {
       errors.toList
     }
 
+  protected def validateWithdrawAdviceQueryParam(
+    recordId: String
+  )(implicit request: Request[JsValue]): Either[List[Error], ValidatedWithdrawAdviceQueryParameters] =
+    (
+      validateWithdrawReasonQueryParam.toEitherNec,
+      validateRecordId(recordId).toEitherNec
+    ).parMapN { (validatedWithdrawReason, validatedRecordId) =>
+      ValidatedWithdrawAdviceQueryParameters(validatedWithdrawReason.withdrawReason, validatedRecordId)
+    } leftMap { errors =>
+      errors.toList
+    }
+
+  private def validateActorId(actorId: String): Either[Error, String] =
+    if (isValidActorId(actorId)) Right(actorId)
+    else
+      Left(
+        Error(
+          InvalidQueryParameter,
+          InvalidActorIdQueryParameter,
+          InvalidOrMissingActorIdCode.toInt
+        )
+      )
+
+  private def validateWithdrawReasonQueryParam(implicit
+    request: Request[JsValue]
+  ): Either[Error, WithdrawReasonRequest] =
+    Try(request.body.as[WithdrawReasonRequest]).toOption
+      .orElse(Some(WithdrawReasonRequest(None)))
+      .filter(_.withdrawReason.getOrElse("").length < WithdrawReasonCharLimit + 1)
+      .toRight(
+        Error(InvalidQueryParameter, invalidWithdrawReasonMessage, invalidWithdrawReasonCode)
+      )
+
   private def convertError[T](
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
     fieldToErrorCodeTable: Map[String, (String, String)]
@@ -111,10 +135,12 @@ trait ValidationRules {
 object ValidationRules {
 
   final case class ValidatedQueryParameters(actorId: String, recordId: String)
+  final case class ValidatedWithdrawAdviceQueryParameters(withdrawReason: Option[String], recordId: String)
 
-  private val actorIdPattern: Regex = raw"[A-Z]{2}\d{12,15}".r
-  private val comcodePattern: Regex = raw".{6}(.{2}(.{2})?)?".r
-  private val niphlPattern: Regex   = raw"([0-9]{4,6}|[a-zA-Z]{1,2}[0-9]{5})".r
+  private val WithdrawReasonCharLimit = 512
+  private val actorIdPattern: Regex   = raw"[A-Z]{2}\d{12,15}".r
+  private val comcodePattern: Regex   = raw".{6}(.{2}(.{2})?)?".r
+  private val niphlPattern: Regex     = raw"([0-9]{4,6}|[a-zA-Z]{1,2}[0-9]{5})".r
 
   def isValidCountryCode(rawCountryCode: String): Boolean =
     Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)

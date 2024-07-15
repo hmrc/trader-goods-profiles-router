@@ -181,7 +181,7 @@ class UpdateRecordControllerSpec
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
           ApplicationConstants.BadRequestCode,
           ApplicationConstants.BadRequestMessage,
-          Some(Seq(Error("INVALID_QUERY_PARAMETER", "Query parameter recordId is in the wrong format", 25)))
+          Some(Seq(Error("INVALID_QUERY_PARAMETER", "The recordId has been provided in the wrong format", 25)))
         )
       )
     }

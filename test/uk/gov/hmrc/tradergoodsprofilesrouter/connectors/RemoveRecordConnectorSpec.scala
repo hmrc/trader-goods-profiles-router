@@ -18,14 +18,12 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
-import org.mockito.captor.ArgCaptor
 import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec}
 
 import java.time.Instant
@@ -79,7 +77,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
     verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
     verify(requestBuilder)
       .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
-    verifyExecuteWithParamsType(correlationId)
+    verifyExecuteForStatusHttpReader(correlationId)
 
     result.value mustBe OK
   }
@@ -92,13 +90,4 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
 
     result.left.value mustBe BadRequest("error")
   }
-
-  private def verifyExecuteWithParamsType(expectedCorrelationId: String) = {
-    val captor = ArgCaptor[StatusHttpReader]
-    verify(requestBuilder).execute(captor.capture, any)
-
-    val httpReader = captor.value
-    httpReader.correlationId mustBe expectedCorrelationId
-  }
-
 }

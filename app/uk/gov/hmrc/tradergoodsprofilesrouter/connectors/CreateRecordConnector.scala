@@ -36,9 +36,9 @@ class CreateRecordConnector @Inject() (
   override val dateTimeService: DateTimeService,
   override val metricsRegistry: MetricRegistry
 )(implicit val ec: ExecutionContext)
-    extends BaseConnector
+    extends EisHttpErrorHandler
     with MetricsSupport
-    with EisHttpErrorHandler {
+    with BaseConnector {
 
   def createRecord(
     payload: CreateRecordPayload,

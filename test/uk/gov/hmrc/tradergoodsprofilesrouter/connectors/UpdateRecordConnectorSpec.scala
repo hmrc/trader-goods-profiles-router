@@ -93,7 +93,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec w
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*)
       verify(requestBuilder).withBody(updateRecordPayload)
 
-      verifyExecuteWithParams(correlationId)
+      verifyExecuteForHttpReader(correlationId)
     }
   }
 

@@ -24,19 +24,19 @@ import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
 
 class CreateRecordIntegrationSpec
-    extends BaseIntegrationWithConnectorSpec
+    extends HawkIntegrationSpec
     with AuthTestSupport
     with BeforeAndAfterEach {
 
   private val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
   private val url           = fullUrl("/traders/GB123456789001/records")
 
-  override def hawkConnectorPath: Option[String] = Some("/tgp/createrecord/v1")
+  override def hawkConnectorPath: String = "/tgp/createrecord/v1"
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -499,11 +499,11 @@ class CreateRecordIntegrationSpec
             .post(createRecordRequestData)
             .futureValue
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
+            "code"          -> "BAD_REQUEST",
+            "message"       -> s"Bad Request"
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
@@ -876,9 +876,8 @@ class CreateRecordIntegrationSpec
   }
 
   private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
-    hawkConnectorPath.foreach { path =>
       stubFor(
-        post(urlEqualTo(s"$path"))
+        post(urlEqualTo(s"$hawkConnectorPath"))
           .willReturn(
             aResponse()
               .withHeader("Content-Type", "application/json")
@@ -886,7 +885,6 @@ class CreateRecordIntegrationSpec
               .withBody(responseBody.orNull)
           )
       )
-    }
 
   lazy val createRecordResponseData: JsValue =
     Json

@@ -107,7 +107,7 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
         BadRequestMessage,
         Some(
           Seq(
-            Error("INVALID_QUERY_PARAMETER", "Query parameter recordId is in the wrong format", 25)
+            Error("INVALID_QUERY_PARAMETER", "The recordId has been provided in the wrong format", 25)
           )
         )
       )

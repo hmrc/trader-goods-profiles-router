@@ -23,12 +23,12 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport}
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport, HawkIntegrationSpec}
 
 import java.time.Instant
 
 class RequestAdviceIntegrationSpec
-    extends BaseIntegrationWithConnectorSpec
+    extends HawkIntegrationSpec
     with AuthTestSupport
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
@@ -38,8 +38,20 @@ class RequestAdviceIntegrationSpec
   private val eori                               = "GB123456789001"
   private val recordId                           = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   private val url                                = fullUrl(s"/traders/$eori/records/$recordId/advice")
-  override def hawkConnectorPath: Option[String] = Some("/tgp/getrecords/v1")
-  override def pegaConnectorPath: Option[String] = Some("/tgp/createaccreditation/v1")
+  override def hawkConnectorPath: String = "/tgp/getrecords/v1"
+  def pegaConnectorPath: String = "/tgp/createaccreditation/v1"
+
+  override def extraApplicationConfig: Map[String, Any] = {
+    Map(
+      s"microservice.services.hawk.host" -> wireMockHost,
+      s"microservice.services.hawk.port" -> wireMockPort,
+      s"microservice.services.hawk.uri" -> hawkConnectorPath,
+      s"microservice.services.pega.host" -> wireMockHost,
+      s"microservice.services.pega.port" -> wireMockPort,
+      s"microservice.services.pega.uri" -> pegaConnectorPath,
+      "auditing.enabled" -> false
+    )
+  }
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -451,9 +463,8 @@ class RequestAdviceIntegrationSpec
       .toString()
 
   private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) =
-    pegaConnectorPath.foreach { path =>
       stubFor(
-        post(urlEqualTo(path))
+        post(urlEqualTo(pegaConnectorPath))
           .withRequestBody(equalToJson(requestBody))
           .willReturn(
             aResponse()
@@ -462,12 +473,10 @@ class RequestAdviceIntegrationSpec
               .withBody(responseBody.orNull)
           )
       )
-    }
 
-  private def stubForEisFetchRecords(httpStatus: Int, body: String) =
-    hawkConnectorPath.foreach { path =>
+  private def stubForEisFetchRecords(httpStatus: Int, body: String) = {
       stubFor(
-        get(urlEqualTo(s"$path/$eori/$recordId"))
+        get(urlEqualTo(s"$hawkConnectorPath/$eori/$recordId"))
           .willReturn(
             aResponse()
               .withStatus(httpStatus)

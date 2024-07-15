@@ -25,12 +25,13 @@ import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{ValidatedQueryParameters, isValidActorId, isValidComcode, isValidCountryCode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext
+import scala.util.Random
 
 class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues with IntegrationPatience {
 
@@ -88,7 +89,7 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
         result.left.value mustBe Error(
           "INVALID_QUERY_PARAMETER",
-          "Query parameter recordId is in the wrong format",
+          "The recordId has been provided in the wrong format",
           25
         )
       }
@@ -98,7 +99,7 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
 
         result.left.value mustBe Error(
           "INVALID_QUERY_PARAMETER",
-          "Query parameter recordId is in the wrong format",
+          "The recordId has been provided in the wrong format",
           25
         )
       }
@@ -131,7 +132,7 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
           result.left.value.length mustBe 1
           result.left.value.head mustBe Error(
             "INVALID_QUERY_PARAMETER",
-            "Query parameter recordId is in the wrong format",
+            "The recordId has been provided in the wrong format",
             25
           )
         }
@@ -149,7 +150,7 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
             ),
             Error(
               "INVALID_QUERY_PARAMETER",
-              "Query parameter recordId is in the wrong format",
+              "The recordId has been provided in the wrong format",
               25
             )
           )
@@ -191,6 +192,40 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
       result.value mustBe TestClass("any-name")
     }
 
+  }
+
+  "validateWithdrawAdviceQueryParam" should {
+
+    "validate all the parameters" in new TestValidationRules(uuidService) {
+      validator =>
+      val withdrawReason = Random.alphanumeric.take(512).mkString
+      val result         = validator.validateWithdrawAdviceQueryParam(recordId)(
+        FakeRequest().withBody(Json.obj("withdrawReason" -> withdrawReason))
+      )
+
+      result.value mustBe ValidatedWithdrawAdviceQueryParameters(Some(withdrawReason), recordId)
+    }
+
+    "return empty string if withdraw reason is empty" in new TestValidationRules(uuidService) {
+      validator =>
+      val result = validator.validateWithdrawAdviceQueryParam(recordId)(FakeRequest().withBody(Json.obj()))
+
+      result.value mustBe ValidatedWithdrawAdviceQueryParameters(None, recordId)
+    }
+
+    "return a list of errors if withdrawreason and recordId are invalid" in new TestValidationRules(uuidService) {
+      validator =>
+      val invalidWithdrawReason = Random.alphanumeric.take(513).mkString
+      val result                = validator.validateWithdrawAdviceQueryParam("recordId")(
+        FakeRequest().withBody(Json.obj("withdrawReason" -> invalidWithdrawReason))
+      )
+
+      result.left.value.size mustBe 2
+      result.left.value mustBe Seq(
+        Error("INVALID_QUERY_PARAMETER", "Digital checked that withdraw reason is > 512", 1018),
+        Error("INVALID_QUERY_PARAMETER", "The recordId has been provided in the wrong format", 25)
+      )
+    }
   }
 
   "isValidCountryCode" should {

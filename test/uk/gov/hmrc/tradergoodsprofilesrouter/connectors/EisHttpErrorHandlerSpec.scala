@@ -53,7 +53,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         )
       }
 
-      "Payload schema mismatch" in new TestHarness() { handler =>
+      "Payload schema mismatch without error" in new TestHarness() { handler =>
         val eisResponse     = createEisErrorResponseAsJson("400", "Internal Error Response")
         val eisHttpResponse = HttpResponse(500, eisResponse)
 
@@ -62,6 +62,27 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         result mustBe EisHttpErrorResponse(
           INTERNAL_SERVER_ERROR,
           ErrorResponse(correlationId, "INTERNAL_ERROR_RESPONSE", "Internal Error Response")
+        )
+      }
+
+      "Payload schema mismatch with errors" in new TestHarness() { handler =>
+        val eisResponse     = createEisErrorResponseWithDetailsAsJson(
+          "400",
+          "Internal Server Error",
+          s"error: 031, message: whatever"
+        )
+        val eisHttpResponse = HttpResponse(500, eisResponse)
+
+        val result = handler.handleErrorResponse(eisHttpResponse, correlationId)
+
+        result mustBe EisHttpErrorResponse(
+          INTERNAL_SERVER_ERROR,
+          ErrorResponse(
+            correlationId,
+            "INTERNAL_ERROR_RESPONSE",
+            "Internal Error Response",
+            Some(Seq(Error("INVALID_REQUEST_PARAMETER", "This record has been removed and cannot be updated", 31)))
+          )
         )
       }
 
@@ -256,12 +277,16 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val eisResponse  = createEisErrorResponseWithDetailsAsJson("400", "Bad Request", "002, unknown")
         val httpResponse = HttpResponse(400, eisResponse, Map.empty)
 
-        val exception = intercept[IllegalArgumentException] {
-          handler.handleErrorResponse(httpResponse, correlationId)
-        }
+        val result = handler.handleErrorResponse(httpResponse, correlationId)
 
-        exception.getMessage mustBe s"Unable to parse fault detail for correlation Id: $correlationId"
-
+        result mustBe EisHttpErrorResponse(
+          BAD_REQUEST,
+          ErrorResponse(
+            correlationId,
+            "BAD_REQUEST",
+            "Bad Request"
+          )
+        )
       }
     }
 
@@ -303,13 +328,13 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
     }
   }
 
-  def convertCode(code: String): Int                                                                       =
+  def convertCode(code: String): Int                                                                               =
     if (code.startsWith("E")) {
       code.drop(1).toInt + 1000
     } else {
       code.toInt
     }
-  private def createEisErrorResponseWithDetailsAsJson(errorCode: String, message: String, detail: String*) =
+  private def createEisErrorResponseWithDetailsAsJson(errorCode: String, message: String, detail: String*): String =
     s"""
        |{
        |  "errorDetail": {
@@ -324,7 +349,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
        |  }
        |}
         """.stripMargin
-  private def createEisErrorResponseAsJson(errorCode: String, message: String)                             =
+  private def createEisErrorResponseAsJson(errorCode: String, message: String)                                     =
     s"""
        |{
        |  "errorDetail": {

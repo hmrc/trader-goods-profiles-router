@@ -24,22 +24,19 @@ import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
 
-class UpdateRecordIntegrationSpec
-    extends BaseIntegrationWithConnectorSpec
-    with AuthTestSupport
-    with BeforeAndAfterEach {
+class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
-  private val eori                               = "GB123456789001"
-  private val recordId                           = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  val correlationId                              = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime                                   = "2021-12-17T09:30:47.456Z"
-  val timestamp                                  = "Fri, 17 Dec 2021 09:30:47 GMT"
-  private val url                                = fullUrl(s"/traders/$eori/records/$recordId")
-  override def hawkConnectorPath: Option[String] = Some("/tgp/updaterecord/v1")
+  private val eori                       = "GB123456789001"
+  private val recordId                   = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
+  val dateTime                           = "2021-12-17T09:30:47.456Z"
+  val timestamp                          = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val url                        = fullUrl(s"/traders/$eori/records/$recordId")
+  override def hawkConnectorPath: String = "/tgp/updaterecord/v1"
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -478,7 +475,7 @@ class UpdateRecordIntegrationSpec
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
-        "Bad Request with unable to parse the detail" in {
+        "Bad Request when no error list found" in {
           stubForEis(
             BAD_REQUEST,
             Some(s"""
@@ -503,11 +500,11 @@ class UpdateRecordIntegrationSpec
             .patch(updateRecordRequestData)
             .futureValue
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> s"Unable to parse fault detail for correlation Id: $correlationId"
+            "code"          -> "BAD_REQUEST",
+            "message"       -> s"Bad Request"
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
@@ -742,17 +739,15 @@ class UpdateRecordIntegrationSpec
   }
 
   private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
-    hawkConnectorPath.foreach { path =>
-      stubFor(
-        put(urlEqualTo(s"$path"))
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", "application/json")
-              .withStatus(httpStatus)
-              .withBody(responseBody.orNull)
-          )
-      )
-    }
+    stubFor(
+      put(urlEqualTo(s"$hawkConnectorPath"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(httpStatus)
+            .withBody(responseBody.orNull)
+        )
+    )
 
   lazy val updateRecordResponseData: JsValue =
     Json

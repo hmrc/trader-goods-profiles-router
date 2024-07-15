@@ -24,21 +24,18 @@ import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
 
-class MaintainProfileIntegrationSpec
-    extends BaseIntegrationWithConnectorSpec
-    with AuthTestSupport
-    with BeforeAndAfterEach {
+class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
   val eori          = "GB123456789001"
   val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
   val dateTime      = "2021-12-17T09:30:47.456Z"
   val timestamp     = "Fri, 17 Dec 2021 09:30:47 Z"
 
-  override def hawkConnectorPath: Option[String] = Some("/tgp/maintainprofile/v1")
+  override def hawkConnectorPath: String = "/tgp/maintainprofile/v1"
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -161,17 +158,15 @@ class MaintainProfileIntegrationSpec
   }
 
   private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
-    hawkConnectorPath.foreach { path =>
-      stubFor(
-        put(urlEqualTo(s"$path"))
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", "application/json")
-              .withStatus(httpStatus)
-              .withBody(responseBody.orNull)
-          )
-      )
-    }
+    stubFor(
+      put(urlEqualTo(s"$hawkConnectorPath"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(httpStatus)
+            .withBody(responseBody.orNull)
+        )
+    )
 
   lazy val maintainProfileRequest: String =
     """

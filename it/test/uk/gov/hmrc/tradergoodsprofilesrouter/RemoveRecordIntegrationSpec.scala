@@ -23,23 +23,20 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.AuthTestSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
 
-class RemoveRecordIntegrationSpec
-    extends BaseIntegrationWithConnectorSpec
-    with AuthTestSupport
-    with BeforeAndAfterEach {
+class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
-  private val eori                               = "GB123456789001"
-  private val actorId                            = "GB123456789001"
-  private val recordId                           = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val dateTime                           = "2021-12-17T09:30:47.456Z"
-  private val timestamp                          = "Fri, 17 Dec 2021 09:30:47 GMT"
-  private val url                                = fullUrl(s"/traders/$eori/records/$recordId?actorId=$actorId")
-  override def hawkConnectorPath: Option[String] = Some(s"/tgp/removerecord/v1")
+  private val eori                       = "GB123456789001"
+  private val actorId                    = "GB123456789001"
+  private val recordId                   = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val correlationId              = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val dateTime                   = "2021-12-17T09:30:47.456Z"
+  private val timestamp                  = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val url                        = fullUrl(s"/traders/$eori/records/$recordId?actorId=$actorId")
+  override def hawkConnectorPath: String = s"/tgp/removerecord/v1"
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -57,7 +54,7 @@ class RemoveRecordIntegrationSpec
         val response = wsClient
           .url(url)
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-          .delete
+          .delete()
           .futureValue
 
         response.status shouldBe NO_CONTENT
@@ -417,7 +414,7 @@ class RemoveRecordIntegrationSpec
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
-        "Bad Request with unable to parse the detail" in {
+        "Bad Request when no error message are found" in {
           stubForEis(
             BAD_REQUEST,
             removeEisRecordRequest,
@@ -443,11 +440,11 @@ class RemoveRecordIntegrationSpec
             .delete()
             .futureValue
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "Unable to parse fault detail for correlation Id: d677693e-9981-4ee3-8574-654981ebe606"
+            "code"          -> "BAD_REQUEST",
+            "message"       -> "Bad Request"
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
@@ -510,7 +507,7 @@ class RemoveRecordIntegrationSpec
           val response = wsClient
             .url(fullUrl(s"/traders/GB123456789015/records/$recordId?actorId=$actorId"))
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .delete
+            .delete()
             .futureValue
 
           response.status shouldBe FORBIDDEN
@@ -529,7 +526,7 @@ class RemoveRecordIntegrationSpec
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
-            .delete
+            .delete()
             .futureValue
 
           response.status shouldBe FORBIDDEN
@@ -546,25 +543,23 @@ class RemoveRecordIntegrationSpec
   }
 
   private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) =
-    hawkConnectorPath.foreach { path =>
-      stubFor(
-        put(urlEqualTo(s"$path"))
-          .withRequestBody(equalToJson(requestBody))
-          .withHeader("Content-Type", equalTo("application/json"))
-          .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-          .withHeader("X-Correlation-ID", equalTo(correlationId))
-          .withHeader("Date", equalTo(timestamp))
-          .withHeader("Accept", equalTo("application/json"))
-          .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-          .withHeader("X-Client-ID", equalTo("tss"))
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", "application/json")
-              .withStatus(httpStatus)
-              .withBody(responseBody.orNull)
-          )
-      )
-    }
+    stubFor(
+      put(urlEqualTo(s"$hawkConnectorPath"))
+        .withRequestBody(equalToJson(requestBody))
+        .withHeader("Content-Type", equalTo("application/json"))
+        .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+        .withHeader("X-Correlation-ID", equalTo(correlationId))
+        .withHeader("Date", equalTo(timestamp))
+        .withHeader("Accept", equalTo("application/json"))
+        .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+        .withHeader("X-Client-ID", equalTo("tss"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(httpStatus)
+            .withBody(responseBody.orNull)
+        )
+    )
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

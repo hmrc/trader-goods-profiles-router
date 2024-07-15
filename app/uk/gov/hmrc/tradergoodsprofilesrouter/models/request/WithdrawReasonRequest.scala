@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseIntegrationSpec
+import play.api.libs.json.{Json, OFormat}
 
-class HealthEndpointIntegrationSpec extends BaseIntegrationSpec {
+case class WithdrawReasonRequest(withdrawReason: Option[String])
 
-  "service health endpoint" - {
-    "respond with 200 status" - {
-      val response =
-        wsClient
-          .url(s"$baseUrl/ping/ping")
-          .get()
-          .futureValue
-
-      response.status shouldBe 200
-    }
-  }
+object WithdrawReasonRequest {
+  implicit val format: OFormat[WithdrawReasonRequest] = Json.format[WithdrawReasonRequest]
 }

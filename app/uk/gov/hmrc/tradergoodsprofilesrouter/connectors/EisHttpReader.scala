@@ -34,7 +34,11 @@ object EisHttpReader {
       response match {
         case response if isSuccessful(response.status) =>
           Right(jsonAs[T](response))
-        case response                                  => Left(errorHandler(response, correlationId))
+        case response                                  =>
+          logger.warn(
+            s"[HttpReader] - downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body} "
+          )
+          Left(errorHandler(response, correlationId))
       }
   }
 
@@ -43,7 +47,11 @@ object EisHttpReader {
     override def read(method: String, url: String, response: HttpResponse): Either[EisHttpErrorResponse, Int] =
       response match {
         case response if isSuccessful(response.status) => Right(response.status)
-        case response                                  => Left(errorHandler(response, correlationId))
+        case response                                  =>
+          logger.warn(
+            s"[StatusHttpReader] - downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body} "
+          )
+          Left(errorHandler(response, correlationId))
       }
   }
 
@@ -55,14 +63,14 @@ object EisHttpReader {
           .map(result => result)
           .recoverTotal { error: JsError =>
             logger.warn(
-              s"[EisConnector] - Failed to validate or parse JSON body of type: ${typeOf[T]}",
+              s"[EisHttpReader] - Failed to validate or parse JSON body of type: ${typeOf[T]}",
               error
             )
             throw new RuntimeException(s"Response body could not be read as type ${typeOf[T]}")
           }
       case Failure(exception) =>
         logger.warn(
-          s"[EisConnector] - Response body could not be parsed as JSON, body: ${response.body}",
+          s"[EisHttpReader] - Response body could not be parsed as JSON, body: ${response.body}",
           exception
         )
         throw new RuntimeException(s"Response body could not be read: ${response.body}")

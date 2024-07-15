@@ -63,7 +63,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec with BaseMetricsSpe
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyMaintainProfileBearerToken"): _*)
       verify(requestBuilder).withBody(maintainProfileEisRequest)
       verify(requestBuilder).execute(any, any)
-      verifyExecuteWithParams(correlationId)
+      verifyExecuteForHttpReader(correlationId)
 
       result.value mustBe maintainProfileResponse
       withClue("process the response within a timer") {
