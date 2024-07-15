@@ -49,17 +49,17 @@ class WithdrawAdviceConnector @Inject() (
 
     val correlationId = uuidService.uuid
 
-    httpClientV2
+    val o = httpClientV2
       .put(url"$url")
       .setHeader(
-        buildHeaders(
+        buildHeadersForAdvice(
           correlationId,
-          appConfig.pegaConfig.getWithdrawAdviceBearerToken,
+          appConfig.pegaConfig.requestAdviceBearerToken,
           appConfig.pegaConfig.forwardedHost
         ): _*
       )
-      .withBody(Json.toJson(createPayload(recordId, withdrawReason)))
-      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    val m = o.withBody(Json.toJson(createPayload(recordId, withdrawReason)))
+    m.execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
       .recover { case ex: Throwable =>
         logger.error(
           s"[WithdrawAdviceConnector] - Error withdrawing Advice, recordId $recordId, message ${ex.getMessage}",

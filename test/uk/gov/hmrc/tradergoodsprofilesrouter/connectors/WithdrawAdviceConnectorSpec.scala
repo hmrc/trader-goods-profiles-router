@@ -20,6 +20,7 @@ import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.http.MimeTypes
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -53,7 +54,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
     when(dateTimeService.timestamp).thenReturn(withdrawDate)
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
   "put" should {
     "return 204" in {
@@ -65,9 +66,9 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       result.value mustBe NO_CONTENT
 
       withClue("should send request to EIS with the right parameters") {
-        val expectedUrl = s"http://localhost:1234/tgp/Withdrawaccreditation/v1"
+        val expectedUrl = s"http://localhost:1234/tgp/withdrawaccreditation/v1"
         verify(httpClientV2).put(url"$expectedUrl")
-        verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyWithdrawAdviceBearerToken"): _*)
+        verify(requestBuilder).setHeader(expectedHeader: _*)
         verify(requestBuilder).withBody(createExpectedPayload)
         verifyExecuteForStatusHttpReader(correlationId)
       }
@@ -106,6 +107,16 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       )
     }
   }
+
+  private val expectedHeader: Seq[(String, String)] =
+    Seq(
+      "X-Correlation-ID" -> correlationId,
+      "X-Forwarded-Host" -> "MDTP",
+      "Accept"           -> MimeTypes.JSON,
+      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+      "Authorization"    -> "Bearer dummyAccreditationCreateBearerToken",
+      "Content-Type"     -> MimeTypes.JSON
+    )
 
   private def createExpectedPayload: JsValue =
     Json.parse(s"""{

@@ -32,7 +32,7 @@ trait BaseConnector {
     hc: HeaderCarrier
   ): Seq[(String, String)] =
     Seq(
-      HeaderNames.CorrelationId -> correlationId,
+      #HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> forwardedHost,
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,

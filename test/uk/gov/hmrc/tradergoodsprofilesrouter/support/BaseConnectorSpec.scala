@@ -97,7 +97,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       requestAdviceToken = "dummyAccreditationCreateBearerToken",
       getRecords = "/tgp/getrecords/v1",
       recordGetToken = "dummyRecordGetBearerToken",
-      withdrawAdvise = "/tgp/Withdrawaccreditation/v1",
+      withdrawAdvise = "/tgp/withdrawaccreditation/v1",
       withdrawAdviseToken = "dummyWithdrawAdviceBearerToken"
     )
 
