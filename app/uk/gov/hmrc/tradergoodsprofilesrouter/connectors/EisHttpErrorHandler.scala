@@ -26,6 +26,8 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
+import scala.util.Try
+
 trait EisHttpErrorHandler extends Logging {
 
   def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): EisHttpErrorResponse =
@@ -107,11 +109,17 @@ trait EisHttpErrorHandler extends Logging {
             )
 
           case "400" =>
+            val errors = Try(Json.parse(message).as[ErrorDetail]).toOption
+              .map(extractError(correlationId, _))
+              .flatten
+
             ErrorResponse(
               correlationId,
               InternalErrorResponseCode,
-              InternalErrorResponseMessage
+              InternalErrorResponseMessage,
+              errors
             )
+
           case "401" =>
             ErrorResponse(
               correlationId,
@@ -167,21 +175,25 @@ trait EisHttpErrorHandler extends Logging {
         )
     }
 
-  private def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse = {
-
-    val extractErrors: Option[Seq[errors.Error]] = (for {
-      o      <- detail.sourceFaultDetail
-      errors <- o.detail
-    } yield errors.map(detail => parseFaultDetail(detail, correlationId)))
-      .map((s: Seq[Option[errors.Error]]) => s.flatten)
-      .filter(_.nonEmpty)
-
+  private def setBadRequestResponse(correlationId: String, detail: ErrorDetail): ErrorResponse =
     ErrorResponse(
       correlationId,
       BadRequestCode,
       BadRequestMessage, // Todo: would not be better to add details.errorMessage here instead of bad request as we already node that is a bad request
-      extractErrors
+      extractError(correlationId, detail)
     )
+
+  private def extractError(correlationId: String, detail: ErrorDetail) = {
+    val extractErrors: Option[Seq[errors.Error]] =
+      (
+        for {
+          o      <- detail.sourceFaultDetail
+          errors <- o.detail
+        } yield errors.map(detail => parseFaultDetail(detail, correlationId))
+      )
+        .map((s: Seq[Option[errors.Error]]) => s.flatten)
+        .filter(_.nonEmpty)
+    extractErrors
   }
 
   protected def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {
