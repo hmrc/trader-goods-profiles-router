@@ -21,8 +21,8 @@ import play.api.Logging
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, GetRecordsConnector}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{GetRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
 import java.time.Instant
@@ -39,7 +39,7 @@ class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidServic
     eisConnector
       .fetchRecord(eori, recordId, correlationId, isHawk)
       .map {
-        case Right(response) => Right(response.goodsItemRecords.head)
+        case Right(response) => Right(GoodsItemRecords(response.goodsItemRecords.head))
         case Left(error)     => Left(error)
       }
       .recover { case ex: Throwable =>
@@ -60,12 +60,12 @@ class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidServic
     size: Option[Int] = None
   )(implicit
     hc: HeaderCarrier
-  ): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
+  ): Future[Either[EisHttpErrorResponse, GetRecordsResponse]] = {
     val correlationId: String = uuidService.uuid
     eisConnector
       .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
       .map {
-        case Right(response) => Right(response)
+        case Right(response) => Right(GetRecordsResponse(response))
         case Left(response)  => Left(response)
       }
       .recover { case ex: Throwable =>

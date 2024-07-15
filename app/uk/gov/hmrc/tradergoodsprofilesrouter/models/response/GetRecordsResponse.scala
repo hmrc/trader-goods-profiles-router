@@ -17,13 +17,20 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GoodsItemRecords, Pagination}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, Pagination}
 
 case class GetRecordsResponse(
-  records: Seq[GoodsItemRecords],
+  goodsItemRecords: Seq[GoodsItemRecords],
   pagination: Pagination
 )
 
 object GetRecordsResponse {
   implicit val format: Format[GetRecordsResponse] = Json.format[GetRecordsResponse]
+
+  def apply(getEisRecordsResponse: GetEisRecordsResponse): GetRecordsResponse =
+    GetRecordsResponse(
+      goodsItemRecords =
+        getEisRecordsResponse.goodsItemRecords.collect(eisGoodsItemRecord => GoodsItemRecords(eisGoodsItemRecord)),
+      pagination = getEisRecordsResponse.pagination
+    )
 }

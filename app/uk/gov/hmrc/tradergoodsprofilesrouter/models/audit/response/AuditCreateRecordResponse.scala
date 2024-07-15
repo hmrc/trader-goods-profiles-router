@@ -17,10 +17,11 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response
 
 import play.api.libs.json._
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.AdviceStatus
 
 case class AuditCreateRecordResponse(
   recordId: String,
-  adviceStatus: String,
+  adviceStatus: AdviceStatus,
   recordVersion: Int,
   recordActive: Boolean,
   recordToReview: Boolean,

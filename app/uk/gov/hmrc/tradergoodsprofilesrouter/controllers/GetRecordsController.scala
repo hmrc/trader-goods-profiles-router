@@ -22,10 +22,10 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{GetRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.InvalidQueryParameter
 
@@ -93,7 +93,7 @@ class GetRecordsController @Inject() (
     validDate: Option[Instant],
     page: Option[Int],
     size: Option[Int]
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetEisRecordsResponse] =
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetRecordsResponse] =
     EitherT(
       getRecordService.fetchRecords(eori, validDate, page, size)
     )

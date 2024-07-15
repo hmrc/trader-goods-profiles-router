@@ -22,7 +22,7 @@ import play.api.http.Status._
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport, HawkIntegrationSpec}
 
 import java.time.Instant
@@ -62,7 +62,7 @@ class GetSingleRecordIntegrationSpec
 
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(
-          getEisRecordsResponseDataWithNiphlStrippedOfDashes.as[GetEisRecordsResponse].goodsItemRecords.head
+          getRecordsResponseDataWithNiphlStrippedOfDashes.as[GetRecordsResponse].goodsItemRecords.head
         )
 
         verifyThatDownstreamApiWasCalled(hawkConnectorPath)

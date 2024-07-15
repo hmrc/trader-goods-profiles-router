@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment}
 
 import java.time.Instant
 
@@ -29,7 +29,7 @@ case class CreateOrUpdateRecordResponse(
   actorId: String,
   traderRef: String,
   comcode: String,
-  adviceStatus: String,
+  adviceStatus: AdviceStatus,
   goodsDescription: String,
   countryOfOrigin: String,
   category: Int,
@@ -51,7 +51,6 @@ case class CreateOrUpdateRecordResponse(
 )
 
 object CreateOrUpdateRecordResponse {
-
   // TODO: This will need to be removed once EIS/B&T make the same validation on their side
   private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
     niphlNumber match {
@@ -67,8 +66,7 @@ object CreateOrUpdateRecordResponse {
         (json \ "actorId").as[String],
         (json \ "traderRef").as[String],
         (json \ "comcode").as[String],
-        (json \ "accreditationStatus")
-          .as[String], //TODO change this back to adviceStatus after EIS does the changes from their end
+        (json \ "adviceStatus").as[AdviceStatus],
         (json \ "goodsDescription").as[String],
         (json \ "countryOfOrigin").as[String],
         (json \ "category").as[Int],
@@ -90,33 +88,69 @@ object CreateOrUpdateRecordResponse {
       )
     )
 
-  implicit val writes: Writes[CreateOrUpdateRecordResponse] = (response: CreateOrUpdateRecordResponse) =>
-    removeNulls(
-      Json.obj(
-        "recordId"                 -> response.recordId,
-        "eori"                     -> response.eori,
-        "actorId"                  -> response.actorId,
-        "traderRef"                -> response.traderRef,
-        "comcode"                  -> response.comcode,
-        "adviceStatus"             -> response.adviceStatus,
-        "goodsDescription"         -> response.goodsDescription,
-        "countryOfOrigin"          -> response.countryOfOrigin,
-        "category"                 -> response.category,
-        "assessments"              -> removeEmptyAssessment(response.assessments),
-        "supplementaryUnit"        -> response.supplementaryUnit,
-        "measurementUnit"          -> response.measurementUnit,
-        "comcodeEffectiveFromDate" -> response.comcodeEffectiveFromDate,
-        "comcodeEffectiveToDate"   -> response.comcodeEffectiveToDate,
-        "version"                  -> response.version,
-        "active"                   -> response.active,
-        "toReview"                 -> response.toReview,
-        "reviewReason"             -> response.reviewReason,
-        "declarable"               -> response.declarable,
-        "ukimsNumber"              -> response.ukimsNumber,
-        "nirmsNumber"              -> response.nirmsNumber,
-        "niphlNumber"              -> removeLeadingDashes(response.niphlNumber),
-        "createdDateTime"          -> response.createdDateTime,
-        "updatedDateTime"          -> response.updatedDateTime
+  implicit val writes: Writes[CreateOrUpdateRecordResponse] =
+    (createOrUpdateRecordResponse: CreateOrUpdateRecordResponse) =>
+      removeNulls(
+        Json.obj(
+          "recordId"                 -> createOrUpdateRecordResponse.recordId,
+          "eori"                     -> createOrUpdateRecordResponse.eori,
+          "actorId"                  -> createOrUpdateRecordResponse.actorId,
+          "traderRef"                -> createOrUpdateRecordResponse.traderRef,
+          "comcode"                  -> createOrUpdateRecordResponse.comcode,
+          "accreditationStatus"      -> createOrUpdateRecordResponse.adviceStatus,
+          "goodsDescription"         -> createOrUpdateRecordResponse.goodsDescription,
+          "countryOfOrigin"          -> createOrUpdateRecordResponse.countryOfOrigin,
+          "category"                 -> createOrUpdateRecordResponse.category,
+          "assessments"              -> removeEmptyAssessment(createOrUpdateRecordResponse.assessments),
+          "supplementaryUnit"        -> createOrUpdateRecordResponse.supplementaryUnit,
+          "measurementUnit"          -> createOrUpdateRecordResponse.measurementUnit,
+          "comcodeEffectiveFromDate" -> createOrUpdateRecordResponse.comcodeEffectiveFromDate,
+          "comcodeEffectiveToDate"   -> createOrUpdateRecordResponse.comcodeEffectiveToDate,
+          "version"                  -> createOrUpdateRecordResponse.version,
+          "active"                   -> createOrUpdateRecordResponse.active,
+          "toReview"                 -> createOrUpdateRecordResponse.toReview,
+          "reviewReason"             -> createOrUpdateRecordResponse.reviewReason,
+          "declarable"               -> createOrUpdateRecordResponse.declarable,
+          "ukimsNumber"              -> createOrUpdateRecordResponse.ukimsNumber,
+          "nirmsNumber"              -> createOrUpdateRecordResponse.nirmsNumber,
+          "niphlNumber"              -> removeLeadingDashes(createOrUpdateRecordResponse.niphlNumber),
+          "createdDateTime"          -> createOrUpdateRecordResponse.createdDateTime,
+          "updatedDateTime"          -> createOrUpdateRecordResponse.updatedDateTime
+        )
       )
+
+  def apply(createOrUpdateRecordEisResponse: CreateOrUpdateRecordEisResponse): CreateOrUpdateRecordResponse =
+    CreateOrUpdateRecordResponse(
+      recordId = createOrUpdateRecordEisResponse.recordId,
+      eori = createOrUpdateRecordEisResponse.eori,
+      actorId = createOrUpdateRecordEisResponse.actorId,
+      traderRef = createOrUpdateRecordEisResponse.traderRef,
+      comcode = createOrUpdateRecordEisResponse.comcode,
+      adviceStatus = translateAccreditationStatus(createOrUpdateRecordEisResponse.accreditationStatus),
+      goodsDescription = createOrUpdateRecordEisResponse.goodsDescription,
+      countryOfOrigin = createOrUpdateRecordEisResponse.countryOfOrigin,
+      category = createOrUpdateRecordEisResponse.category,
+      assessments = createOrUpdateRecordEisResponse.assessments,
+      supplementaryUnit = createOrUpdateRecordEisResponse.supplementaryUnit,
+      measurementUnit = createOrUpdateRecordEisResponse.measurementUnit,
+      comcodeEffectiveFromDate = createOrUpdateRecordEisResponse.comcodeEffectiveFromDate,
+      comcodeEffectiveToDate = createOrUpdateRecordEisResponse.comcodeEffectiveToDate,
+      version = createOrUpdateRecordEisResponse.version,
+      active = createOrUpdateRecordEisResponse.active,
+      toReview = createOrUpdateRecordEisResponse.toReview,
+      reviewReason = createOrUpdateRecordEisResponse.reviewReason,
+      declarable = createOrUpdateRecordEisResponse.declarable,
+      ukimsNumber = createOrUpdateRecordEisResponse.ukimsNumber,
+      nirmsNumber = createOrUpdateRecordEisResponse.nirmsNumber,
+      niphlNumber = createOrUpdateRecordEisResponse.niphlNumber,
+      createdDateTime = createOrUpdateRecordEisResponse.createdDateTime,
+      updatedDateTime = createOrUpdateRecordEisResponse.updatedDateTime
     )
+
+  private def translateAccreditationStatus(accreditationStatus: AccreditationStatus): AdviceStatus =
+    accreditationStatus match {
+      case AccreditationStatus.Approved => AdviceStatus.AdviceProvided
+      case AccreditationStatus.Rejected => AdviceStatus.AdviceNotProvided
+      case _                            => AdviceStatus.withName(accreditationStatus.entryName)
+    }
 }

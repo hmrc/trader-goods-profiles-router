@@ -23,7 +23,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec, CreateRecordDataSupport}
 
@@ -53,10 +53,9 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec w
 
   "updateRecord" should {
     "update a record successfully" in {
-      val expectedResponse: CreateOrUpdateRecordResponse =
-        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
+      val expectedResponse = createOrUpdateRecordEisResponse
 
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
@@ -70,7 +69,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec w
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
@@ -81,9 +80,8 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec w
 
     "send a request with the right url" in {
 
-      val expectedResponse: CreateOrUpdateRecordResponse =
-        createOrUpdateRecordSampleJson.as[CreateOrUpdateRecordResponse]
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordResponse]](any, any))
+      val expectedResponse = createOrUpdateRecordEisResponse
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
       await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))

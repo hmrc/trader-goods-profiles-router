@@ -23,7 +23,7 @@ import play.api.http.Status._
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateRecordEisResponse, CreateOrUpdateRecordResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
@@ -50,7 +50,7 @@ class CreateRecordIntegrationSpec
     "the request is" - {
       "valid, specifically" - {
         "with all request fields" in {
-          stubForEis(CREATED, Some(createRecordResponseData.toString()))
+          stubForEis(CREATED, Some(createRecordEisResponseData.toString()))
 
           val response = wsClient
             .url(url)
@@ -114,7 +114,7 @@ class CreateRecordIntegrationSpec
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with only required fields" in {
-          stubForEis(CREATED, Some(createRecordRequiredResponseData.toString()))
+          stubForEis(CREATED, Some(createRecordRequiredEisResponseData.toString()))
 
           val response = wsClient
             .url(url)
@@ -886,7 +886,7 @@ class CreateRecordIntegrationSpec
           )
       )
 
-  lazy val createRecordResponseData: JsValue =
+  lazy val createRecordEisResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -927,6 +927,48 @@ class CreateRecordIntegrationSpec
         |  ]
         |}
         |""".stripMargin)
+
+  lazy val createRecordResponseData: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789001",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "adviceStatus": "Not Requested",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "supplementaryUnit": 500,
+               |  "measurementUnit": "Square metre (m2)",
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "6 S12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z",
+               |  "assessments": [
+               |    {
+               |      "assessmentId": "abc123",
+               |      "primaryCategory": 1,
+               |      "condition": {
+               |        "type": "abc123",
+               |        "conditionId": "Y923",
+               |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+               |        "conditionTraderText": "Excluded product"
+               |      }
+               |    }
+               |  ]
+               |}
+               |""".stripMargin)
 
   lazy val createEisRecordResponseDataWithOptionalNullFields: JsValue =
     Json
@@ -1052,7 +1094,7 @@ class CreateRecordIntegrationSpec
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
-               |  "accreditationStatus": "Not Requested",
+               |  "adviceStatus": "Not Requested",
                |  "goodsDescription": "Organic bananas",
                |  "countryOfOrigin": "EC",
                |  "category": 1,
@@ -1083,7 +1125,7 @@ class CreateRecordIntegrationSpec
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
-               |  "accreditationStatus": "Not Requested",
+               |  "adviceStatus": "Not Requested",
                |  "goodsDescription": "Organic bananas",
                |  "countryOfOrigin": "EC",
                |  "category": 1,
@@ -1224,7 +1266,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val createRecordRequiredResponseData: JsValue =
+  lazy val createRecordRequiredEisResponseData: JsValue =
     Json
       .parse("""
           |{
@@ -1254,6 +1296,37 @@ class CreateRecordIntegrationSpec
           |    "updatedDateTime": "2024-11-18T23:20:19Z"
           |}
           |""".stripMargin)
+
+  lazy val createRecordRequiredResponseData: JsValue =
+    Json
+      .parse("""
+               |{
+               |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |    "eori": "GB123456789001",
+               |    "actorId": "GB098765432112",
+               |    "traderRef": "BAN001001",
+               |    "comcode": "10410100",
+               |    "adviceStatus": "Not Requested",
+               |    "goodsDescription": "Organic bananas",
+               |    "countryOfOrigin": "EC",
+               |    "category": 1,
+               |    "assessments": null,
+               |    "supplementaryUnit": null,
+               |    "measurementUnit": null,
+               |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |    "comcodeEffectiveToDate": null,
+               |    "version": 1,
+               |    "active": true,
+               |    "toReview": false,
+               |    "reviewReason": "Commodity code change",
+               |    "declarable": "SPIMM",
+               |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |    "nirmsNumber": "RMS-GB-123456",
+               |    "niphlNumber": "6 S12345",
+               |    "createdDateTime": "2024-11-18T23:20:19Z",
+               |    "updatedDateTime": "2024-11-18T23:20:19Z"
+               |}
+               |""".stripMargin)
 
   lazy val invalidRequestData: String =
     """

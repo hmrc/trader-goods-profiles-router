@@ -67,14 +67,14 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     "return a successful JSON response for a single record" in {
 
       when(getRecordsService.fetchRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
+        .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
       withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(getResponseDataWithAccreditationStatus())
+        contentAsJson(result) mustBe Json.toJson(getResponseDataWithAdviceStatus())
       }
     }
 

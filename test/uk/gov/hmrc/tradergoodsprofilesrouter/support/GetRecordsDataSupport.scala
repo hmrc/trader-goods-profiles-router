@@ -17,11 +17,11 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{GetEisRecordsResponse, GoodsItemRecords}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{GetRecordsResponse, GoodsItemRecords}
 
 trait GetRecordsDataSupport {
 
-  def getResponseDataWithAccreditationStatus(status: String = "Not Requested"): GoodsItemRecords = Json
+  def getResponseDataWithAdviceStatus(status: String = "Not Requested"): GoodsItemRecords = Json
     .parse(s"""
         |  {
         |    "eori": "GB1234567890",
@@ -29,7 +29,7 @@ trait GetRecordsDataSupport {
         |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
-        |    "accreditationStatus": "$status",
+        |    "adviceStatus": "$status",
         |    "goodsDescription": "Organic bananas",
         |    "countryOfOrigin": "EC",
         |    "category": 3,
@@ -64,7 +64,7 @@ trait GetRecordsDataSupport {
         |""".stripMargin)
     .as[GoodsItemRecords]
 
-  def getMultipleRecordResponseData(eori: String = "GB1234567890"): GetEisRecordsResponse = Json
+  def getMultipleRecordResponseData(eori: String = "GB1234567890"): GetRecordsResponse = Json
     .parse(s"""
               |{
               |"goodsItemRecords":
@@ -75,7 +75,7 @@ trait GetRecordsDataSupport {
               |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
               |    "traderRef": "BAN001001",
               |    "comcode": "10410100",
-              |    "accreditationStatus": "Not requested",
+              |    "adviceStatus": "Not Requested",
               |    "goodsDescription": "Organic bananas",
               |    "countryOfOrigin": "EC",
               |    "category": 3,
@@ -113,7 +113,7 @@ trait GetRecordsDataSupport {
               |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
               |    "traderRef": "BAN001001",
               |    "comcode": "104101000",
-              |    "accreditationStatus": "Not requested",
+              |    "adviceStatus": "Not Requested",
               |    "goodsDescription": "Organic bananas",
               |    "countryOfOrigin": "EC",
               |    "category": 3,
@@ -156,7 +156,7 @@ trait GetRecordsDataSupport {
               | }
               |}
               |""".stripMargin)
-    .as[GetEisRecordsResponse]
+    .as[GetRecordsResponse]
 
   val getEisRecordsResponseData: JsValue =
     Json.parse("""
@@ -169,7 +169,7 @@ trait GetRecordsDataSupport {
                  |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
                  |    "traderRef": "BAN001001",
                  |    "comcode": "10410100",
-                 |    "accreditationStatus": "Not requested",
+                 |    "accreditationStatus": "Not Requested",
                  |    "goodsDescription": "Organic bananas",
                  |    "countryOfOrigin": "EC",
                  |    "category": 3,
@@ -213,7 +213,62 @@ trait GetRecordsDataSupport {
                  |}
                  |""".stripMargin)
 
-  val getEisRecordsResponseDataWithNiphlStrippedOfDashes: JsValue =
+  val getRecordsResponseData: JsValue =
+    Json.parse("""
+                 |{
+                 | "goodsItemRecords":
+                 | [
+                 |  {
+                 |    "eori": "GB1234567890",
+                 |    "actorId": "GB1234567890",
+                 |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                 |    "traderRef": "BAN001001",
+                 |    "comcode": "10410100",
+                 |    "adviceStatus": "Not Requested",
+                 |    "goodsDescription": "Organic bananas",
+                 |    "countryOfOrigin": "EC",
+                 |    "category": 3,
+                 |    "assessments": [
+                 |      {
+                 |        "assessmentId": "abc123",
+                 |        "primaryCategory": "1",
+                 |        "condition": {
+                 |          "type": "abc123",
+                 |          "conditionId": "Y923",
+                 |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                 |          "conditionTraderText": "Excluded product"
+                 |        }
+                 |      }
+                 |    ],
+                 |    "supplementaryUnit": 500,
+                 |    "measurementUnit": "square meters(m^2)",
+                 |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                 |    "comcodeEffectiveToDate": null,
+                 |    "version": 1,
+                 |    "active": true,
+                 |    "toReview": false,
+                 |    "reviewReason": null,
+                 |    "declarable": "IMMI declarable",
+                 |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                 |    "nirmsNumber": "RMS-GB-123456",
+                 |    "niphlNumber": "--1234",
+                 |    "locked": false,
+                 |    "createdDateTime": "2024-11-18T23:20:19Z",
+                 |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                 |  }
+                 |],
+                 |"pagination":
+                 | {
+                 |   "totalRecords": 1,
+                 |   "currentPage": 0,
+                 |   "totalPages": 1,
+                 |   "nextPage": null,
+                 |   "prevPage": null
+                 | }
+                 |}
+                 |""".stripMargin)
+
+  val getRecordsResponseDataWithNiphlStrippedOfDashes: JsValue =
     Json.parse("""
         |{
         | "goodsItemRecords":
@@ -224,7 +279,7 @@ trait GetRecordsDataSupport {
         |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
-        |    "accreditationStatus": "Not requested",
+        |    "adviceStatus": "Not Requested",
         |    "goodsDescription": "Organic bananas",
         |    "countryOfOrigin": "EC",
         |    "category": 3,
