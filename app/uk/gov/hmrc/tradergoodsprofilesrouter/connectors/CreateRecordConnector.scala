@@ -39,19 +39,19 @@ class CreateRecordConnector @Inject() (
   def createRecord(
     payload: CreateRecordPayload,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.createRecordUrl
 
-      httpClientV2
-        .post(url"$url")
-        .setHeader(
-          buildHeaders(
-            correlationId,
-            appConfig.hawkConfig.createRecordBearerToken,
-            appConfig.hawkConfig.forwardedHost
-          ): _*
-        )
-        .withBody(Json.toJson(payload))
-        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
-    }
+    httpClientV2
+      .post(url"$url")
+      .setHeader(
+        buildHeaders(
+          correlationId,
+          appConfig.hawkConfig.createRecordBearerToken,
+          appConfig.hawkConfig.forwardedHost
+        ): _*
+      )
+      .withBody(Json.toJson(payload))
+      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+  }
 }
