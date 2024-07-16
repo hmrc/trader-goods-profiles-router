@@ -23,7 +23,7 @@ import play.api.http.Status._
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateRecordEisResponse, CreateOrUpdateRecordResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
@@ -59,7 +59,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             .futureValue
 
           response.status shouldBe OK
-          response.json   shouldBe toJson(updateRecordResponseData.as[CreateOrUpdateRecordResponse])
+          response.json   shouldBe toJson(updateRecordResponseData.as[CreateOrUpdateRecordEisResponse])
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
@@ -115,7 +115,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with only required fields" in {
-          stubForEis(OK, Some(updateRecordRequiredResponseData.toString()))
+          stubForEis(OK, Some(updateRecordRequiredEisResponseData.toString()))
 
           val response = wsClient
             .url(url)
@@ -749,7 +749,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         )
     )
 
-  lazy val updateRecordResponseData: JsValue =
+  val updateRecordResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -791,7 +791,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         |}
         |""".stripMargin)
 
-  lazy val updateEisRecordResponseDataWithOptionalFields: JsValue =
+  val updateEisRecordResponseDataWithOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -833,7 +833,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  lazy val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
+  val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -870,7 +870,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  lazy val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
+  val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -906,7 +906,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  lazy val updateRecordResponseDataWithOptionalFields: JsValue =
+  val updateRecordResponseDataWithOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -915,7 +915,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
-               |  "accreditationStatus": "Not Requested",
+               |  "adviceStatus": "Not Requested",
                |  "goodsDescription": "Organic bananas",
                |  "countryOfOrigin": "EC",
                |  "category": 1,
@@ -936,7 +936,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  lazy val updateRecordResponseDataWithSomeOptionalFields: JsValue =
+  val updateRecordResponseDataWithSomeOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -945,7 +945,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |  "actorId": "GB098765432112",
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
-               |  "accreditationStatus": "Not Requested",
+               |  "adviceStatus": "Not Requested",
                |  "goodsDescription": "Organic bananas",
                |  "countryOfOrigin": "EC",
                |  "category": 1,
@@ -970,7 +970,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  lazy val updateRecordRequestData: String =
+  val updateRecordRequestData: String =
     s"""
         |{
         |    "eori": "$eori",
@@ -1000,7 +1000,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         |}
         |""".stripMargin
 
-  lazy val updateEisRecordRequestData: String =
+  val updateEisRecordRequestData: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1018,7 +1018,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  lazy val updateEisRecordRequestDataWithSomeOptionalFields: String =
+  val updateEisRecordRequestDataWithSomeOptionalFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1040,7 +1040,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  lazy val updateRecordRequestDataWithOptionalNullFields: String =
+  val updateRecordRequestDataWithOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1070,7 +1070,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  lazy val updateRecordRequestDataWithConditionOptionalNullFields: String =
+  val updateRecordRequestDataWithConditionOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1095,7 +1095,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  lazy val updateRecordRequestDataWithSomeOptionalNullFields: String =
+  val updateRecordRequestDataWithSomeOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1119,7 +1119,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  lazy val updateRecordRequiredRequestData: String =
+  val updateRecordRequiredRequestData: String =
     """
       |{
       |    "eori": "GB123456789012",
@@ -1134,7 +1134,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  lazy val updateRecordRequiredResponseData: JsValue =
+  val updateRecordRequiredEisResponseData: JsValue =
     Json
       .parse("""
           |{
@@ -1165,7 +1165,38 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           |}
           |""".stripMargin)
 
-  lazy val invalidRequestData: String =
+  val updateRecordRequiredResponseData: JsValue =
+    Json
+      .parse("""
+               |{
+               |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |    "eori": "GB123456789012",
+               |    "actorId": "GB098765432112",
+               |    "traderRef": "BAN001001",
+               |    "comcode": "10410100",
+               |    "adviceStatus": "Not Requested",
+               |    "goodsDescription": "Organic bananas",
+               |    "countryOfOrigin": "EC",
+               |    "category": 1,
+               |    "assessments": null,
+               |    "supplementaryUnit": null,
+               |    "measurementUnit": null,
+               |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |    "comcodeEffectiveToDate": null,
+               |    "version": 1,
+               |    "active": true,
+               |    "toReview": false,
+               |    "reviewReason": "Commodity code change",
+               |    "declarable": "SPIMM",
+               |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |    "nirmsNumber": "RMS-GB-123456",
+               |    "niphlNumber": "12345",
+               |    "createdDateTime": "2024-11-18T23:20:19Z",
+               |    "updatedDateTime": "2024-11-18T23:20:19Z"
+               |}
+               |""".stripMargin)
+
+  val invalidRequestData: String =
     """
       |{
       |    "traderRef": "BAN001001",
@@ -1192,7 +1223,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  lazy val invalidOptionalRequestData: String =
+  val invalidOptionalRequestData: String =
     """
       |{
       |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1222,7 +1253,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  lazy val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
+  val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
     .parse("""
              |{
              |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1261,7 +1292,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
              |}
              |""".stripMargin)
 
-  lazy val invalidActorIdAndComcodeRequestData: String =
+  val invalidActorIdAndComcodeRequestData: String =
     """
       |{
       |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",

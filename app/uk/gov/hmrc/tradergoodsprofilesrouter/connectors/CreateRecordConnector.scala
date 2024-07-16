@@ -25,7 +25,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,7 +43,7 @@ class CreateRecordConnector @Inject() (
   def createRecord(
     payload: CreateRecordPayload,
     correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] =
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] =
     withMetricsTimerAsync("tgp.createrecord.connector") { _ =>
       val url = appConfig.hawkConfig.createRecordUrl
 
@@ -57,6 +57,6 @@ class CreateRecordConnector @Inject() (
           ): _*
         )
         .withBody(Json.toJson(payload))
-        .execute(HttpReader[CreateOrUpdateRecordResponse](correlationId, handleErrorResponse), ec)
+        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
     }
 }

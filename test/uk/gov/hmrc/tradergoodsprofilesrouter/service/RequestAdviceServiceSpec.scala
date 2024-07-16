@@ -65,7 +65,7 @@ class RequestAdviceServiceSpec
   "should successfully send a request advice request to EIS" in {
 
     when(getRecordService.fetchRecord(any, any, any)(any))
-      .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
+      .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
 
     when(connector.requestAdvice(any, any)(any))
       .thenReturn(Future.successful(Right(CREATED)))
@@ -82,7 +82,7 @@ class RequestAdviceServiceSpec
     "request advice return an error" in {
       val badRequestErrorResponse = createEisErrorResponse
       when(getRecordService.fetchRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
+        .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
 
       when(connector.requestAdvice(any, any)(any))
         .thenReturn(Future.successful(Left(badRequestErrorResponse)))
@@ -96,7 +96,7 @@ class RequestAdviceServiceSpec
 
     "request Advice throw an error" in {
       when(getRecordService.fetchRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus())))
+        .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
 
       when(connector.requestAdvice(any, any)(any))
         .thenReturn(Future.failed(new RuntimeException("error")))
@@ -143,7 +143,7 @@ class RequestAdviceServiceSpec
 
     "should throw a 409 conflict when  advice status is not on the approved list" in {
       when(getRecordService.fetchRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Right(getResponseDataWithAccreditationStatus("incorrect status"))))
+        .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus("In progress"))))
 
       val result = service.requestAdvice(eori, recordId, request)
 

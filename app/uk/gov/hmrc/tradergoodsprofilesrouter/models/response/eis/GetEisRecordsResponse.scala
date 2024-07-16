@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 import play.api.libs.json.{Format, Json}
 
 case class GetEisRecordsResponse(
-  goodsItemRecords: Seq[GoodsItemRecords],
+  goodsItemRecords: Seq[EisGoodsItemRecords],
   pagination: Pagination
 )
 

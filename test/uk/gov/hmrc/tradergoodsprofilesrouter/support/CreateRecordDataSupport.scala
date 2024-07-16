@@ -19,10 +19,11 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.support
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateRecordEisResponse, CreateOrUpdateRecordResponse}
 
 trait CreateRecordDataSupport {
 
-  lazy val createOrUpdateRecordSampleJson: JsValue = Json
+  val createOrUpdateRecordEisResponse: CreateOrUpdateRecordEisResponse = Json
     .parse("""
              |{
              |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -62,8 +63,51 @@ trait CreateRecordDataSupport {
              |  ]
              |}
              |""".stripMargin)
+    .as[CreateOrUpdateRecordEisResponse]
 
-  lazy val createRecordEisPayload: JsValue = Json
+  val createOrUpdateRecordResponse: CreateOrUpdateRecordResponse = Json
+    .parse("""
+             |{
+             |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+             |  "eori": "GB123456789012",
+             |  "actorId": "GB098765432112",
+             |  "traderRef": "BAN001001",
+             |  "comcode": "104101000",
+             |  "adviceStatus": "Not Requested",
+             |  "goodsDescription": "Organic bananas",
+             |  "countryOfOrigin": "EC",
+             |  "category": 1,
+             |  "supplementaryUnit": 500,
+             |  "measurementUnit": "Square metre (m2)",
+             |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+             |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+             |  "version": 1,
+             |  "active": true,
+             |  "toReview": false,
+             |  "reviewReason": "Commodity code change",
+             |  "declarable": "SPIMM",
+             |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+             |  "nirmsNumber": "RMS-GB-123456",
+             |  "niphlNumber": "6 S12345",
+             |  "createdDateTime": "2024-11-18T23:20:19Z",
+             |  "updatedDateTime": "2024-11-18T23:20:19Z",
+             |  "assessments": [
+             |    {
+             |      "assessmentId": "abc123",
+             |      "primaryCategory": 1,
+             |      "condition": {
+             |        "type": "abc123",
+             |        "conditionId": "Y923",
+             |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+             |        "conditionTraderText": "Excluded product"
+             |      }
+             |    }
+             |  ]
+             |}
+             |""".stripMargin)
+    .as[CreateOrUpdateRecordResponse]
+
+  val createRecordEisPayload: JsValue = Json
     .parse("""
              |{
              |    "eori": "GB123456789012",

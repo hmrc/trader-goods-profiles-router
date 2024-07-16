@@ -24,7 +24,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
@@ -50,7 +50,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     "the request is" - {
 
       "valid without optional query parameter" in {
-        stubForEis(OK, Some(getMultipleRecordResponseData.toString()))
+        stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()))
 
         val response = wsClient
           .url(url)
@@ -59,12 +59,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           .futureValue
 
         response.status shouldBe OK
-        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
 
         verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid with optional query parameter lastUpdatedDate, page and size" in {
-        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime.toString), Some(1), Some(1))
+        stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()), Some(dateTime.toString), Some(1), Some(1))
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records/?lastUpdatedDate=$dateTime&page=1&size=1"))
@@ -73,12 +73,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           .futureValue
 
         response.status shouldBe OK
-        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
 
         verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid with optional query parameter page and size" in {
-        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), None, Some(1), Some(1))
+        stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()), None, Some(1), Some(1))
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?page=1&size=1"))
@@ -87,12 +87,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           .futureValue
 
         response.status shouldBe OK
-        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
 
         verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid with optional query parameter page" in {
-        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), None, Some(1), None)
+        stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()), None, Some(1), None)
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?page=1"))
@@ -101,12 +101,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           .futureValue
 
         response.status shouldBe OK
-        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
 
         verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
       "valid with optional query parameter lastUpdatedDate" in {
-        stubForEis(OK, Some(getMultipleRecordResponseData.toString()), Some(dateTime.toString))
+        stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()), Some(dateTime.toString))
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=$dateTime"))
@@ -115,7 +115,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           .futureValue
 
         response.status shouldBe OK
-        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetEisRecordsResponse])
+        response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
 
         verifyThatDownstreamApiWasCalled(hawkConnectorPath)
       }
@@ -590,7 +590,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     }
 
     "should return an error if lastUpdateDate is not a date" in {
-      stubForEis(OK, Some(getMultipleRecordResponseData.toString()))
+      stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()))
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=wrong-format"))
@@ -655,7 +655,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
       )
       .toString()
 
-  def getMultipleRecordResponseData: JsValue =
+  def getMultipleRecordEisResponseData: JsValue =
     Json.parse(s"""
     |{
     |"goodsItemRecords":
@@ -666,7 +666,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
     |    "traderRef": "BAN001001",
     |    "comcode": "10410100",
-    |    "accreditationStatus": "Not requested",
+    |    "accreditationStatus": "Approved",
     |    "goodsDescription": "Organic bananas",
     |    "countryOfOrigin": "EC",
     |    "category": 3,
@@ -704,7 +704,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
     |    "traderRef": "BAN001001",
     |    "comcode": "10410100",
-    |    "accreditationStatus": "Not requested",
+    |    "accreditationStatus": "Rejected",
     |    "goodsDescription": "Organic bananas",
     |    "countryOfOrigin": "EC",
     |    "category": 3,
@@ -747,4 +747,97 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     | }
     |}
     |""".stripMargin)
+
+  def getMultipleRecordResponseData: JsValue =
+    Json.parse(s"""
+                  |{
+                  |"goodsItemRecords":
+                  |[
+                  |  {
+                  |    "eori": "$eori",
+                  |    "actorId": "GB1234567890",
+                  |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                  |    "traderRef": "BAN001001",
+                  |    "comcode": "10410100",
+                  |    "adviceStatus": "Advice Provided",
+                  |    "goodsDescription": "Organic bananas",
+                  |    "countryOfOrigin": "EC",
+                  |    "category": 3,
+                  |    "assessments": [
+                  |      {
+                  |        "assessmentId": "abc123",
+                  |        "primaryCategory": 1,
+                  |        "condition": {
+                  |          "type": "abc123",
+                  |          "conditionId": "Y923",
+                  |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                  |          "conditionTraderText": "Excluded product"
+                  |        }
+                  |      }
+                  |    ],
+                  |    "supplementaryUnit": 500,
+                  |    "measurementUnit": "square meters(m^2)",
+                  |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                  |    "comcodeEffectiveToDate": "",
+                  |    "version": 1,
+                  |    "active": true,
+                  |    "toReview": false,
+                  |    "reviewReason": null,
+                  |    "declarable": "IMMI declarable",
+                  |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                  |    "nirmsNumber": "RMS-GB-123456",
+                  |    "niphlNumber": "6 S12345",
+                  |    "locked": false,
+                  |    "createdDateTime": "2024-11-18T23:20:19Z",
+                  |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                  |  },
+                  |    {
+                  |    "eori": "$eori",
+                  |    "actorId": "GB1234567890",
+                  |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                  |    "traderRef": "BAN001001",
+                  |    "comcode": "10410100",
+                  |    "adviceStatus": "Advice not provided",
+                  |    "goodsDescription": "Organic bananas",
+                  |    "countryOfOrigin": "EC",
+                  |    "category": 3,
+                  |    "assessments": [
+                  |      {
+                  |        "assessmentId": "abc123",
+                  |        "primaryCategory": 1,
+                  |        "condition": {
+                  |          "type": "abc123",
+                  |          "conditionId": "Y923",
+                  |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                  |          "conditionTraderText": "Excluded product"
+                  |        }
+                  |      }
+                  |    ],
+                  |    "supplementaryUnit": 500,
+                  |    "measurementUnit": "square meters(m^2)",
+                  |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                  |    "comcodeEffectiveToDate": "",
+                  |    "version": 1,
+                  |    "active": true,
+                  |    "toReview": false,
+                  |    "reviewReason": null,
+                  |    "declarable": "IMMI declarable",
+                  |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                  |    "nirmsNumber": "RMS-GB-123456",
+                  |    "niphlNumber": "6 S12345",
+                  |    "locked": false,
+                  |    "createdDateTime": "2024-11-18T23:20:19Z",
+                  |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                  |  }
+                  |],
+                  |"pagination":
+                  | {
+                  |   "totalRecords": 2,
+                  |   "currentPage": 0,
+                  |   "totalPages": 1,
+                  |   "nextPage": null,
+                  |   "prevPage": null
+                  | }
+                  |}
+                  |""".stripMargin)
 }

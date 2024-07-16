@@ -27,6 +27,7 @@ import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, GetRecordsConnector}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
@@ -68,7 +69,7 @@ class GetRecordsServiceSpec
 
       val result = await(sut.fetchRecord(eoriNumber, recordId, true))
 
-      result.value shouldBe getEisRecordsResponseData.as[GetEisRecordsResponse].goodsItemRecords.head
+      result.value shouldBe getRecordsResponseData.as[GetRecordsResponse].goodsItemRecords.head
     }
 
     "return an error" when {
@@ -106,7 +107,7 @@ class GetRecordsServiceSpec
 
       val result = await(sut.fetchRecord(eoriNumber, recordId, false))
 
-      result.value shouldBe getEisRecordsResponseData.as[GetEisRecordsResponse].goodsItemRecords.head
+      result.value shouldBe getRecordsResponseData.as[GetRecordsResponse].goodsItemRecords.head
     }
 
     "return an error" when {
@@ -148,7 +149,7 @@ class GetRecordsServiceSpec
 
       val result = await(sut.fetchRecords(eoriNumber, Some(lastUpdateDate), Some(1), Some(1)))
 
-      result.value shouldBe eisResponse
+      result.value shouldBe getRecordsResponseData.as[GetRecordsResponse]
 
       withClue("should call the getRecordsConnector with teh right parameters") {
         verify(getRecordsConnector)

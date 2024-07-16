@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment, EisGoodsItemRecords}
 
 import java.time.Instant
 case class GoodsItemRecords(
@@ -26,7 +27,7 @@ case class GoodsItemRecords(
   recordId: String,
   traderRef: String,
   comcode: String,
-  adviceStatus: String,
+  adviceStatus: AdviceStatus,
   goodsDescription: String,
   countryOfOrigin: String,
   category: Int,
@@ -65,8 +66,7 @@ object GoodsItemRecords {
         (json \ "recordId").as[String],
         (json \ "traderRef").as[String],
         (json \ "comcode").as[String],
-        (json \ "accreditationStatus")
-          .as[String], //TODO change this back to adviceStatus after EIS does the changes from their end
+        (json \ "adviceStatus").as[AdviceStatus],
         (json \ "goodsDescription").as[String],
         (json \ "countryOfOrigin").as[String],
         (json \ "category").as[Int],
@@ -119,4 +119,40 @@ object GoodsItemRecords {
         "updatedDateTime"          -> goodsItemRecords.updatedDateTime
       )
     )
+
+  def apply(eisGoodsItemRecords: EisGoodsItemRecords): GoodsItemRecords =
+    GoodsItemRecords(
+      eori = eisGoodsItemRecords.eori,
+      actorId = eisGoodsItemRecords.actorId,
+      recordId = eisGoodsItemRecords.recordId,
+      traderRef = eisGoodsItemRecords.traderRef,
+      comcode = eisGoodsItemRecords.comcode,
+      adviceStatus = translateAccreditationStatus(eisGoodsItemRecords.accreditationStatus),
+      goodsDescription = eisGoodsItemRecords.goodsDescription,
+      countryOfOrigin = eisGoodsItemRecords.countryOfOrigin,
+      category = eisGoodsItemRecords.category,
+      assessments = eisGoodsItemRecords.assessments,
+      supplementaryUnit = eisGoodsItemRecords.supplementaryUnit,
+      measurementUnit = eisGoodsItemRecords.measurementUnit,
+      comcodeEffectiveFromDate = eisGoodsItemRecords.comcodeEffectiveFromDate,
+      comcodeEffectiveToDate = eisGoodsItemRecords.comcodeEffectiveToDate,
+      version = eisGoodsItemRecords.version,
+      active = eisGoodsItemRecords.active,
+      toReview = eisGoodsItemRecords.toReview,
+      reviewReason = eisGoodsItemRecords.reviewReason,
+      declarable = eisGoodsItemRecords.declarable,
+      ukimsNumber = eisGoodsItemRecords.ukimsNumber,
+      nirmsNumber = eisGoodsItemRecords.nirmsNumber,
+      niphlNumber = eisGoodsItemRecords.niphlNumber,
+      locked = eisGoodsItemRecords.locked,
+      createdDateTime = eisGoodsItemRecords.createdDateTime,
+      updatedDateTime = eisGoodsItemRecords.updatedDateTime
+    )
+
+  private def translateAccreditationStatus(accreditationStatus: AccreditationStatus): AdviceStatus =
+    accreditationStatus match {
+      case AccreditationStatus.Approved => AdviceStatus.AdviceProvided
+      case AccreditationStatus.Rejected => AdviceStatus.AdviceNotProvided
+      case _                            => AdviceStatus.withName(accreditationStatus.entryName)
+    }
 }

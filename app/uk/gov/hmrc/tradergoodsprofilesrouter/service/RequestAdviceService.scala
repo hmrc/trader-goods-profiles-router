@@ -24,10 +24,9 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GoodsItemRecords
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.AdviceStatuses.AllowedAdviceStatuses
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{AdviceRequestRejectionMessage, BadRequestCode, BadRequestMessage, InvalidRequestAdviceNumberCode, InvalidRequestParameters, UnexpectedErrorCode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{AdviceStatus, GoodsItemRecords}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -60,7 +59,7 @@ class RequestAdviceService @Inject() (
   )(implicit
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] =
-    if (AllowedAdviceStatuses.contains(goodsItemRecord.adviceStatus.toLowerCase)) {
+    if (AdviceStatus.AllowedAdviceStatuses.contains(goodsItemRecord.adviceStatus)) {
       val traderDetails = createNewTraderDetails(eori, goodsItemRecord, request)
       connector
         .requestAdvice(traderDetails, correlationId)

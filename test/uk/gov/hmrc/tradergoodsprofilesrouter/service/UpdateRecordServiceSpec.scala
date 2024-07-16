@@ -29,10 +29,10 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, UpdateRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateRecordEisResponse, CreateOrUpdateRecordResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import java.time.Instant
@@ -70,21 +70,28 @@ class UpdateRecordServiceSpec
 
   "updateRecord" should {
     "update a record item" in {
-      val eisResponse = createOrUpdateRecordResponseData
+      val eisResponse = createOrUpdateRecordEisResponseData
       when(connector.updateRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
       when(auditService.emitAuditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
       val result = await(sut.updateRecord(eoriNumber, recordId, updateRecordRequest))
 
-      result.value mustBe eisResponse
+      result.value mustBe createOrUpdateRecordResponseData
       verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
       verify(auditService)
-        .emitAuditUpdateRecord(updateRecordPayload, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
+        .emitAuditUpdateRecord(
+          updateRecordPayload,
+          dateTime.toString,
+          "SUCCEEDED",
+          OK,
+          None,
+          Some(createOrUpdateRecordResponseData)
+        )
     }
 
     "dateTime value should be formatted to yyyy-mm-dd'T'hh:mm:ssZ" in {
-      val eisResponse = createOrUpdateRecordResponseData
+      val eisResponse = createOrUpdateRecordEisResponseData
       when(connector.updateRecord(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
       when(auditService.emitAuditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
@@ -103,10 +110,17 @@ class UpdateRecordServiceSpec
         comcodeEffectiveToDate = Some(Instant.parse("2024-11-18T23:20:19Z"))
       )
 
-      result.value mustBe eisResponse
+      result.value mustBe createOrUpdateRecordResponseData
       verify(connector).updateRecord(eqTo(expectedpayload), eqTo(correlationId))(any)
       verify(auditService)
-        .emitAuditUpdateRecord(updateRecordPayload, dateTime.toString, "SUCCEEDED", OK, None, Some(eisResponse))
+        .emitAuditUpdateRecord(
+          updateRecordPayload,
+          dateTime.toString,
+          "SUCCEEDED",
+          OK,
+          None,
+          Some(createOrUpdateRecordResponseData)
+        )
     }
     "return an internal server error" when {
 
@@ -253,6 +267,49 @@ class UpdateRecordServiceSpec
              |""".stripMargin)
     .as[UpdateRecordPayload]
 
+  val createOrUpdateRecordEisResponseData: CreateOrUpdateRecordEisResponse =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "accreditationStatus": "Not Requested",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "supplementaryUnit": 500,
+               |  "measurementUnit": "Square metre (m2)",
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "6 S12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z",
+               |  "assessments": [
+               |    {
+               |      "assessmentId": "abc123",
+               |      "primaryCategory": 1,
+               |      "condition": {
+               |        "type": "abc123",
+               |        "conditionId": "Y923",
+               |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+               |        "conditionTraderText": "Excluded product"
+               |      }
+               |    }
+               |  ]
+               |}
+               |""".stripMargin)
+      .as[CreateOrUpdateRecordEisResponse]
+
   val createOrUpdateRecordResponseData: CreateOrUpdateRecordResponse =
     Json
       .parse("""
@@ -263,7 +320,6 @@ class UpdateRecordServiceSpec
                |  "traderRef": "BAN001001",
                |  "comcode": "10410100",
                |  "adviceStatus": "Not Requested",
-               |  "accreditationStatus": "Not Requested",
                |  "goodsDescription": "Organic bananas",
                |  "countryOfOrigin": "EC",
                |  "category": 1,
