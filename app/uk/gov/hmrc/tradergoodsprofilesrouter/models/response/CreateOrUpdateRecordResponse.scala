@@ -97,7 +97,7 @@ object CreateOrUpdateRecordResponse {
           "actorId"                  -> createOrUpdateRecordResponse.actorId,
           "traderRef"                -> createOrUpdateRecordResponse.traderRef,
           "comcode"                  -> createOrUpdateRecordResponse.comcode,
-          "accreditationStatus"      -> createOrUpdateRecordResponse.adviceStatus,
+          "adviceStatus"             -> createOrUpdateRecordResponse.adviceStatus,
           "goodsDescription"         -> createOrUpdateRecordResponse.goodsDescription,
           "countryOfOrigin"          -> createOrUpdateRecordResponse.countryOfOrigin,
           "category"                 -> createOrUpdateRecordResponse.category,

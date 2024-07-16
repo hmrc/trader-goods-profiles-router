@@ -50,7 +50,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
     "the request is" - {
       "valid, specifically" - {
         "with all request fields" in {
-          stubForEis(OK, Some(updateRecordResponseData.toString()))
+          stubForEis(OK, Some(updateRecordEisResponseData.toString()))
 
           val response = wsClient
             .url(url)
@@ -59,7 +59,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             .futureValue
 
           response.status shouldBe OK
-          response.json   shouldBe toJson(updateRecordResponseData.as[CreateOrUpdateRecordEisResponse])
+          response.json   shouldBe toJson(updateRecordResponseData.as[CreateOrUpdateRecordResponse])
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
@@ -749,7 +749,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         )
     )
 
-  val updateRecordResponseData: JsValue =
+  val updateRecordEisResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -790,6 +790,48 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         |  ]
         |}
         |""".stripMargin)
+
+  val updateRecordResponseData: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "adviceStatus": "Not Requested",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "supplementaryUnit": 500,
+               |  "measurementUnit": "Square metre (m2)",
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z",
+               |  "assessments": [
+               |    {
+               |      "assessmentId": "abc123",
+               |      "primaryCategory": 1,
+               |      "condition": {
+               |        "type": "abc123",
+               |        "conditionId": "Y923",
+               |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+               |        "conditionTraderText": "Excluded product"
+               |      }
+               |    }
+               |  ]
+               |}
+               |""".stripMargin)
 
   val updateEisRecordResponseDataWithOptionalFields: JsValue =
     Json
