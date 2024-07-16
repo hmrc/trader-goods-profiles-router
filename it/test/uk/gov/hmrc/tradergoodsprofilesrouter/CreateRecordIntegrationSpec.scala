@@ -28,10 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkInteg
 
 import java.time.Instant
 
-class CreateRecordIntegrationSpec
-    extends HawkIntegrationSpec
-    with AuthTestSupport
-    with BeforeAndAfterEach {
+class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
   private val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
   private val url           = fullUrl("/traders/GB123456789001/records")
@@ -876,17 +873,17 @@ class CreateRecordIntegrationSpec
   }
 
   private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
-      stubFor(
-        post(urlEqualTo(s"$hawkConnectorPath"))
-          .willReturn(
-            aResponse()
-              .withHeader("Content-Type", "application/json")
-              .withStatus(httpStatus)
-              .withBody(responseBody.orNull)
-          )
-      )
+    stubFor(
+      post(urlEqualTo(s"$hawkConnectorPath"))
+        .willReturn(
+          aResponse()
+            .withHeader("Content-Type", "application/json")
+            .withStatus(httpStatus)
+            .withBody(responseBody.orNull)
+        )
+    )
 
-  lazy val createRecordEisResponseData: JsValue =
+  val createRecordEisResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -928,7 +925,7 @@ class CreateRecordIntegrationSpec
         |}
         |""".stripMargin)
 
-  lazy val createRecordResponseData: JsValue =
+  val createRecordResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -970,7 +967,7 @@ class CreateRecordIntegrationSpec
                |}
                |""".stripMargin)
 
-  lazy val createEisRecordResponseDataWithOptionalNullFields: JsValue =
+  val createEisRecordResponseDataWithOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1012,7 +1009,7 @@ class CreateRecordIntegrationSpec
                |}
                |""".stripMargin)
 
-  lazy val createEisRecordResponseDataWithConditionOptionalNullFields: JsValue =
+  val createEisRecordResponseDataWithConditionOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1049,7 +1046,7 @@ class CreateRecordIntegrationSpec
                |}
                |""".stripMargin)
 
-  lazy val createEisRecordResponseDataWithSomeOptionalNullFields: JsValue =
+  val createEisRecordResponseDataWithSomeOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1085,7 +1082,7 @@ class CreateRecordIntegrationSpec
                |}
                |""".stripMargin)
 
-  lazy val createRecordResponseDataWithOptionalNullFields: JsValue =
+  val createRecordResponseDataWithOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1116,7 +1113,7 @@ class CreateRecordIntegrationSpec
                |}
                |""".stripMargin)
 
-  lazy val createRecordResponseDataWithSomeOptionalNullFields: JsValue =
+  val createRecordResponseDataWithSomeOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1151,7 +1148,7 @@ class CreateRecordIntegrationSpec
                |}
                |""".stripMargin)
 
-  lazy val createRecordRequestData: String =
+  val createRecordRequestData: String =
     """
         |{
         |    "actorId": "GB098765432112",
@@ -1179,7 +1176,7 @@ class CreateRecordIntegrationSpec
         |}
         |""".stripMargin
 
-  lazy val createRecordRequestDataWithOptionalNullFields: String =
+  val createRecordRequestDataWithOptionalNullFields: String =
     """
       |{
       |    "actorId": "GB098765432112",
@@ -1207,7 +1204,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val createRecordRequestDataWithConditionOptionalNullFields: String =
+  val createRecordRequestDataWithConditionOptionalNullFields: String =
     """
       |{
       |    "actorId": "GB098765432112",
@@ -1230,7 +1227,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val createRecordRequestDataWithSomeOptionalNullFields: String =
+  val createRecordRequestDataWithSomeOptionalNullFields: String =
     """
       |{
       |    "actorId": "GB098765432112",
@@ -1252,7 +1249,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val createRecordRequiredRequestData: String =
+  val createRecordRequiredRequestData: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1266,7 +1263,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val createRecordRequiredEisResponseData: JsValue =
+  val createRecordRequiredEisResponseData: JsValue =
     Json
       .parse("""
           |{
@@ -1297,7 +1294,7 @@ class CreateRecordIntegrationSpec
           |}
           |""".stripMargin)
 
-  lazy val createRecordRequiredResponseData: JsValue =
+  val createRecordRequiredResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -1328,7 +1325,7 @@ class CreateRecordIntegrationSpec
                |}
                |""".stripMargin)
 
-  lazy val invalidRequestData: String =
+  val invalidRequestData: String =
     """
       |{    
       |    "traderRef": "BAN001001",
@@ -1355,7 +1352,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val invalidCategoryRequestData: String =
+  val invalidCategoryRequestData: String =
     """
       |{
       |  "eori": "GB123456789001",
@@ -1384,7 +1381,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val invalidOptionalRequestData: String =
+  val invalidOptionalRequestData: String =
     """
       |{
       |  "eori": "GB123456789001",
@@ -1413,7 +1410,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val invalidCreateRecordRequestDataForAssessmentArray: JsValue = Json
+  val invalidCreateRecordRequestDataForAssessmentArray: JsValue = Json
     .parse("""
              |{
              |    "traderRef": "BAN001001",
@@ -1450,7 +1447,7 @@ class CreateRecordIntegrationSpec
              |}
              |""".stripMargin)
 
-  lazy val invalidActorIdAndComcodeRequestData: String =
+  val invalidActorIdAndComcodeRequestData: String =
     """
       |{
       |  "eori": "GB123456789001",
@@ -1479,7 +1476,7 @@ class CreateRecordIntegrationSpec
       |}
       |""".stripMargin
 
-  lazy val outOfRangeSupplementaryUnitRequestData: JsValue = Json
+  val outOfRangeSupplementaryUnitRequestData: JsValue = Json
     .parse("""
              |{
              |    "eori": "GB123456789012",

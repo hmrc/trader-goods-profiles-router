@@ -23,7 +23,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateReco
 
 trait CreateRecordDataSupport {
 
-  lazy val createOrUpdateRecordEisResponse: CreateOrUpdateRecordEisResponse = Json
+  val createOrUpdateRecordEisResponse: CreateOrUpdateRecordEisResponse = Json
     .parse("""
              |{
              |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -65,7 +65,7 @@ trait CreateRecordDataSupport {
              |""".stripMargin)
     .as[CreateOrUpdateRecordEisResponse]
 
-  lazy val createOrUpdateRecordResponse: CreateOrUpdateRecordResponse = Json
+  val createOrUpdateRecordResponse: CreateOrUpdateRecordResponse = Json
     .parse("""
              |{
              |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -107,7 +107,7 @@ trait CreateRecordDataSupport {
              |""".stripMargin)
     .as[CreateOrUpdateRecordResponse]
 
-  lazy val createRecordEisPayload: JsValue = Json
+  val createRecordEisPayload: JsValue = Json
     .parse("""
              |{
              |    "eori": "GB123456789012",
