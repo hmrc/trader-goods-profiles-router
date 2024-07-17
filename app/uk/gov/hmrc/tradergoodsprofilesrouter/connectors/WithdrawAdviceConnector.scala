@@ -45,7 +45,7 @@ class WithdrawAdviceConnector @Inject() (
   def put(recordId: String, withdrawReason: Option[String])(implicit
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] = {
-    val url = appConfig.pegaConfig.getWithdrawAdviseUrl
+    val url = appConfig.pegaConfig.getWithdrawAdviceUrl
 
     val correlationId = uuidService.uuid
 
@@ -54,7 +54,7 @@ class WithdrawAdviceConnector @Inject() (
       .setHeader(
         buildHeadersForAdvice(
           correlationId,
-          appConfig.pegaConfig.requestAdviceBearerToken,
+          appConfig.pegaConfig.getWithdrawAdviceBearerToken,
           appConfig.pegaConfig.forwardedHost
         ): _*
       )

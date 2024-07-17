@@ -23,7 +23,7 @@ import play.api.http.Status._
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateRecordEisResponse, CreateOrUpdateRecordResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
