@@ -24,12 +24,13 @@ import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, BaseMetricsSpec}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
 import scala.concurrent.Future
 
-class RemoveRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
+class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
   private val eori                  = "GB123456789011"
   private val actorId               = "GB123456789011"
@@ -37,15 +38,14 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val connector = new RemoveRecordConnector(appConfig, httpClientV2, dateTimeService, metricsRegistry)
+  private val connector = new RemoveRecordConnector(appConfig, httpClientV2, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(appConfig, httpClientV2, dateTimeService, requestBuilder, metricsRegistry, timerContext)
+    reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
     setUpAppConfig()
-    setUpMetrics()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
@@ -59,10 +59,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec with BaseMetricsSpec {
     val result = await(connector.removeRecord(eori, recordId, actorId, correlationId))
 
     result.value mustBe OK
-
-    withClue("process the response within a timer") {
-      verifyMetrics("tgp.removerecord.connector")
-    }
   }
 
   "send a request with the right url for remove record" in {

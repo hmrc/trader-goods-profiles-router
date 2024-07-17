@@ -16,14 +16,12 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import com.codahale.metrics.MetricRegistry
 import com.google.inject.Inject
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.metrics.MetricsSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -33,28 +31,25 @@ import scala.concurrent.{ExecutionContext, Future}
 class MaintainProfileConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService,
-  override val metricsRegistry: MetricRegistry
+  override val dateTimeService: DateTimeService
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
-    with MetricsSupport
     with EisHttpErrorHandler {
 
   def maintainProfile(request: MaintainProfileEisRequest, correlationId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Either[EisHttpErrorResponse, MaintainProfileResponse]] =
-    withMetricsTimerAsync("tgp.maintainprofile.connector") { _ =>
-      val url = appConfig.hawkConfig.maintainProfileUrl
-      httpClientV2
-        .put(url"$url")
-        .setHeader(
-          buildHeaders(
-            correlationId,
-            appConfig.hawkConfig.maintainProfileBearerToken,
-            appConfig.hawkConfig.forwardedHost
-          ): _*
-        )
-        .withBody(Json.toJson(request))
-        .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
-    }
+  ): Future[Either[EisHttpErrorResponse, MaintainProfileResponse]] = {
+    val url = appConfig.hawkConfig.maintainProfileUrl
+    httpClientV2
+      .put(url"$url")
+      .setHeader(
+        buildHeaders(
+          correlationId,
+          appConfig.hawkConfig.maintainProfileBearerToken,
+          appConfig.hawkConfig.forwardedHost
+        ): _*
+      )
+      .withBody(Json.toJson(request))
+      .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
+  }
 }
