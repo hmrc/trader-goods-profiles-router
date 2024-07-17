@@ -114,7 +114,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       "X-Forwarded-Host" -> "MDTP",
       "Accept"           -> MimeTypes.JSON,
       "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-      "Authorization"    -> "Bearer dummyAccreditationCreateBearerToken",
+      "Authorization"    -> "Bearer dummyWithdrawAdviceBearerToken",
       "Content-Type"     -> MimeTypes.JSON
     )
 
