@@ -41,11 +41,10 @@ class GetRecordsConnector @Inject() (
     eori: String,
     recordId: String,
     correlationId: String,
-    isHawk: Boolean
+    urlPath: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
     val url =
-      if (isHawk) s"${appConfig.hawkConfig.getRecordsUrl}/$eori/$recordId"
-      else s"${appConfig.pegaConfig.getRecordsUrl}/$eori/$recordId"
+      s"$urlPath/$eori/$recordId"
 
     httpClientV2
       .get(url"$url")

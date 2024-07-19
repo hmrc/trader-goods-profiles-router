@@ -55,7 +55,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, true))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.value mustBe response
     }
@@ -64,7 +64,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, true))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -75,7 +75,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Any](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(connector.fetchRecord(eori, recordId, correlationId, true))
+      await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
@@ -92,7 +92,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, false))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.value mustBe response
     }
@@ -101,7 +101,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, false))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -112,7 +112,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Any](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(connector.fetchRecord(eori, recordId, correlationId, false))
+      await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
@@ -138,7 +138,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, true))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -147,7 +147,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, false))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.left.value mustBe BadRequest("error")
     }

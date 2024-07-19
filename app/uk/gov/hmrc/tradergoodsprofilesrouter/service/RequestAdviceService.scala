@@ -21,6 +21,7 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.{CONFLICT, INTERNAL_SERVER_ERROR}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
@@ -33,7 +34,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class RequestAdviceService @Inject() (
   connector: RequestAdviceConnector,
   routerService: GetRecordsService,
-  uuidService: UuidService
+  uuidService: UuidService,
+  appConfig: AppConfig
 )(implicit ec: ExecutionContext)
     extends Logging {
 
@@ -45,7 +47,8 @@ class RequestAdviceService @Inject() (
     val correlationId = uuidService.uuid
 
     for {
-      goodsItemRecords <- EitherT(routerService.fetchRecord(eori, recordId, false)).leftMap(o => o)
+      goodsItemRecords <-
+        EitherT(routerService.fetchRecord(eori, recordId, appConfig.pegaConfig.getRecordsUrl)).leftMap(o => o)
       response         <- EitherT(validateAndRequestAdvice(eori, goodsItemRecords, request, correlationId)).leftMap(o => o)
     } yield response
 

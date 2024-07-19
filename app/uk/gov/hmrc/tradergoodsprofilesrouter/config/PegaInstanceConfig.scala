@@ -33,7 +33,6 @@ case class PegaInstanceConfig(
   lazy val getRecordsUrl: String        = s"$protocol://$host:$port$getRecords"
   lazy val requestAdviceUrl: String     = s"$protocol://$host:$port$requestAdvice"
   lazy val requestAdviceBearerToken     = s"Bearer $requestAdviceToken"
-  lazy val getRecordBearerToken         = s"Bearer $recordGetToken"
   lazy val getWithdrawAdviceUrl         = s"$protocol://$host:$port$withdrawAdvise"
   lazy val getWithdrawAdviceBearerToken = s"Bearer $withdrawAdviseToken"
 }
