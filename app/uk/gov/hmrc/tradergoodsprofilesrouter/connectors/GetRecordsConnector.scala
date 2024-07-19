@@ -47,18 +47,13 @@ class GetRecordsConnector @Inject() (
       if (isHawk) s"${appConfig.hawkConfig.getRecordsUrl}/$eori/$recordId"
       else s"${appConfig.pegaConfig.getRecordsUrl}/$eori/$recordId"
 
-    val bearerToken =
-      if (isHawk) appConfig.hawkConfig.getRecordBearerToken else appConfig.pegaConfig.getRecordBearerToken
-
-    val forwardedHost = if (isHawk) appConfig.hawkConfig.forwardedHost else appConfig.pegaConfig.forwardedHost
-
     httpClientV2
       .get(url"$url")
       .setHeader(
         buildHeadersForGetMethod(
           correlationId,
-          bearerToken,
-          forwardedHost
+          appConfig.hawkConfig.getRecordBearerToken,
+          appConfig.hawkConfig.forwardedHost
         ): _*
       )
       .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
