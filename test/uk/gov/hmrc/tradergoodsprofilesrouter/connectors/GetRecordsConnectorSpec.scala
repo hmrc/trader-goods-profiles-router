@@ -65,7 +65,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
       val result = await(
-        connector.fetchRecord(eori, recordId, correlationId, s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId")
+        connector.fetchRecord(eori, recordId, correlationId, s"http://localhost:1234/tgp/getrecords/v1")
       )
 
       result.left.value mustBe BadRequest("error")
