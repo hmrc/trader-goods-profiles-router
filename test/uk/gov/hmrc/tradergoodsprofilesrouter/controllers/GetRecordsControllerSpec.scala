@@ -78,8 +78,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
-      verify(appConfig).hawkConfig
       status(result) mustBe OK
+      verify(appConfig.hawkConfig).getRecordsUrl
       withClue("should return json response") {
         contentAsJson(result) mustBe Json.toJson(getResponseDataWithAdviceStatus())
       }
