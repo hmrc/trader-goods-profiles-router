@@ -16,7 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
 import org.mockito.MockitoSugar.{reset, verifyZeroInteractions, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -25,6 +26,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CONFLICT, CREATED, INTERNAL_SERVER_ERROR}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RequestAdviceConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
@@ -50,10 +52,11 @@ class RequestAdviceServiceSpec
   private val connector        = mock[RequestAdviceConnector]
   private val getRecordService = mock[GetRecordsService]
   private val uuidService      = mock[UuidService]
+  private val appConfig        = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   private val request = new RequestAdvice("GB9876543210983", "Judi Dench", "judi@example.com")
 
-  val service = new RequestAdviceService(connector, getRecordService, uuidService)
+  val service = new RequestAdviceService(connector, getRecordService, uuidService, appConfig)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -62,18 +65,19 @@ class RequestAdviceServiceSpec
     when(uuidService.uuid).thenReturn(correlationId)
   }
 
-  "should successfully send a request advice request to EIS" in {
+  "should successfully send a request advice request to EIS with pegaConfig" in {
 
     when(getRecordService.fetchRecord(any, any, any)(any))
       .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
-
     when(connector.requestAdvice(any, any)(any))
       .thenReturn(Future.successful(Right(CREATED)))
-
+    when(appConfig.pegaConfig.getRecordsUrl).thenReturn("/localhost")
     val result = service.requestAdvice(eori, recordId, request)
 
-    whenReady(result.value) {
-      _.value shouldBe CREATED
+    whenReady(result.value) { r =>
+      r.value shouldBe CREATED
+      verify(appConfig.pegaConfig).getRecordsUrl
+      verify(getRecordService).fetchRecord(eqTo(eori), eqTo(recordId), eqTo("/localhost"))(any)
     }
 
   }

@@ -25,12 +25,14 @@ import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,12 +46,14 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
   private val eoriNumber        = "GB123456789001"
   private val correlationId     = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
   private val recordId          = UUID.randomUUID().toString
+  private val appConfig         = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   private val sut =
     new GetRecordsController(
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       getRecordsService,
+      appConfig,
       uuidService
     )
 
@@ -69,10 +73,13 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       when(getRecordsService.fetchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
 
+      when(appConfig.hawkConfig.getRecordsUrl).thenReturn("/url")
+
       val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
       status(result) mustBe OK
+      verify(appConfig.hawkConfig).getRecordsUrl
       withClue("should return json response") {
         contentAsJson(result) mustBe Json.toJson(getResponseDataWithAdviceStatus())
       }

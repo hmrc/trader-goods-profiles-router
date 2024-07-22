@@ -48,14 +48,14 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
 
-  "fetchRecord with hawk" should {
-    "fetch a record successfully with hawk" in {
+  "fetchRecord" should {
+    "fetch a record successfully" in {
       val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
 
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, true))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.value mustBe response
     }
@@ -64,7 +64,9 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, true))
+      val result = await(
+        connector.fetchRecord(eori, recordId, correlationId, s"http://localhost:1234/tgp/getrecords/v1")
+      )
 
       result.left.value mustBe BadRequest("error")
     }
@@ -75,44 +77,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Any](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(connector.fetchRecord(eori, recordId, correlationId, true))
-
-      val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
-      verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-      verify(requestBuilder).setHeader(expectedHeaderForGetMethod(correlationId, "dummyRecordGetBearerToken"): _*)
-      verifyExecuteForHttpReader(correlationId)
-    }
-
-  }
-
-  "fetchRecord with static stub" should {
-    "fetch a record successfully with hawk" in {
-      val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
-
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
-        .thenReturn(Future.successful(Right(response)))
-
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, false))
-
-      result.value mustBe response
-    }
-
-    "return an error whenEIS return an error" in {
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
-
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, false))
-
-      result.left.value mustBe BadRequest("error")
-    }
-
-    "send a request with the right parameters" in {
-      val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
-
-      when(requestBuilder.execute[Any](any, any))
-        .thenReturn(Future.successful(Right(response)))
-
-      await(connector.fetchRecord(eori, recordId, correlationId, false))
+      await(connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1"))
 
       val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
       verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
@@ -134,11 +99,11 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       result.value mustBe response
     }
 
-    "return an error if EIS return an error with hawk" in {
+    "return an error if EIS return an error" in {
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, true))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -147,7 +112,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val result = await(connector.fetchRecord(eori, recordId, correlationId, false))
+      val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
       result.left.value mustBe BadRequest("error")
     }

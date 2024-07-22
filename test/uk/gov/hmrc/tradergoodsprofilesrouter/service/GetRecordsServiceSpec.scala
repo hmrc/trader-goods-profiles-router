@@ -67,7 +67,7 @@ class GetRecordsServiceSpec
       when(getRecordsConnector.fetchRecord(any, any, any, any)(any))
         .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
 
-      val result = await(sut.fetchRecord(eoriNumber, recordId, true))
+      val result = await(sut.fetchRecord(eoriNumber, recordId, ""))
 
       result.value shouldBe getRecordsResponseData.as[GetRecordsResponse].goodsItemRecords.head
     }
@@ -75,11 +75,12 @@ class GetRecordsServiceSpec
     "return an error" when {
       "EIS return an error" in {
         val badRequestErrorResponse = createEisErrorResponse
-
+        val urlPath                 = s"http://localhost:1234/tgp/getrecords/v1/"
         when(getRecordsConnector.fetchRecord(any, any, any, any)(any))
           .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = await(sut.fetchRecord(eoriNumber, recordId, true))
+        val result = await(sut.fetchRecord(eoriNumber, recordId, urlPath))
+        verify(getRecordsConnector).fetchRecord(any, any, any, any)(any)
 
         result.left.value shouldBe badRequestErrorResponse
       }
@@ -88,7 +89,7 @@ class GetRecordsServiceSpec
         when(getRecordsConnector.fetchRecord(any, any, any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = await(sut.fetchRecord(eoriNumber, recordId, true))
+        val result = await(sut.fetchRecord(eoriNumber, recordId, ""))
 
         result.left.value shouldBe EisHttpErrorResponse(
           INTERNAL_SERVER_ERROR,
@@ -105,7 +106,7 @@ class GetRecordsServiceSpec
       when(getRecordsConnector.fetchRecord(any, any, any, any)(any))
         .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
 
-      val result = await(sut.fetchRecord(eoriNumber, recordId, false))
+      val result = await(sut.fetchRecord(eoriNumber, recordId, ""))
 
       result.value shouldBe getRecordsResponseData.as[GetRecordsResponse].goodsItemRecords.head
     }
@@ -117,7 +118,7 @@ class GetRecordsServiceSpec
         when(getRecordsConnector.fetchRecord(any, any, any, any)(any))
           .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = await(sut.fetchRecord(eoriNumber, recordId, false))
+        val result = await(sut.fetchRecord(eoriNumber, recordId, ""))
 
         result.left.value shouldBe badRequestErrorResponse
       }
@@ -126,7 +127,7 @@ class GetRecordsServiceSpec
         when(getRecordsConnector.fetchRecord(any, any, any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = await(sut.fetchRecord(eoriNumber, recordId, false))
+        val result = await(sut.fetchRecord(eoriNumber, recordId, ""))
 
         result.left.value shouldBe EisHttpErrorResponse(
           INTERNAL_SERVER_ERROR,

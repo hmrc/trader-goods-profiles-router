@@ -22,6 +22,7 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
@@ -38,6 +39,7 @@ class GetRecordsController @Inject() (
   authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   getRecordService: GetRecordsService,
+  appConfig: AppConfig,
   override val uuidService: UuidService
 )(implicit val ec: ExecutionContext)
     extends BackendBaseController
@@ -104,7 +106,7 @@ class GetRecordsController @Inject() (
     recordId: String
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords] =
     EitherT(
-      getRecordService.fetchRecord(eori, recordId, true)
+      getRecordService.fetchRecord(eori, recordId, appConfig.hawkConfig.getRecordsUrl)
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 }
