@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.Mockito.RETURNS_DEEP_STUBS
+import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
 import org.mockito.MockitoSugar.{reset, verifyZeroInteractions, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
@@ -65,18 +65,19 @@ class RequestAdviceServiceSpec
     when(uuidService.uuid).thenReturn(correlationId)
   }
 
-  "should successfully send a request advice request to EIS" in {
+  "should successfully send a request advice request to EIS with pegaConfig" in {
 
     when(getRecordService.fetchRecord(any, any, any)(any))
       .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
-    when(appConfig.hawkConfig.getRecordsUrl).thenReturn("/url")
     when(connector.requestAdvice(any, any)(any))
       .thenReturn(Future.successful(Right(CREATED)))
-
+    when(appConfig.pegaConfig.getRecordsUrl).thenReturn("/localhost")
     val result = service.requestAdvice(eori, recordId, request)
 
-    whenReady(result.value) {
-      _.value shouldBe CREATED
+    whenReady(result.value) { r =>
+      r.value shouldBe CREATED
+      verify(appConfig.pegaConfig).getRecordsUrl
+      verify(getRecordService).fetchRecord(eqTo(eori), eqTo(recordId), eqTo("/localhost"))(any)
     }
 
   }

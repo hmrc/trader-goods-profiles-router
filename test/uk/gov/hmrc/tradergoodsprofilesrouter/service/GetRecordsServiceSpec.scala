@@ -75,11 +75,12 @@ class GetRecordsServiceSpec
     "return an error" when {
       "EIS return an error" in {
         val badRequestErrorResponse = createEisErrorResponse
-
+        val urlPath                 = s"http://localhost:1234/tgp/getrecords/v1/"
         when(getRecordsConnector.fetchRecord(any, any, any, any)(any))
           .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = await(sut.fetchRecord(eoriNumber, recordId, ""))
+        val result = await(sut.fetchRecord(eoriNumber, recordId, urlPath))
+        verify(getRecordsConnector).fetchRecord(any, any, any, any)(any)
 
         result.left.value shouldBe badRequestErrorResponse
       }

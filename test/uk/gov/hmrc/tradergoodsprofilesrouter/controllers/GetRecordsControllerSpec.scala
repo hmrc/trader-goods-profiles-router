@@ -32,7 +32,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidSer
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
-import org.mockito.Mockito.RETURNS_DEEP_STUBS
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
@@ -74,7 +74,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
         .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
 
       when(appConfig.hawkConfig.getRecordsUrl).thenReturn("/url")
-
+      verify(appConfig).hawkConfig
       val result = sut.getTGPRecord("GB123456789001", recordId)(
         FakeRequest().withHeaders(validHeaders: _*)
       )
