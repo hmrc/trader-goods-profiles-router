@@ -41,10 +41,14 @@ trait BaseConnector {
       HeaderNames.ContentType   -> MimeTypes.JSON
     )
 
-  protected def buildHeadersForGetMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] =
-    buildHeaders(correlationId, accessToken, forwardedHost).filterNot(_._1 == HeaderNames.ContentType)
+  protected def buildHeadersForGetMethod(correlationId: String, accessToken: String, forwardedHost: String): Seq[(String, String)] =
+    Seq(
+      HeaderNames.CorrelationId -> correlationId,
+      HeaderNames.ForwardedHost -> forwardedHost,
+      HeaderNames.Accept        -> MimeTypes.JSON,
+      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
+      HeaderNames.Authorization -> accessToken,
+    )
 
   protected def buildHeadersForAdvice(correlationId: String, bearerToken: String, forwardedHost: String)(implicit
     hc: HeaderCarrier

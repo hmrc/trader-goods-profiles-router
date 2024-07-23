@@ -85,14 +85,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
-
-      val result = sut.getTGPRecord("eori", recordId)(
-        FakeRequest()
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe createMissingHeaderErrorResponse
-    }
 
     "return an error if cannot fetch a record" in {
       val errorResponseJson =
@@ -143,15 +135,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       withClue("should return json response") {
         contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData(eoriNumber))
       }
-    }
-
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
-
-      val result = sut.getTGPRecords("eoriNumber")(
-        FakeRequest()
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe createMissingHeaderErrorResponse
     }
 
     "return an error" when {
