@@ -39,18 +39,17 @@ class WithdrawAdviceController @Inject() (
     extends BackendBaseController
     with ValidationRules {
 
-  def withdrawAdvice(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) {
-    implicit request =>
-      val result = for {
-        _               <- EitherT.fromEither[Future](validateClientId)
-        validatedParams <- EitherT
-                             .fromEither[Future](validateWithdrawAdviceQueryParam(recordId))
-                             .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
-        _               <- EitherT(withdrawAdviceConnector.put(recordId, validatedParams.withdrawReason))
-                             .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
-      } yield NoContent
+  def withdrawAdvice(eori: String, recordId: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    val result = for {
+      _               <- EitherT.fromEither[Future](validateClientId)
+      validatedParams <- EitherT
+                           .fromEither[Future](validateWithdrawAdviceQueryParam(recordId))
+                           .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
+      _               <- EitherT(withdrawAdviceConnector.put(recordId, validatedParams.withdrawReason))
+                           .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+    } yield NoContent
 
-      result.merge
+    result.merge
   }
 
 }
