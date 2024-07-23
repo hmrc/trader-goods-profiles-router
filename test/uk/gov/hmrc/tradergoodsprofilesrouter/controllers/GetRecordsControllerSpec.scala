@@ -85,7 +85,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
-
     "return an error if cannot fetch a record" in {
       val errorResponseJson =
         EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
