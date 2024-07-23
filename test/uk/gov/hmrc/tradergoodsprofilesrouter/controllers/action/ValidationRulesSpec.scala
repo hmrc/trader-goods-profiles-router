@@ -249,7 +249,6 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
       result.left.value.size mustBe 1
       result.left.value mustBe Seq(
         Error("INVALID_QUERY_PARAMETER", "Digital checked that withdraw reason is < 1", 1018)
-        //Error("INVALID_QUERY_PARAMETER", "The recordId has been provided in the wrong format", 25)
       )
     }
   }
