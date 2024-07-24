@@ -28,17 +28,13 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, PegaInteg
 import java.time.Instant
 import java.util.UUID
 
-class WithdrawAdviceIntegrationSpec
-  extends PegaIntegrationSpec
-    with AuthTestSupport
-    with BeforeAndAfterEach {
-
+class WithdrawAdviceIntegrationSpec extends PegaIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
   override def pegaConnectorPath: String = "/tgp/withdrawaccreditation/v1"
-  private val eori = "GB123456789001"
-  private val recordId = UUID.randomUUID().toString
-  private val correlationId = UUID.randomUUID().toString
-  private val url           = fullUrl(s"/traders/$eori/records/$recordId/advice")
+  private val eori                       = "GB123456789001"
+  private val recordId                   = UUID.randomUUID().toString
+  private val correlationId              = UUID.randomUUID().toString
+  private val url                        = fullUrl(s"/traders/$eori/records/$recordId/advice")
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -52,62 +48,75 @@ class WithdrawAdviceIntegrationSpec
     "withdraw advice successfully" in {
       stubForEis(NO_CONTENT)
 
-      val result = await(wsClient.url(url)
-        .withHttpHeaders("X-Client-ID" -> "tss")
-        .put(Json.obj()))
+      val result = await(
+        wsClient
+          .url(url)
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("Accept", "application/vnd.hmrc.1.0+json"),
+            ("X-Client-ID", "tss")
+          )
+          .put(Json.obj())
+      )
 
       result.status shouldBe NO_CONTENT
       verifyThatDownstreamApiWasCalled(pegaConnectorPath)
     }
 
-
     "return a BAD_REQUEST error" - {
       "eis return BAD_REQUEST" in {
         stubForEis(BAD_REQUEST, badRequestErrorResponse)
 
-        val result = await(wsClient.url(url)
-          .withHttpHeaders("X-Client-ID" -> "tss")
-          .put(Json.obj()))
+        val result = await(
+          wsClient
+            .url(url)
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
+            .put(Json.obj())
+        )
 
         result.status shouldBe BAD_REQUEST
-        result.json shouldBe Json.obj(
+        result.json   shouldBe Json.obj(
           "correlationId" -> correlationId,
-          "code" -> "BAD_REQUEST",
-          "message" -> "Bad Request",
-          "errors" -> Json.arr(
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
             Json.obj(
-              "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "X-Correlation-ID was missing from Header or is in the wrong format",
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "X-Correlation-ID was missing from Header or is in the wrong format",
               "errorNumber" -> 1
             ),
             Json.obj(
-              "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "X-Forwarded-Host was missing from Header os is in the wrong format",
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "X-Forwarded-Host was missing from Header os is in the wrong format",
               "errorNumber" -> 5
             ),
             Json.obj(
-              "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "Content-Type was missing from Header or is in the wrong format",
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "Content-Type was missing from Header or is in the wrong format",
               "errorNumber" -> 3
             ),
             Json.obj(
-              "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "Accept was missing from Header or is in the wrong format",
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "Accept was missing from Header or is in the wrong format",
               "errorNumber" -> 4
             ),
             Json.obj(
-              "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "Mandatory withdrawDate was missing from body",
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "Mandatory withdrawDate was missing from body",
               "errorNumber" -> 1013
             ),
             Json.obj(
-              "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "Mandatory goodsItems was missing from body",
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "Mandatory goodsItems was missing from body",
               "errorNumber" -> 1014
             ),
             Json.obj(
-              "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "The request has already been completed and a new request cannot be requested",
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "The request has already been completed and a new request cannot be requested",
               "errorNumber" -> 1017
             )
           )
@@ -117,43 +126,64 @@ class WithdrawAdviceIntegrationSpec
       "eis return BAD_REQUEST when EIS has not error message" in {
         stubForEis(BAD_REQUEST, badRequestErrorResponseWithoutError)
 
-        val result = await(wsClient.url(url)
-          .withHttpHeaders("X-Client-ID" -> "tss")
-          .put(Json.obj()))
+        val result = await(
+          wsClient
+            .url(url)
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
+            .put(Json.obj())
+        )
 
         result.status shouldBe BAD_REQUEST
-        result.json shouldBe Json.obj(
+        result.json   shouldBe Json.obj(
           "correlationId" -> correlationId,
-          "code" -> "BAD_REQUEST",
-          "message" -> "Bad Request"
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Bad Request"
         )
       }
     }
 
     "return a FORBIDDEN error when EIS return a 403 with no payload" in {
-        stubForEis(FORBIDDEN)
+      stubForEis(FORBIDDEN)
 
-        val result = await(wsClient.url(url)
-          .withHttpHeaders("X-Client-ID" -> "tss")
-          .put(Json.obj()))
+      val result = await(
+        wsClient
+          .url(url)
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("Accept", "application/vnd.hmrc.1.0+json"),
+            ("X-Client-ID", "tss")
+          )
+          .put(Json.obj())
+      )
 
-        result.status shouldBe FORBIDDEN
-        result.json   shouldBe Json.obj(
-          "correlationId" -> correlationId,
-          "code"          -> "FORBIDDEN",
-          "message"       -> "Forbidden"
-        )
+      result.status shouldBe FORBIDDEN
+      result.json   shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "FORBIDDEN",
+        "message"       -> "Forbidden"
+      )
     }
 
     "return a NOT_FOUND error when EIS return a 404 with no payload" in {
       stubForEis(NOT_FOUND)
 
-      val result = await(wsClient.url(url)
-        .withHttpHeaders("X-Client-ID" -> "tss")
-        .put(Json.obj()))
+      val result = await(
+        wsClient
+          .url(url)
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("Accept", "application/vnd.hmrc.1.0+json"),
+            ("X-Client-ID", "tss")
+          )
+          .put(Json.obj())
+      )
 
       result.status shouldBe NOT_FOUND
-      result.json shouldBe Json.obj(
+      result.json   shouldBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "NOT_FOUND",
         "message"       -> "Not Found"
@@ -163,12 +193,19 @@ class WithdrawAdviceIntegrationSpec
     "return a BAD_GATEWAY error when EIS return a 502 with no payload" in {
       stubForEis(BAD_GATEWAY)
 
-      val result = await(wsClient.url(url)
-        .withHttpHeaders("X-Client-ID" -> "tss")
-        .put(Json.obj()))
+      val result = await(
+        wsClient
+          .url(url)
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("Accept", "application/vnd.hmrc.1.0+json"),
+            ("X-Client-ID", "tss")
+          )
+          .put(Json.obj())
+      )
 
       result.status shouldBe BAD_GATEWAY
-      result.json shouldBe Json.obj(
+      result.json   shouldBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "BAD_GATEWAY",
         "message"       -> "Bad Gateway"
@@ -178,12 +215,19 @@ class WithdrawAdviceIntegrationSpec
     "return a SERVICE_UNAVAILABLE error when EIS return a 503 with no payload" in {
       stubForEis(SERVICE_UNAVAILABLE)
 
-      val result = await(wsClient.url(url)
-        .withHttpHeaders("X-Client-ID" -> "tss")
-        .put(Json.obj()))
+      val result = await(
+        wsClient
+          .url(url)
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("Accept", "application/vnd.hmrc.1.0+json"),
+            ("X-Client-ID", "tss")
+          )
+          .put(Json.obj())
+      )
 
       result.status shouldBe SERVICE_UNAVAILABLE
-      result.json shouldBe Json.obj(
+      result.json   shouldBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "SERVICE_UNAVAILABLE",
         "message"       -> "Service Unavailable"
@@ -193,12 +237,19 @@ class WithdrawAdviceIntegrationSpec
     "return a METHOD_NOT_ALLOWED error when EIS return a 405 with no payload" in {
       stubForEis(METHOD_NOT_ALLOWED)
 
-      val result = await(wsClient.url(url)
-        .withHttpHeaders("X-Client-ID" -> "tss")
-        .put(Json.obj()))
+      val result = await(
+        wsClient
+          .url(url)
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("Accept", "application/vnd.hmrc.1.0+json"),
+            ("X-Client-ID", "tss")
+          )
+          .put(Json.obj())
+      )
 
       result.status shouldBe METHOD_NOT_ALLOWED
-      result.json shouldBe Json.obj(
+      result.json   shouldBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "METHOD_NOT_ALLOWED",
         "message"       -> "Method Not Allowed"
@@ -208,12 +259,19 @@ class WithdrawAdviceIntegrationSpec
     "return a Internal Server error" in {
       stubForEis(INTERNAL_SERVER_ERROR, internalServerErrorResponse(500))
 
-      val result = await(wsClient.url(url)
-        .withHttpHeaders("X-Client-ID" -> "tss")
-        .put(Json.obj()))
+      val result = await(
+        wsClient
+          .url(url)
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("Accept", "application/vnd.hmrc.1.0+json"),
+            ("X-Client-ID", "tss")
+          )
+          .put(Json.obj())
+      )
 
       result.status shouldBe INTERNAL_SERVER_ERROR
-      result.json shouldBe Json.obj(
+      result.json   shouldBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "INTERNAL_SERVER_ERROR",
         "message"       -> "Internal Server Error"
@@ -229,16 +287,23 @@ class WithdrawAdviceIntegrationSpec
       (503, "SERVICE_UNAVAILABLE", "Service Unavailable")
     )
 
-    forAll(table) {(errorCode, code, message) =>
+    forAll(table) { (errorCode, code, message) =>
       s"return a Internal Server error when error code is $errorCode" in {
         stubForEis(INTERNAL_SERVER_ERROR, internalServerErrorResponse(errorCode))
 
-        val result = await(wsClient.url(url)
-          .withHttpHeaders("X-Client-ID" -> "tss")
-          .put(Json.obj()))
+        val result = await(
+          wsClient
+            .url(url)
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
+            .put(Json.obj())
+        )
 
         result.status shouldBe INTERNAL_SERVER_ERROR
-        result.json shouldBe Json.obj(
+        result.json   shouldBe Json.obj(
           "correlationId" -> correlationId,
           "code"          -> code,
           "message"       -> message
@@ -247,20 +312,27 @@ class WithdrawAdviceIntegrationSpec
     }
 
     "return an error if error response contains unrecognised error code" in {
-     stubForEis(400, badRequestResponseWithUnrecognisedError)
+      stubForEis(400, badRequestResponseWithUnrecognisedError)
 
-      val result = await(wsClient.url(url)
-        .withHttpHeaders("X-Client-ID" -> "tss")
-        .put(Json.obj()))
+      val result = await(
+        wsClient
+          .url(url)
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("Accept", "application/vnd.hmrc.1.0+json"),
+            ("X-Client-ID", "tss")
+          )
+          .put(Json.obj())
+      )
 
       result.json shouldBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "BAD_REQUEST",
         "message"       -> "Bad Request",
-        "errors" -> Json.arr(
+        "errors"        -> Json.arr(
           Json.obj(
-            "code" -> "UNEXPECTED_ERROR",
-            "message" -> "Unrecognised error number",
+            "code"        -> "UNEXPECTED_ERROR",
+            "message"     -> "Unrecognised error number",
             "errorNumber" -> 6
           )
         )
@@ -268,26 +340,27 @@ class WithdrawAdviceIntegrationSpec
     }
   }
 
-  private def stubForEis(httpStatus: Int) = {
-    stubFor(put(urlEqualTo(s"$pegaConnectorPath"))
-      .willReturn(
-        aResponse()
-          .withStatus(httpStatus)
-      ))
-  }
+  private def stubForEis(httpStatus: Int) =
+    stubFor(
+      put(urlEqualTo(s"$pegaConnectorPath"))
+        .willReturn(
+          aResponse()
+            .withStatus(httpStatus)
+        )
+    )
 
-  private def stubForEis(httpStatus: Int, responseBody: JsValue) = {
-    stubFor(put(urlEqualTo(s"$pegaConnectorPath"))
-      .willReturn(
-        aResponse()
-          .withStatus(httpStatus)
-          .withBody(responseBody.toString())
-      ))
-  }
+  private def stubForEis(httpStatus: Int, responseBody: JsValue) =
+    stubFor(
+      put(urlEqualTo(s"$pegaConnectorPath"))
+        .willReturn(
+          aResponse()
+            .withStatus(httpStatus)
+            .withBody(responseBody.toString())
+        )
+    )
 
   private def badRequestErrorResponse =
-    Json.parse(
-      s"""
+    Json.parse(s"""
         |{
         | "errorDetail": {
         |   "timestamp": "2024-03-18T16:42:28Z",
@@ -312,8 +385,7 @@ class WithdrawAdviceIntegrationSpec
         |""".stripMargin)
 
   private def badRequestErrorResponseWithoutError =
-    Json.parse(
-      s"""
+    Json.parse(s"""
          |{
          | "errorDetail": {
          |   "timestamp": "2024-03-18T16:42:28Z",
@@ -329,8 +401,7 @@ class WithdrawAdviceIntegrationSpec
          |""".stripMargin)
 
   private def internalServerErrorResponse(errorCode: Int) =
-    Json.parse(
-      s"""
+    Json.parse(s"""
          |{
          | "errorDetail": {
          |   "timestamp": "2024-03-18T16:42:28Z",
@@ -345,8 +416,7 @@ class WithdrawAdviceIntegrationSpec
          |}
          |""".stripMargin)
 
-  private def badRequestResponseWithUnrecognisedError = Json.parse(
-    s"""
+  private def badRequestResponseWithUnrecognisedError = Json.parse(s"""
        |{
        | "errorDetail": {
        |   "timestamp": "2024-03-18T16:42:28Z",
