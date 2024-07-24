@@ -54,7 +54,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -71,7 +75,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestDataWithOptionalNullFields)
             .futureValue
 
@@ -88,7 +96,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestDataWithConditionOptionalNullFields)
             .futureValue
 
@@ -105,7 +117,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestDataWithSomeOptionalNullFields)
             .futureValue
 
@@ -119,7 +135,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequiredRequestData)
             .futureValue
 
@@ -135,7 +155,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -153,7 +177,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -171,7 +199,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -189,7 +221,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -210,7 +246,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -228,7 +268,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -249,7 +293,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -267,7 +315,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -288,7 +340,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -306,7 +362,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -327,7 +387,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -363,7 +427,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -407,7 +475,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -455,7 +527,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -496,7 +572,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -521,7 +601,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -562,7 +646,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         "missing required request field" in {
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(invalidRequestData)
             .futureValue
 
@@ -585,7 +673,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         "for optional fields" in {
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(invalidOptionalRequestData)
             .futureValue
 
@@ -633,7 +725,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         "for optional assessment array fields" in {
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(invalidUpdateRecordRequestDataForAssessmentArray)
             .futureValue
 
@@ -671,7 +767,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         "for a mandatory field actorId and an optional filed comcode" in {
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(invalidActorIdAndComcodeRequestData)
             .futureValue
 
@@ -702,7 +802,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(fullUrl(s"/traders/GB123456789015/records/$recordId"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
@@ -721,7 +825,11 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
             .patch(updateRecordRequestData)
             .futureValue
 
