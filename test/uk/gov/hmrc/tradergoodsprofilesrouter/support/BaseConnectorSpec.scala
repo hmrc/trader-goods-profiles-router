@@ -66,6 +66,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     "X-Forwarded-Host" -> forwardedHost,
     "Accept"           -> MimeTypes.JSON,
     "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+    "X-Client-ID"      -> "TSS",
     "Authorization"    -> s"Bearer $accessToken"
   )
 

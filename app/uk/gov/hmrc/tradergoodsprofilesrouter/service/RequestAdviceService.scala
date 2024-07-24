@@ -112,7 +112,7 @@ class RequestAdviceService @Inject() (
       goodsItemRecords.goodsDescription,
       Some(goodsItemRecords.countryOfOrigin),
       goodsItemRecords.supplementaryUnit,
-      goodsItemRecords.category,
+      Some(goodsItemRecords.category),
       goodsItemRecords.measurementUnit,
       goodsItemRecords.comcode
     )
