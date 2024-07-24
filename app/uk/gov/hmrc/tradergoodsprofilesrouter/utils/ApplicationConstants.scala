@@ -199,8 +199,11 @@ object WithdrawAdviceConstant {
   val InvalidGoodsItemsMsg: String  = "Mandatory goodsItems was missing from body"
 
   val MissingRecordIdCode: String = "E007"
-  val InvalidRecordIdMsg: String  = "The recordId has been provided in the wrong format"
+  val InvalidRecordIdMsg: String  = "The request has already been completed and a new request cannot be requested"
 
   val DecisionAlreadyMadeCode: String      = "E009"
   val invalidWithdrawReasonMessage: String = "Digital checked that withdraw reason is > 512"
+
+  val InvalidWithdrawReasonNullMessage: String = "Digital checked that withdraw reason is < 1"
+
 }

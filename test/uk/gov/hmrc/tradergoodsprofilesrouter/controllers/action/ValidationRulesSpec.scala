@@ -94,6 +94,16 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
         )
       }
 
+      "recordId is less than 36 character" in new TestValidationRules(uuidService) { validator =>
+        val result = validator.validateRecordId("906ec58-6f23-4f2f-9471-1d31a0d669c1")
+
+        result.left.value mustBe Error(
+          "INVALID_QUERY_PARAMETER",
+          "The recordId has been provided in the wrong format",
+          25
+        )
+      }
+
       "recordID is empty" in new TestValidationRules(uuidService) { validator =>
         val result = validator.validateRecordId("")
 
@@ -224,6 +234,21 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
       result.left.value mustBe Seq(
         Error("INVALID_QUERY_PARAMETER", "Digital checked that withdraw reason is > 512", 1018),
         Error("INVALID_QUERY_PARAMETER", "The recordId has been provided in the wrong format", 25)
+      )
+    }
+
+    "return error if withdrawReason is present in WithdrawReasonRequest and its empty" in new TestValidationRules(
+      uuidService
+    ) {
+      validator =>
+      val invalidWithdrawReason = ""
+      val result                = validator.validateWithdrawAdviceQueryParam(recordId)(
+        FakeRequest().withBody(Json.obj("withdrawReason" -> invalidWithdrawReason))
+      )
+
+      result.left.value.size mustBe 1
+      result.left.value mustBe Seq(
+        Error("INVALID_QUERY_PARAMETER", "Digital checked that withdraw reason is < 1", 1018)
       )
     }
   }

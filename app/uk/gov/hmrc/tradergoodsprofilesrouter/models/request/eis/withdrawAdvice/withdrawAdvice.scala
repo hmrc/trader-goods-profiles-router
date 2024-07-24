@@ -38,7 +38,7 @@ object withdrawAdvice {
 
     implicit val write: Writes[WithdrawDetail] = (
       (JsPath \ "withdrawDate").write[String] and
-        (JsPath \ "withdrawReason").writeNullable[String]
+        (JsPath \ "withdrawReason").writeOptionWithNull[String]
     )(e => (e.withdrawDate.asStringSeconds, e.withdrawReason))
   }
 
