@@ -50,6 +50,7 @@ class GetRecordsController @Inject() (
     recordId: String
   ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
+      _          <- EitherT.fromEither[Future](validateClientId)
       _          <- EitherT
                       .fromEither[Future](validateRecordId(recordId))
                       .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
@@ -66,6 +67,7 @@ class GetRecordsController @Inject() (
     size: Option[Int] = None
   ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
+      _         <- EitherT.fromEither[Future](validateClientId)
       validDate <- validateDate(lastUpdatedDate)
       records   <- getRecords(eori, validDate, page, size)
     } yield Ok(Json.toJson(records))

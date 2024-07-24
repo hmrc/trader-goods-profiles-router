@@ -200,32 +200,11 @@ trait GetRecordsDataSupport {
                  |    "locked": false,
                  |    "createdDateTime": "2024-11-18T23:20:19Z",
                  |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                 |  },
-                 |  {
-                 |    "eori": "GB1234567891",
-                 |    "actorId": "GB1234567891",
-                 |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a24567",
-                 |    "traderRef": "BAN001001",
-                 |    "comcode": "10410100",
-                 |    "accreditationStatus": "Not Requested",
-                 |    "goodsDescription": "Organic bananas",
-                 |    "countryOfOrigin": "EC",
-                 |    "supplementaryUnit": 500,
-                 |    "measurementUnit": "square meters(m^2)",
-                 |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                 |    "version": 1,
-                 |    "active": true,
-                 |    "toReview": false,
-                 |    "declarable": "IMMI declarable",
-                 |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                 |    "locked": false,
-                 |    "createdDateTime": "2024-11-18T23:20:19Z",
-                 |    "updatedDateTime": "2024-11-18T23:20:19Z"
                  |  }
                  |],
                  |"pagination":
                  | {
-                 |   "totalRecords": 2,
+                 |   "totalRecords": 1,
                  |   "currentPage": 0,
                  |   "totalPages": 1,
                  |   "nextPage": null,
@@ -276,32 +255,11 @@ trait GetRecordsDataSupport {
                  |    "locked": false,
                  |    "createdDateTime": "2024-11-18T23:20:19Z",
                  |    "updatedDateTime": "2024-11-18T23:20:19Z"
-                 |  },
-                 |  {
-                 |    "eori": "GB1234567891",
-                 |    "actorId": "GB1234567891",
-                 |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a24567",
-                 |    "traderRef": "BAN001001",
-                 |    "comcode": "10410100",
-                 |    "adviceStatus": "Not Requested",
-                 |    "goodsDescription": "Organic bananas",
-                 |    "countryOfOrigin": "EC",
-                 |    "supplementaryUnit": 500,
-                 |    "measurementUnit": "square meters(m^2)",
-                 |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-                 |    "version": 1,
-                 |    "active": true,
-                 |    "toReview": false,
-                 |    "declarable": "IMMI declarable",
-                 |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                 |    "locked": false,
-                 |    "createdDateTime": "2024-11-18T23:20:19Z",
-                 |    "updatedDateTime": "2024-11-18T23:20:19Z"
                  |  }
                  |],
                  |"pagination":
                  | {
-                 |   "totalRecords": 2,
+                 |   "totalRecords": 1,
                  |   "currentPage": 0,
                  |   "totalPages": 1,
                  |   "nextPage": null,
