@@ -43,8 +43,8 @@ class RemoveRecordController @Inject() (
   def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- EitherT
-               .fromEither[Future](validateClientId)
+        _ <- EitherT.fromEither[Future](validateClientId)
+        _ <- EitherT.fromEither[Future](validateAcceptHeader)
         _ <- EitherT
                .fromEither[Future](validateQueryParameters(actorId, recordId))
                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
