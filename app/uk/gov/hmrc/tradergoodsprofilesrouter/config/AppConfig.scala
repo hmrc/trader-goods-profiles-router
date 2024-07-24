@@ -23,6 +23,11 @@ import javax.inject.{Inject, Singleton}
 @Singleton
 class AppConfig @Inject() (config: Configuration) {
 
-  val hawkConfig: HawkInstanceConfig = config.get[HawkInstanceConfig]("microservice.services.hawk")
-  val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
+  lazy val hawkConfig: HawkInstanceConfig = config.get[HawkInstanceConfig]("microservice.services.hawk")
+  lazy val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
+
+  val isDrop1_1_enabled: Boolean =
+    config
+      .getOptional[Boolean]("features.drop_1_1_enabled")
+      .getOrElse(false)
 }
