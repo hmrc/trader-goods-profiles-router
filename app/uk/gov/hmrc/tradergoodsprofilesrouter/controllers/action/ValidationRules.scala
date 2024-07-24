@@ -31,7 +31,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, Erro
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant.{DecisionAlreadyMadeCode, InvalidWithdrawReasonNullMessage, invalidWithdrawReasonMessage}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant.{InvalidWithdrawReasonNullMessage, invalidWithdrawReasonMessage}
 
 import java.util.{Locale, UUID}
 import scala.concurrent.ExecutionContext
@@ -97,7 +97,7 @@ trait ValidationRules {
       validateWithdrawReasonQueryParam.toEitherNec,
       validateRecordId(recordId).toEitherNec
     ).parMapN { (validatedWithdrawReason, validatedRecordId) =>
-      ValidatedWithdrawAdviceQueryParameters(validatedWithdrawReason.withdrawReason, validatedRecordId)
+      ValidatedWithdrawAdviceQueryParameters(validatedWithdrawReason, validatedRecordId)
     } leftMap { errors =>
       errors.toList
     }
@@ -115,24 +115,15 @@ trait ValidationRules {
 
   private def validateWithdrawReasonQueryParam(implicit
     request: Request[JsValue]
-  ): Either[Error, WithdrawReasonRequest] = {
-    val maybeWithdrawReasonRequest = request.body.asOpt[WithdrawReasonRequest]
-
-    maybeWithdrawReasonRequest match {
-      case Some(WithdrawReasonRequest(Some(reason))) =>
-        if (reason.nonEmpty) {
-          if (reason.length <= WithdrawReasonCharLimit) {
-            Right(WithdrawReasonRequest(Some(reason)))
-          } else {
-            Left(Error(InvalidQueryParameter, invalidWithdrawReasonMessage, invalidWithdrawReasonCode))
-          }
-        } else {
-          Left(Error(InvalidQueryParameter, InvalidWithdrawReasonNullMessage, invalidWithdrawReasonCode))
-        }
-      case Some(WithdrawReasonRequest(None)) | None  =>
-        Right(WithdrawReasonRequest(None))
+  ): Either[Error, Option[String]] =
+    Try(request.body.as[WithdrawReasonRequest]).toOption match {
+      case Some(v) if v.withdrawReason.exists(_.isEmpty)                          =>
+        Left(Error(InvalidQueryParameter, InvalidWithdrawReasonNullMessage, invalidWithdrawReasonCode))
+      case Some(v) if v.withdrawReason.exists(_.length > WithdrawReasonCharLimit) =>
+        Left(Error(InvalidQueryParameter, invalidWithdrawReasonMessage, invalidWithdrawReasonCode))
+      case Some(v)                                                                => Right(v.withdrawReason)
+      case _                                                                      => Right(None)
     }
-  }
 
   private def convertError[T](
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
