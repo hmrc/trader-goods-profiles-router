@@ -54,7 +54,7 @@ class GetSingleRecordIntegrationSpec
       "valid" in {
         stubForEis(OK, Some(getEisRecordsResponseData.toString()))
 
-        val response = sendRequestAndWait
+        val response = sendRequestAndWait(url)
 
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(
@@ -68,7 +68,7 @@ class GetSingleRecordIntegrationSpec
         "Forbidden" in {
           stubForEis(FORBIDDEN)
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe FORBIDDEN
           response.json   shouldBe Json.obj(
@@ -82,7 +82,7 @@ class GetSingleRecordIntegrationSpec
         "Not Found" in {
           stubForEis(NOT_FOUND)
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe NOT_FOUND
           response.json   shouldBe Json.obj(
@@ -96,7 +96,7 @@ class GetSingleRecordIntegrationSpec
         "Method Not Allowed" in {
           stubForEis(METHOD_NOT_ALLOWED)
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe METHOD_NOT_ALLOWED
           response.json   shouldBe Json.obj(
@@ -110,7 +110,7 @@ class GetSingleRecordIntegrationSpec
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe SERVICE_UNAVAILABLE
           response.json   shouldBe Json.obj(
@@ -124,7 +124,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("500", "Internal Server Error")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -138,7 +138,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error with 200 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("200", "Internal Server Error")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -152,7 +152,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error with 400 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("400", "Internal Error Response")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -166,7 +166,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error with 401 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -180,7 +180,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error with 404 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -194,7 +194,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error with 405 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("405", "Method Not Allowed")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -208,7 +208,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error with 502 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -222,7 +222,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error with 503 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("503", "Service Unavailable")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -236,7 +236,7 @@ class GetSingleRecordIntegrationSpec
         "Internal Server Error with unknown errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("501", "Not Implemented")))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -256,7 +256,7 @@ class GetSingleRecordIntegrationSpec
 
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponseBody))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -270,11 +270,7 @@ class GetSingleRecordIntegrationSpec
 
         "Bad Request if recordId is invalid" in {
 
-          val response = await(
-            wsClient
-              .url(fullUrl(s"/traders/GB123456789001/records/invalid-recordId"))
-              .get()
-          )
+          val response =sendRequestAndWait(fullUrl(s"/traders/GB123456789001/records/invalid-recordId"))
 
           response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
@@ -317,7 +313,7 @@ class GetSingleRecordIntegrationSpec
               )
           )
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
@@ -358,7 +354,7 @@ class GetSingleRecordIntegrationSpec
               )
           )
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
@@ -383,7 +379,7 @@ class GetSingleRecordIntegrationSpec
               )
           )
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
@@ -416,7 +412,7 @@ class GetSingleRecordIntegrationSpec
         "incorrect enrolment key is used to authorise " in {
           withAuthorizedTrader(enrolment = Enrolment("OTHER-ENROLMENT-KEY"))
 
-          val response = sendRequestAndWait
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe FORBIDDEN
           response.json   shouldBe Json.obj(
@@ -431,10 +427,12 @@ class GetSingleRecordIntegrationSpec
     }
   }
 
-  private def sendRequestAndWait = {
-    await(
-      wsClient.url(url).get()
-    )
+  private def sendRequestAndWait(url: String) = {
+
+    //ToDo: remove the isDrop1_1_enabled feature flag check and use the request without the header
+    // after drop1.1
+    if(appConfig.isDrop1_1_enabled)  await(wsClient.url(url).get())
+    else await(wsClient.url(url).withHttpHeaders("X-Client-ID" -> "TSS").get())
   }
 
   private def stubForEis(httpStatus: Int, body: Option[String] = None) =

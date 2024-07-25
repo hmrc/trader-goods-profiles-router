@@ -104,6 +104,24 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
         )
       }
     }
+
+    "do not validate the client Id if drop_1_1_enabled flag is false" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+      when(getRecordsService.fetchRecord(any, any, any)(any))
+        .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
+
+      val result = sut.getTGPRecord("GB123456789001", recordId)(FakeRequest())
+      status(result) mustBe OK
+
+    }
+
+    "validate the client Id if drop_1_1_enabled flag is true" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+
+      val result = sut.getTGPRecord("GB123456789001", recordId)(FakeRequest())
+      status(result) mustBe BAD_REQUEST
+      contentAsJson(result) mustBe createMissingHeaderErrorResponse
+    }
   }
 
   "getTGPRecords" should {
@@ -134,6 +152,22 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       withClue("should return json response") {
         contentAsJson(result) mustBe Json.toJson(getMultipleRecordResponseData(eoriNumber))
       }
+    }
+
+    "do not validate the client Id if drop_1_1_enabled flag is false" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+
+      val result = sut.getTGPRecords(eoriNumber)(FakeRequest())
+      status(result) mustBe OK
+    }
+
+    "validate the client Id if drop_1_1_enabled flag is true" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+
+      val result = sut.getTGPRecords(eoriNumber)(FakeRequest())
+
+      status(result) mustBe BAD_REQUEST
+      contentAsJson(result) mustBe createMissingHeaderErrorResponse
     }
 
     "return an error" when {

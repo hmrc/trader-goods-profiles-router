@@ -27,6 +27,7 @@ import play.api.libs.ws.WSClient
 import play.api.{Application, inject}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.test.WireMockSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DateTimeService, UuidService}
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
@@ -44,6 +45,9 @@ abstract class BaseIntegrationSpec
   val baseUrl: String                         = s"http://localhost:$port"
   lazy val uuidService: UuidService           = mock[UuidService]
   lazy val dateTimeService: DateTimeService   = mock[DateTimeService]
+
+  //ToDo: remove the appConfig variable after drop1.1
+  lazy val appConfig = app.injector.instanceOf[AppConfig]
   override def fakeApplication(): Application =
     baseApplicationBuilder()
       .configure(extraApplicationConfig)

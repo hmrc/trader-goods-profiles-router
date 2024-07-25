@@ -50,6 +50,7 @@ class GetRecordsController @Inject() (
     recordId: String
   ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
+      _          <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _          <- EitherT
                       .fromEither[Future](validateRecordId(recordId))
                       .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
@@ -66,6 +67,7 @@ class GetRecordsController @Inject() (
     size: Option[Int] = None
   ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
+      _         <- EitherT.fromEither[Future](validateClientIdIfSupported)
       validDate <- validateDate(lastUpdatedDate)
       records   <- getRecords(eori, validDate, page, size)
     } yield Ok(Json.toJson(records))
@@ -107,4 +109,8 @@ class GetRecordsController @Inject() (
       getRecordService.fetchRecord(eori, recordId, appConfig.hawkConfig.getRecordsUrl)
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+
+  private def validateClientIdIfSupported(implicit request: Request[_]) =
+    if (!appConfig.isDrop1_1_enabled) validateClientId
+    else Right("")
 }
