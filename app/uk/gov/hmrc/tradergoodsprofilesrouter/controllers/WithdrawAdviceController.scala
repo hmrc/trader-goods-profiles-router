@@ -43,6 +43,7 @@ class WithdrawAdviceController @Inject() (
     implicit request =>
       val result = for {
         _               <- EitherT.fromEither[Future](validateClientId)
+        _               <- EitherT.fromEither[Future](validateAcceptHeader)
         validatedParams <- EitherT
                              .fromEither[Future](validateWithdrawAdviceQueryParam(recordId))
                              .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)

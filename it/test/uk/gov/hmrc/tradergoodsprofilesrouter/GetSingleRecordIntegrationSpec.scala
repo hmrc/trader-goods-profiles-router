@@ -56,7 +56,7 @@ class GetSingleRecordIntegrationSpec
 
         val response = wsClient
           .url(url)
-          .withHttpHeaders(("X-Client-ID", "tss"))
+          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
           .get()
           .futureValue
 
@@ -75,7 +75,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -94,7 +94,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -113,7 +113,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -132,7 +132,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -151,7 +151,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -170,7 +170,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -189,7 +189,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -208,7 +208,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -227,7 +227,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -246,7 +246,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -265,7 +265,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -284,7 +284,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -303,7 +303,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -328,7 +328,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -347,7 +347,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(fullUrl(s"/traders/GB123456789001/records/invalid-recordId"))
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -395,7 +395,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -441,7 +441,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -471,7 +471,7 @@ class GetSingleRecordIntegrationSpec
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"))
+              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
               .get()
           )
 
@@ -513,7 +513,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = wsClient
             .url(fullUrl(s"/traders/GB123456789015/records/$recordId"))
-            .withHttpHeaders(("X-Client-ID", "tss"))
+            .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
             .get()
             .futureValue
 
@@ -532,7 +532,7 @@ class GetSingleRecordIntegrationSpec
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("X-Client-ID", "tss"))
+            .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
             .get()
             .futureValue
 

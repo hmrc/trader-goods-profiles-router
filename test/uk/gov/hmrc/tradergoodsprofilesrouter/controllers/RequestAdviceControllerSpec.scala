@@ -30,6 +30,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RequestAdviceService, Uuid
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames._
 
 import scala.concurrent.ExecutionContext
@@ -53,8 +54,8 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    Accept   -> "application/json",
-    ClientId -> "clientId"
+    HeaderNames.ClientId -> "clientId",
+    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
   )
 
   private val requestAccreditationData = Json
@@ -94,7 +95,23 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
       )
 
       val result = sut.requestAdvice(eori, recordId)(
-        FakeRequest().withBody(requestAccreditationData).withHeaders(headers: _*)
+        FakeRequest()
+          .withBody(requestAccreditationData)
+          .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
+      )
+
+      status(result) mustBe BAD_REQUEST
+    }
+
+    "return a 400 Bad request when Accept header is missing" in {
+      def headers: Seq[(String, String)] = Seq(
+        Accept -> "application/json"
+      )
+
+      val result = sut.requestAdvice(eori, recordId)(
+        FakeRequest()
+          .withBody(requestAccreditationData)
+          .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("Accept") }: _*)
       )
 
       status(result) mustBe BAD_REQUEST
