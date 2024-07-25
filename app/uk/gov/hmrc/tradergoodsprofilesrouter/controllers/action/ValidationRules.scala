@@ -58,14 +58,14 @@ trait ValidationRules {
       .toRight(
         BadRequestErrorResponse(
           uuidService.uuid,
-          Seq(Error(InvalidHeader, InvalidOrMissingAccept, 4)) //  TODO: Check ErrorNumber
+          Seq(Error(InvalidHeader, InvalidOrMissingAccept, 4))
         ).asPresentation
       )
       .filterOrElse(
         _ == "application/vnd.hmrc.1.0+json",
         BadRequestErrorResponse(
           uuidService.uuid,
-          Seq(Error(InvalidHeader, InvalidOrMissingAccept, 4)) //  TODO: Check ErrorNumber
+          Seq(Error(InvalidHeader, InvalidOrMissingAccept, 4))
         ).asPresentation
       )
 
