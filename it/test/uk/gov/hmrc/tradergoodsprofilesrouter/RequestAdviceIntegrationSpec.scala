@@ -43,13 +43,13 @@ class RequestAdviceIntegrationSpec
 
   override def extraApplicationConfig: Map[String, Any] =
     Map(
-      s"microservice.services.hawk.host" -> wireMockHost,
-      s"microservice.services.hawk.port" -> wireMockPort,
-      s"microservice.services.hawk.uri"  -> hawkConnectorPath,
-      s"microservice.services.pega.host" -> wireMockHost,
-      s"microservice.services.pega.port" -> wireMockPort,
-      s"microservice.services.pega.uri"  -> pegaConnectorPath,
-      "auditing.enabled"                 -> false
+      "microservice.services.hawk.host" -> wireMockHost,
+      "microservice.services.hawk.port" -> wireMockPort,
+      "microservice.services.hawk.uri"  -> hawkConnectorPath,
+      "microservice.services.pega.host" -> wireMockHost,
+      "microservice.services.pega.port" -> wireMockPort,
+      "microservice.services.pega.uri"  -> pegaConnectorPath,
+      "auditing.enabled"                -> false
     )
 
   override def beforeEach(): Unit = {
