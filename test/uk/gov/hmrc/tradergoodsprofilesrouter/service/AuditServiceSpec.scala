@@ -34,8 +34,9 @@ import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditCreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.{AuditRequestAdvice, AuditUpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 
@@ -105,6 +106,48 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
           Some(Seq("erro-1", "error-2"))
         )
       )
+
+      result mustBe Done
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe auditEventWithFailure.detail
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
+    }
+  }
+
+
+
+  "emitAuditRequestAdvice" should {
+    "send an event for success response" in {
+
+      when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
+
+      val result = await(sut.emitAuditRequestAdvice(createAccreditationRequestData, dateTime, "SUCCEEDED", OK))
+
+      result mustBe Done
+      val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
+      verify(auditConnector).sendExtendedEvent(extendedDateEventCaptor.capture)(any, any)
+      val actualEvent             = extendedDateEventCaptor.value
+      actualEvent.detail mustBe emitAuditRequestAdviceDetailJson("SUCCEEDED", OK, createAccreditationRequestData)
+      actualEvent.auditType mustBe auditType
+      actualEvent.auditSource mustBe auditSource
+    }
+
+    "send an event with reason failure" in {
+
+      val auditEventWithFailure =
+        extendedDataEvent(
+          auditDetailJsonWithFailureReason(
+            Seq("erro-1", "error-2"),
+            emitAuditRequestAdviceDetailJson("BAD_REQUEST", BAD_REQUEST,createAccreditationRequestData)
+          )
+        )
+
+      when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
+
+      val result = await(sut.emitAuditRequestAdvice(createAccreditationRequestData, dateTime, "BAD_REQUEST", BAD_REQUEST, Some(Seq("erro-1", "error-2"))))
 
       result mustBe Done
       val extendedDateEventCaptor = ArgCaptor[ExtendedDataEvent]
@@ -283,6 +326,26 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       "outcome"          -> Json.obj(
         "status"     -> status,
         "statusCode" -> statusCode
+      )
+    )
+
+  private def emitAuditRequestAdviceDetailJson(
+                                               status: String,
+                                               statusCode: Int,
+                                               traderDetails: TraderDetails
+
+                                             ) =
+    removeNulls(
+      Json.obj(
+        "journey"          -> "RequestAdvice",
+        "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
+        "requestDateTime"  -> dateTime,
+        "responseDateTime" -> dateTime,
+        "request"          -> traderDetails,
+        "outcome"          -> Json.obj(
+          "status"     -> status,
+          "statusCode" -> statusCode
+        )
       )
     )
 
@@ -575,4 +638,36 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
              |}
              |""".stripMargin)
     .as[AuditUpdateRecordRequest]
+
+  private def createAccreditationRequestData: TraderDetails = Json.parse(
+    s"""
+       |{
+       |   "accreditationRequest":{
+       |      "requestCommon":{
+       |         "receiptDate":"$timestamp"
+       |      },
+       |      "requestDetail":{
+       |         "traderDetails":{
+       |            "traderEORI":"GB123456789001",
+       |            "requestorName":"Mr.Phil Edwards",
+       |            "requestorEORI":"GB9876543210983",
+       |            "requestorEmail":"Phil.Edwards@gmail.com",
+       |            "ukimsAuthorisation":"XIUKIM47699357400020231115081800",
+       |            "goodsItems":[
+       |               {
+       |                  "publicRecordID":"8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+       |                  "traderReference":"BAN001001",
+       |                  "goodsDescription":"Organic bananas",
+       |                  "countryOfOrigin":"EC",
+       |                  "supplementaryUnit":500,
+       |                  "category":3,
+       |                  "measurementUnitDescription":"square meters(m^2)",
+       |                  "commodityCode":"10410100"
+       |               }
+       |            ]
+       |         }
+       |      }
+       |   }
+       |}
+       |""".stripMargin).as[TraderDetails]
 }

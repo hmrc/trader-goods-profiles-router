@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.{CONFLICT, INTERNAL_SERVER_ERROR}
+import play.api.http.Status.{CONFLICT, INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RequestAdviceConnector}
@@ -27,6 +27,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.{GoodsItem, TraderDetails}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{AdviceStatus, GoodsItemRecords}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,7 +36,9 @@ class RequestAdviceService @Inject() (
   connector: RequestAdviceConnector,
   routerService: GetRecordsService,
   uuidService: UuidService,
-  appConfig: AppConfig
+  appConfig: AppConfig,
+  auditService: AuditService,
+  dateTimeService: DateTimeService
 )(implicit ec: ExecutionContext)
     extends Logging {
 
@@ -63,7 +66,9 @@ class RequestAdviceService @Inject() (
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] =
     if (AdviceStatus.AllowedAdviceStatuses.contains(goodsItemRecord.adviceStatus)) {
+      val requestedDateTime = dateTimeService.timestamp.asStringMilliSeconds
       val traderDetails = createNewTraderDetails(eori, goodsItemRecord, request)
+      auditService.emitAuditRequestAdvice(traderDetails, requestedDateTime, "SUCCEEDED", OK)
       connector
         .requestAdvice(traderDetails, correlationId)
         .map(r => r)

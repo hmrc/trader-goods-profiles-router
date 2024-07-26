@@ -26,9 +26,10 @@ import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.tradergoodsprofilesrouter.factories.{AuditCreateRecordDetails, AuditRemoveRecordDetails, AuditRemoveRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.{AuditRequestAdvice, AuditUpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditCreateRecordRequest, AuditOutcome, AuditUpdateRecordDetails}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditCreateRecordRequest, AuditOutcome, AuditRequestAdviceDetails, AuditUpdateRecordDetails}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.TraderDetails
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
@@ -64,6 +65,41 @@ class AuditService @Inject() (
       responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),
       request = AuditRemoveRecordRequest(eori, recordId, actorId)
+    )
+
+    val event = ExtendedDataEvent(
+      auditSource = auditSource,
+      auditType = auditType,
+      tags = hc.toAuditTags(),
+      detail = Json.toJson(auditDetails)
+    )
+
+    auditConnector
+      .sendExtendedEvent(event)
+      .map { auditResult: AuditResult =>
+        logger.info(s"[AuditService] - Remove record audit event status: $auditResult.")
+        Done
+      }
+  }
+
+
+  def emitAuditRequestAdvice(
+                             //eori: String,
+                             traderDetails: TraderDetails,
+                             requestedDateTime: String,
+                             status: String,
+                             statusCode: Int,
+                             failureReason: Option[Seq[String]] = None
+                           )(implicit
+                             hc: HeaderCarrier
+                           ): Future[Done] = {
+
+    val auditDetails = AuditRequestAdviceDetails(
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      requestDateTime = requestedDateTime,
+      responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
+      outcome = AuditOutcome(status, statusCode, failureReason),
+      request = traderDetails
     )
 
     val event = ExtendedDataEvent(

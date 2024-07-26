@@ -32,6 +32,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 class RequestAdviceServiceSpec
@@ -53,10 +54,13 @@ class RequestAdviceServiceSpec
   private val getRecordService = mock[GetRecordsService]
   private val uuidService      = mock[UuidService]
   private val appConfig        = mock[AppConfig](RETURNS_DEEP_STUBS)
+  private val auditService      = mock[AuditService]
+  private val dateTimeService = mock[DateTimeService]
+  private val dateTime        = Instant.parse("2021-12-17T09:30:47.456Z")
 
   private val request = new RequestAdvice("GB9876543210983", "Judi Dench", "judi@example.com")
 
-  val service = new RequestAdviceService(connector, getRecordService, uuidService, appConfig)
+  val service = new RequestAdviceService(connector, getRecordService, uuidService, appConfig,auditService, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
