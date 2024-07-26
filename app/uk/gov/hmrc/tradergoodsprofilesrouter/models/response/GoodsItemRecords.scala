@@ -18,7 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment, EisGoodsItemRecords}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment, EisGoodsItemRecords, ReviewReason}
 
 import java.time.Instant
 case class GoodsItemRecords(
@@ -156,20 +156,9 @@ object GoodsItemRecords {
       case _                            => AdviceStatus.withName(accreditationStatus.entryName)
     }
 
-  private def translateReviewReason(reviewReason: Option[String], toReview: Boolean): Option[String] =
+  private def translateReviewReason(reviewReason: Option[String], toReview: Boolean): Option[String] = {
+    val enumReviewReason: Option[ReviewReason] = reviewReason.flatMap(ReviewReason.fromString)
     if (!toReview) None
-    else {
-      reviewReason.collect {
-        case "mismatch"   =>
-          "HMRC have reviewed this record. The commodity code and goods description do not match. If you want to use this record on an IMMI, you'll need to amend the commodity code and the goods description."
-        case "inadequate" =>
-          "HMRC have reviewed this record. The goods description does not have enough detail. If you want to use this record on an IMMI, you'll need to amend the goods description"
-        case "unclear"    =>
-          "HMRC have reviewed the record. The goods description is unclear. If you want to use this record on an IMMI, you'll need to amend the goods description."
-        case "commodity"  =>
-          "The commodity code has expired. You'll need to change the commodity code and categorise the goods."
-        case "measure"    =>
-          "The restrictions have changed or there may be new restrictions. You need to categorise the record."
-      }
-    }
+    else enumReviewReason.map(_.description)
+  }
 }
