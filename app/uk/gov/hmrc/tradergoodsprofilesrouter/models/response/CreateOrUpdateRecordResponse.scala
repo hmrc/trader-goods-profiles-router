@@ -19,7 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GoodsItemRecords.translateReviewReason
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment, ReviewReason}
 
 import java.time.Instant
