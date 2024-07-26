@@ -52,7 +52,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
       "valid without optional query parameter" in {
         stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()))
 
-
         val response = sendRequestAndWait(url)
 
         response.status shouldBe OK
@@ -105,7 +104,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           stubForEis(FORBIDDEN)
 
           val response = sendRequestAndWait(url)
-
 
           response.status shouldBe FORBIDDEN
           response.json   shouldBe Json.obj(
@@ -161,7 +159,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("500", "Internal Server Error")))
 
-          val response =sendRequestAndWait(url)
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -308,6 +306,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Bad Request with unexpected error" in {
           stubFor(
             get(urlEqualTo(s"$hawkConnectorPath/$eori"))
+              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
+              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
+              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
+              .withHeader("Accept", equalTo("application/json"))
+              .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
+              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -448,7 +452,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=wrong-format"))
-        .withHttpHeaders(("X-Client-ID", "tss"))
+        .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
         .get()
         .futureValue
 
@@ -462,13 +466,15 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     }
   }
 
-  private def sendRequestAndWait(url: String) = {
-
+  private def sendRequestAndWait(url: String) =
     //ToDo: remove the isDrop1_1_enabled feature flag check and use the request without the header
     // after drop1.1
-    if(appConfig.isDrop1_1_enabled)  await(wsClient.url(url).get())
-    else await(wsClient.url(url).withHttpHeaders("X-Client-ID" -> "TSS").get())
-  }
+    if (appConfig.isDrop1_1_enabled)
+      await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
+    else
+      await(
+        wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
+      )
 
   private def stubForEis(
     httpStatus: Int,

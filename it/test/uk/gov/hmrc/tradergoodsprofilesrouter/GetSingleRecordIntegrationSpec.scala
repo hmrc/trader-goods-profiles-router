@@ -431,8 +431,8 @@ class GetSingleRecordIntegrationSpec
 
     //ToDo: remove the isDrop1_1_enabled feature flag check and use the request without the header
     // after drop1.1
-    if(appConfig.isDrop1_1_enabled)  await(wsClient.url(url).get())
-    else await(wsClient.url(url).withHttpHeaders("X-Client-ID" -> "TSS").get())
+    if(appConfig.isDrop1_1_enabled)  await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
+    else await(wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get())
   }
 
   private def stubForEis(httpStatus: Int, body: Option[String] = None) =

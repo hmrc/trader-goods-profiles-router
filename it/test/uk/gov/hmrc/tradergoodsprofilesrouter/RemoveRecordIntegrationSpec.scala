@@ -53,7 +53,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
         val response = wsClient
           .url(url)
-          .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+          .withHttpHeaders(
+            ("Content-Type", "application/json"),
+            ("X-Client-ID", "tss"),
+            ("Accept", "application/vnd.hmrc.1.0+json")
+          )
           .delete()
           .futureValue
 
@@ -69,7 +73,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+              .withHttpHeaders(
+                ("Content-Type", "application/json"),
+                ("X-Client-ID", "tss"),
+                ("Accept", "application/vnd.hmrc.1.0+json")
+              )
               .delete()
           )
 
@@ -87,7 +95,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -105,7 +117,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -123,7 +139,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -141,7 +161,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -163,7 +187,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -185,7 +213,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -207,7 +239,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -229,7 +265,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -251,7 +291,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -288,7 +332,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -335,7 +383,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -394,7 +446,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -436,7 +492,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -462,7 +522,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -506,7 +570,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(fullUrl(s"/traders/GB123456789015/records/$recordId?actorId=$actorId"))
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
@@ -525,7 +593,11 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("X-Client-ID", "tss"),
+              ("Accept", "application/vnd.hmrc.1.0+json")
+            )
             .delete()
             .futureValue
 
