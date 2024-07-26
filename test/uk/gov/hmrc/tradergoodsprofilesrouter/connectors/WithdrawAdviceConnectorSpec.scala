@@ -146,7 +146,8 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
                   |      },
                   |      "requestDetail":{
                   |         "withdrawDetail":{
-                  |            "withdrawDate":"2024-05-12T12:15:15Z"
+                  |            "withdrawDate":"2024-05-12T12:15:15Z",
+                  |            "withdrawReason": null
                   |         },
                   |         "goodsItems":[
                   |            {

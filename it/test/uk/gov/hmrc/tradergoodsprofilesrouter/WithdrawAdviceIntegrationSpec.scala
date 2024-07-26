@@ -107,7 +107,7 @@ class WithdrawAdviceIntegrationSpec
             ),
             Json.obj(
               "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "The recordId has been provided in the wrong format",
+              "message" -> "The request has already been completed and a new request cannot be requested",
               "errorNumber" -> 1017
             )
           )

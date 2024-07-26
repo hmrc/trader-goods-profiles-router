@@ -36,7 +36,14 @@ import scala.concurrent.ExecutionContext
 trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValues {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
+
+  /*
+  ToDo: after drop1.1 this can become
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
+
+  as client Id has been removed form EIS header (TGP-1889,...)
+   */
+  implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
 
   val appConfig: AppConfig             = mock[AppConfig]
   val httpClientV2: HttpClientV2       = mock[HttpClientV2]

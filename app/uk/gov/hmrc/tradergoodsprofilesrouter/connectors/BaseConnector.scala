@@ -45,14 +45,20 @@ trait BaseConnector {
     correlationId: String,
     accessToken: String,
     forwardedHost: String
-  ): Seq[(String, String)] =
-    Seq(
+  )(implicit hc: HeaderCarrier): Seq[(String, String)] = {
+    val headers = Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> forwardedHost,
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
       HeaderNames.Authorization -> accessToken
     )
+
+    //ToDo: remove this and return an header without the client ID after drop1.1.
+    // For drop1.1 client Id has been removed (TGP-1889)
+    if (appConfig.isDrop1_1_enabled) headers
+    else headers :+ (HeaderNames.ClientId -> getClientId)
+  }
 
   protected def buildHeadersForAdvice(correlationId: String, bearerToken: String, forwardedHost: String)(implicit
     hc: HeaderCarrier
