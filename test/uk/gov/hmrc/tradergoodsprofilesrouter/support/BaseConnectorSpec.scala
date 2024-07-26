@@ -38,10 +38,9 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   /*
-  ToDo: after drop1.1 this can become
-  implicit val hc: HeaderCarrier    = HeaderCarrier()
-
-  as client Id has been removed form EIS header (TGP-1889,...)
+   * TODO: After Drop 1.1 this should be changes and use the request without the X-CLient-ID header -  Ticket: TGP-2014
+   * This can be changes to implicit val hc: HeaderCarrier    = HeaderCarrier()
+   * as client Id has been removed form EIS header (TGP-1889,...)
    */
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
 

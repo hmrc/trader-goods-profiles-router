@@ -88,7 +88,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
         verifyExecuteForHttpReader(correlationId)
       }
 
-      //ToDo: remove this test after drop1.1. For drop1.1 client Id has been removed (TGP-1889)
+      // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
       "isDrop1_1_enabled feature flag is false" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Any](any, any))

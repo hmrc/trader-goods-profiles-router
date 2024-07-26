@@ -127,6 +127,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       status(result) mustBe OK
     }
 
+    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
     "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
       when(appConfig.isDrop1_1_enabled).thenReturn(false)
 
@@ -165,6 +166,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
+    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
     "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
       when(appConfig.isDrop1_1_enabled).thenReturn(false)
 

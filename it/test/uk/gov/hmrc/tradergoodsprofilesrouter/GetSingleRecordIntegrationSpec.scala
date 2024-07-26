@@ -270,7 +270,7 @@ class GetSingleRecordIntegrationSpec
 
         "Bad Request if recordId is invalid" in {
 
-          val response =sendRequestAndWait(fullUrl(s"/traders/GB123456789001/records/invalid-recordId"))
+          val response = sendRequestAndWait(fullUrl(s"/traders/GB123456789001/records/invalid-recordId"))
 
           response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
@@ -395,9 +395,11 @@ class GetSingleRecordIntegrationSpec
       "forbidden with any of the following" - {
         "EORI number is not authorized" in {
 
-          val response = await(wsClient
-            .url(fullUrl(s"/traders/GB123456789015/records/$recordId"))
-            .get())
+          val response = await(
+            wsClient
+              .url(fullUrl(s"/traders/GB123456789015/records/$recordId"))
+              .get()
+          )
 
           response.status shouldBe FORBIDDEN
           response.json   shouldBe Json.obj(
@@ -427,13 +429,14 @@ class GetSingleRecordIntegrationSpec
     }
   }
 
-  private def sendRequestAndWait(url: String) = {
-
-    //ToDo: remove the isDrop1_1_enabled feature flag check and use the request without the header
-    // after drop1.1
-    if(appConfig.isDrop1_1_enabled)  await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
-    else await(wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get())
-  }
+  private def sendRequestAndWait(url: String) =
+    // TODO: After Drop 1.1 this should be removed and use the request without the X-CLient-ID header -  Ticket: TGP-2014
+    if (appConfig.isDrop1_1_enabled)
+      await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
+    else
+      await(
+        wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
+      )
 
   private def stubForEis(httpStatus: Int, body: Option[String] = None) =
     stubFor(

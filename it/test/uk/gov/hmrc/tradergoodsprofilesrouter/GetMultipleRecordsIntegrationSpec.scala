@@ -467,8 +467,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
   }
 
   private def sendRequestAndWait(url: String) =
-    //ToDo: remove the isDrop1_1_enabled feature flag check and use the request without the header
-    // after drop1.1
+    // TODO: After Drop 1.1 this should be removed and use the request without the X-CLient-ID header -  Ticket: TGP-2014
     if (appConfig.isDrop1_1_enabled)
       await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
     else
