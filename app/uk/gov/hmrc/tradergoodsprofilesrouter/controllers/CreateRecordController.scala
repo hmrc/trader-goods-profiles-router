@@ -45,7 +45,6 @@ class CreateRecordController @Inject() (
   def create(eori: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
     val result = for {
       _                   <- EitherT.fromEither[Future](validateClientId)
-      _                   <- EitherT.fromEither[Future](validateAcceptHeader)
       createRecordRequest <- EitherT.fromEither[Future](validateRequestBody[CreateRecordRequest](fieldsToErrorCode))
       response            <- createRecord(eori, createRecordRequest)
     } yield Created(Json.toJson(response))

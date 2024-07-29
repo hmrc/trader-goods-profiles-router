@@ -45,7 +45,6 @@ class UpdateRecordController @Inject() (
   def update(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
     val result = for {
       _                   <- EitherT.fromEither[Future](validateClientId)
-      _                   <- EitherT.fromEither[Future](validateAcceptHeader)
       _                   <- EitherT
                                .fromEither[Future](validateRecordId(recordId))
                                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)

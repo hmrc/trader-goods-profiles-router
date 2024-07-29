@@ -53,8 +53,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId",
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.ClientId -> "clientId"
   )
 
   "PUT /:eori/records/:recordId" should {
@@ -81,24 +80,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
 
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val result = controller.remove(eori, recordId, actorId)(
-        FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)
-    }
-
-    "return 400 Bad request when mandatory request header Accept is missing" in {
-      val expectedErrorResponse =
-        ErrorResponse(
-          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          BadRequestCode,
-          BadRequestMessage,
-          Some(Seq(Error("INVALID_HEADER", "Accept was missing from Header or is in the wrong format", 4)))
-        )
-
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = controller.remove(eori, recordId, actorId)(
-        FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("Accept") }: _*)
+        FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)

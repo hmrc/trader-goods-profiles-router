@@ -46,7 +46,6 @@ class RequestAdviceController @Inject() (
     implicit request: Request[JsValue] =>
       val result = for {
         _                    <- EitherT.fromEither[Future](validateClientId)
-        _                    <- EitherT.fromEither[Future](validateAcceptHeader)
         _                    <- EitherT
                                   .fromEither[Future](validateRecordId(recordId))
                                   .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)

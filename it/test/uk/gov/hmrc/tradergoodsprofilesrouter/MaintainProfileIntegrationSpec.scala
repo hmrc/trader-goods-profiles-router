@@ -51,11 +51,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori"))
-        .withHttpHeaders(
-          ("Content-Type", "application/json"),
-          ("Accept", "application/vnd.hmrc.1.0+json"),
-          ("X-Client-ID", "tss")
-        )
+        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
         .put(maintainProfileRequest)
         .futureValue
 
@@ -70,11 +66,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori"))
-        .withHttpHeaders(
-          ("Content-Type", "application/json"),
-          ("Accept", "application/vnd.hmrc.1.0+json"),
-          ("X-Client-ID", "tss")
-        )
+        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
         .put(maintainProfileRequestWithOptionalNullFields)
         .futureValue
 
@@ -92,11 +84,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori"))
-        .withHttpHeaders(
-          ("Content-Type", "application/json"),
-          ("Accept", "application/vnd.hmrc.1.0+json"),
-          ("X-Client-ID", "tss")
-        )
+        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
         .put(maintainProfileRequest)
         .futureValue
 
@@ -115,11 +103,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori"))
-        .withHttpHeaders(
-          ("Content-Type", "application/json"),
-          ("Accept", "application/vnd.hmrc.1.0+json"),
-          ("X-Client-ID", "tss")
-        )
+        .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
         .put(maintainProfileRequest)
         .futureValue
 
