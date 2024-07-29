@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import enumeratum.{Enum, EnumEntry, PlayEnum}
-import enumeratum.EnumEntry._
 
 sealed abstract class ReviewReason(val description: String) extends EnumEntry
 
