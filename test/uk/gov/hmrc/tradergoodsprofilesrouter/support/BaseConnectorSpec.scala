@@ -85,7 +85,9 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       recordGetToken = "dummyRecordGetBearerToken",
       recordCreateToken = "dummyRecordCreateBearerToken",
       recordRemoveToken = "dummyRecordRemoveBearerToken",
-      maintainProfileToken = "dummyMaintainProfileBearerToken"
+      maintainProfileToken = "dummyMaintainProfileBearerToken",
+      getRecordsMaxSize = 500,
+      getRecordsDefaultSize = 500
     )
 
     val pegaConfig = new PegaInstanceConfig(
