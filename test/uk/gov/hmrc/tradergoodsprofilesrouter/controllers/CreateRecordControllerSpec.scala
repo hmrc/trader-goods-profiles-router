@@ -49,7 +49,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId"
+    HeaderNames.ClientId -> "clientId",
+    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
   )
 
   override def beforeEach(): Unit = {
@@ -86,7 +87,22 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
-      val request = FakeRequest().withBody(createRecordRequestData)
+      val request = FakeRequest()
+        .withBody(createRecordRequestData)
+        .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
+
+      val result  = sut.create("eori")(request)
+
+      status(result) mustBe BAD_REQUEST
+
+      verifyZeroInteractions(createRecordService)
+    }
+
+    "return 400 Bad request when mandatory request header Accept is missing" in {
+      val request = FakeRequest()
+        .withBody(createRecordRequestData)
+        .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("Accept") }: _*)
+
       val result  = sut.create("eori")(request)
 
       status(result) mustBe BAD_REQUEST
