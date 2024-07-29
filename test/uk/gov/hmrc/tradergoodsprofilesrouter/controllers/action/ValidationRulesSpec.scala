@@ -75,55 +75,6 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
     }
   }
 
-  "validateAcceptHeader" should {
-    "return the Accept header value if present and correct" in new TestValidationRules(uuidService) { validator =>
-      val result =
-        validator.validateAcceptHeader(FakeRequest().withHeaders("Accept" -> "application/vnd.hmrc.1.0+json"))
-      result.value mustBe "application/vnd.hmrc.1.0+json"
-    }
-
-    "return an error if Accept header is missing" in new TestValidationRules(uuidService) { validator =>
-      when(uuidService.uuid).thenReturn(correlationId)
-      val result = validator.validateAcceptHeader(FakeRequest())
-
-      result.left.value mustBe BadRequest(
-        Json.obj(
-          "correlationId" -> correlationId,
-          "code"          -> "BAD_REQUEST",
-          "message"       -> "Bad Request",
-          "errors"        -> Json.arr(
-            Json.obj(
-              "code"        -> "INVALID_HEADER",
-              "message"     -> "Accept was missing from Header or is in the wrong format",
-              "errorNumber" -> 4
-            )
-          )
-        )
-      )
-    }
-
-    "return an error if Accept header has the wrong value" in new TestValidationRules(uuidService) { validator =>
-      when(uuidService.uuid).thenReturn(correlationId)
-      val result = validator.validateAcceptHeader(FakeRequest().withHeaders("Accept" -> "text/plain"))
-
-      result.left.value mustBe BadRequest(
-        Json.obj(
-          "correlationId" -> correlationId,
-          "code"          -> "BAD_REQUEST",
-          "message"       -> "Bad Request",
-          "errors"        -> Json.arr(
-            Json.obj(
-              "code"        -> "INVALID_HEADER",
-              "message"     -> "Accept was missing from Header or is in the wrong format",
-              "errorNumber" -> 4
-            )
-          )
-        )
-      )
-    }
-
-  }
-
   "validateRecordId" should {
 
     "return a recordId if valid" in new TestValidationRules(uuidService) { validator =>

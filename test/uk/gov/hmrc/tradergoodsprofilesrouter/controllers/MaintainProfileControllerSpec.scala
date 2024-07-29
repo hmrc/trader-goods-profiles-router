@@ -49,8 +49,7 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId",
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.ClientId -> "clientId"
   )
 
   "PUT /profile/maintain " should {
@@ -65,12 +64,6 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
     }
 
     "return a 400 when the client id header is missing" in {
-      val result = sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders())
-
-      status(result) mustBe BAD_REQUEST
-    }
-
-    "return a 400 when the Accept header is missing" in {
       val result = sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders())
 
       status(result) mustBe BAD_REQUEST

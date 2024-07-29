@@ -33,24 +33,25 @@ class RequestAdviceIntegrationSpec
     with GetRecordsDataSupport
     with BeforeAndAfterEach {
 
-  private val correlationId              = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val timestamp                  = "2021-12-17T09:30:47Z"
-  private val eori                       = "GB123456789001"
-  private val recordId                   = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val url                        = fullUrl(s"/traders/$eori/records/$recordId/advice")
+  private val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val timestamp                          = "2021-12-17T09:30:47Z"
+  private val eori                               = "GB123456789001"
+  private val recordId                           = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val url                                = fullUrl(s"/traders/$eori/records/$recordId/advice")
   override def hawkConnectorPath: String = "/tgp/getrecords/v1"
-  def pegaConnectorPath: String          = "/tgp/createaccreditation/v1"
+  def pegaConnectorPath: String = "/tgp/createaccreditation/v1"
 
-  override def extraApplicationConfig: Map[String, Any] =
+  override def extraApplicationConfig: Map[String, Any] = {
     Map(
-      "microservice.services.hawk.host" -> wireMockHost,
-      "microservice.services.hawk.port" -> wireMockPort,
-      "microservice.services.hawk.uri"  -> hawkConnectorPath,
-      "microservice.services.pega.host" -> wireMockHost,
-      "microservice.services.pega.port" -> wireMockPort,
-      "microservice.services.pega.uri"  -> pegaConnectorPath,
-      "auditing.enabled"                -> false
+      s"microservice.services.hawk.host" -> wireMockHost,
+      s"microservice.services.hawk.port" -> wireMockPort,
+      s"microservice.services.hawk.uri" -> hawkConnectorPath,
+      s"microservice.services.pega.host" -> wireMockHost,
+      s"microservice.services.pega.port" -> wireMockPort,
+      s"microservice.services.pega.uri" -> pegaConnectorPath,
+      "auditing.enabled" -> false
     )
+  }
 
   override def beforeEach(): Unit = {
     reset(authConnector)
@@ -72,8 +73,8 @@ class RequestAdviceIntegrationSpec
               .url(url)
               .withHttpHeaders(
                 ("Content-Type", "application/json"),
-                ("X-Client-ID", "tss"),
-                ("Accept", "application/vnd.hmrc.1.0+json")
+                ("Accept", "application/json"),
+                ("X-Client-ID", "tss")
               )
               .post(requestAdviceData)
           )
@@ -93,8 +94,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -117,8 +118,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -140,8 +141,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -165,8 +166,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -188,8 +189,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -216,8 +217,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -243,8 +244,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -270,8 +271,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -293,8 +294,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -320,8 +321,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -347,8 +348,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -374,8 +375,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               ("Content-Type", "application/json"),
-              ("X-Client-ID", "tss"),
-              ("Accept", "application/vnd.hmrc.1.0+json")
+              ("Accept", "application/json"),
+              ("X-Client-ID", "tss")
             )
             .post(requestAdviceData)
             .futureValue
@@ -398,8 +399,8 @@ class RequestAdviceIntegrationSpec
               .url(fullUrl(s"/traders/GB123456789015/records/$recordId/advice"))
               .withHttpHeaders(
                 ("Content-Type", "application/json"),
-                ("X-Client-ID", "tss"),
-                ("Accept", "application/vnd.hmrc.1.0+json")
+                ("Accept", "application/json"),
+                ("X-Client-ID", "tss")
               )
               .post(requestAdviceData)
           )
@@ -422,8 +423,8 @@ class RequestAdviceIntegrationSpec
               .url(url)
               .withHttpHeaders(
                 ("Content-Type", "application/json"),
-                ("X-Client-ID", "tss"),
-                ("Accept", "application/vnd.hmrc.1.0+json")
+                ("Accept", "application/json"),
+                ("X-Client-ID", "tss")
               )
               .post(requestAdviceData)
           )
@@ -462,26 +463,27 @@ class RequestAdviceIntegrationSpec
       .toString()
 
   private def stubForEis(httpStatus: Int, requestBody: String, responseBody: Option[String] = None) =
-    stubFor(
-      post(urlEqualTo(pegaConnectorPath))
-        .withRequestBody(equalToJson(requestBody))
-        .willReturn(
-          aResponse()
-            .withHeader("Content-Type", "application/json")
-            .withStatus(httpStatus)
-            .withBody(responseBody.orNull)
-        )
-    )
+      stubFor(
+        post(urlEqualTo(pegaConnectorPath))
+          .withRequestBody(equalToJson(requestBody))
+          .willReturn(
+            aResponse()
+              .withHeader("Content-Type", "application/json")
+              .withStatus(httpStatus)
+              .withBody(responseBody.orNull)
+          )
+      )
 
-  private def stubForEisFetchRecords(httpStatus: Int, body: String) =
-    stubFor(
-      get(urlEqualTo(s"$hawkConnectorPath/$eori/$recordId"))
-        .willReturn(
-          aResponse()
-            .withStatus(httpStatus)
-            .withBody(body)
-        )
-    )
+  private def stubForEisFetchRecords(httpStatus: Int, body: String) = {
+      stubFor(
+        get(urlEqualTo(s"$hawkConnectorPath/$eori/$recordId"))
+          .willReturn(
+            aResponse()
+              .withStatus(httpStatus)
+              .withBody(body)
+          )
+      )
+    }
 
   private def createAccreditationRequestData: String =
     s"""

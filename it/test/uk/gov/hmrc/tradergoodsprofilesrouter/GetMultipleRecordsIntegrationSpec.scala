@@ -54,11 +54,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
         val response = wsClient
           .url(url)
-          .withHttpHeaders(
-            ("X-Client-ID", "tss"),
-            ("Accept", "application/vnd.hmrc.1.0+json"),
-            ("Accept", "application/vnd.hmrc.1.0+json")
-          )
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -72,7 +68,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records/?lastUpdatedDate=$dateTime&page=1&size=1"))
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -86,7 +82,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?page=1&size=1"))
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -100,7 +96,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?page=1"))
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -114,7 +110,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
         val response = wsClient
           .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=$dateTime"))
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
           .futureValue
 
@@ -130,7 +126,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -149,7 +145,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -168,7 +164,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -187,7 +183,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -206,7 +202,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -225,7 +221,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -244,7 +240,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -263,7 +259,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -282,7 +278,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -301,7 +297,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -320,7 +316,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -339,7 +335,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -358,7 +354,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -383,7 +379,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -432,7 +428,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -479,7 +475,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -516,7 +512,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           val response = await(
             wsClient
               .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+              .withHttpHeaders(("X-Client-ID", "tss"))
               .get()
           )
 
@@ -558,7 +554,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
           val response = wsClient
             .url(fullUrl(s"/traders/GB123456789015/records"))
-            .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+            .withHttpHeaders(("X-Client-ID", "tss"))
             .get()
             .futureValue
 
@@ -577,7 +573,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+            .withHttpHeaders(("X-Client-ID", "tss"))
             .get()
             .futureValue
 
@@ -598,7 +594,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
       val response = wsClient
         .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=wrong-format"))
-        .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+        .withHttpHeaders(("X-Client-ID", "tss"))
         .get()
         .futureValue
 

@@ -58,8 +58,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId",
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.ClientId -> "clientId"
   )
 
   override def beforeEach(): Unit = {
@@ -89,19 +88,10 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     "return 400 Bad request when mandatory request header X-Client-ID" in {
 
       val result = sut.getTGPRecord("eori", recordId)(
-        FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
+        FakeRequest()
       )
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe createMissingHeaderErrorResponse
-    }
-
-    "return 400 Bad request when mandatory request header Accept is missing" in {
-
-      val result = sut.getTGPRecord("eori", recordId)(
-        FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("Accept") }: _*)
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe createMissingAcceptHeaderErrorResponse
     }
 
     "return an error if cannot fetch a record" in {
@@ -214,20 +204,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
           "code"        -> "INVALID_HEADER",
           "message"     -> "Missing mandatory header X-Client-ID",
           "errorNumber" -> 6000
-        )
-      )
-    )
-
-  private def createMissingAcceptHeaderErrorResponse =
-    Json.obj(
-      "correlationId" -> correlationId,
-      "code"          -> "BAD_REQUEST",
-      "message"       -> "Bad Request",
-      "errors"        -> Json.arr(
-        Json.obj(
-          "code"        -> "INVALID_HEADER",
-          "message"     -> "Accept was missing from Header or is in the wrong format",
-          "errorNumber" -> 4
         )
       )
     )

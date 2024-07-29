@@ -52,19 +52,6 @@ trait ValidationRules {
         BadRequestErrorResponse(uuidService.uuid, Seq(Error(InvalidHeader, MissingHeaderClientId, 6000))).asPresentation
       )
 
-  protected def validateAcceptHeader(implicit request: Request[_]): Either[Result, String] = {
-    val pattern = """^application/vnd[.]{1}hmrc[.]{1}1{1}[.]0[+]{1}json$""".r
-    request.headers
-      .get(HeaderNames.Accept)
-      .filter(pattern.matches(_))
-      .toRight(
-        BadRequestErrorResponse(
-          uuidService.uuid,
-          Seq(Error(InvalidHeader, InvalidOrMissingAccept, 4))
-        ).asPresentation
-      )
-  }
-
   protected def validateRecordId(recordId: String): Either[Error, String] =
     if (recordId.length != 36) {
       Left(Error(InvalidQueryParameter, InvalidRecordId, InvalidRecordIdCode.toInt))
