@@ -30,7 +30,7 @@ case class CreateRecordPayload(
   comcode: String,
   goodsDescription: String,
   countryOfOrigin: String,
-  category: Int,
+  category: Option[Int],
   assessments: Option[Seq[Assessment]] = None,
   supplementaryUnit: Option[BigDecimal] = None,
   measurementUnit: Option[String] = None,
