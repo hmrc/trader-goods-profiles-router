@@ -61,9 +61,9 @@ class GetRecordsConnector @Inject() (
   def fetchRecords(
     eori: String,
     correlationId: String,
-    lastUpdatedDate: Option[Instant] = None,
+    size: Int,
     page: Option[Int] = None,
-    size: Option[Int] = None
+    lastUpdatedDate: Option[Instant] = None
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
     val formattedLastUpdateDate: Option[String] = lastUpdatedDate.map(_.asStringSeconds)
     val uri                                     =

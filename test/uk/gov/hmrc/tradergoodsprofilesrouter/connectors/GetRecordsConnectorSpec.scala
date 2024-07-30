@@ -111,12 +111,13 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
 
   "fetchRecords" should {
     "fetch multiple records successfully" in {
+      val defaultSize                     = 500
       val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
 
       when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      val result = await(connector.fetchRecords(eori, correlationId))
+      val result = await(connector.fetchRecords(eori, correlationId, defaultSize))
 
       result.value mustBe response
     }
@@ -145,7 +146,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
-      await(connector.fetchRecords(eori, correlationId, Some(timestamp), Some(1), Some(1)))
+      await(connector.fetchRecords(eori, correlationId, 1, Some(1), Some(timestamp)))
 
       val expectedLastUpdateDate = Instant.parse("2024-05-12T12:15:15Z")
       val expectedUrl            =

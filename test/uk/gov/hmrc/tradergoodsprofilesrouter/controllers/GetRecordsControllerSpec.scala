@@ -66,6 +66,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     super.beforeEach()
 
     when(uuidService.uuid).thenReturn(correlationId)
+    when(appConfig.hawkConfig.getRecordsMaxSize).thenReturn(500)
+    when(appConfig.hawkConfig.getRecordsDefaultSize).thenReturn(500)
   }
   "getTGPRecord" should {
 
@@ -219,6 +221,21 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
           "message"       -> "Query parameter lastUpdateDate is not a date format"
         )
 
+      }
+
+      "size is more than allowed max size" in {
+        when(getRecordsService.fetchRecords(any, any, any, any)(any))
+          .thenReturn(Future.successful(Right(getMultipleRecordResponseData())))
+
+        val result = sut.getTGPRecords(eoriNumber, None, Some(1), Some(600))(
+          FakeRequest().withHeaders(validHeaders: _*)
+        )
+        status(result) mustBe BAD_REQUEST
+        contentAsJson(result) mustBe Json.obj(
+          "correlationId" -> s"$correlationId",
+          "code"          -> "030",
+          "message"       -> "Invalid query parameter size, max allowed size is : 500"
+        )
       }
     }
 

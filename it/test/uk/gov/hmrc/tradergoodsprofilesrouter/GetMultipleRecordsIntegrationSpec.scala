@@ -305,7 +305,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
         "Bad Request with unexpected error" in {
           stubFor(
-            get(urlEqualTo(s"$hawkConnectorPath/$eori"))
+            get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
               .withHeader("X-Forwarded-Host", equalTo("MDTP"))
               .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
               .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
@@ -355,7 +355,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         }
         "Bad Request with unable to parse the detail" in {
           stubFor(
-            get(urlEqualTo(s"$hawkConnectorPath/$eori"))
+            get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
               .willReturn(
                 aResponse()
                   .withStatus(BAD_REQUEST)
@@ -389,7 +389,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         }
         "Bad Request with invalid json" in {
           stubFor(
-            get(urlEqualTo(s"$hawkConnectorPath/$eori"))
+            get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -464,6 +464,24 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
       )
 
     }
+
+    "should return an error if size is more than allowed max size" in {
+      stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()))
+
+      val response = wsClient
+        .url(fullUrl(s"/traders/$eori/records?size=501"))
+        .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
+        .get()
+        .futureValue
+
+      response.status shouldBe BAD_REQUEST
+      response.json   shouldBe Json.obj(
+        "correlationId" -> s"$correlationId",
+        "code"          -> "030",
+        "message"       -> "Invalid query parameter size, max allowed size is : 500"
+      )
+
+    }
   }
 
   private def sendRequestAndWait(url: String) =
@@ -483,7 +501,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     size: Option[Int] = None
   ) = {
     val uri =
-      uri"$hawkConnectorPath/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=$size"
+      uri"$hawkConnectorPath/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=${size.getOrElse(500)}"
 
     stubFor(
       get(urlEqualTo(s"$uri"))

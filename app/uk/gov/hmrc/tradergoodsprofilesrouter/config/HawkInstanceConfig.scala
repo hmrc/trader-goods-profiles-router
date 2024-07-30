@@ -32,7 +32,9 @@ case class HawkInstanceConfig(
   recordGetToken: String,
   recordCreateToken: String,
   recordRemoveToken: String,
-  maintainProfileToken: String
+  maintainProfileToken: String,
+  getRecordsMaxSize: Int,
+  getRecordsDefaultSize: Int
 ) {
   lazy val getRecordsUrl: String      = s"$protocol://$host:$port$getRecords"
   lazy val createRecordUrl: String    = s"$protocol://$host:$port$createRecord"
@@ -66,7 +68,9 @@ object HawkInstanceConfig {
         config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
         config.getOptional[String]("record-create-token").getOrElse("dummyRecordCreateBearerToken"),
         config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),
-        config.getOptional[String]("maintain-profile-token").getOrElse("dummyMaintainProfileBearerToken")
+        config.getOptional[String]("maintain-profile-token").getOrElse("dummyMaintainProfileBearerToken"),
+        config.get[Int]("default-size"),
+        config.get[Int]("max-size")
       )
     }
 }
