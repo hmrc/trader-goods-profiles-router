@@ -52,15 +52,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
       "valid without optional query parameter" in {
         stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()))
 
-        val response = wsClient
-          .url(url)
-          .withHttpHeaders(
-            ("X-Client-ID", "tss"),
-            ("Accept", "application/vnd.hmrc.1.0+json"),
-            ("Accept", "application/vnd.hmrc.1.0+json")
-          )
-          .get()
-          .futureValue
+        val response = sendRequestAndWait(url)
 
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
@@ -70,11 +62,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
       "valid with optional query parameter lastUpdatedDate, page and size" in {
         stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()), Some(dateTime.toString), Some(1), Some(1))
 
-        val response = wsClient
-          .url(fullUrl(s"/traders/$eori/records/?lastUpdatedDate=$dateTime&page=1&size=1"))
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-          .get()
-          .futureValue
+        val response = sendRequestAndWait(fullUrl(s"/traders/$eori/records/?lastUpdatedDate=$dateTime&page=1&size=1"))
 
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
@@ -84,11 +72,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
       "valid with optional query parameter page and size" in {
         stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()), None, Some(1), Some(1))
 
-        val response = wsClient
-          .url(fullUrl(s"/traders/$eori/records?page=1&size=1"))
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-          .get()
-          .futureValue
+        val response = sendRequestAndWait(fullUrl(s"/traders/$eori/records?page=1&size=1"))
 
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
@@ -98,11 +82,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
       "valid with optional query parameter page" in {
         stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()), None, Some(1), None)
 
-        val response = wsClient
-          .url(fullUrl(s"/traders/$eori/records?page=1"))
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-          .get()
-          .futureValue
+        val response = sendRequestAndWait(fullUrl(s"/traders/$eori/records?page=1"))
 
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
@@ -112,11 +92,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
       "valid with optional query parameter lastUpdatedDate" in {
         stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()), Some(dateTime.toString))
 
-        val response = wsClient
-          .url(fullUrl(s"/traders/$eori/records?lastUpdatedDate=$dateTime"))
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-          .get()
-          .futureValue
+        val response = sendRequestAndWait(fullUrl(s"/traders/$eori/records?lastUpdatedDate=$dateTime"))
 
         response.status shouldBe OK
         response.json   shouldBe Json.toJson(getMultipleRecordResponseData.as[GetRecordsResponse])
@@ -127,12 +103,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Forbidden" in {
           stubForEis(FORBIDDEN)
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe FORBIDDEN
           response.json   shouldBe Json.obj(
@@ -146,12 +117,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Not Found" in {
           stubForEis(NOT_FOUND)
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe NOT_FOUND
           response.json   shouldBe Json.obj(
@@ -165,12 +131,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Method Not Allowed" in {
           stubForEis(METHOD_NOT_ALLOWED)
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe METHOD_NOT_ALLOWED
           response.json   shouldBe Json.obj(
@@ -184,12 +145,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe SERVICE_UNAVAILABLE
           response.json   shouldBe Json.obj(
@@ -203,12 +159,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("500", "Internal Server Error")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -222,12 +173,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error with 200 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("200", "Internal Server Error")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -241,12 +187,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error with 400 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("400", "Internal Error Response")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -260,12 +201,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error with 401 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -279,12 +215,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error with 404 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -298,12 +229,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error with 405 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("405", "Method Not Allowed")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -317,12 +243,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error with 502 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -336,12 +257,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error with 503 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("503", "Service Unavailable")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -355,12 +271,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Internal Server Error with unknown errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("501", "Not Implemented")))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -380,12 +291,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponseBody))
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json   shouldBe Json.obj(
@@ -429,12 +335,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
               )
           )
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
@@ -457,7 +358,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
             get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
               .willReturn(
                 aResponse()
-                  .withHeader("Content-Type", "application/json")
                   .withStatus(BAD_REQUEST)
                   .withBody(s"""
                                |{
@@ -476,12 +376,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
               )
           )
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
@@ -495,12 +390,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "Bad Request with invalid json" in {
           stubFor(
             get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-              .withHeader("X-Client-ID", equalTo("tss"))
               .willReturn(
                 aResponse()
                   .withHeader("Content-Type", "application/json")
@@ -513,12 +402,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
               )
           )
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-              .get()
-          )
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe BAD_REQUEST
           response.json   shouldBe Json.obj(
@@ -530,37 +414,11 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
       }
-      "invalid with missing mandatory header" in {
 
-        val response = wsClient
-          .url(url)
-          .get()
-          .futureValue
-
-        response.status shouldBe BAD_REQUEST
-        response.json   shouldBe Json.obj(
-          "correlationId" -> correlationId,
-          "code"          -> "BAD_REQUEST",
-          "message"       -> "Bad Request",
-          "errors"        -> Json.arr(
-            Json.obj(
-              "code"        -> "INVALID_HEADER",
-              "message"     -> "Missing mandatory header X-Client-ID",
-              "errorNumber" -> 6000
-            )
-          )
-        )
-
-        verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-      }
       "forbidden with any of the following" - {
         "EORI number is not authorized" in {
 
-          val response = wsClient
-            .url(fullUrl(s"/traders/GB123456789015/records"))
-            .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-            .get()
-            .futureValue
+          val response = sendRequestAndWait(fullUrl(s"/traders/GB123456789015/records"))
 
           response.status shouldBe FORBIDDEN
           response.json   shouldBe Json.obj(
@@ -575,11 +433,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         "incorrect enrolment key is used to authorise " in {
           withAuthorizedTrader(enrolment = Enrolment("OTHER-ENROLMENT-KEY"))
 
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-            .get()
-            .futureValue
+          val response = sendRequestAndWait(url)
 
           response.status shouldBe FORBIDDEN
           response.json   shouldBe Json.obj(
@@ -630,6 +484,15 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     }
   }
 
+  private def sendRequestAndWait(url: String) =
+    // TODO: After Drop 1.1 this should be removed and use the request without the X-CLient-ID header -  Ticket: TGP-2014
+    if (appConfig.isDrop1_1_enabled)
+      await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
+    else
+      await(
+        wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
+      )
+
   private def stubForEis(
     httpStatus: Int,
     body: Option[String] = None,
@@ -647,7 +510,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
         .withHeader("Date", equalTo(timestamp))
         .withHeader("Accept", equalTo("application/json"))
         .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-        .withHeader("X-Client-ID", equalTo("tss"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
@@ -729,19 +591,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     |    "accreditationStatus": "Rejected",
     |    "goodsDescription": "Organic bananas",
     |    "countryOfOrigin": "EC",
-    |    "category": 3,
-    |    "assessments": [
-    |      {
-    |        "assessmentId": "abc123",
-    |        "primaryCategory": 1,
-    |        "condition": {
-    |          "type": "abc123",
-    |          "conditionId": "Y923",
-    |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-    |          "conditionTraderText": "Excluded product"
-    |        }
-    |      }
-    |    ],
     |    "supplementaryUnit": 500,
     |    "measurementUnit": "square meters(m^2)",
     |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
@@ -752,8 +601,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     |    "reviewReason": null,
     |    "declarable": "IMMI declarable",
     |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-    |    "nirmsNumber": "RMS-GB-123456",
-    |    "niphlNumber": "6 S12345",
     |    "locked": false,
     |    "createdDateTime": "2024-11-18T23:20:19Z",
     |    "updatedDateTime": "2024-11-18T23:20:19Z"
@@ -822,19 +669,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
                   |    "adviceStatus": "Advice not provided",
                   |    "goodsDescription": "Organic bananas",
                   |    "countryOfOrigin": "EC",
-                  |    "category": 3,
-                  |    "assessments": [
-                  |      {
-                  |        "assessmentId": "abc123",
-                  |        "primaryCategory": 1,
-                  |        "condition": {
-                  |          "type": "abc123",
-                  |          "conditionId": "Y923",
-                  |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-                  |          "conditionTraderText": "Excluded product"
-                  |        }
-                  |      }
-                  |    ],
                   |    "supplementaryUnit": 500,
                   |    "measurementUnit": "square meters(m^2)",
                   |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
@@ -845,8 +679,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
                   |    "reviewReason": null,
                   |    "declarable": "IMMI declarable",
                   |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-                  |    "nirmsNumber": "RMS-GB-123456",
-                  |    "niphlNumber": "6 S12345",
                   |    "locked": false,
                   |    "createdDateTime": "2024-11-18T23:20:19Z",
                   |    "updatedDateTime": "2024-11-18T23:20:19Z"

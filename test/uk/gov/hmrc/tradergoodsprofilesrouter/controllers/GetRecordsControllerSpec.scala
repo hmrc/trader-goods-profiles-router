@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
 import org.mockito.MockitoSugar.when
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -32,7 +33,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidSer
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
-import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
 
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
@@ -88,15 +88,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
-
-      val result = sut.getTGPRecord("eori", recordId)(
-        FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe createMissingHeaderErrorResponse
-    }
-
     "return 400 Bad request when mandatory request header Accept is missing" in {
 
       val result = sut.getTGPRecord("eori", recordId)(
@@ -124,6 +115,26 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
           "message"       -> "error"
         )
       }
+    }
+
+    "return OK without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+      when(getRecordsService.fetchRecord(any, any, any)(any))
+        .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
+
+      val result = sut.getTGPRecord("GB123456789001", recordId)(FakeRequest().withHeaders(validHeaders.filterNot {
+        case (name, _) =>
+          name.equalsIgnoreCase("X-Client-ID")
+      }: _*))
+      status(result) mustBe OK
+    }
+
+    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+    "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+
+      val result = sut.getTGPRecord("GB123456789001", recordId)(FakeRequest().withHeaders(validHeaders: _*))
+      status(result) mustBe OK
     }
   }
 
@@ -157,13 +168,22 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
+    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+    "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(false)
 
-      val result = sut.getTGPRecords("eoriNumber")(
-        FakeRequest()
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe createMissingHeaderErrorResponse
+      val result = sut.getTGPRecords(eoriNumber)(FakeRequest().withHeaders(validHeaders: _*))
+      status(result) mustBe OK
+    }
+
+    "return OK without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+
+      val result = sut.getTGPRecords(eoriNumber)(FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) =>
+        name.equalsIgnoreCase("X-Client-ID")
+      }: _*))
+
+      status(result) mustBe OK
     }
 
     "return an error" when {
