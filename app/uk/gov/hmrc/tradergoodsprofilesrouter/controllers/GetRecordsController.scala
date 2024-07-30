@@ -72,7 +72,7 @@ class GetRecordsController @Inject() (
       _         <- EitherT.fromEither[Future](validateAcceptHeader)
       validDate <- validateDate(lastUpdatedDate)
       validSize <- validateMaxSize(size)
-      records   <- getRecords(eori, validSize, validDate, page)
+      records   <- getRecords(eori, validSize, page, validDate)
     } yield Ok(Json.toJson(records))
 
     result.merge
@@ -113,11 +113,11 @@ class GetRecordsController @Inject() (
   private def getRecords(
     eori: String,
     size: Int,
-    validDate: Option[Instant],
-    page: Option[Int]
+    page: Option[Int],
+    validDate: Option[Instant]
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetRecordsResponse] =
     EitherT(
-      getRecordService.fetchRecords(eori, size, validDate, page)
+      getRecordService.fetchRecords(eori, size, page, validDate)
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
