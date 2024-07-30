@@ -27,6 +27,7 @@ import play.api.libs.ws.WSClient
 import play.api.{Application, inject}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.test.WireMockSupport
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DateTimeService, UuidService}
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
@@ -40,10 +41,14 @@ abstract class BaseIntegrationSpec
     with AuthTestSupport
     with WireMockSupport {
 
-  val wsClient: WSClient                      = app.injector.instanceOf[WSClient]
-  val baseUrl: String                         = s"http://localhost:$port"
-  lazy val uuidService: UuidService           = mock[UuidService]
-  lazy val dateTimeService: DateTimeService   = mock[DateTimeService]
+  val wsClient: WSClient                    = app.injector.instanceOf[WSClient]
+  val baseUrl: String                       = s"http://localhost:$port"
+  lazy val uuidService: UuidService         = mock[UuidService]
+  lazy val dateTimeService: DateTimeService = mock[DateTimeService]
+
+  // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+
+  lazy val appConfig                          = app.injector.instanceOf[AppConfig]
   override def fakeApplication(): Application =
     baseApplicationBuilder()
       .configure(extraApplicationConfig)
@@ -64,12 +69,12 @@ abstract class BaseIntegrationSpec
 
   def fullUrl(path: String): String = s"$baseUrl/trader-goods-profiles-router$path"
 
-  def verifyThatDownstreamApiWasCalled(connectorPath: String): Unit    =
+  def verifyThatDownstreamApiWasCalled(connectorPath: String): Unit =
     withClue(s"We expected a single downstream API (stub) to be called at $connectorPath, but it wasn't.") {
       getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 1
     }
 
-  def verifyThatMultipleDownstreamApiWasCalled(): Unit                         =
+  def verifyThatMultipleDownstreamApiWasCalled(): Unit                 =
     withClue("We expected multiple downstream API (stub) to be called, but it wasn't.") {
       getAllServeEvents.asScala.count(_.getWasMatched) shouldBe 2
     }

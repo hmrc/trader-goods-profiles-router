@@ -36,7 +36,13 @@ import scala.concurrent.ExecutionContext
 trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValues {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
+
+  /*
+   * TODO: After Drop 1.1 this should be changes and use the request without the X-CLient-ID header -  Ticket: TGP-2014
+   * This can be changes to implicit val hc: HeaderCarrier    = HeaderCarrier()
+   * as client Id has been removed form EIS header (TGP-1889,...)
+   */
+  implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
 
   val appConfig: AppConfig             = mock[AppConfig]
   val httpClientV2: HttpClientV2       = mock[HttpClientV2]
@@ -66,7 +72,6 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     "X-Forwarded-Host" -> forwardedHost,
     "Accept"           -> MimeTypes.JSON,
     "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-    "X-Client-ID"      -> "TSS",
     "Authorization"    -> s"Bearer $accessToken"
   )
 
