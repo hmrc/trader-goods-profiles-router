@@ -29,7 +29,7 @@ trait BaseConnector {
   def dateTimeService: DateTimeService
 
   protected def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit
-                                                                                                hc: HeaderCarrier
+    hc: HeaderCarrier
   ): Seq[(String, String)] =
     Seq(
       HeaderNames.CorrelationId -> correlationId,
@@ -56,8 +56,6 @@ trait BaseConnector {
     if (appConfig.isDrop1_1_enabled) headers
     else headers :+ (HeaderNames.ClientId -> getClientId)
   }
-
-
 
   protected def buildHeadersForGetMethod(
     correlationId: String,
