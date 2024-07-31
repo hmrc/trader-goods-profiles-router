@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.MockitoSugar.{reset, verify, verifyZeroInteractions, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -25,6 +26,7 @@ import play.api.http.Status.{BAD_REQUEST, CREATED}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
@@ -39,12 +41,14 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
   val createRecordService: CreateRecordService = mock[CreateRecordService]
   val uuidService: UuidService                 = mock[UuidService]
+  private val appConfig                        = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   private val sut =
     new CreateRecordController(
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       createRecordService,
+      appConfig,
       uuidService
     )
 
@@ -108,6 +112,30 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       status(result) mustBe BAD_REQUEST
 
       verifyZeroInteractions(createRecordService)
+    }
+
+    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+    "return CREATED validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+      when(createRecordService.createRecord(any, any)(any))
+        .thenReturn(Future.successful(Right(createRecordResponseData)))
+
+      val request = FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
+      val result  = sut.create("eori")(request)
+
+      status(result) mustBe CREATED
+    }
+
+    "return CREATED without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+
+      when(createRecordService.createRecord(any, any)(any))
+        .thenReturn(Future.successful(Right(createRecordResponseData)))
+
+      val request = FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
+      val result  = sut.create("eori")(request)
+
+      status(result) mustBe CREATED
     }
   }
 

@@ -75,7 +75,9 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
 
     "send a request with the right parameters" when {
       "isDrop1_1_enabled feature flag is true" in {
+        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
+        when(appConfig.isDrop1_1_enabled).thenReturn(true)
 
         when(requestBuilder.execute[Any](any, any))
           .thenReturn(Future.successful(Right(response)))

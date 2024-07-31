@@ -51,8 +51,10 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
 
   "maintain Profile" should {
     "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
+      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
       when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
 
       val result =
         await(connector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
