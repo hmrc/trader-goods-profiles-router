@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, MaintainProfileConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
@@ -29,7 +30,11 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.Unexpect
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class MaintainProfileService @Inject() (connector: MaintainProfileConnector, uuidService: UuidService)(implicit
+class MaintainProfileService @Inject() (
+  connector: MaintainProfileConnector,
+  uuidService: UuidService,
+  appConfig: AppConfig
+)(implicit
   ec: ExecutionContext
 ) extends Logging {
 
@@ -66,10 +71,14 @@ class MaintainProfileService @Inject() (connector: MaintainProfileConnector, uui
 
   // TODO: This will need to be removed once EIS / B&T make the same validation on their side
   private def padNiphlNumber(niphlNumber: Option[String]): Option[String] =
-    niphlNumber match {
-      case Some(niphl) =>
-        if (niphl.length >= 8) Some(niphl)
-        else Some("-" * (8 - niphl.length) + niphl)
-      case None        => None
+    if (appConfig.isDrop1_1_enabled) {
+      niphlNumber
+    } else {
+      niphlNumber match {
+        case Some(niphl) =>
+          if (niphl.length >= 8) Some(niphl)
+          else Some("-" * (8 - niphl.length) + niphl)
+        case None        => None
+      }
     }
 }
