@@ -75,11 +75,9 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "send a request with the right url" in {
 
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
       val expectedResponse = createOrUpdateRecordEisResponse
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
 
       await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 

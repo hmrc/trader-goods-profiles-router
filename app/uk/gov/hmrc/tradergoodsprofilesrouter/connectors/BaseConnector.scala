@@ -30,6 +30,19 @@ trait BaseConnector {
 
   protected def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit
     hc: HeaderCarrier
+  ): Seq[(String, String)] =
+    Seq(
+      HeaderNames.CorrelationId -> correlationId,
+      HeaderNames.ForwardedHost -> forwardedHost,
+      HeaderNames.Accept        -> MimeTypes.JSON,
+      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
+      HeaderNames.ClientId      -> getClientId,
+      HeaderNames.Authorization -> accessToken,
+      HeaderNames.ContentType   -> MimeTypes.JSON
+    )
+
+  protected def buildHeadersForCreateMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
+    hc: HeaderCarrier
   ): Seq[(String, String)] = {
     val headers = Seq(
       HeaderNames.CorrelationId -> correlationId,

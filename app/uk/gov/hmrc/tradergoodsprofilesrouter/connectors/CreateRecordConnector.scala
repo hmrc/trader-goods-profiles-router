@@ -45,7 +45,7 @@ class CreateRecordConnector @Inject() (
     httpClientV2
       .post(url"$url")
       .setHeader(
-        buildHeaders(
+        buildHeadersForCreateMethod(
           correlationId,
           appConfig.hawkConfig.createRecordBearerToken,
           appConfig.hawkConfig.forwardedHost

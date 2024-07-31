@@ -61,10 +61,8 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   }
 
   "send a request with the right url for remove record" in {
-    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
-    when(appConfig.isDrop1_1_enabled).thenReturn(true)
 
     val result =
       await(connector.removeRecord(eori, recordId, actorId, correlationId))
