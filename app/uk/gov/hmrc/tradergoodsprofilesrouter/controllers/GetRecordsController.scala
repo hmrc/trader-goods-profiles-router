@@ -28,7 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, Val
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{GetRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.InvalidQueryParameter
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{InvalidQueryParameter, InvalidSizeCode}
 
 import java.time.Instant
 import javax.inject.Inject
@@ -50,7 +50,7 @@ class GetRecordsController @Inject() (
     recordId: String
   ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
-      _          <- EitherT.fromEither[Future](validateClientId)
+      _          <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _          <- EitherT.fromEither[Future](validateAcceptHeader)
       _          <- EitherT
                       .fromEither[Future](validateRecordId(recordId))
@@ -68,14 +68,32 @@ class GetRecordsController @Inject() (
     size: Option[Int] = None
   ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
-      _         <- EitherT.fromEither[Future](validateClientId)
+      _         <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _         <- EitherT.fromEither[Future](validateAcceptHeader)
       validDate <- validateDate(lastUpdatedDate)
-      records   <- getRecords(eori, validDate, page, size)
+      validSize <- validateMaxSize(size)
+      records   <- getRecords(eori, validSize, page, validDate)
     } yield Ok(Json.toJson(records))
 
     result.merge
   }
+
+  private def validateMaxSize(size: Option[Int]): EitherT[Future, Result, Int] =
+    size match {
+      case Some(size) if size > appConfig.hawkConfig.getRecordsMaxSize =>
+        EitherT.leftT(
+          BadRequest(
+            Json.toJson(
+              ErrorResponse(
+                uuidService.uuid,
+                InvalidSizeCode,
+                s"Invalid query parameter size, max allowed size is : ${appConfig.hawkConfig.getRecordsMaxSize}"
+              )
+            )
+          )
+        )
+      case _                                                           => EitherT.right(Future.successful(size.getOrElse(appConfig.hawkConfig.getRecordsDefaultSize)))
+    }
 
   private def validateDate(lastUpdateDate: Option[String]): EitherT[Future, Result, Option[Instant]] =
     EitherT.fromEither(
@@ -94,12 +112,12 @@ class GetRecordsController @Inject() (
 
   private def getRecords(
     eori: String,
-    validDate: Option[Instant],
+    size: Int,
     page: Option[Int],
-    size: Option[Int]
+    validDate: Option[Instant]
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetRecordsResponse] =
     EitherT(
-      getRecordService.fetchRecords(eori, validDate, page, size)
+      getRecordService.fetchRecords(eori, size, page, validDate)
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
@@ -111,4 +129,9 @@ class GetRecordsController @Inject() (
       getRecordService.fetchRecord(eori, recordId, appConfig.hawkConfig.getRecordsUrl)
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+
+  // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+  private def validateClientIdIfSupported(implicit request: Request[_]) =
+    if (!appConfig.isDrop1_1_enabled) validateClientId
+    else Right("")
 }

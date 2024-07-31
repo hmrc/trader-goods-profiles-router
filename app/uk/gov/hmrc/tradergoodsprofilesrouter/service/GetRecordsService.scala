@@ -55,15 +55,15 @@ class GetRecordsService @Inject() (eisConnector: GetRecordsConnector, uuidServic
 
   def fetchRecords(
     eori: String,
-    lastUpdatedDate: Option[Instant] = None,
+    size: Int,
     page: Option[Int] = None,
-    size: Option[Int] = None
+    lastUpdatedDate: Option[Instant] = None
   )(implicit
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, GetRecordsResponse]] = {
     val correlationId: String = uuidService.uuid
     eisConnector
-      .fetchRecords(eori, correlationId, lastUpdatedDate, page, size)
+      .fetchRecords(eori, correlationId, size, page, lastUpdatedDate)
       .map {
         case Right(response) => Right(GetRecordsResponse(response))
         case Left(response)  => Left(response)
