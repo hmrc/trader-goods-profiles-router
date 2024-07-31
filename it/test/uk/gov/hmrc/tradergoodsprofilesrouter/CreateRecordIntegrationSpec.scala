@@ -617,25 +617,6 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         }
       }
       "invalid, specifically" - {
-//        "missing required header" in {
-//          val response = sendRequestAndWait(url)
-//
-//          response.status shouldBe BAD_REQUEST
-//          response.json   shouldBe Json.obj(
-//            "correlationId" -> correlationId,
-//            "code"          -> "BAD_REQUEST",
-//            "message"       -> "Bad Request",
-//            "errors"        -> Json.arr(
-//              Json.obj(
-//                "code"        -> "INVALID_HEADER",
-//                "message"     -> "Missing mandatory header X-Client-ID",
-//                "errorNumber" -> 6000
-//              )
-//            )
-//          )
-//
-//          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-//        }
         "missing required request field" in {
           val response = wsClient
             .url(url)
