@@ -58,9 +58,22 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     "X-Forwarded-Host" -> forwardedHost,
     "Accept"           -> MimeTypes.JSON,
     "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+    "X-Client-ID"      -> "TSS",
     "Authorization"    -> s"Bearer $accessToken",
-    "Content-Type"     -> MimeTypes.JSON,
-    "X-Client-ID"      -> "TSS"
+    "Content-Type"     -> MimeTypes.JSON
+  )
+
+  def expectedHeaderForUpdateMethod(
+    correlationId: String,
+    accessToken: String,
+    forwardedHost: String = "MDTP"
+  ): Seq[(String, String)] = Seq(
+    "X-Correlation-ID" -> correlationId,
+    "X-Forwarded-Host" -> forwardedHost,
+    "Accept"           -> MimeTypes.JSON,
+    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+    "Authorization"    -> s"Bearer $accessToken",
+    "Content-Type"     -> MimeTypes.JSON
   )
 
   def expectedHeaderForGetMethod(
