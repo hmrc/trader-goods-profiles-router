@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -25,6 +26,7 @@ import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
@@ -46,12 +48,14 @@ class UpdateRecordControllerSpec
   private val recordId                     = UUID.randomUUID().toString
   private val updateRecordService          = mock[UpdateRecordService]
   private val mockUuidService: UuidService = mock[UuidService]
+  private val appConfig                    = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   private val sut =
     new UpdateRecordController(
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       updateRecordService,
+      appConfig,
       mockUuidService
     )
 
@@ -76,6 +80,32 @@ class UpdateRecordControllerSpec
       val result =
         sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
 
+      status(result) mustBe OK
+    }
+
+    "return OK without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+      when(updateRecordService.updateRecord(any, any, any)(any))
+        .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
+
+      val result =
+        sut.update(eoriNumber, recordId)(
+          FakeRequest()
+            .withBody(updateRecordRequestData)
+            .withHeaders(validHeaders.filterNot { case (name, _) =>
+              name.equalsIgnoreCase("X-Client-ID")
+            }: _*)
+        )
+      status(result) mustBe OK
+    }
+
+    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
+    "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+      when(updateRecordService.updateRecord(any, any, any)(any))
+        .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
+      val result =
+        sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
       status(result) mustBe OK
     }
 
