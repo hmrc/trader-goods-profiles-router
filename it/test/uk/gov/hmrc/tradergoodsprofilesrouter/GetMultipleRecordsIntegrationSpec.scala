@@ -302,37 +302,44 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
-
+        // TODO: Remove x-client-id - Ticket: TGP-2014
         "Bad Request with unexpected error" in {
+          val headers = Seq(
+            "X-Forwarded-Host" -> "MDTP",
+            "X-Correlation-ID" -> "d677693e-9981-4ee3-8574-654981ebe606",
+            "Date"             -> "Fri, 17 Dec 2021 09:30:47 GMT",
+            "Accept"           -> "application/json",
+            "Authorization"    -> "Bearer c29tZS10b2tlbgo="
+          ) ++ (if (!appConfig.isDrop1_1_enabled) Seq("X-Client-ID" -> "tss") else Seq.empty)
+
+          val stub    = get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
+
+          headers.foreach { case (key, value) =>
+            stub.withHeader(key, equalTo(value))
+          }
+
           stubFor(
-            get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
-              .withHeader("X-Forwarded-Host", equalTo("MDTP"))
-              .withHeader("X-Correlation-ID", equalTo("d677693e-9981-4ee3-8574-654981ebe606"))
-              .withHeader("Date", equalTo("Fri, 17 Dec 2021 09:30:47 GMT"))
-              .withHeader("Accept", equalTo("application/json"))
-              .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-              .withHeader("X-Client-ID", equalTo("tss"))
-              .willReturn(
-                aResponse()
-                  .withHeader("Content-Type", "application/json")
-                  .withStatus(BAD_REQUEST)
-                  .withBody(s"""
-                               |{
-                               |  "errorDetail": {
-                               |    "timestamp": "2023-09-14T11:29:18Z",
-                               |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                               |    "errorCode": "400",
-                               |    "errorMessage": "Invalid request parameter",
-                               |    "source": "BACKEND",
-                               |    "sourceFaultDetail": {
-                               |      "detail": [
-                               |      "error: 040, message: undefined"
-                               |      ]
-                               |    }
-                               |  }
-                               |}
-                               |""".stripMargin)
-              )
+            stub.willReturn(
+              aResponse()
+                .withHeader("Content-Type", "application/json")
+                .withStatus(BAD_REQUEST)
+                .withBody(s"""
+                     |{
+                     |  "errorDetail": {
+                     |    "timestamp": "2023-09-14T11:29:18Z",
+                     |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
+                     |    "errorCode": "400",
+                     |    "errorMessage": "Invalid request parameter",
+                     |    "source": "BACKEND",
+                     |    "sourceFaultDetail": {
+                     |      "detail": [
+                     |      "error: 040, message: undefined"
+                     |      ]
+                     |    }
+                     |  }
+                     |}
+                     |""".stripMargin)
+            )
           )
 
           val response = sendRequestAndWait(url)

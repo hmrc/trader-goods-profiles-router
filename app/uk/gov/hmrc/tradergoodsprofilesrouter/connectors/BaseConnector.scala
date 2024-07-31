@@ -28,7 +28,21 @@ trait BaseConnector {
   def appConfig: AppConfig
   def dateTimeService: DateTimeService
 
-  protected def buildHeaders(
+  protected def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit
+    hc: HeaderCarrier
+  ): Seq[(String, String)] =
+    Seq(
+      HeaderNames.CorrelationId -> correlationId,
+      HeaderNames.ForwardedHost -> forwardedHost,
+      HeaderNames.Accept        -> MimeTypes.JSON,
+      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
+      HeaderNames.Authorization -> accessToken,
+      HeaderNames.ContentType   -> MimeTypes.JSON,
+      HeaderNames.ClientId      -> getClientId
+    )
+
+  // TODO: Remove this method- TGP-2014
+  protected def buildHeadersForMaintainProfile(
     correlationId: String,
     accessToken: String,
     forwardedHost: String
