@@ -1075,7 +1075,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |  "version": 1,
                |  "active": true,
                |  "toReview": true,
-               |  "reviewReason": "The restrictions have changed or there may be new restrictions. You need to categorise the record.",
+               |  "reviewReason": "To The commodity code or restrictions have changed. You'll need to categorise the record.",
                |  "declarable": "SPIMM",
                |  "ukimsNumber": "XIUKIM47699357400020231115081800",
                |  "nirmsNumber": "RMS-GB-123456",
