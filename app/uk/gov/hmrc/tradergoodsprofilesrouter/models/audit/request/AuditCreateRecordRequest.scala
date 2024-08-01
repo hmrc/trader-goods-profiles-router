@@ -25,7 +25,7 @@ case class AuditCreateRecordRequest(
   actorId: String,
   goodsDescription: String,
   traderReference: String,
-  category: Int,
+  category: Option[Int],
   commodityCode: String,
   countryOfOrigin: String,
   commodityCodeEffectiveFrom: Instant,
