@@ -38,6 +38,7 @@ trait BaseConnector {
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
       HeaderNames.Authorization -> accessToken,
       HeaderNames.ContentType   -> MimeTypes.JSON,
+      HeaderNames.ClientId      -> getClientId
     )
 
   // TODO: Remove this method- TGP-2014
@@ -82,7 +83,7 @@ trait BaseConnector {
   }
 
   protected def buildHeadersForUpdateMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
-                                                                                                               hc: HeaderCarrier
+    hc: HeaderCarrier
   ): Seq[(String, String)] = {
     val headers = Seq(
       HeaderNames.CorrelationId -> correlationId,
