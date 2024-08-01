@@ -41,7 +41,7 @@ object ReviewReason extends Enum[ReviewReason] with PlayEnum[ReviewReason] {
       )
   case object measure
       extends ReviewReason(
-        "To The commodity code or restrictions have changed. You'll need to categorise the record."
+        "The commodity code or restrictions have changed. You'll need to categorise the record."
       )
 
   def fromString(reason: String): Option[ReviewReason] = withNameOption(reason)
