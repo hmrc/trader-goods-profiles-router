@@ -41,6 +41,22 @@ trait BaseConnector {
       HeaderNames.ContentType   -> MimeTypes.JSON
     )
 
+  protected def buildHeadersForUpdateMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
+    hc: HeaderCarrier
+  ): Seq[(String, String)] = {
+    val headers = Seq(
+      HeaderNames.CorrelationId -> correlationId,
+      HeaderNames.ForwardedHost -> forwardedHost,
+      HeaderNames.Accept        -> MimeTypes.JSON,
+      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
+      HeaderNames.Authorization -> accessToken,
+      HeaderNames.ContentType   -> MimeTypes.JSON
+    )
+    // TODO For drop1.1 client Id has been removed (TGP-1903)
+    if (appConfig.isDrop1_1_enabled) headers
+    else headers :+ (HeaderNames.ClientId -> getClientId)
+  }
+
   protected def buildHeadersForGetMethod(
     correlationId: String,
     accessToken: String,
