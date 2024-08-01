@@ -74,11 +74,8 @@ class MaintainProfileService @Inject() (
     if (appConfig.isDrop1_1_enabled) {
       niphlNumber
     } else {
-      niphlNumber match {
-        case Some(niphl) =>
-          if (niphl.length >= 8) Some(niphl)
-          else Some("-" * (8 - niphl.length) + niphl)
-        case None        => None
+      niphlNumber.map { niphl =>
+        if (niphl.length >= 8) niphl else "-" * (8 - niphl.length) + niphl
       }
     }
 }
