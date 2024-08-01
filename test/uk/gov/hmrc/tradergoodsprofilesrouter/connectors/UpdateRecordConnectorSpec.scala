@@ -73,20 +73,47 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       result.left.value mustBe BadRequest("error")
     }
 
-    "send a request with the right url" in {
+    "send a request with the right url" when {
 
-      val expectedResponse = createOrUpdateRecordEisResponse
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
-        .thenReturn(Future.successful(Right(expectedResponse)))
+      "isDrop1_1_enabled feature flag is true" in {
+        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+        val expectedResponse = createOrUpdateRecordEisResponse
+        when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+          .thenReturn(Future.successful(Right(expectedResponse)))
+        when(appConfig.isDrop1_1_enabled).thenReturn(true)
 
-      await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
+        await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
-      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*)
-      verify(requestBuilder).withBody(updateRecordPayload)
+        val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
+        verify(httpClientV2).put(url"$expectedUrl")
+        verify(requestBuilder).setHeader(
+          expectedHeaderForUpdateMethod(correlationId, "dummyRecordUpdateBearerToken"): _*
+        )
+        verify(requestBuilder).withBody(updateRecordPayload)
+        verifyExecuteForHttpReader(correlationId)
+      }
 
-      verifyExecuteForHttpReader(correlationId)
+      // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
+      "isDrop1_1_enabled feature flag is false" in {
+        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+        val expectedResponse = createOrUpdateRecordEisResponse
+        when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+          .thenReturn(Future.successful(Right(expectedResponse)))
+        when(appConfig.isDrop1_1_enabled).thenReturn(false)
+
+        await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
+
+        val expectedUrl                = s"http://localhost:1234/tgp/updaterecord/v1"
+        val expectedHeaderWithClientId =
+          expectedHeaderForUpdateMethod(correlationId, "dummyRecordUpdateBearerToken") :+ ("X-Client-ID" -> "TSS")
+        verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
+        verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
+        verify(httpClientV2).put(url"$expectedUrl")
+        verify(requestBuilder).withBody(updateRecordPayload)
+
+        verifyExecuteForHttpReader(correlationId)
+      }
+
     }
   }
 
