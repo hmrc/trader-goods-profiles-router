@@ -36,13 +36,13 @@ trait BaseConnector {
       HeaderNames.ForwardedHost -> forwardedHost,
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.ClientId      -> getClientId,
       HeaderNames.Authorization -> accessToken,
-      HeaderNames.ContentType   -> MimeTypes.JSON
+      HeaderNames.ContentType   -> MimeTypes.JSON,
+      HeaderNames.ClientId      -> getClientId
     )
 
   protected def buildHeadersForCreateMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
-                                                                                                               hc: HeaderCarrier
+    hc: HeaderCarrier
   ): Seq[(String, String)] = {
     val headers = Seq(
       HeaderNames.CorrelationId -> correlationId,
@@ -59,7 +59,6 @@ trait BaseConnector {
     if (appConfig.isDrop1_1_enabled) headers
     else headers :+ (HeaderNames.ClientId -> getClientId)
   }
-
 
   // TODO: Remove this method- TGP-2014
   protected def buildHeadersForMaintainProfile(
