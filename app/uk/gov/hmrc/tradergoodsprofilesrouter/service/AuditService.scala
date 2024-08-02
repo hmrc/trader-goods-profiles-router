@@ -92,7 +92,6 @@ class AuditService @Inject() (
     hc: HeaderCarrier
   ): Future[Done] = {
     val auditDetails = AuditCreateRecordDetails(
-      //clientId: Option[String] = hc.headers(Seq(HeaderNames.ClientId)).headOption.map(_._2)
       clientId = hc.headers(Seq(HeaderNames.ClientId)).headOption.map(_._2),
       requestDateTime = requestedDateTime,
       responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
