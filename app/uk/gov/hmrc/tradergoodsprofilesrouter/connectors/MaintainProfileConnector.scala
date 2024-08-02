@@ -43,7 +43,7 @@ class MaintainProfileConnector @Inject() (
     httpClientV2
       .put(url"$url")
       .setHeader(
-        buildHeaders(
+        buildHeadersForMaintainProfile( // TODO: Update this when removing x-client-id TGP-2014
           correlationId,
           appConfig.hawkConfig.maintainProfileBearerToken,
           appConfig.hawkConfig.forwardedHost

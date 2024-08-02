@@ -86,7 +86,7 @@ trait ValidationRules {
       .map(x =>
         BadRequestErrorResponse(
           uuidService.uuid,
-          convertError[A](x, fieldToErrorCodeTable)
+          convertError(x, fieldToErrorCodeTable)
         ).asPresentation
       )
 
@@ -138,7 +138,7 @@ trait ValidationRules {
       case _                                                                      => Right(None)
     }
 
-  private def convertError[T](
+  private def convertError(
     errors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])],
     fieldToErrorCodeTable: Map[String, (String, String)]
   ): Seq[Error] =

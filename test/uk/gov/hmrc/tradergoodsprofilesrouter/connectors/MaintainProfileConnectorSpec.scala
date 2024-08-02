@@ -17,7 +17,9 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.Mockito.never
 import org.mockito.MockitoSugar.{reset, verify, when}
+import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -50,7 +52,10 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
   }
 
   "maintain Profile" should {
+    // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
     "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+
       when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
 
@@ -60,6 +65,37 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
       verify(httpClientV2).put(url"$expectedUrl")
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyMaintainProfileBearerToken"): _*)
+      verify(requestBuilder).withBody(maintainProfileEisRequest)
+      verify(requestBuilder).execute(any, any)
+      verifyExecuteForHttpReader(correlationId)
+
+      result.value mustBe maintainProfileResponse
+    }
+
+    // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
+    "return a 200 ok if EIS successfully without x-client-id when isDrop1_1_enabled is true" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
+        .thenReturn(Future.successful(Right(maintainProfileResponse)))
+
+      val result =
+        await(connector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
+
+      val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
+      verify(httpClientV2).put(url"$expectedUrl")
+
+      verify(requestBuilder).setHeader(
+        "X-Correlation-ID" -> correlationId,
+        "X-Forwarded-Host" -> "MDTP",
+        "Accept"           -> MimeTypes.JSON,
+        "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+        "Authorization"    -> "Bearer dummyMaintainProfileBearerToken",
+        "Content-Type"     -> MimeTypes.JSON
+      )
+
+      verify(requestBuilder, never()).setHeader("X-Client-ID" -> "TSS")
       verify(requestBuilder).withBody(maintainProfileEisRequest)
       verify(requestBuilder).execute(any, any)
       verifyExecuteForHttpReader(correlationId)

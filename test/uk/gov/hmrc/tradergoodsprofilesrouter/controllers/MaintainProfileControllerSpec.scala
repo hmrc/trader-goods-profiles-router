@@ -17,13 +17,16 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import play.api.http.MimeTypes
 import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
@@ -39,26 +42,46 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
 
   val mockMaintainProfileService: MaintainProfileService = mock[MaintainProfileService]
   val mockUuidService: UuidService                       = mock[UuidService]
+  private val appConfig                                  = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   private val sut =
     new MaintainProfileController(
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       mockMaintainProfileService,
+      appConfig,
       mockUuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId",
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.Accept      -> "application/vnd.hmrc.1.0+json",
+    HeaderNames.ContentType -> MimeTypes.JSON,
+    HeaderNames.ClientId    -> "clientId"
   )
 
   "PUT /profile/maintain " should {
+    // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
     "return a 200 ok when the call to EIS is successful to maintain a record" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+
       when(mockMaintainProfileService.maintainProfile(any, any)(any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
 
       val result = sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders(validHeaders: _*))
+
+      status(result) mustBe OK
+      contentAsJson(result) mustBe Json.toJson(maintainProfileResponse)
+    }
+
+    // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
+    "return a 200 Ok without validating the x-client-id when the isDrop1_1_enabled is true" in {
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+      when(mockMaintainProfileService.maintainProfile(any, any)(any))
+        .thenReturn(Future.successful(Right(maintainProfileResponse)))
+      val headersWithoutClientId = validHeaders.filterNot { case (name, _) => name == "X-Client-ID" }
+
+      val result =
+        sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders(headersWithoutClientId: _*))
 
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.toJson(maintainProfileResponse)
