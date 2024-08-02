@@ -36,10 +36,30 @@ trait BaseConnector {
       HeaderNames.ForwardedHost -> forwardedHost,
       HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
+      HeaderNames.ClientId      -> getClientId,
       HeaderNames.Authorization -> accessToken,
-      HeaderNames.ContentType   -> MimeTypes.JSON,
-      HeaderNames.ClientId      -> getClientId
+      HeaderNames.ContentType   -> MimeTypes.JSON
     )
+
+  protected def buildHeadersForCreateMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
+                                                                                                               hc: HeaderCarrier
+  ): Seq[(String, String)] = {
+    val headers = Seq(
+      HeaderNames.CorrelationId -> correlationId,
+      HeaderNames.ForwardedHost -> forwardedHost,
+      HeaderNames.Accept        -> MimeTypes.JSON,
+      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
+      HeaderNames.Authorization -> accessToken,
+      HeaderNames.ContentType   -> MimeTypes.JSON
+    )
+
+    //ToDo: remove this and return a header without the client ID after drop1.1.
+    // For drop1.1 client Id has been removed (TGP-1889)
+    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+    if (appConfig.isDrop1_1_enabled) headers
+    else headers :+ (HeaderNames.ClientId -> getClientId)
+  }
+
 
   // TODO: Remove this method- TGP-2014
   protected def buildHeadersForMaintainProfile(
