@@ -22,7 +22,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.AuditUpdateRe
 
 case class AuditUpdateRecordDetails(
   private val journey: String = "UpdateRecord",
-  clientId: String,
+  clientId: Option[String],
   requestDateTime: String,
   responseDateTime: String,
   outcome: AuditOutcome,

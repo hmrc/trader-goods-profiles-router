@@ -22,7 +22,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditCreateRecordRequ
 
 case class AuditCreateRecordDetails(
   private val journey: String = "CreateRecord",
-  clientId: String,
+  clientId: Option[String],
   requestDateTime: String,
   responseDateTime: String,
   outcome: AuditOutcome,
