@@ -92,15 +92,14 @@ class AuditService @Inject() (
     hc: HeaderCarrier
   ): Future[Done] = {
     val auditDetails = AuditCreateRecordDetails(
-      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).headOption.map(_._2),
       requestDateTime = requestedDateTime,
       responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),
       request = prepareAuditCreateRecordRequest(createRecordPayload),
       response = prepareAuditCreateRecordResponse(createOrUpdateRecordResponse)
     )
-
-    val event = ExtendedDataEvent(
+    val event        = ExtendedDataEvent(
       auditSource = auditSource,
       auditType = auditType,
       tags = hc.toAuditTags(),
@@ -125,7 +124,7 @@ class AuditService @Inject() (
     hc: HeaderCarrier
   ): Future[Done] = {
     val auditDetails = AuditUpdateRecordDetails(
-      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).headOption.map(_._2),
       requestDateTime = requestedDateTime,
       responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),
