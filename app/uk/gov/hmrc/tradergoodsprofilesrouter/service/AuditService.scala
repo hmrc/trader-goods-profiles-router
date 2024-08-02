@@ -99,7 +99,7 @@ class AuditService @Inject() (
       request = prepareAuditCreateRecordRequest(createRecordPayload),
       response = prepareAuditCreateRecordResponse(createOrUpdateRecordResponse)
     )
-    val event = ExtendedDataEvent(
+    val event        = ExtendedDataEvent(
       auditSource = auditSource,
       auditType = auditType,
       tags = hc.toAuditTags(),
