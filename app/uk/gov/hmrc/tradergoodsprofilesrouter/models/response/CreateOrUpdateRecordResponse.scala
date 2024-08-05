@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment, ReviewReason}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment}
 
 import java.time.Instant
 
@@ -138,8 +138,7 @@ object CreateOrUpdateRecordResponse {
       version = createOrUpdateRecordEisResponse.version,
       active = createOrUpdateRecordEisResponse.active,
       toReview = createOrUpdateRecordEisResponse.toReview,
-      reviewReason =
-        translateReviewReason(createOrUpdateRecordEisResponse.reviewReason, createOrUpdateRecordEisResponse.toReview),
+      reviewReason = createOrUpdateRecordEisResponse.reviewReason,
       declarable = createOrUpdateRecordEisResponse.declarable,
       ukimsNumber = createOrUpdateRecordEisResponse.ukimsNumber,
       nirmsNumber = createOrUpdateRecordEisResponse.nirmsNumber,
@@ -155,9 +154,4 @@ object CreateOrUpdateRecordResponse {
       case _                            => AdviceStatus.withName(accreditationStatus.entryName)
     }
 
-  private def translateReviewReason(reviewReason: Option[String], toReview: Boolean): Option[String] = {
-    val enumReviewReason: Option[ReviewReason] = reviewReason.flatMap(ReviewReason.fromString)
-    if (!toReview) None
-    else enumReviewReason.map(_.description)
-  }
 }

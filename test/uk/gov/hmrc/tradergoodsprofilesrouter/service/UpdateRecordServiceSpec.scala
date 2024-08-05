@@ -330,7 +330,7 @@ class UpdateRecordServiceSpec
                |  "version": 1,
                |  "active": true,
                |  "toReview": true,
-               |  "reviewReason": "The commodity code has expired. You'll need to change the commodity code and categorise the goods.",
+               |  "reviewReason": "commodity",
                |  "declarable": "SPIMM",
                |  "ukimsNumber": "XIUKIM47699357400020231115081800",
                |  "nirmsNumber": "RMS-GB-123456",
