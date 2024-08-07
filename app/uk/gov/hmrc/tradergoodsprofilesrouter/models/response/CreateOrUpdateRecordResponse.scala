@@ -149,9 +149,10 @@ object CreateOrUpdateRecordResponse {
 
   private def translateAccreditationStatus(accreditationStatus: AccreditationStatus): AdviceStatus =
     accreditationStatus match {
-      case AccreditationStatus.Approved => AdviceStatus.AdviceProvided
-      case AccreditationStatus.Rejected => AdviceStatus.AdviceNotProvided
-      case _                            => AdviceStatus.withName(accreditationStatus.entryName)
+      case AccreditationStatus.Approved  => AdviceStatus.AdviceProvided
+      case AccreditationStatus.Rejected  => AdviceStatus.AdviceNotProvided
+      case AccreditationStatus.Withdrawn => AdviceStatus.AdviceRequestWithdrawn
+      case _                             => AdviceStatus.withName(accreditationStatus.entryName)
     }
 
 }
