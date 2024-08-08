@@ -22,7 +22,7 @@ sealed abstract class AdviceStatus(override val entryName: String) extends EnumE
 
 object AdviceStatus extends PlayEnum[AdviceStatus] {
 
-  val AllowedAdviceStatuses: Seq[AdviceStatus] = Seq(NotRequested, Withdrawn, AdviceNotProvided)
+  val AllowedAdviceStatuses: Seq[AdviceStatus] = Seq(NotRequested, AdviceRequestWithdrawn, AdviceNotProvided)
 
   override val values: IndexedSeq[AdviceStatus] = findValues
 
@@ -30,7 +30,7 @@ object AdviceStatus extends PlayEnum[AdviceStatus] {
   case object Requested extends AdviceStatus("Requested")
   case object InProgress extends AdviceStatus("In progress")
   case object InformationRequested extends AdviceStatus("Information Requested")
-  case object Withdrawn extends AdviceStatus("Withdrawn")
+  case object AdviceRequestWithdrawn extends AdviceStatus("Advice request withdrawn")
   case object AdviceProvided extends AdviceStatus("Advice Provided")
   case object AdviceNotProvided extends AdviceStatus("Advice not provided")
 }
