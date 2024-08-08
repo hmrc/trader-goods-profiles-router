@@ -28,55 +28,42 @@ trait BaseConnector {
   def appConfig: AppConfig
   def dateTimeService: DateTimeService
 
-  protected def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] =
+  protected def commonHeaders(
+    correlationId: String,
+    accessToken: String,
+    forwardedHost: String
+  ): Seq[(String, String)]                             =
     Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> forwardedHost,
-      HeaderNames.Accept        -> MimeTypes.JSON,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.Authorization -> accessToken,
-      HeaderNames.ContentType   -> MimeTypes.JSON,
-      HeaderNames.ClientId      -> getClientId
+      HeaderNames.Authorization -> accessToken
+    )
+  protected def buildHeaders(
+    correlationId: String,
+    accessToken: String,
+    forwardedHost: String
+  )(implicit hc: HeaderCarrier): Seq[(String, String)] =
+    commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
+      HeaderNames.Accept      -> MimeTypes.JSON,
+      HeaderNames.ContentType -> MimeTypes.JSON,
+      HeaderNames.ClientId    -> getClientId
     )
 
-  protected def buildHeadersForCreateMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] = {
-    val headers = Seq(
-      HeaderNames.CorrelationId -> correlationId,
-      HeaderNames.ForwardedHost -> forwardedHost,
-      HeaderNames.Accept        -> MimeTypes.JSON,
-      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.Authorization -> accessToken,
-      HeaderNames.ContentType   -> MimeTypes.JSON
-    )
-
-    //ToDo: remove this and return a header without the client ID after drop1.1.
-    // For drop1.1 client Id has been removed (TGP-1889)
-    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-    if (appConfig.isDrop1_1_enabled) headers
-    else headers :+ (HeaderNames.ClientId -> getClientId)
-  }
-
-  // TODO: Remove this method- TGP-2014
-  protected def buildHeadersForMaintainProfile(
+  protected def buildHeadersWithDrop1Toggle(
     correlationId: String,
     accessToken: String,
     forwardedHost: String
   )(implicit hc: HeaderCarrier): Seq[(String, String)] = {
 
-    val headers = Seq(
-      HeaderNames.CorrelationId -> correlationId,
-      HeaderNames.ForwardedHost -> forwardedHost,
-      HeaderNames.Accept        -> MimeTypes.JSON,
-      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.Authorization -> accessToken,
-      HeaderNames.ContentType   -> MimeTypes.JSON
+    val headers = commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
+      HeaderNames.Accept      -> MimeTypes.JSON,
+      HeaderNames.ContentType -> MimeTypes.JSON
     )
 
-    //TODO: Remove the client-id after the drop1.1 - Ticket-2014
+    //ToDo: remove this and return a header without the client ID after drop1.1.
+    // For drop1.1 client Id has been removed (TGP-1889)
+    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
     if (appConfig.isDrop1_1_enabled) headers
     else headers :+ (HeaderNames.ClientId -> getClientId)
   }
@@ -86,12 +73,9 @@ trait BaseConnector {
     accessToken: String,
     forwardedHost: String
   )(implicit hc: HeaderCarrier): Seq[(String, String)] = {
-    val headers = Seq(
-      HeaderNames.CorrelationId -> correlationId,
-      HeaderNames.ForwardedHost -> forwardedHost,
-      HeaderNames.Accept        -> MimeTypes.JSON,
-      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.Authorization -> accessToken
+
+    val headers = commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
+      HeaderNames.Accept -> MimeTypes.JSON
     )
 
     //ToDo: remove this and return a header without the client ID after drop1.1.
@@ -101,25 +85,11 @@ trait BaseConnector {
     else headers :+ (HeaderNames.ClientId -> getClientId)
   }
 
-  protected def buildHeadersForUpdateMethod(correlationId: String, accessToken: String, forwardedHost: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] = {
-    val headers = Seq(
-      HeaderNames.CorrelationId -> correlationId,
-      HeaderNames.ForwardedHost -> forwardedHost,
-      HeaderNames.Accept        -> MimeTypes.JSON,
-      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.Authorization -> accessToken,
-      HeaderNames.ContentType   -> MimeTypes.JSON
-    )
-    // TODO For drop1.1 client Id has been removed (TGP-1903)
-    if (appConfig.isDrop1_1_enabled) headers
-    else headers :+ (HeaderNames.ClientId -> getClientId)
-  }
-
-  protected def buildHeadersForAdvice(correlationId: String, bearerToken: String, forwardedHost: String)(implicit
-    hc: HeaderCarrier
-  ): Seq[(String, String)] =
+  protected def buildHeadersForAdvice(
+    correlationId: String,
+    bearerToken: String,
+    forwardedHost: String
+  )(implicit hc: HeaderCarrier): Seq[(String, String)] =
     buildHeaders(correlationId, bearerToken, forwardedHost).filterNot(_._1 == HeaderNames.ClientId)
 
   def getClientId(implicit hc: HeaderCarrier): String =

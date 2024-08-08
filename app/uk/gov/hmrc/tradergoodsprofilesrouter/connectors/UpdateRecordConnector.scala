@@ -45,7 +45,7 @@ class UpdateRecordConnector @Inject() (
     httpClientV2
       .put(url"$url")
       .setHeader(
-        buildHeadersForUpdateMethod(
+        buildHeadersWithDrop1Toggle(
           correlationId,
           appConfig.hawkConfig.updateRecordBearerToken,
           appConfig.hawkConfig.forwardedHost

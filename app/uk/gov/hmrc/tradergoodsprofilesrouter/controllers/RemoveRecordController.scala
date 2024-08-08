@@ -24,8 +24,9 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -34,7 +35,8 @@ class RemoveRecordController @Inject() (
   authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   service: RemoveRecordService,
-  override val uuidService: UuidService
+  override val uuidService: UuidService,
+  appConfig: AppConfig
 )(implicit override val ec: ExecutionContext)
     extends BackendBaseController
     with ValidationRules
@@ -43,8 +45,7 @@ class RemoveRecordController @Inject() (
   def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- EitherT.fromEither[Future](validateClientId)
-        _ <- EitherT.fromEither[Future](validateAcceptHeader)
+        _ <- validateHeaderIfDrop2Enabled
         _ <- EitherT
                .fromEither[Future](validateQueryParameters(actorId, recordId))
                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
@@ -64,5 +65,14 @@ class RemoveRecordController @Inject() (
         .removeRecord(eori, recordId, actorId)
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+
+  // ToDO:  remove this validation for drop 2 - TGP-2029
+  private def validateHeaderIfDrop2Enabled(implicit request: Request[_]): EitherT[Future, Result, String] =
+    if (appConfig.isDrop2Enabled) EitherT.rightT("Success")
+    else
+      for {
+        _ <- EitherT.fromEither[Future](validateClientId)
+        _ <- EitherT.fromEither[Future](validateAcceptHeader)
+      } yield "Success"
 
 }

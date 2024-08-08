@@ -241,20 +241,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
 
   }
 
-  private def createMissingHeaderErrorResponse =
-    Json.obj(
-      "correlationId" -> correlationId,
-      "code"          -> "BAD_REQUEST",
-      "message"       -> "Bad Request",
-      "errors"        -> Json.arr(
-        Json.obj(
-          "code"        -> "INVALID_HEADER",
-          "message"     -> "Missing mandatory header X-Client-ID",
-          "errorNumber" -> 6000
-        )
-      )
-    )
-
   private def createMissingAcceptHeaderErrorResponse =
     Json.obj(
       "correlationId" -> correlationId,

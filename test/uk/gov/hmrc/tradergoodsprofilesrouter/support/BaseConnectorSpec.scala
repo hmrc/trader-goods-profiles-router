@@ -49,57 +49,47 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   val requestBuilder: RequestBuilder   = mock[RequestBuilder]
   val dateTimeService: DateTimeService = mock[DateTimeService]
 
+  def expectedCommonHeader(
+    correlationId: String,
+    accessToken: String,
+    forwardedHost: String = "MDTP"
+  ): Seq[(String, String)] =
+    Seq(
+      "X-Correlation-ID" -> correlationId,
+      "X-Forwarded-Host" -> forwardedHost,
+      "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+      "Authorization"    -> s"Bearer $accessToken"
+    )
+
   def expectedHeader(
     correlationId: String,
     accessToken: String,
     forwardedHost: String = "MDTP"
-  ): Seq[(String, String)] = Seq(
-    "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> forwardedHost,
-    "Accept"           -> MimeTypes.JSON,
-    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-    "Authorization"    -> s"Bearer $accessToken",
-    "Content-Type"     -> MimeTypes.JSON,
-    "X-Client-ID"      -> "TSS" // TODO: This wil lbe removed after drop 1.1 - Ticket: TGP-2014
-  )
+  ): Seq[(String, String)] =
+    expectedCommonHeader(correlationId, accessToken, forwardedHost) ++ Seq(
+      "Accept"       -> MimeTypes.JSON,
+      "Content-Type" -> MimeTypes.JSON,
+      "X-Client-ID"  -> "TSS" // TODO: This wil lbe removed after drop 1.1 - Ticket: TGP-2014
+    )
 
-  def expectedHeaderForCreateMethod(
+  def expectedHeaderWithAcceptAndContentTypeHeader(
     correlationId: String,
     accessToken: String,
     forwardedHost: String = "MDTP"
-  ): Seq[(String, String)] = Seq(
-    "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> forwardedHost,
-    "Accept"           -> MimeTypes.JSON,
-    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-    "Authorization"    -> s"Bearer $accessToken",
-    "Content-Type"     -> MimeTypes.JSON
-  )
-
-  def expectedHeaderForUpdateMethod(
-    correlationId: String,
-    accessToken: String,
-    forwardedHost: String = "MDTP"
-  ): Seq[(String, String)] = Seq(
-    "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> forwardedHost,
-    "Accept"           -> MimeTypes.JSON,
-    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-    "Authorization"    -> s"Bearer $accessToken",
-    "Content-Type"     -> MimeTypes.JSON
-  )
+  ): Seq[(String, String)] =
+    expectedCommonHeader(correlationId, accessToken, forwardedHost) ++ Seq(
+      "Accept"       -> MimeTypes.JSON,
+      "Content-Type" -> MimeTypes.JSON
+    )
 
   def expectedHeaderForGetMethod(
     correlationId: String,
     accessToken: String,
     forwardedHost: String = "MDTP"
-  ): Seq[(String, String)] = Seq(
-    "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> forwardedHost,
-    "Accept"           -> MimeTypes.JSON,
-    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-    "Authorization"    -> s"Bearer $accessToken"
-  )
+  ): Seq[(String, String)] =
+    expectedCommonHeader(correlationId, accessToken, forwardedHost) ++ Seq(
+      "Accept" -> MimeTypes.JSON
+    )
 
   def setUpAppConfig(): Unit = {
     val hawkConfig = new HawkInstanceConfig(

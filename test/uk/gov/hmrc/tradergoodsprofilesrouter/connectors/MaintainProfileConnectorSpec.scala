@@ -89,9 +89,9 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       verify(requestBuilder).setHeader(
         "X-Correlation-ID" -> correlationId,
         "X-Forwarded-Host" -> "MDTP",
-        "Accept"           -> MimeTypes.JSON,
         "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
         "Authorization"    -> "Bearer dummyMaintainProfileBearerToken",
+        "Accept"           -> MimeTypes.JSON,
         "Content-Type"     -> MimeTypes.JSON
       )
 
