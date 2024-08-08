@@ -59,7 +59,7 @@ class AuditService @Inject() (
   ): Future[Done] = {
 
     val auditDetails = AuditRemoveRecordDetails(
-      clientId = hc.headers(Seq(HeaderNames.ClientId)).head._2,
+      clientId = hc.headers(Seq(HeaderNames.ClientId)).headOption.map(_._2),
       requestDateTime = requestedDateTime,
       responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
       outcome = AuditOutcome(status, statusCode, failureReason),

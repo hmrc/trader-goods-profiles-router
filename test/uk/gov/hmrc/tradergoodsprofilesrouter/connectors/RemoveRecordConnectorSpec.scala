@@ -18,12 +18,13 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
+import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
@@ -49,6 +50,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(appConfig.isDrop2Enabled).thenReturn(false)
   }
 
   "remove a record successfully" in {
@@ -60,7 +62,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
-  "send a request with the right url for remove record" in {
+  "send a request with the right url for remove record when drop2Enabled feature flag is false" in {
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
 
@@ -77,6 +79,26 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
+  "send a request with the right url for remove record when drop2Enabled feature flag is true" in {
+    val hc: HeaderCarrier = HeaderCarrier()
+    when(requestBuilder.execute[Either[Result, Int]](any, any))
+      .thenReturn(Future.successful(Right(OK)))
+    when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
+    when(appConfig.isDrop2Enabled).thenReturn(true)
+
+    val result =
+      await(connector.removeRecord(eori, recordId, actorId, correlationId)(hc))
+
+    val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
+    verify(httpClientV2).put(url"$expectedUrl")(hc)
+    verify(requestBuilder).setHeader(expectedHeaderForDrop2(correlationId, "dummyRecordRemoveBearerToken"): _*)
+    verify(requestBuilder)
+      .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
+    verifyExecuteForStatusHttpReader(correlationId)
+
+    result.value mustBe OK
+  }
+
   "return an error if EIS return an error" in {
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Left(BadRequest("error"))))
@@ -85,4 +107,16 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
     result.left.value mustBe BadRequest("error")
   }
+
+  private def expectedHeaderForDrop2(
+    correlationId: String,
+    accessToken: String,
+    forwardedHost: String = "MDTP"
+  ): Seq[(String, String)] = Seq(
+    "X-Correlation-ID" -> correlationId,
+    "X-Forwarded-Host" -> forwardedHost,
+    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+    "Authorization"    -> s"Bearer $accessToken",
+    "Content-Type"     -> MimeTypes.JSON
+  )
 }
