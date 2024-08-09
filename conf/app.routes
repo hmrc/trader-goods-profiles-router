@@ -11,5 +11,5 @@ PUT        /traders/:eori                                           uk.gov.hmrc.
 
 PUT        /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.tradergoodsprofilesrouter.controllers.WithdrawAdviceController.withdrawAdvice(eori: String, recordId: String)
 
-GET        /customs/traders/goods-profiles/:eori/download
+GET        /customs/traders/goods-profiles/:eori/download           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.DownloadTraderDataController.requestDataDownload(eori: String)
 

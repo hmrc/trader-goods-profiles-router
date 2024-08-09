@@ -1,20 +1,19 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import cats.data.EitherT
+import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DownloadTraderDataService, UuidService}
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class DownloadTraderDataController @Inject() (
   authAction: AuthAction,
+  service: DownloadTraderDataService,
   override val controllerComponents: ControllerComponents,
-  appConfig: AppConfig,
   override val uuidService: UuidService
 )(implicit val ec: ExecutionContext)
     extends BackendBaseController
@@ -23,10 +22,13 @@ class DownloadTraderDataController @Inject() (
   def requestDataDownload(eori: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- EitherT.fromEither[Future](validateClientId)
-        _ <- EitherT.fromEither[Future](validateAcceptHeader)
+        _ <- EitherT(
+               service.requestDownload(eori)
+             )
+               .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
       } yield Accepted
 
       result.merge
   }
+
 }

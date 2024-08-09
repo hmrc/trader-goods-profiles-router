@@ -131,7 +131,9 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       getRecords = "/tgp/getrecords/v1",
       recordGetToken = "dummyRecordGetBearerToken",
       withdrawAdvise = "/tgp/withdrawaccreditation/v1",
-      withdrawAdviseToken = "dummyWithdrawAdviceBearerToken"
+      withdrawAdviseToken = "dummyWithdrawAdviceBearerToken",
+      downloadTraderData = "/tgp/downloadtraderdata/v1",
+      downloadTraderDataToken = "dummyDownloadTraderDataToken"
     )
 
     when(appConfig.hawkConfig).thenReturn(hawkConfig)
