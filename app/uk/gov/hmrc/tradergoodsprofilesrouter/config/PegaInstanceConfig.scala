@@ -28,13 +28,17 @@ case class PegaInstanceConfig(
   getRecords: String,
   recordGetToken: String,
   withdrawAdvise: String,
-  withdrawAdviseToken: String
+  withdrawAdviseToken: String,
+  downloadTraderData: String,
+  downloadTraderDataToken: String
 ) {
-  lazy val getRecordsUrl: String        = s"$protocol://$host:$port$getRecords"
-  lazy val requestAdviceUrl: String     = s"$protocol://$host:$port$requestAdvice"
-  lazy val requestAdviceBearerToken     = s"Bearer $requestAdviceToken"
-  lazy val getWithdrawAdviceUrl         = s"$protocol://$host:$port$withdrawAdvise"
-  lazy val getWithdrawAdviceBearerToken = s"Bearer $withdrawAdviseToken"
+  lazy val getRecordsUrl: String         = s"$protocol://$host:$port$getRecords"
+  lazy val requestAdviceUrl: String      = s"$protocol://$host:$port$requestAdvice"
+  lazy val requestAdviceBearerToken      = s"Bearer $requestAdviceToken"
+  lazy val getWithdrawAdviceUrl          = s"$protocol://$host:$port$withdrawAdvise"
+  lazy val getWithdrawAdviceBearerToken  = s"Bearer $withdrawAdviseToken"
+  lazy val downloadTraderDataUrl         = s"$protocol://$host:$port$downloadTraderData"
+  lazy val downloadTraderDataBearerToken = s"Bearer $downloadTraderDataToken"
 }
 
 object PegaInstanceConfig {
@@ -52,7 +56,9 @@ object PegaInstanceConfig {
         config.get[String]("get-records"),
         config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
         config.get[String]("withdraw-advice"),
-        config.getOptional[String]("withdraw-advice-token").getOrElse("dummyWithdrawAdviceBearerToken")
+        config.getOptional[String]("withdraw-advice-token").getOrElse("dummyWithdrawAdviceBearerToken"),
+        config.get[String]("download-trader-data"),
+        config.getOptional[String]("download-trader-data-token").getOrElse("dummyDownloadTraderDataToken")
       )
     }
 }
