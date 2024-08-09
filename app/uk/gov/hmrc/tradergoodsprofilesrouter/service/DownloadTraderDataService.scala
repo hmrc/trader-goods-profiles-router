@@ -12,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class DownloadTraderDataService @Inject() (
   connector: DownloadTraderDataConnector,
-  uuidService: UuidService,
+  uuidService: UuidService
 )(implicit ec: ExecutionContext)
     extends Logging {
 
