@@ -19,6 +19,8 @@ package uk.gov.hmrc.tradergoodsprofilesrouter
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, get, stubFor, urlEqualTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.prop.TableDrivenPropertyChecks.forAll
+import org.scalatest.prop.Tables.Table
 import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -148,19 +150,47 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         )
       }
 
-      "When EIS return 500 and error response contains no error" in {
-        withAuthorizedTrader()
-        stubEisRequest(500, Eis500ErrorResponseWithoutErrors.toString())
 
-        val response = await(wsClient.url(url).get())
+      val table = Table(
+        ("description", "code", "message", "expectedCode"),
+        ("for error code 401", "401", "Unauthorized", "UNAUTHORIZED"),
+        ("for error code 404", "404", "Not Found", "NOT_FOUND")
+      )
 
-        response.status shouldBe INTERNAL_SERVER_ERROR
-        response.json shouldBe  Json.obj(
-          "correlationId" -> correlationId,
-          "code" -> "UNAUTHORIZED",
-          "message" -> "Unauthorized"
-        )
+      forAll(table) {
+        (
+          description: String,
+          code: String,
+          message: String,
+          expectedCode: String
+        ) => s"when EIS return 500 $description" in {
+
+          withAuthorizedTrader()
+          stubEisRequest(500, Eis500ErrorResponseWithoutErrors(code, message).toString())
+
+          val response = await(wsClient.url(url).get())
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json shouldBe  Json.obj(
+            "correlationId" -> correlationId,
+            "code" -> expectedCode,
+            "message" -> message
+          )
+        }
       }
+//      "When EIS return 500 and error response contains no error" in {
+//        withAuthorizedTrader()
+//        stubEisRequest(500, Eis500ErrorResponseWithoutErrors.toString())
+//
+//        val response = await(wsClient.url(url).get())
+//
+//        response.status shouldBe INTERNAL_SERVER_ERROR
+//        response.json shouldBe  Json.obj(
+//          "correlationId" -> correlationId,
+//          "code" -> "UNAUTHORIZED",
+//          "message" -> "Unauthorized"
+//        )
+//      }
     }
   }
 
@@ -275,15 +305,15 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
          |""".stripMargin)
   }
 
-  private def Eis500ErrorResponseWithoutErrors: JsValue = {
+  private def Eis500ErrorResponseWithoutErrors(code: String, message: String): JsValue = {
     Json.parse(
       s"""
          |{
          |  "errorDetail":{
          |    "timestamp":"${timestamp.toString}",
          |    "correlationId":"$correlationId",
-         |    "errorCode": "401",
-         |    "errorMessage":"Unauthorised",
+         |    "errorCode": "$code",
+         |    "errorMessage":"$message",
          |    "source":"BACKEND",
          |    "sourceFaultDetail":{
          |      "detail":[]
