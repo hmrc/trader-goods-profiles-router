@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import play.api.http.MimeTypes
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -24,6 +25,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -45,7 +47,7 @@ class RemoveRecordConnector @Inject() (
     httpClientV2
       .put(url"$url")
       .setHeader(
-        buildHeaders(
+        headers(
           correlationId,
           appConfig.hawkConfig.removeRecordBearerToken,
           appConfig.hawkConfig.forwardedHost
@@ -54,4 +56,22 @@ class RemoveRecordConnector @Inject() (
       .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
       .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
   }
+
+  /*
+  ToDo: remove isDrop2Enabled flag after drop2 - TGP-2029.
+   The header passed to EIS should have no Accept and ClientId header
+   */
+  private def headers(correlationId: String, accessToken: String, forwardedHost: String)(implicit
+    hc: HeaderCarrier
+  ): Seq[(String, String)] =
+    if (appConfig.isDrop2Enabled) {
+      commonHeaders(correlationId, accessToken, forwardedHost) :+
+        (HeaderNames.ContentType -> MimeTypes.JSON)
+    } else
+      commonHeaders(correlationId, accessToken, forwardedHost) ++
+        Seq(
+          HeaderNames.Accept      -> MimeTypes.JSON,
+          HeaderNames.ContentType -> MimeTypes.JSON,
+          HeaderNames.ClientId    -> getClientId
+        )
 }

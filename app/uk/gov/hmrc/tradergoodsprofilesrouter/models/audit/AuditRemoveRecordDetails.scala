@@ -21,7 +21,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditOutcome
 
 case class AuditRemoveRecordDetails(
   private val journey: String = "RemoveRecord",
-  clientId: String,
+  clientId: Option[String],
   requestDateTime: String,
   responseDateTime: String,
   outcome: AuditOutcome,

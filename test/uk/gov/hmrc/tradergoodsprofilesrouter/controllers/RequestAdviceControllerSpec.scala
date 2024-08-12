@@ -31,7 +31,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAct
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames._
 
 import scala.concurrent.ExecutionContext
 
@@ -90,9 +89,6 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
     }
 
     "return a 400 Bad request when clientId is missing" in {
-      def headers: Seq[(String, String)] = Seq(
-        Accept -> "application/json"
-      )
 
       val result = sut.requestAdvice(eori, recordId)(
         FakeRequest()
@@ -104,9 +100,6 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
     }
 
     "return a 400 Bad request when Accept header is missing" in {
-      def headers: Seq[(String, String)] = Seq(
-        Accept -> "application/json"
-      )
 
       val result = sut.requestAdvice(eori, recordId)(
         FakeRequest()
