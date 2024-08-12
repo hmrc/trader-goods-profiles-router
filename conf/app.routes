@@ -13,3 +13,5 @@ PUT        /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.
 
 GET        /customs/traders/goods-profiles/:eori/download           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.DownloadTraderDataController.requestDataDownload(eori: String)
 
+# Profile
+GET        /customs/traders/goods-profiles/:eori                    uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetProfileController.getProfile(eori: String)

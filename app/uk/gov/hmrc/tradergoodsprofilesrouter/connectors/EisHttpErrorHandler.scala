@@ -184,8 +184,7 @@ trait EisHttpErrorHandler extends Logging {
     )
 
   private def extractError(correlationId: String, detail: ErrorDetail) = {
-    val extractErrors: Option[Seq[errors.Error]] =
-      (
+    (
         for {
           o      <- detail.sourceFaultDetail
           errors <- o.detail
@@ -193,7 +192,6 @@ trait EisHttpErrorHandler extends Logging {
       )
         .map((s: Seq[Option[errors.Error]]) => s.flatten)
         .filter(_.nonEmpty)
-    extractErrors
   }
 
   protected def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {
