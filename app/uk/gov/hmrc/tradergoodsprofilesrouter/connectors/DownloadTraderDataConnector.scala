@@ -1,8 +1,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
@@ -20,9 +20,9 @@ class DownloadTraderDataConnector @Inject() (
   def requestDownload(eori: String, correlationId: String)(implicit
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] = {
-    val url = appConfig.pegaConfig.downloadTraderDataUrl
+    val url = url"${appConfig.pegaConfig.downloadTraderDataUrl}/$eori/download"
     httpClientV2
-      .get(url"$url")
+      .get(url)
       .setHeader(
         buildHeaders(
           correlationId,
