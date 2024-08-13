@@ -17,13 +17,15 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.when
+import org.mockito.MockitoSugar.{reset, when}
+import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT}
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
@@ -33,12 +35,13 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
+class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   private val mockService     = mock[RemoveRecordService]
   private val mockUuidService = mock[UuidService]
+  private val appConfig       = mock[AppConfig]
 
   private val eori     = "GB123456789011"
   private val actorId  = "GB123456789011"
@@ -49,7 +52,8 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       mockService,
-      mockUuidService
+      mockUuidService,
+      appConfig
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
@@ -57,7 +61,14 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
     HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
   )
 
-  "PUT /:eori/records/:recordId" should {
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    reset(mockService, mockUuidService, appConfig)
+
+    when(appConfig.isDrop2Enabled).thenReturn(false)
+  }
+  "remove" should {
 
     "return a 200 Ok response on removing a record" in {
 
@@ -70,6 +81,17 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar {
 
       status(result) mustBe NO_CONTENT
     }
+
+    "not validate headers when drop2 feature flag is enabled" in {
+      when(mockService.removeRecord(any, any, any)(any))
+        .thenReturn(Future.successful(Right(NO_CONTENT)))
+      when(appConfig.isDrop2Enabled).thenReturn(true)
+
+      val result = controller.remove(eori, recordId, actorId)(FakeRequest())
+
+      status(result) mustBe NO_CONTENT
+    }
+
     "return 400 Bad request when mandatory request header X-Client-ID" in {
       val expectedErrorResponse =
         ErrorResponse(

@@ -84,7 +84,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
         val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
         verify(httpClientV2).post(url"$expectedUrl")
         verify(requestBuilder).setHeader(
-          expectedHeaderForCreateMethod(correlationId, "dummyRecordCreateBearerToken"): _*
+          expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordCreateBearerToken"): _*
         )
         verify(requestBuilder).withBody(createRecordEisPayload)
         verifyExecuteForHttpReader(correlationId)
@@ -103,7 +103,10 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
         verify(httpClientV2).post(url"$expectedUrl")
 
         val expectedHeaderWithClientId =
-          expectedHeaderForCreateMethod(correlationId, "dummyRecordCreateBearerToken") :+ ("X-Client-ID" -> "TSS")
+          expectedHeaderWithAcceptAndContentTypeHeader(
+            correlationId,
+            "dummyRecordCreateBearerToken"
+          ) :+ ("X-Client-ID" -> "TSS")
         verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
 
         verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)

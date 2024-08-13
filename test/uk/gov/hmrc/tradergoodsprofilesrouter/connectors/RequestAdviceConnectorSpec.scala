@@ -45,9 +45,9 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
     Seq(
       "X-Correlation-ID" -> correlationId,
       "X-Forwarded-Host" -> "MDTP",
-      "Accept"           -> MimeTypes.JSON,
       "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
       "Authorization"    -> "Bearer dummyAccreditationCreateBearerToken",
+      "Accept"           -> MimeTypes.JSON,
       "Content-Type"     -> MimeTypes.JSON
     )
 

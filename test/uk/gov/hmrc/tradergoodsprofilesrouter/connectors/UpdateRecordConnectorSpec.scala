@@ -87,7 +87,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
         val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
         verify(httpClientV2).put(url"$expectedUrl")
         verify(requestBuilder).setHeader(
-          expectedHeaderForUpdateMethod(correlationId, "dummyRecordUpdateBearerToken"): _*
+          expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
         )
         verify(requestBuilder).withBody(updateRecordPayload)
         verifyExecuteForHttpReader(correlationId)
@@ -105,7 +105,10 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
         val expectedUrl                = s"http://localhost:1234/tgp/updaterecord/v1"
         val expectedHeaderWithClientId =
-          expectedHeaderForUpdateMethod(correlationId, "dummyRecordUpdateBearerToken") :+ ("X-Client-ID" -> "TSS")
+          expectedHeaderWithAcceptAndContentTypeHeader(
+            correlationId,
+            "dummyRecordUpdateBearerToken"
+          ) :+ ("X-Client-ID" -> "TSS")
         verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
         verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
         verify(httpClientV2).put(url"$expectedUrl")
