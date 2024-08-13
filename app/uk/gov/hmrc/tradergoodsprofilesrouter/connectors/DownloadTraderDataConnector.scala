@@ -40,7 +40,7 @@ class DownloadTraderDataConnector @Inject() (
     httpClientV2
       .get(url)
       .setHeader(
-        buildHeaders(
+        commonHeaders(
           correlationId,
           appConfig.pegaConfig.downloadTraderDataBearerToken,
           appConfig.pegaConfig.forwardedHost

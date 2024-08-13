@@ -43,7 +43,7 @@ class DownloadTraderDataConnectorSpec extends BaseConnectorSpec {
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any, any, any, any)).thenReturn(requestBuilder)
   }
 
   "download trader data" should {

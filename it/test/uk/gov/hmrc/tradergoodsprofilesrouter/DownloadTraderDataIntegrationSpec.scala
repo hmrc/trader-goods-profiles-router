@@ -51,7 +51,6 @@ class DownloadTraderDataIntegrationSpec extends PegaIntegrationSpec with AuthTes
       val response = await(
         wsClient
           .url(url)
-          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
       )
 
@@ -64,7 +63,6 @@ class DownloadTraderDataIntegrationSpec extends PegaIntegrationSpec with AuthTes
       val response = await(
         wsClient
           .url(url)
-          .withHttpHeaders(("X-Client-ID", "tss"))
           .get()
       )
 
@@ -84,7 +82,6 @@ class DownloadTraderDataIntegrationSpec extends PegaIntegrationSpec with AuthTes
         .withHeader("X-Correlation-ID", equalTo(correlationId))
         .withHeader("Date", equalTo(timestamp))
         .withHeader("Authorization", equalTo("Bearer dummyDownloadTraderDataToken"))
-        .withHeader("X-Client-ID", equalTo("tss"))
         .willReturn(
           aResponse()
             .withStatus(httpStatus)
