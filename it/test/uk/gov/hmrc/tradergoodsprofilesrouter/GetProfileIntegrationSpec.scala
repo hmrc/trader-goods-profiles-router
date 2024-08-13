@@ -56,7 +56,6 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
 
       response.status shouldBe OK
       response.json shouldBe createProfileResponse
-
     }
 
     "return an error for an unauthorised eori" in {
@@ -79,7 +78,6 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
            "code" -> "FORBIDDEN",
            "message" -> "Forbidden"
          )
-
       }
 
       "EIS return 404" in {
@@ -94,7 +92,6 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
           "code" -> "NOT_FOUND",
           "message" -> "Not Found"
         )
-
       }
 
       "when EIS return 400 with valid errors payload" in {
@@ -153,8 +150,13 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
 
       val table = Table(
         ("description", "code", "message", "expectedCode"),
-        ("for error code 401", "401", "Unauthorized", "UNAUTHORIZED"),
-        ("for error code 404", "404", "Not Found", "NOT_FOUND")
+        ("with error code 200", "200", "Invalid Response Payload or Empty payload", "INVALID_OR_EMPTY_PAYLOAD"),
+        ("with error code 401", "401", "Unauthorized", "UNAUTHORIZED"),
+        ("with error code 404", "404", "Not Found", "NOT_FOUND"),
+        ("with error code 405", "405", "Method Not Allowed", "METHOD_NOT_ALLOWED"),
+        ("with error code 500", "500", "Internal Server Error", "INTERNAL_SERVER_ERROR"),
+        ("with error code 502", "502", "Bad Gateway", "BAD_GATEWAY"),
+        ("with error code 503", "503", "Service Unavailable", "SERVICE_UNAVAILABLE")
       )
 
       forAll(table) {
@@ -178,19 +180,6 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
           )
         }
       }
-//      "When EIS return 500 and error response contains no error" in {
-//        withAuthorizedTrader()
-//        stubEisRequest(500, Eis500ErrorResponseWithoutErrors.toString())
-//
-//        val response = await(wsClient.url(url).get())
-//
-//        response.status shouldBe INTERNAL_SERVER_ERROR
-//        response.json shouldBe  Json.obj(
-//          "correlationId" -> correlationId,
-//          "code" -> "UNAUTHORIZED",
-//          "message" -> "Unauthorized"
-//        )
-//      }
     }
   }
 

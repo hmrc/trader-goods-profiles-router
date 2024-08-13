@@ -28,36 +28,34 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.Unexpect
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetProfileService @Inject()(
+class GetProfileService @Inject() (
   connector: GetProfileConnector,
   uuidService: UuidService
-)(implicit ec: ExecutionContext) extends Logging {
+)(implicit ec: ExecutionContext)
+    extends Logging {
   def getProfile(eori: String)(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, ProfileResponse]] = {
     val correlationId = uuidService.uuid
 
     connector
       .get(eori, correlationId)
-      .collect{
-        case successResponse@ Right(_) => successResponse
-        case errorResponse@ Left(error) =>
-        logger.warn(
-          s"""[GetProfileService] - Error when retrieving profile for eori: $eori,
+      .collect {
+        case successResponse @ Right(_)  => successResponse
+        case errorResponse @ Left(error) =>
+          logger.warn(s"""[GetProfileService] - Error when retrieving profile for eori: $eori,
              correlationId: $correlationId, status: ${error.httpStatus},
              body: ${Json.toJson(error.errorResponse.toString)}""".stripMargin)
           errorResponse
       }
-      .recover{
-        case ex: Throwable =>
-          logger.warn(
-            s"""[GetProfileService] - Exception when retrieving profile for eori: $eori,
+      .recover { case ex: Throwable =>
+        logger.warn(s"""[GetProfileService] - Exception when retrieving profile for eori: $eori,
                correlationId: $correlationId, message: ${ex.getMessage}""".stripMargin)
 
-          Left(
-            EisHttpErrorResponse(
-              INTERNAL_SERVER_ERROR,
-              ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
-            )
+        Left(
+          EisHttpErrorResponse(
+            INTERNAL_SERVER_ERROR,
+            ErrorResponse(correlationId, UnexpectedErrorCode, ex.getMessage)
           )
+        )
       }
   }
 

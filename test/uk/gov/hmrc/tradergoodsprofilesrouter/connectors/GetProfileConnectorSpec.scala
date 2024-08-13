@@ -31,10 +31,10 @@ import scala.concurrent.Future
 
 class GetProfileConnectorSpec extends BaseConnectorSpec {
 
-  private val eori = "123"
-  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
+  private val eori          = "123"
+  private val timestamp     = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId = UUID.randomUUID().toString
-  private val sut = new GetProfileConnector(appConfig, httpClientV2, dateTimeService)
+  private val sut           = new GetProfileConnector(appConfig, httpClientV2, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

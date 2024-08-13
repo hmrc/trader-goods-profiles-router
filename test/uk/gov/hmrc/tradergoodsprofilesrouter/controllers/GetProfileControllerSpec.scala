@@ -36,7 +36,7 @@ class GetProfileControllerSpec extends PlaySpec {
 
   implicit val ex: ExecutionContext = ExecutionContext.global
 
-  val eori = "GB123456789001"
+  val eori                      = "GB123456789001"
   private val getProfileService = mock[GetProfileService]
 
   private val sut = new GetProfileController(
@@ -44,7 +44,6 @@ class GetProfileControllerSpec extends PlaySpec {
     stubControllerComponents(),
     getProfileService
   )
-
 
   "getProfile" should {
     "return 200" in {
@@ -62,14 +61,15 @@ class GetProfileControllerSpec extends PlaySpec {
 
     "return an error" in {
       when(getProfileService.getProfile(any)(any))
-        .thenReturn(Future.successful(Left(
-          EisHttpErrorResponse(
-            NOT_FOUND,
-            ErrorResponse(
-              "correlationId",
-              "code",
-              "message",
-              Some(Seq(Error("errorCode", "errorMessage", 6)))))))
+        .thenReturn(
+          Future.successful(
+            Left(
+              EisHttpErrorResponse(
+                NOT_FOUND,
+                ErrorResponse("correlationId", "code", "message", Some(Seq(Error("errorCode", "errorMessage", 6))))
+              )
+            )
+          )
         )
 
       val result = sut.getProfile(eori)(FakeRequest())
@@ -77,12 +77,12 @@ class GetProfileControllerSpec extends PlaySpec {
       status(result) mustBe NOT_FOUND
       contentAsJson(result) mustBe Json.obj(
         "correlationId" -> "correlationId",
-        "code" -> "code",
-        "message" -> "message",
-        "errors" -> Json.arr(
+        "code"          -> "code",
+        "message"       -> "message",
+        "errors"        -> Json.arr(
           Json.obj(
-            "code" -> "errorCode",
-            "message" -> "errorMessage",
+            "code"        -> "errorCode",
+            "message"     -> "errorMessage",
             "errorNumber" -> 6
           )
         )

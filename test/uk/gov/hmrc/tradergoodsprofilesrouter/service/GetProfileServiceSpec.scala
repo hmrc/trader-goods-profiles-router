@@ -33,14 +33,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetProfileServiceSpec extends PlaySpec with EitherValues with BeforeAndAfterEach {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val hc: HeaderCarrier = new HeaderCarrier()
+  implicit val hc: HeaderCarrier    = new HeaderCarrier()
 
-  private val eori = "123"
+  private val eori          = "123"
   private val correlationId = UUID.randomUUID().toString
-  private val connector = mock[GetProfileConnector]
-  private val uuidService = mock[UuidService]
-  private val sut = new GetProfileService(connector, uuidService)
-
+  private val connector     = mock[GetProfileConnector]
+  private val uuidService   = mock[UuidService]
+  private val sut           = new GetProfileService(connector, uuidService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

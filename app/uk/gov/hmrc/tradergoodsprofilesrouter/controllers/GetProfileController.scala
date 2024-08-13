@@ -25,22 +25,20 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.GetProfileService
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 
-class GetProfileController @Inject()
-(
+class GetProfileController @Inject() (
   authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   getProfileService: GetProfileService
-)(implicit ec: ExecutionContext) extends BackendBaseController {
+)(implicit ec: ExecutionContext)
+    extends BackendBaseController {
 
-  def getProfile(eori: String): Action[AnyContent] =  authAction(eori).async {
-    implicit request: Request[AnyContent] =>
-
-      getProfileService
-        .getProfile(eori)
-        .collect {
-          case Right(response) => Ok(Json.toJson(response))
-          case Left(error) => Status(error.httpStatus)(Json.toJson(error.errorResponse))
-        }
+  def getProfile(eori: String): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
+    getProfileService
+      .getProfile(eori)
+      .collect {
+        case Right(response) => Ok(Json.toJson(response))
+        case Left(error)     => Status(error.httpStatus)(Json.toJson(error.errorResponse))
+      }
   }
 
 }
