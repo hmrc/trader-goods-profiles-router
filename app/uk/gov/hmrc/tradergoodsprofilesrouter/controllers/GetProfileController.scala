@@ -16,29 +16,30 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
+import cats.data.EitherT
 import play.api.libs.json.Json
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.AuthAction
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.GetProfileService
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetProfileService, UuidService}
 
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class GetProfileController @Inject() (
   authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
-  getProfileService: GetProfileService
-)(implicit ec: ExecutionContext)
-    extends BackendBaseController {
+  getProfileService: GetProfileService,
+  override val uuidService: UuidService
+)(implicit val ec: ExecutionContext)
+    extends BackendBaseController
+    with ValidationRules {
 
   def getProfile(eori: String): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
-    getProfileService
-      .getProfile(eori)
-      .collect {
-        case Right(response) => Ok(Json.toJson(response))
-        case Left(error)     => Status(error.httpStatus)(Json.toJson(error.errorResponse))
-      }
+    (for {
+      _        <- EitherT.fromEither[Future](validateAcceptHeader)
+      response <-
+        EitherT(getProfileService.getProfile(eori)).leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+    } yield (Ok(Json.toJson(response)))).merge
   }
-
 }

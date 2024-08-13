@@ -21,7 +21,7 @@ import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
-import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, INTERNAL_SERVER_ERROR, NOT_FOUND, OK}
+import play.api.http.Status._
 import play.api.libs.json.{JsObject, JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
@@ -52,7 +52,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
       withAuthorizedTrader()
       stubEisRequest(200, createProfileResponse.toString())
 
-      val response = await(wsClient.url(url).get())
+      val response = sendAndWait
 
       response.status shouldBe OK
       response.json shouldBe createProfileResponse
@@ -60,7 +60,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
 
     "return an error for an unauthorised eori" in {
       withUnauthorizedTrader(new RuntimeException("Error"))
-      val response = await(wsClient.url(url).get())
+      val response = sendAndWait
 
       response.status shouldBe INTERNAL_SERVER_ERROR
     }
@@ -70,7 +70,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         withAuthorizedTrader()
         stubEisRequest(403)
 
-        val response = await(wsClient.url(url).get())
+        val response = sendAndWait
 
         response.status shouldBe FORBIDDEN
          response.json shouldBe Json.obj(
@@ -84,7 +84,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         withAuthorizedTrader()
         stubEisRequest(404)
 
-        val response = await(wsClient.url(url).get())
+        val response = sendAndWait
 
         response.status shouldBe NOT_FOUND
         response.json shouldBe Json.obj(
@@ -98,7 +98,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         withAuthorizedTrader()
         stubEisRequest(400, Eis400ErrorResponse.toString())
 
-        val response = await(wsClient.url(url).get())
+        val response = sendAndWait
 
         response.status shouldBe BAD_REQUEST
         response.json shouldBe expectedResponseForEIS400Error
@@ -108,7 +108,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         withAuthorizedTrader()
         stubEisRequest(400, Eis500ErrorResponseForEoriNotExist.toString())
 
-        val response = await(wsClient.url(url).get())
+        val response = sendAndWait
 
         response.status shouldBe BAD_REQUEST
         response.json shouldBe  Json.obj(
@@ -129,7 +129,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         withAuthorizedTrader()
         stubEisRequest(400, Eis400ErrorResponseWithUnsupportedMessage.toString())
 
-        val response = await(wsClient.url(url).get())
+        val response = sendAndWait
 
         response.status shouldBe BAD_REQUEST
 
@@ -170,7 +170,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
           withAuthorizedTrader()
           stubEisRequest(500, Eis500ErrorResponseWithoutErrors(code, message).toString())
 
-          val response = await(wsClient.url(url).get())
+          val response = sendAndWait
 
           response.status shouldBe INTERNAL_SERVER_ERROR
           response.json shouldBe  Json.obj(
@@ -181,6 +181,14 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         }
       }
     }
+  }
+
+  private def sendAndWait = {
+    await(wsClient
+      .url(url)
+      .withHttpHeaders(Seq("Accept" -> "application/vnd.hmrc.1.0+json"): _*)
+      .get()
+    )
   }
 
   private def expectedResponseForEIS400Error = {
