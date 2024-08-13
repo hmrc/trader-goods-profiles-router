@@ -69,8 +69,8 @@ class GetProfileConnector @Inject() (
       .findFirstMatchIn(rawDetail)
       .map(_ group 1)
       .collect {
-        case GetProfileUnreadableJsonCode       =>
-          invalidRequestParameterError(GetProfileUnreadableJsonMessage, 0)
+        case GetProfileInvalidRequestCode       =>
+          invalidRequestParameterError(GetProfileInvalidRequestMessage, 0)
         case GetProfileInvalidCorrelationIdCode =>
           invalidRequestParameterError(InvalidOrMissingCorrelationID, 1)
         case GetProfileInvalidDateCode          =>

@@ -199,7 +199,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
       "errors" -> Json.arr(
         Json.obj(
           "code" -> "INVALID_REQUEST_PARAMETER",
-          "message" -> "JSON request body is unreadable",
+          "message" -> "Invalid Request",
           "errorNumber" -> 0
         ),
         Json.obj(

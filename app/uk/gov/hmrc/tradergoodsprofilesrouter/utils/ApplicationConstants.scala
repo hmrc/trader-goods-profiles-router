@@ -232,8 +232,8 @@ object WithdrawAdviceConstant {
 }
 
 object GetProfileSpecificError {
-  val GetProfileUnreadableJsonCode               = "000"
-  val GetProfileUnreadableJsonMessage            = "JSON request body is unreadable"
+  val GetProfileInvalidRequestCode               = "000"
+  val GetProfileInvalidRequestMessage            = "Invalid Request"
   val GetProfileInvalidCorrelationIdCode: String = "001"
   val GetProfileInvalidDateCode                  = "002"
   val GetProfileInvalidContentTypeCode: String   = "003"
