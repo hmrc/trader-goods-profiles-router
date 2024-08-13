@@ -4,6 +4,7 @@ import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, when}
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.Result
+import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
@@ -25,9 +26,8 @@ class DownloadTraderDataConnectorSpec extends BaseConnectorSpec {
 
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
-    when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any)).thenReturn(requestBuilder)
+    when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
   }
 
   "download trader data" should {
@@ -38,6 +38,17 @@ class DownloadTraderDataConnectorSpec extends BaseConnectorSpec {
       val result = await(connector.requestDownload(eori, correlationId))
 
       result.value mustBe ACCEPTED
+    }
+
+    "return any error that EIS return" in {
+      val errorResponse = BadRequest("error")
+
+      when(requestBuilder.execute[Either[Result, Int]](any, any))
+        .thenReturn(Future.successful(Left(errorResponse)))
+
+      val result = await(connector.requestDownload(eori, correlationId))
+
+      result.left.value mustBe errorResponse
     }
   }
 
