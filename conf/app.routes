@@ -10,3 +10,5 @@ POST       /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.
 PUT        /traders/:eori                                           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)
 
 PUT        /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.tradergoodsprofilesrouter.controllers.WithdrawAdviceController.withdrawAdvice(eori: String, recordId: String)
+
+POST       /traders/:eori/records                                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateProfileController.create(eori: String)

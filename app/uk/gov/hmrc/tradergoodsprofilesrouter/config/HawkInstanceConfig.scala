@@ -27,12 +27,14 @@ case class HawkInstanceConfig(
   removeRecord: String,
   updateRecord: String,
   maintainProfile: String,
+  createProfile: String,
   forwardedHost: String,
   updateRecordToken: String,
   recordGetToken: String,
   recordCreateToken: String,
   recordRemoveToken: String,
   maintainProfileToken: String,
+  createProfileToken: String,
   getRecordsMaxSize: Int,
   getRecordsDefaultSize: Int
 ) {
@@ -41,12 +43,15 @@ case class HawkInstanceConfig(
   lazy val removeRecordUrl: String    = s"$protocol://$host:$port$removeRecord"
   lazy val updateRecordUrl: String    = s"$protocol://$host:$port$updateRecord"
   lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
+  lazy val createProfileUrl: String   = s"$protocol://$host:$port$createProfile"
+
 
   lazy val updateRecordBearerToken    = s"Bearer $updateRecordToken"
   lazy val getRecordBearerToken       = s"Bearer $recordGetToken"
   lazy val createRecordBearerToken    = s"Bearer $recordCreateToken"
   lazy val removeRecordBearerToken    = s"Bearer $recordRemoveToken"
   lazy val maintainProfileBearerToken = s"Bearer $maintainProfileToken"
+  lazy val createProfileBearerToken   = s"Bearer $createProfileToken"
 }
 
 object HawkInstanceConfig {
@@ -63,12 +68,14 @@ object HawkInstanceConfig {
         config.get[String]("remove-record"),
         config.get[String]("update-record"),
         config.get[String]("maintain-profile"),
+        config.get[String]("create-profile"),
         config.get[String]("forwarded-host"),
         config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),
         config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
         config.getOptional[String]("record-create-token").getOrElse("dummyRecordCreateBearerToken"),
         config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),
         config.getOptional[String]("maintain-profile-token").getOrElse("dummyMaintainProfileBearerToken"),
+        config.getOptional[String]("create-profile-token").getOrElse("dummyCreateProfileBearerToken"),
         config.get[Int]("default-size"),
         config.get[Int]("max-size")
       )
