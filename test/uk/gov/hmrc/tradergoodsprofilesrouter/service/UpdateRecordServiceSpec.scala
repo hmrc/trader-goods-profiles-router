@@ -106,7 +106,6 @@ class UpdateRecordServiceSpec
         eori = eoriNumber,
         recordId = recordId,
         actorId = "GB098765432112",
-        category = Some(1),
         comcodeEffectiveFromDate = Some(Instant.parse("2024-11-18T23:20:19Z")),
         comcodeEffectiveToDate = Some(Instant.parse("2024-11-18T23:20:19Z"))
       )
