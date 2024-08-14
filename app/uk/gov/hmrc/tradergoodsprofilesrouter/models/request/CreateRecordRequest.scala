@@ -33,7 +33,7 @@ case class CreateRecordRequest(
   comcode: String,
   goodsDescription: String,
   countryOfOrigin: String,
-  category: Option[Int],
+  category: Option[Int] = Some(1),
   assessments: Option[Seq[Assessment]],
   supplementaryUnit: Option[BigDecimal],
   measurementUnit: Option[String],
