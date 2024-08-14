@@ -28,6 +28,8 @@ class CreateProfileController @Inject() (
     with Logging {
 
   def create(eori: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
+    println(request)
+    println(eori)
     val result = for {
       _                      <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _                      <- EitherT.fromEither[Future](validateAcceptHeader)

@@ -35,6 +35,8 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
   val dateTime      = "2021-12-17T09:30:47.456Z"
   val timestamp     = "Fri, 17 Dec 2021 09:30:47 Z"
 
+  private val url           = fullUrl(s"/customs/traders/goods-profiles/$eoriNumber")
+
   override def hawkConnectorPath: String = "/tgp/createprofile/v1"
 
   override def beforeEach(): Unit = {
@@ -64,7 +66,7 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
       stubForEis(OK, Some(createProfileResponse.toString()))
 
       val response = wsClient
-        .url(fullUrl(s"/traders/$eori"))
+        .url(url)
         .withHttpHeaders(headers: _*)
         .post(createProfileRequest)
         .futureValue
