@@ -34,7 +34,7 @@ case class UpdateRecordRequest(
   comcode: Option[String] = None,
   goodsDescription: Option[String] = None,
   countryOfOrigin: Option[String] = None,
-  category: Option[Int] = None,
+  category: Option[Int] = Some(1),
   assessments: Option[Seq[Assessment]] = None,
   supplementaryUnit: Option[BigDecimal] = None,
   measurementUnit: Option[String] = None,
