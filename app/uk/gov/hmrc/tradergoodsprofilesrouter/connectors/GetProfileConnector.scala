@@ -25,7 +25,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error.{invalidRequestParameterError, unexpectedError}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.GetProfileSpecificError._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
@@ -55,13 +54,11 @@ class GetProfileConnector @Inject() (
   }
 
   private def headers(correlationId: String): Seq[(String, String)] =
-    Seq(
-      HeaderNames.CorrelationId -> correlationId,
-      HeaderNames.ForwardedHost -> appConfig.hawkConfig.forwardedHost,
-      HeaderNames.Accept        -> MimeTypes.JSON,
-      HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
-      HeaderNames.Authorization -> appConfig.hawkConfig.getProfileBearerToken
-    )
+    commonHeaders(
+      correlationId,
+      appConfig.hawkConfig.getProfileBearerToken,
+      appConfig.hawkConfig.forwardedHost
+    ) :+ (HeaderNames.Accept -> MimeTypes.JSON)
 
   override def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {
     val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r
