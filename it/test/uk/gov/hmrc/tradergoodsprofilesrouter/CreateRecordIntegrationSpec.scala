@@ -1254,7 +1254,6 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         |    "comcode": "10410100",
         |    "goodsDescription": "Organic bananas",
         |    "countryOfOrigin": "EC",
-        |    "category": 1,
         |    "assessments": [
         |        {
         |            "assessmentId": "abc123",
