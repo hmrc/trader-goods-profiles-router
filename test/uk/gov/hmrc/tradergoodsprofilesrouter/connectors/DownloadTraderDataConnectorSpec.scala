@@ -17,11 +17,12 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.MockitoSugar.{reset, verify, when}
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
+import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
@@ -48,12 +49,23 @@ class DownloadTraderDataConnectorSpec extends BaseConnectorSpec {
 
   "download trader data" should {
     "return ACCEPTED when the request is accepted by EIS" in {
+      val expectedHeader: Seq[(String, String)] =
+        Seq(
+          "X-Correlation-ID" -> correlationId,
+          "X-Forwarded-Host" -> "MDTP",
+          "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+          "Authorization"    -> "Bearer dummyDownloadTraderDataToken"
+        )
+
       when(requestBuilder.execute[Either[Result, Int]](any, any))
         .thenReturn(Future.successful(Right(ACCEPTED)))
 
       val result = await(connector.requestDownload(eori, correlationId))
 
       result.value mustBe ACCEPTED
+      verify(httpClientV2).get(url"http://localhost:1234/tgp/record/v1/$eori/download")
+      verify(requestBuilder).setHeader(expectedHeader: _*)
+      verifyExecuteForStatusHttpReader(correlationId)
     }
 
     "return any error that EIS return" in {
