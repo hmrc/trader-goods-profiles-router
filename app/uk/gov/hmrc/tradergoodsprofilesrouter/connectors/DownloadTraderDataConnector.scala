@@ -21,7 +21,10 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error.{invalidRequestParameterError, unexpectedError}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.DownloadTraderDataConstants.{EoriDoesNotExistsCode, EoriDoesNotExistsMsg, EoriIsNotLinkedToAnyMsg, EoriIsNotLinkedToAnyRecord, InvalidCorrelationHeaderErrorCode, InvalidCorrelationHeaderErrorMsg, InvalidDateHeaderErrorCode, InvalidDateHeaderErrorMsg, InvalidForwardedHostCode, InvalidForwardedHostMsg, InvalidOrMissingEoriCode, InvalidOrMissingEoriMsg}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,5 +50,29 @@ class DownloadTraderDataConnector @Inject() (
         ): _*
       )
       .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+  }
+
+  override def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {
+    val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r
+    regex
+      .findFirstMatchIn(rawDetail)
+      .map(_ group 1)
+      .collect {
+        case InvalidCorrelationHeaderErrorCode =>
+          invalidRequestParameterError(InvalidCorrelationHeaderErrorMsg, 1)
+        case InvalidDateHeaderErrorCode        =>
+          invalidRequestParameterError(InvalidDateHeaderErrorMsg, 2)
+        case InvalidForwardedHostCode          =>
+          invalidRequestParameterError(InvalidForwardedHostMsg, 5)
+        case InvalidOrMissingEoriCode          =>
+          invalidRequestParameterError(InvalidOrMissingEoriMsg, 6)
+        case EoriDoesNotExistsCode             =>
+          invalidRequestParameterError(EoriDoesNotExistsMsg, 7)
+        case EoriIsNotLinkedToAnyRecord        =>
+          invalidRequestParameterError(EoriIsNotLinkedToAnyMsg, 37)
+        case other                             =>
+          logger.warn(s"[DownloadTraderDataConnector] - Error code $other is not supported")
+          unexpectedError("Unrecognised error number", other.toInt)
+      }
   }
 }

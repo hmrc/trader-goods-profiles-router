@@ -38,7 +38,11 @@ class DownloadTraderDataService @Inject() (
       .requestDownload(eori, correlationId)
       .map {
         case Right(_)       => Right(ACCEPTED)
-        case Left(response) => Left(response)
+        case Left(response) =>
+          logger.warn(
+            s"""[DownloadTraderDataService] - unexpected response from EIS: $eori correlationId: $correlationId, response: $response"""
+          )
+          Left(response)
       } recover { case e: Throwable =>
       logger.error(
         s"""[DownloadTraderDataService] - Error occurred while requesting download of trader data for Eori: $eori correlationId: $correlationId, message: ${e.getMessage}""",
