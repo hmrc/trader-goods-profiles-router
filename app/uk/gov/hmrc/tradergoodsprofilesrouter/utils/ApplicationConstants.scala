@@ -230,3 +230,13 @@ object WithdrawAdviceConstant {
   val InvalidWithdrawReasonNullMessage: String = "Digital checked that withdraw reason is < 1"
 
 }
+
+object GetProfileSpecificError {
+  val GetProfileInvalidRequestCode               = "000"
+  val GetProfileInvalidRequestMessage            = "Invalid Request"
+  val GetProfileInvalidCorrelationIdCode: String = "001"
+  val GetProfileInvalidDateCode                  = "002"
+  val GetProfileInvalidContentTypeCode: String   = "003"
+  val GetProfileInvalidAcceptCode: String        = "004"
+  val GetProfileInvalidForwardedHostCode: String = "005"
+}

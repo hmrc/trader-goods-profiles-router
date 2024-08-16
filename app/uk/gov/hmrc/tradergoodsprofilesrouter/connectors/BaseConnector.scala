@@ -32,7 +32,7 @@ trait BaseConnector {
     correlationId: String,
     accessToken: String,
     forwardedHost: String
-  )(implicit hc: HeaderCarrier): Seq[(String, String)] =
+  ): Seq[(String, String)] =
     Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> forwardedHost,

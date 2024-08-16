@@ -183,18 +183,15 @@ trait EisHttpErrorHandler extends Logging {
       extractError(correlationId, detail)
     )
 
-  private def extractError(correlationId: String, detail: ErrorDetail) = {
-    val extractErrors: Option[Seq[errors.Error]] =
-      (
-        for {
-          o      <- detail.sourceFaultDetail
-          errors <- o.detail
-        } yield errors.map(detail => parseFaultDetail(detail, correlationId))
-      )
-        .map((s: Seq[Option[errors.Error]]) => s.flatten)
-        .filter(_.nonEmpty)
-    extractErrors
-  }
+  private def extractError(correlationId: String, detail: ErrorDetail): Option[Seq[errors.Error]] =
+    (
+      for {
+        o      <- detail.sourceFaultDetail
+        errors <- o.detail
+      } yield errors.map(detail => parseFaultDetail(detail, correlationId))
+    )
+      .map((s: Seq[Option[errors.Error]]) => s.flatten)
+      .filter(_.nonEmpty)
 
   protected def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {
     val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r

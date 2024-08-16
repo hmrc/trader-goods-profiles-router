@@ -83,7 +83,6 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
     }
 
     "return an error if Accept header is missing" in new TestValidationRules(uuidService) { validator =>
-      when(this.uuidService.uuid).thenReturn(correlationId)
       val result = validator.validateAcceptHeader(FakeRequest())
 
       result.left.value mustBe BadRequest(
@@ -103,7 +102,6 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
     }
 
     "return an error if Accept header has the wrong value" in new TestValidationRules(uuidService) { validator =>
-      when(this.uuidService.uuid).thenReturn(correlationId)
       val result = validator.validateAcceptHeader(FakeRequest().withHeaders("Accept" -> "text/plain"))
 
       result.left.value mustBe BadRequest(
