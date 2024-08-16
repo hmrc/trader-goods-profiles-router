@@ -102,6 +102,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       updateRecord = "/tgp/updaterecord/v1",
       maintainProfile = "/tgp/maintainprofile/v1",
       createProfile = "/tgp/createprofile/v1",
+      getProfile = "/tgp/getprofile/v1",
       forwardedHost = "MDTP",
       updateRecordToken = "dummyRecordUpdateBearerToken",
       recordGetToken = "dummyRecordGetBearerToken",
@@ -109,6 +110,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       recordRemoveToken = "dummyRecordRemoveBearerToken",
       maintainProfileToken = "dummyMaintainProfileBearerToken",
       createProfileToken = "dummyCreateProfileBearerToken",
+      getProfileToken = "dummyGetProfileBearerToken",
       getRecordsMaxSize = 500,
       getRecordsDefaultSize = 500
     )
@@ -123,7 +125,9 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       getRecords = "/tgp/getrecords/v1",
       recordGetToken = "dummyRecordGetBearerToken",
       withdrawAdvise = "/tgp/withdrawaccreditation/v1",
-      withdrawAdviseToken = "dummyWithdrawAdviceBearerToken"
+      withdrawAdviseToken = "dummyWithdrawAdviceBearerToken",
+      downloadTraderData = "/tgp/record/v1",
+      downloadTraderDataToken = "dummyDownloadTraderDataToken"
     )
 
     when(appConfig.hawkConfig).thenReturn(hawkConfig)
@@ -138,7 +142,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     httpReader.correlationId mustBe expectedCorrelationId
   }
 
-  protected def verifyExecuteForStatusHttpReader(expectedCorrelationId: String) = {
+  protected def verifyExecuteForStatusHttpReader(expectedCorrelationId: String): Assertion = {
     val captor = ArgCaptor[StatusHttpReader]
     verify(requestBuilder).execute(captor.capture, any)
 

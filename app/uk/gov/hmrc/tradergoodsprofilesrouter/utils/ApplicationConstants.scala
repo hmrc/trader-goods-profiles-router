@@ -174,7 +174,30 @@ object ApplicationConstants {
   val InvalidOrMissinggoodsDescriptionCode   = "E014"
   val InvalidOrMissingCommodityCodeCode      = "E015"
   val invalidWithdrawReasonCode              = 1018
+}
 
+object DownloadTraderDataConstants {
+  val InvalidCorrelationHeaderErrorCode = "001"
+  val InvalidCorrelationHeaderErrorMsg  =
+    "X-Correlation-ID was missing from Header or is in the wrong format"
+
+  val InvalidDateHeaderErrorCode = "002"
+  val InvalidDateHeaderErrorMsg  =
+    "Request Date was missing from Header or is in the wrong format"
+
+  val InvalidForwardedHostCode = "005"
+  val InvalidForwardedHostMsg  =
+    "X-Forwarded-Host was missing from Header or is in the wrong format"
+
+  val InvalidOrMissingEoriCode = "006"
+  val InvalidOrMissingEoriMsg  =
+    "The EORI number has been provided in the wrong format"
+
+  val EoriDoesNotExistsCode = "007"
+  val EoriDoesNotExistsMsg  = "EORI number does not have a TGP"
+
+  val EoriIsNotLinkedToAnyRecord = "037"
+  val EoriIsNotLinkedToAnyMsg    = "EORI number is not linked to any records in the database"
 }
 
 object WithdrawAdviceConstant {
@@ -206,4 +229,14 @@ object WithdrawAdviceConstant {
 
   val InvalidWithdrawReasonNullMessage: String = "Digital checked that withdraw reason is < 1"
 
+}
+
+object GetProfileSpecificError {
+  val GetProfileInvalidRequestCode               = "000"
+  val GetProfileInvalidRequestMessage            = "Invalid Request"
+  val GetProfileInvalidCorrelationIdCode: String = "001"
+  val GetProfileInvalidDateCode                  = "002"
+  val GetProfileInvalidContentTypeCode: String   = "003"
+  val GetProfileInvalidAcceptCode: String        = "004"
+  val GetProfileInvalidForwardedHostCode: String = "005"
 }

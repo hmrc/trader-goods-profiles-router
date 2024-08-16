@@ -28,6 +28,7 @@ case class HawkInstanceConfig(
   updateRecord: String,
   maintainProfile: String,
   createProfile: String,
+  getProfile: String,
   forwardedHost: String,
   updateRecordToken: String,
   recordGetToken: String,
@@ -35,6 +36,7 @@ case class HawkInstanceConfig(
   recordRemoveToken: String,
   maintainProfileToken: String,
   createProfileToken: String,
+  getProfileToken: String,
   getRecordsMaxSize: Int,
   getRecordsDefaultSize: Int
 ) {
@@ -45,13 +47,16 @@ case class HawkInstanceConfig(
   lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
   lazy val createProfileUrl: String   = s"$protocol://$host:$port$createProfile"
 
+  lazy val getProfileUrl: String      = s"$protocol://$host:$port$getProfile"
 
-  lazy val updateRecordBearerToken    = s"Bearer $updateRecordToken"
-  lazy val getRecordBearerToken       = s"Bearer $recordGetToken"
-  lazy val createRecordBearerToken    = s"Bearer $recordCreateToken"
-  lazy val removeRecordBearerToken    = s"Bearer $recordRemoveToken"
-  lazy val maintainProfileBearerToken = s"Bearer $maintainProfileToken"
+  lazy val updateRecordBearerToken       = s"Bearer $updateRecordToken"
+  lazy val getRecordBearerToken          = s"Bearer $recordGetToken"
+  lazy val createRecordBearerToken       = s"Bearer $recordCreateToken"
+  lazy val removeRecordBearerToken       = s"Bearer $recordRemoveToken"
+  lazy val maintainProfileBearerToken    = s"Bearer $maintainProfileToken"
+  lazy val getProfileBearerToken: String = s"Bearer $getProfileToken"
   lazy val createProfileBearerToken   = s"Bearer $createProfileToken"
+
 }
 
 object HawkInstanceConfig {
@@ -69,6 +74,7 @@ object HawkInstanceConfig {
         config.get[String]("update-record"),
         config.get[String]("maintain-profile"),
         config.get[String]("create-profile"),
+        config.get[String]("get-profile"),
         config.get[String]("forwarded-host"),
         config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),
         config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
@@ -76,6 +82,7 @@ object HawkInstanceConfig {
         config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),
         config.getOptional[String]("maintain-profile-token").getOrElse("dummyMaintainProfileBearerToken"),
         config.getOptional[String]("create-profile-token").getOrElse("dummyCreateProfileBearerToken"),
+        config.getOptional[String]("get-profile-token").getOrElse("dummyGetProfileBearerToken"),
         config.get[Int]("default-size"),
         config.get[Int]("max-size")
       )

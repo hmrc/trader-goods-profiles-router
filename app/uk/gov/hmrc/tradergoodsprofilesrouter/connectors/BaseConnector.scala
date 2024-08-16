@@ -32,13 +32,14 @@ trait BaseConnector {
     correlationId: String,
     accessToken: String,
     forwardedHost: String
-  ): Seq[(String, String)]                             =
+  ): Seq[(String, String)] =
     Seq(
       HeaderNames.CorrelationId -> correlationId,
       HeaderNames.ForwardedHost -> forwardedHost,
       HeaderNames.Date          -> dateTimeService.timestamp.asStringHttp,
       HeaderNames.Authorization -> accessToken
     )
+
   protected def buildHeaders(
     correlationId: String,
     accessToken: String,
