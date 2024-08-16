@@ -30,10 +30,9 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.Unexpect
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateProfileService @Inject()(
+class CreateProfileService @Inject() (
   connector: CreateProfileConnector,
-  uuidService: UuidService,
-  appConfig: AppConfig
+  uuidService: UuidService
 )(implicit
   ec: ExecutionContext
 ) extends Logging {
@@ -69,13 +68,8 @@ class CreateProfileService @Inject()(
       }
   }
 
-  // TODO: This will need to be removed once EIS / B&T make the same validation on their side
   private def padNiphlNumber(niphlNumber: Option[String]): Option[String] =
-    if (appConfig.isDrop1_1_enabled) {
-      niphlNumber
-    } else {
-      niphlNumber.map { niphl =>
-        if (niphl.length >= 8) niphl else "-" * (8 - niphl.length) + niphl
-      }
+    niphlNumber.map { niphl =>
+      if (niphl.length >= 8) niphl else "-" * (8 - niphl.length) + niphl
     }
 }

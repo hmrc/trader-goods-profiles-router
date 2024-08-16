@@ -28,7 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateProfileConnector @Inject()(
+class CreateProfileConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   override val dateTimeService: DateTimeService
@@ -43,7 +43,7 @@ class CreateProfileConnector @Inject()(
     httpClientV2
       .post(url"$url")
       .setHeader(
-        buildHeadersWithDrop1Toggle( // TODO: Update this when removing x-client-id TGP-2014
+        buildHeaders(
           correlationId,
           appConfig.hawkConfig.createProfileBearerToken,
           appConfig.hawkConfig.forwardedHost

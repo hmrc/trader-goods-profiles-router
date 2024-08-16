@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.Mockito.RETURNS_DEEP_STUBS
+
 import org.mockito.MockitoSugar.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -26,7 +26,6 @@ import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateProfileService, UuidService}
@@ -41,28 +40,23 @@ class CreateProfileControllerSpec extends PlaySpec with MockitoSugar {
   implicit val ec: ExecutionContext = ExecutionContext.global
 
   val mockCreateProfileService: CreateProfileService = mock[CreateProfileService]
-  val mockUuidService: UuidService                       = mock[UuidService]
-  private val appConfig                                  = mock[AppConfig](RETURNS_DEEP_STUBS)
+  val mockUuidService: UuidService                   = mock[UuidService]
 
   private val sut =
     new CreateProfileController(
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       mockCreateProfileService,
-      appConfig,
       mockUuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
     HeaderNames.Accept      -> "application/vnd.hmrc.1.0+json",
-    HeaderNames.ContentType -> MimeTypes.JSON,
-    HeaderNames.ClientId    -> "clientId"
+    HeaderNames.ContentType -> MimeTypes.JSON
   )
 
   "POST /profile/create " should {
-    // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
     "return a 200 ok when the call to EIS is successful to create a profile" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(false)
 
       when(mockCreateProfileService.createProfile(any, any)(any))
         .thenReturn(Future.successful(Right(createProfileResponse)))
@@ -71,26 +65,6 @@ class CreateProfileControllerSpec extends PlaySpec with MockitoSugar {
 
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.toJson(createProfileResponse)
-    }
-
-    // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
-    "return a 200 Ok without validating the x-client-id when the isDrop1_1_enabled is true" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
-      when(mockCreateProfileService.createProfile(any, any)(any))
-        .thenReturn(Future.successful(Right(createProfileResponse)))
-      val headersWithoutClientId = validHeaders.filterNot { case (name, _) => name == "X-Client-ID" }
-
-      val result =
-        sut.create("123456")(FakeRequest().withBody(createProfileRequest).withHeaders(headersWithoutClientId: _*))
-
-      status(result) mustBe OK
-      contentAsJson(result) mustBe Json.toJson(createProfileResponse)
-    }
-
-    "return a 400 when the client id header is missing" in {
-      val result = sut.create("123456")(FakeRequest().withBody(createProfileRequest).withHeaders())
-
-      status(result) mustBe BAD_REQUEST
     }
 
     "return a 400 when the Accept header is missing" in {

@@ -19,12 +19,14 @@ package uk.gov.hmrc.tradergoodsprofilesrouter
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
+import play.api.http.MimeTypes
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import java.time.Instant
 
@@ -47,19 +49,32 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
   }
 
-  // TODO: After drop 1.1 remove x-client-id from headers - Ticket: TGP-2014
-  val headers: Seq[(String, String)] = if (appConfig.isDrop1_1_enabled) {
-    Seq(
-      ("Content-Type", "application/json"),
-      ("Accept", "application/vnd.hmrc.1.0+json")
-    )
-  } else {
-    Seq(
-      ("Content-Type", "application/json"),
-      ("Accept", "application/vnd.hmrc.1.0+json"),
-      ("X-Client-ID", "tss")
-    )
-  }
+//  // TODO: After drop 1.1 remove x-client-id from headers - Ticket: TGP-2014
+//  val headers: Seq[(String, String)] = if (appConfig.isDrop1_1_enabled) {
+//    Seq(
+//      ("Content-Type", "application/json"),
+//      ("Accept", "application/vnd.hmrc.1.0+json")
+//    )
+//  } else {
+//    Seq(
+//      ("Content-Type", "application/json"),
+//      ("Accept", "application/vnd.hmrc.1.0+json"),
+//      ("X-Client-ID", "tss")
+//    )
+//  }
+
+//  val headers2: Seq[(String, String)] =
+//    Seq(
+//      ("Content-Type", "application/json"),
+//      ("Accept", "application/vnd.hmrc.1.0+json")
+//    )
+
+  val headers: Seq[(String, String)] = Seq(
+    ("Content-Type", "application/json"),
+    ("Accept", "application/vnd.hmrc.1.0+json"),
+    ("X-Client-ID", "tss")
+  )
+
 
   "when trying to create a profile" - {
     "it should return a 200 ok when the request is successful" in {
