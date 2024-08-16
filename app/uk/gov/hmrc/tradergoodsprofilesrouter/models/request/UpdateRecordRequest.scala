@@ -50,9 +50,8 @@ object UpdateRecordRequest {
       (JsPath \ "comcode").readNullable(validComcode) and
       (JsPath \ "goodsDescription").readNullable(lengthBetween(1, 512)) and
       (JsPath \ "countryOfOrigin").readNullable(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
-      (JsPath \ "category").readNullableWithDefault(Some(1))(
-        verifying[Int](category => category >= 1 && category <= 3)
-      ) and (JsPath \ "assessments").readNullable[Seq[Assessment]] and
+      (JsPath \ "category").readNullable[Int](verifying[Int](category => category >= 1 && category <= 3)) and
+      (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[BigDecimal] and
       (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
       (JsPath \ "comcodeEffectiveFromDate").readNullable[Instant] and
