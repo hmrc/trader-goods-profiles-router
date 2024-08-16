@@ -81,7 +81,7 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
       stubForEis(OK, Some(createProfileResponseWithOptionalNullFields.toString()))
 
       val response = wsClient
-        .url(fullUrl(s"/traders/$eori"))
+        .url(url)
         .withHttpHeaders(headers: _*)
         .post(createProfileRequestWithOptionalNullFields)
         .futureValue
@@ -99,7 +99,7 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
       )
 
       val response = wsClient
-        .url(fullUrl(s"/traders/$eori"))
+        .url(url)
         .withHttpHeaders(headers: _*)
         .post(createProfileRequest)
         .futureValue
@@ -118,7 +118,7 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
       stubForEis(FORBIDDEN)
 
       val response = wsClient
-        .url(fullUrl(s"/traders/$eori"))
+        .url(url)
         .withHttpHeaders(headers: _*)
         .post(createProfileRequest)
         .futureValue
@@ -137,7 +137,8 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
       "EORI number is not authorized" in {
 
         val response = wsClient
-          .url(fullUrl(s"/traders/GB123456789015"))
+
+          .url(fullUrl(s"/customs/traders/goods-profiles/GB123456789015"))
           .withHttpHeaders(headers: _*)
           .post(createProfileRequest)
           .futureValue
@@ -156,7 +157,7 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
         withAuthorizedTrader(enrolment = Enrolment("OTHER-ENROLMENT-KEY"))
 
         val response = wsClient
-          .url(fullUrl(s"/traders/$eori"))
+          .url(url)
           .withHttpHeaders(("Content-Type", "application/json"), ("X-Client-ID", "tss"))
           .post(createProfileRequest)
           .futureValue
@@ -175,7 +176,7 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
 
   private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
     stubFor(
-      put(urlEqualTo(s"$hawkConnectorPath"))
+      post(urlEqualTo(s"$hawkConnectorPath"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
