@@ -53,8 +53,13 @@ class CreateProfileService @Inject() (
     connector
       .createProfile(eisRequest, correlationId)
       .map {
-        case Right(response) => Right(response)
-        case Left(response)  => Left(response)
+        case Right(response)     => Right(response)
+        case Left(errorResponse) =>
+          logger.info(
+            s"""[CreateProfileService] - Eis returns ${errorResponse.httpStatus}: ${request.actorId},
+            s"correlationId: $correlationId, message: ${errorResponse.errorResponse.message}"""
+          )
+          Left(errorResponse)
       }
       .recover { case ex: Throwable =>
         logger.error(
