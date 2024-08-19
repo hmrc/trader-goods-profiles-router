@@ -15,3 +15,5 @@ GET        /customs/traders/goods-profiles/:eori/download           uk.gov.hmrc.
 
 # Profile
 GET        /customs/traders/goods-profiles/:eori                    uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetProfileController.getProfile(eori: String)
+
+POST        /customs/traders/goods-profiles/:eori                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateProfileController.create(eori: String)

@@ -101,6 +101,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       removeRecord = "/tgp/removerecord/v1",
       updateRecord = "/tgp/updaterecord/v1",
       maintainProfile = "/tgp/maintainprofile/v1",
+      createProfile = "/tgp/createprofile/v1",
       getProfile = "/tgp/getprofile/v1",
       forwardedHost = "MDTP",
       updateRecordToken = "dummyRecordUpdateBearerToken",
@@ -108,6 +109,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       recordCreateToken = "dummyRecordCreateBearerToken",
       recordRemoveToken = "dummyRecordRemoveBearerToken",
       maintainProfileToken = "dummyMaintainProfileBearerToken",
+      createProfileToken = "dummyCreateProfileBearerToken",
       getProfileToken = "dummyGetProfileBearerToken",
       getRecordsMaxSize = 500,
       getRecordsDefaultSize = 500
