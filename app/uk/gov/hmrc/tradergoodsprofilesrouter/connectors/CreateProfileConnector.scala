@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import play.api.http.MimeTypes
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -25,6 +26,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.CreateProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -42,14 +44,15 @@ class CreateProfileConnector @Inject() (
     val url = appConfig.hawkConfig.createProfileUrl
     httpClientV2
       .post(url"$url")
-      .setHeader(
-        buildHeaders(
-          correlationId,
-          appConfig.hawkConfig.createProfileBearerToken,
-          appConfig.hawkConfig.forwardedHost
-        ): _*
-      )
+      .setHeader(headers(correlationId): _*)
       .withBody(Json.toJson(request))
       .execute(HttpReader[CreateProfileResponse](correlationId, handleErrorResponse), ec)
   }
+
+  private def headers(correlationId: String): Seq[(String, String)] =
+    commonHeaders(
+      correlationId,
+      appConfig.hawkConfig.getProfileBearerToken,
+      appConfig.hawkConfig.forwardedHost
+    ) :+ (HeaderNames.Accept -> MimeTypes.JSON)
 }
