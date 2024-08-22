@@ -200,6 +200,11 @@ object DownloadTraderDataConstants {
   val EoriIsNotLinkedToAnyMsg    = "EORI number is not linked to any records in the database"
 }
 
+object CreateTraderProfile {
+  val EoriAlreadyExistsCode    = "038"
+  val EoriAlreadyExistsMessage = "Eori already associated with another profile"
+}
+
 object WithdrawAdviceConstant {
   val InvalidOrMissingCorrelationIdCode: String = "E001"
   val InvalidOrMissingCorrelationIdMsg: String  =
