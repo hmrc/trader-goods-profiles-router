@@ -25,6 +25,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.CreateTraderProfile.{EoriAlreadyExistsCode, EoriAlreadyExistsMessage}
 
 import scala.util.Try
 
@@ -292,6 +293,11 @@ trait EisHttpErrorHandler extends Logging {
           invalidRequestParameterError(
             RecordRemovedAndCanNotBeUpdatedMessage,
             RecordRemovedAndCanNotBeUpdatedCode.toInt
+          )
+        case EoriAlreadyExistsCode                                    =>
+          invalidRequestParameterError(
+            EoriAlreadyExistsMessage,
+            EoriAlreadyExistsCode.toInt
           )
         case InvalidOrMissingCorrelationIdCode                        =>
           invalidRequestParameterError(InvalidOrMissingCorrelationID, 1001)
