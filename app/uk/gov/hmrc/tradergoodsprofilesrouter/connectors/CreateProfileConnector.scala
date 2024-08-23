@@ -22,9 +22,8 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.CreateProfileEisRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
@@ -40,13 +39,13 @@ class CreateProfileConnector @Inject() (
 
   def createProfile(request: CreateProfileEisRequest, correlationId: String)(implicit
     hc: HeaderCarrier
-  ): Future[Either[EisHttpErrorResponse, CreateProfileResponse]] = {
+  ): Future[Either[EisHttpErrorResponse, Int]] = {
     val url = appConfig.hawkConfig.createProfileUrl
     httpClientV2
       .post(url"$url")
       .setHeader(headers(correlationId): _*)
       .withBody(Json.toJson(request))
-      .execute(HttpReader[CreateProfileResponse](correlationId, handleErrorResponse), ec)
+      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
   }
 
   private def headers(correlationId: String): Seq[(String, String)] =

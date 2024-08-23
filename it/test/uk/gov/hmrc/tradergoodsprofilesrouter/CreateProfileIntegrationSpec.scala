@@ -199,19 +199,20 @@ class CreateProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupp
   lazy val createProfileResponse: JsValue =
     Json.parse("""
                  |{
-                 |"eori": "GB123456789012",
+                 |"eori": "GB123456789001",
                  |"actorId":"GB098765432112",
                  |"ukimsNumber":"XIUKIM47699357400020231115081800",
                  |"nirmsNumber":"RMS-GB-123456",
-                 |"niphlNumber": "--1234"
+                 |"niphlNumber": "SM12345"
                  |}
                  |""".stripMargin)
 
   lazy val createProfileResponseWithoutOptionalNullFields: JsValue =
     Json.parse("""
                  |{
-                 |"eori": "GB123456789012",
-                 |"actorId":"GB098765432112"
+                 |"eori": "GB123456789001",
+                 |"actorId":"GB098765432112",
+                 |"ukimsNumber":"XIUKIM47699357400020231115081800"
                  |}
                  |""".stripMargin)
 
