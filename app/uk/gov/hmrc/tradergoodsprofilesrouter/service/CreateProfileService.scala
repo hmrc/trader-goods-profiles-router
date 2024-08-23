@@ -44,7 +44,7 @@ class CreateProfileService @Inject() (
       CreateProfileEisRequest(
         eori,
         request.actorId,
-        request.ukimsNumber,
+        Some(request.ukimsNumber),
         request.nirmsNumber,
         padNiphlNumber(request.niphlNumber)
       )
@@ -53,7 +53,7 @@ class CreateProfileService @Inject() (
     connector
       .createProfile(eisRequest, correlationId)
       .map {
-        case Right(response)     => Right(response)
+        case Right(_)            => Right(buildResponse(eisRequest))
         case Left(errorResponse) =>
           logger.info(
             s"""[CreateProfileService] - Eis returns ${errorResponse.httpStatus}: ${request.actorId},
@@ -73,8 +73,23 @@ class CreateProfileService @Inject() (
       }
   }
 
+  private def buildResponse(request: CreateProfileEisRequest) =
+    CreateProfileResponse(
+      request.eori,
+      request.actorId,
+      request.ukimsNumber,
+      request.nirmsNumber,
+      removeLeadingDashes(request.niphlNumber)
+    )
+
   private def padNiphlNumber(niphlNumber: Option[String]): Option[String] =
     niphlNumber.map { niphl =>
       if (niphl.length >= 8) niphl else "-" * (8 - niphl.length) + niphl
+    }
+
+  private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
+    niphlNumber match {
+      case Some(niphl) => Some(niphl.dropWhile(_ == '-'))
+      case None        => None
     }
 }

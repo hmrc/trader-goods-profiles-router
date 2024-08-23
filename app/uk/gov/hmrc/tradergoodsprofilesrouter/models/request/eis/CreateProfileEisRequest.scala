@@ -21,7 +21,7 @@ import play.api.libs.json.{Json, OFormat}
 case class CreateProfileEisRequest(
   eori: String,
   actorId: String,
-  ukimsNumber: String,
+  ukimsNumber: Option[String],
   nirmsNumber: Option[String],
   niphlNumber: Option[String]
 )
