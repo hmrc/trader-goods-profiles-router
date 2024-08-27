@@ -74,7 +74,7 @@ class UpdateRecordControllerSpec
 
     "return a 200 with JSON response when updating a record" in {
 
-      when(updateRecordService.updateRecord(any, any, any)(any))
+      when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
       val result =
@@ -85,7 +85,7 @@ class UpdateRecordControllerSpec
 
     "return OK without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
       when(appConfig.isDrop1_1_enabled).thenReturn(true)
-      when(updateRecordService.updateRecord(any, any, any)(any))
+      when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
       val result =
@@ -102,7 +102,7 @@ class UpdateRecordControllerSpec
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
     "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
       when(appConfig.isDrop1_1_enabled).thenReturn(false)
-      when(updateRecordService.updateRecord(any, any, any)(any))
+      when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =
         sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
@@ -219,7 +219,7 @@ class UpdateRecordControllerSpec
     }
 
     "return a Bad Request if actorId is invalid" in {
-      when(updateRecordService.updateRecord(any, any, any)(any))
+      when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
       val result = sut.update(eoriNumber, "invalid-actorId")(
