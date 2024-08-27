@@ -783,7 +783,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field comcode was missing from body or is in the wrong format",
+                "message"     -> "Mandatory field comcode was missing from body or is in the wrong format",
                 "errorNumber" -> 11
               ),
               Json.obj(

@@ -25,7 +25,7 @@ import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, optionalFieldsToErrorCode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, fieldsToErrorCode, optionalFieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
@@ -68,7 +68,7 @@ class UpdateRecordController @Inject() (
                                  .fromEither[Future](validateRecordId(recordId))
                                  .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
         updateRecordRequest <-
-          EitherT.fromEither[Future](validateRequestBody[CreateRecordRequest](optionalFieldsToErrorCode))
+          EitherT.fromEither[Future](validateRequestBody[CreateRecordRequest](fieldsToErrorCode))
         response            <- putRecord(eori, recordId, updateRecordRequest)
       } yield Ok(Json.toJson(response))
 

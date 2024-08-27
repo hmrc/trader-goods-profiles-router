@@ -111,6 +111,7 @@ class UpdateRecordService @Inject() (
       .map {
         case Right(response) =>
           val updateRecordResponse = CreateOrUpdateRecordResponse(response)
+
           auditService.emitAuditUpdateRecord(
             createUpdatePayloadFromCreatePayload(payload, recordId),
             requestedDateTime,
@@ -119,6 +120,7 @@ class UpdateRecordService @Inject() (
             None,
             Some(updateRecordResponse)
           )
+
           Right(updateRecordResponse)
         case Left(response)  =>
           val failureReason = response.errorResponse.errors.map { error =>
