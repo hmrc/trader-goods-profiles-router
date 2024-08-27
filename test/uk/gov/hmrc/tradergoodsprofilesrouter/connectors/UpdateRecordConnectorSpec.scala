@@ -23,6 +23,7 @@ import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
@@ -114,6 +115,52 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
         verify(httpClientV2).put(url"$expectedUrl")
         verify(requestBuilder).withBody(updateRecordPayload)
 
+        verifyExecuteForHttpReader(correlationId)
+      }
+
+    }
+  }
+
+  "put" should {
+    "update a record successfully" in {
+      val expectedResponse = createOrUpdateRecordEisResponse
+
+      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+        .thenReturn(Future.successful(Right(expectedResponse)))
+
+      val request = updateRecordPayload.as[CreateRecordPayload]
+      val result  = await(eisConnector.put(request, correlationId))
+
+      result.value mustBe expectedResponse
+    }
+
+    "return an error if EIS return an error" in {
+      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+        .thenReturn(Future.successful(Left(BadRequest("error"))))
+
+      val request = updateRecordPayload.as[CreateRecordPayload]
+      val result  = await(eisConnector.put(request, correlationId))
+
+      result.left.value mustBe BadRequest("error")
+    }
+
+    "send a request with the right url" when {
+
+      "isDrop1_1_enabled feature flag is true" in {
+        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+        val expectedResponse = createOrUpdateRecordEisResponse
+        when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+          .thenReturn(Future.successful(Right(expectedResponse)))
+
+        await(eisConnector.put(updateRecordPayload.as[CreateRecordPayload], correlationId))
+
+        val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
+        verify(httpClientV2).put(url"$expectedUrl")
+        verify(requestBuilder).setHeader(
+          expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
+        )
         verifyExecuteForHttpReader(correlationId)
       }
 
