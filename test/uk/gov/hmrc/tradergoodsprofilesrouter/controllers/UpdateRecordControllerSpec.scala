@@ -78,7 +78,7 @@ class UpdateRecordControllerSpec
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
       val result =
-        sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
+        sut.patch(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
 
       status(result) mustBe OK
     }
@@ -89,7 +89,7 @@ class UpdateRecordControllerSpec
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
       val result =
-        sut.update(eoriNumber, recordId)(
+        sut.patch(eoriNumber, recordId)(
           FakeRequest()
             .withBody(updateRecordRequestData)
             .withHeaders(validHeaders.filterNot { case (name, _) =>
@@ -105,7 +105,7 @@ class UpdateRecordControllerSpec
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =
-        sut.update(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
+        sut.patch(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
       status(result) mustBe OK
     }
 
@@ -126,7 +126,7 @@ class UpdateRecordControllerSpec
         )
       )
 
-      val result = sut.update(eoriNumber, recordId)(
+      val result = sut.patch(eoriNumber, recordId)(
         FakeRequest().withBody(invalidUpdateRecordRequestData).withHeaders(validHeaders: _*)
       )
 
@@ -169,7 +169,7 @@ class UpdateRecordControllerSpec
         )
       )
 
-      val result = sut.update(eoriNumber, recordId)(
+      val result = sut.patch(eoriNumber, recordId)(
         FakeRequest().withBody(invalidUpdateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
       )
 
@@ -190,7 +190,7 @@ class UpdateRecordControllerSpec
           Some(Seq(Error("INVALID_HEADER", "Missing mandatory header X-Client-ID", 6000)))
         )
 
-      val result = sut.update(eoriNumber, recordId)(
+      val result = sut.patch(eoriNumber, recordId)(
         FakeRequest()
           .withBody(updateRecordRequestData)
           .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
@@ -209,7 +209,7 @@ class UpdateRecordControllerSpec
           Some(Seq(Error("INVALID_HEADER", "Accept was missing from Header or is in the wrong format", 4)))
         )
 
-      val result = sut.update(eoriNumber, recordId)(
+      val result = sut.patch(eoriNumber, recordId)(
         FakeRequest()
           .withBody(updateRecordRequestData)
           .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("Accept") }: _*)
@@ -222,7 +222,7 @@ class UpdateRecordControllerSpec
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
-      val result = sut.update(eoriNumber, "invalid-actorId")(
+      val result = sut.patch(eoriNumber, "invalid-actorId")(
         FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
       )
 
