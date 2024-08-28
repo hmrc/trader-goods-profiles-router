@@ -848,7 +848,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
   private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
     stubFor(
-      put(urlEqualTo(s"$hawkConnectorPath"))
+      patch(urlEqualTo(s"$hawkConnectorPath"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

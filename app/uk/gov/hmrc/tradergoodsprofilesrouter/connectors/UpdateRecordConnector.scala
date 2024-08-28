@@ -46,7 +46,7 @@ class UpdateRecordConnector @Inject() (
     val url = appConfig.hawkConfig.updateRecordUrl
 
     httpClientV2
-      .put(url"$url")
+      .patch(url"$url")
       .setHeader(
         buildHeadersWithDrop1Toggle(
           correlationId,
