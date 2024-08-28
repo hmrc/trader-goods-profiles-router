@@ -43,12 +43,16 @@ object ProfileResponse extends NiphlNumberFilter {
       (JsPath \ "ukimsNumber").writeNullable[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
       (JsPath \ "niphlNumber").writeNullable[String]
-  )(p => (
-    p.eori,
-    p.actorId,
-    p.ukimsNumber,
-    p.nirmsNumber,
-    removeLeadingDashes(p.niphlNumber)// TODO: This will need to be removed once EIS/B&T make the same validation on their side
-  ))
+  )(p =>
+    (
+      p.eori,
+      p.actorId,
+      p.ukimsNumber,
+      p.nirmsNumber,
+      removeLeadingDashes(
+        p.niphlNumber
+      ) // TODO: This will need to be removed once EIS/B&T make the same validation on their side
+    )
+  )
 
 }

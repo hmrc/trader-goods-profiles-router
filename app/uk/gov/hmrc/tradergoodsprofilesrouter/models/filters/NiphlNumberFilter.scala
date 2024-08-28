@@ -21,6 +21,6 @@ trait NiphlNumberFilter {
   def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
     niphlNumber match {
       case Some(niphlNumber) => Some(niphlNumber.dropWhile(_ == '-'))
-      case None        => None
+      case None              => None
     }
 }
