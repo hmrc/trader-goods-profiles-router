@@ -191,7 +191,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
         val result = handler.handleErrorResponse(httpResponse, correlationId)
 
         result mustBe EisHttpErrorResponse(
-          BAD_REQUEST,
+          FORBIDDEN,
           ErrorResponse(
             correlationId,
             "BAD_REQUEST",

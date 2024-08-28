@@ -110,7 +110,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
 
         val response = sendAndWait
 
-        response.status shouldBe BAD_REQUEST
+        response.status shouldBe FORBIDDEN
         response.json shouldBe  Json.obj(
           "correlationId" -> correlationId,
           "code" -> "BAD_REQUEST",

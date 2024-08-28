@@ -100,7 +100,7 @@ class DownloadTraderDataIntegrationSpec extends PegaIntegrationSpec with AuthTes
           .get()
       )
 
-      result.status shouldBe BAD_REQUEST
+      result.status shouldBe FORBIDDEN
       result.json   shouldBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "BAD_REQUEST",

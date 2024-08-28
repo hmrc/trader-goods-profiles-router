@@ -35,7 +35,16 @@ trait EisHttpErrorHandler extends Logging {
     httpResponse.status match {
 
       case BAD_REQUEST =>
-        EisHttpErrorResponse(BAD_REQUEST, determine400Error(correlationId, httpResponse.body))
+        val checkError            = determine400Error(correlationId, httpResponse.body)
+        val containsSpecificError = checkError.errors.exists { errorsList =>
+          errorsList.exists { error =>
+            error.errorNumber == 7 && error.message.contains("EORI number does not have a TGP")
+          }
+        }
+        if (containsSpecificError)
+          EisHttpErrorResponse(FORBIDDEN, checkError)
+        else
+          EisHttpErrorResponse(BAD_REQUEST, checkError)
       case FORBIDDEN   =>
         EisHttpErrorResponse(
           FORBIDDEN,
