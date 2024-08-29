@@ -155,7 +155,7 @@ object ValidationRules {
 
   private val WithdrawReasonCharLimit = 512
   private val actorIdPattern: Regex   = raw"[A-Z]{2}\d{12,15}".r
-  private val comcodePattern: Regex   = raw".{6}(.{2}(.{2})?)?".r
+  private val comcodePattern: Regex   = """^([0-9]{6}|[0-9]{8}|[0-9]{10})$""".r
   private val niphlPattern: Regex     = raw"([0-9]{4,6}|[a-zA-Z]{1,2}[0-9]{5})".r
 
   def isValidCountryCode(rawCountryCode: String): Boolean =

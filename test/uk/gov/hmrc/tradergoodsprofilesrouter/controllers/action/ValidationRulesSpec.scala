@@ -310,13 +310,22 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
   }
 
   "isValidComcode" should {
-    "return true for a valid comcode" in {
+    "return true for a valid comcode with only digits and valid length of 6, 8 or 10" in {
       isValidComcode("123456") mustBe true
       isValidComcode("12345678") mustBe true
       isValidComcode("1234567890") mustBe true
     }
-    "return false if comcode is not valid" in {
-      isValidComcode("111") mustBe false
+    "return false for an invalid comcode with non-digit characters" in {
+      isValidComcode("12345a") mustBe false
+      isValidComcode("1234!8") mustBe false
+      isValidComcode("1234_8") mustBe false
+    }
+
+    "return false for an invalid comcode with incorrect length" in {
+      isValidComcode("1234") mustBe false
+      isValidComcode("1234567") mustBe false
+      isValidComcode("123456789") mustBe false
+      isValidComcode("12345678901") mustBe false
     }
   }
 
