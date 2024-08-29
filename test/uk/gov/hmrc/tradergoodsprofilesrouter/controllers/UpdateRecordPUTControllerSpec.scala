@@ -36,7 +36,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.{ApplicationConstants, Header
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-class UpdateRecordControllerSpec
+class UpdateRecordPUTControllerSpec
     extends PlaySpec
     with CreateRecordDataSupport
     with MockitoSugar
@@ -70,26 +70,28 @@ class UpdateRecordControllerSpec
 
     when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
   }
-  "PATCH /records" should {
+  "PUT /records" should {
 
     "return a 200 with JSON response when updating a record" in {
 
-      when(updateRecordService.patchRecord(any, any, any)(any))
+      when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
       val result =
-        sut.patch(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
+        sut.updateRecord(eoriNumber, recordId)(
+          FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
+        )
 
       status(result) mustBe OK
     }
 
     "return OK without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
       when(appConfig.isDrop1_1_enabled).thenReturn(true)
-      when(updateRecordService.patchRecord(any, any, any)(any))
+      when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
       val result =
-        sut.patch(eoriNumber, recordId)(
+        sut.updateRecord(eoriNumber, recordId)(
           FakeRequest()
             .withBody(updateRecordRequestData)
             .withHeaders(validHeaders.filterNot { case (name, _) =>
@@ -102,10 +104,12 @@ class UpdateRecordControllerSpec
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
     "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
       when(appConfig.isDrop1_1_enabled).thenReturn(false)
-      when(updateRecordService.patchRecord(any, any, any)(any))
+      when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =
-        sut.patch(eoriNumber, recordId)(FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*))
+        sut.updateRecord(eoriNumber, recordId)(
+          FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
+        )
       status(result) mustBe OK
     }
 
@@ -126,7 +130,7 @@ class UpdateRecordControllerSpec
         )
       )
 
-      val result = sut.patch(eoriNumber, recordId)(
+      val result = sut.updateRecord(eoriNumber, recordId)(
         FakeRequest().withBody(invalidUpdateRecordRequestData).withHeaders(validHeaders: _*)
       )
 
@@ -169,7 +173,7 @@ class UpdateRecordControllerSpec
         )
       )
 
-      val result = sut.patch(eoriNumber, recordId)(
+      val result = sut.updateRecord(eoriNumber, recordId)(
         FakeRequest().withBody(invalidUpdateRecordRequestDataForAssessmentArray).withHeaders(validHeaders: _*)
       )
 
@@ -190,7 +194,7 @@ class UpdateRecordControllerSpec
           Some(Seq(Error("INVALID_HEADER", "Missing mandatory header X-Client-ID", 6000)))
         )
 
-      val result = sut.patch(eoriNumber, recordId)(
+      val result = sut.updateRecord(eoriNumber, recordId)(
         FakeRequest()
           .withBody(updateRecordRequestData)
           .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
@@ -209,7 +213,7 @@ class UpdateRecordControllerSpec
           Some(Seq(Error("INVALID_HEADER", "Accept was missing from Header or is in the wrong format", 4)))
         )
 
-      val result = sut.patch(eoriNumber, recordId)(
+      val result = sut.updateRecord(eoriNumber, recordId)(
         FakeRequest()
           .withBody(updateRecordRequestData)
           .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("Accept") }: _*)
@@ -219,10 +223,10 @@ class UpdateRecordControllerSpec
     }
 
     "return a Bad Request if actorId is invalid" in {
-      when(updateRecordService.patchRecord(any, any, any)(any))
+      when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
-      val result = sut.patch(eoriNumber, "invalid-actorId")(
+      val result = sut.updateRecord(eoriNumber, "invalid-actorId")(
         FakeRequest().withBody(updateRecordRequestData).withHeaders(validHeaders: _*)
       )
 

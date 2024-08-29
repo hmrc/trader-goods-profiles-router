@@ -25,9 +25,9 @@ import play.api.mvc.{Action, ControllerComponents, Request, Result}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, optionalFieldsToErrorCode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, fieldsToErrorCode, optionalFieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 
@@ -44,7 +44,7 @@ class UpdateRecordController @Inject() (
     with ValidationRules
     with Logging {
 
-  def update(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
+  def patch(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
     val result = for {
       _                   <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _                   <- EitherT.fromEither[Future](validateAcceptHeader)
@@ -53,19 +53,45 @@ class UpdateRecordController @Inject() (
                                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
       updateRecordRequest <-
         EitherT.fromEither[Future](validateRequestBody[UpdateRecordRequest](optionalFieldsToErrorCode))
-      response            <- updateRecord(eori, recordId, updateRecordRequest)
+      response            <- patchRecord(eori, recordId, updateRecordRequest)
     } yield Ok(Json.toJson(response))
 
     result.merge
   }
 
-  private def updateRecord(
+  def updateRecord(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) {
+    implicit request =>
+      val result = for {
+        _                   <- EitherT.fromEither[Future](validateClientIdIfSupported)
+        _                   <- EitherT.fromEither[Future](validateAcceptHeader)
+        _                   <- EitherT
+                                 .fromEither[Future](validateRecordId(recordId))
+                                 .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
+        updateRecordRequest <-
+          EitherT.fromEither[Future](validateRequestBody[CreateRecordRequest](fieldsToErrorCode))
+        response            <- putRecord(eori, recordId, updateRecordRequest)
+      } yield Ok(Json.toJson(response))
+
+      result.merge
+  }
+
+  private def patchRecord(
     eori: String,
     recordId: String,
     updateRecordRequest: UpdateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] =
     EitherT(
-      updateRecordService.updateRecord(eori, recordId, updateRecordRequest)
+      updateRecordService.patchRecord(eori, recordId, updateRecordRequest)
+    )
+      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+
+  private def putRecord(
+    eori: String,
+    recordId: String,
+    updateRecordRequest: CreateRecordRequest
+  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] =
+    EitherT(
+      updateRecordService.putRecord(eori, recordId, updateRecordRequest)
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
