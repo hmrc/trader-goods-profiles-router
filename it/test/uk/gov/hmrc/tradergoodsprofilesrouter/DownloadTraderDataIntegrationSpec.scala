@@ -100,7 +100,7 @@ class DownloadTraderDataIntegrationSpec extends PegaIntegrationSpec with AuthTes
           .get()
       )
 
-      result.status shouldBe FORBIDDEN
+      result.status shouldBe BAD_REQUEST
       result.json   shouldBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "BAD_REQUEST",
@@ -128,17 +128,37 @@ class DownloadTraderDataIntegrationSpec extends PegaIntegrationSpec with AuthTes
           ),
           Json.obj(
             "code"        -> "INVALID_REQUEST_PARAMETER",
-            "message"     -> "EORI number does not have a TGP",
-            "errorNumber" -> 7
-          ),
-          Json.obj(
-            "code"        -> "INVALID_REQUEST_PARAMETER",
             "message"     -> "EORI number is not linked to any records in the database",
             "errorNumber" -> 37
           )
         )
       )
     }
+
+    "should handle BAD_REQUEST errors thrown by EIS for EORI number does not have a TGP" in {
+      stubForEisWithResponseBody(BAD_REQUEST, badErrorResponse)
+
+      val result = await(
+        wsClient
+          .url(url)
+          .get()
+      )
+
+      result.status shouldBe FORBIDDEN
+      result.json   shouldBe Json.obj(
+        "correlationId" -> correlationId,
+        "code"          -> "FORBIDDEN",
+        "message"       -> "Forbidden",
+        "errors"        -> Json.arr(
+          Json.obj(
+            "code"        -> "INVALID_REQUEST_PARAMETER",
+            "message"     -> "EORI number does not have a TGP",
+            "errorNumber" -> 7
+          )
+        )
+      )
+    }
+
   }
 
   private def stubForEis(httpStatus: Int) =
@@ -159,8 +179,24 @@ class DownloadTraderDataIntegrationSpec extends PegaIntegrationSpec with AuthTes
             .withBody(response.toString())
         )
     )
-
-  private def badRequestErrorResponse =
+  private def badErrorResponse                                               =
+    Json.parse(s"""
+                  |{
+                  | "errorDetail": {
+                  |   "timestamp": "2024-03-18T16:42:28Z",
+                  |   "correlationId": "7ba38231-1848-407e-a242-4ff748068ddf",
+                  |   "errorCode": "400",
+                  |   "errorMessage": "Bad Request",
+                  |   "source": "BACKEND",
+                  |   "sourceFaultDetail": {
+                  |   "detail": [
+                  |     "error: 007, message: Invalid Request Parameter"
+                  |     ]
+                  |   }
+                  | }
+                  |}
+                  |""".stripMargin)
+  private def badRequestErrorResponse                                        =
     Json.parse(s"""
                   |{
                   | "errorDetail": {
@@ -175,7 +211,6 @@ class DownloadTraderDataIntegrationSpec extends PegaIntegrationSpec with AuthTes
                   |     "error: 002, message: Invalid Header",
                   |     "error: 005, message: Invalid Header",
                   |     "error: 006, message: Invalid Request Parameter",
-                  |     "error: 007, message: Invalid Request Parameter",
                   |     "error: 037, message: Invalid Request Parameter"
                   |     ]
                   |   }

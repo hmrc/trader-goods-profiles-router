@@ -28,14 +28,14 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkInteg
 
 import java.time.Instant
 
-class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach{
+class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
-  private val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val ukimsNumber = "AC123456789124"
-  private val nirmsNumber = "1234567891234"
-  private val niphlNumber = "12345678"
-  private val timestamp = Instant.parse("2021-12-17T09:30:47.45Z")
-  private val url           = fullUrl(s"/customs/traders/goods-profiles/$eoriNumber")
+  private val correlationId              = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val ukimsNumber                = "AC123456789124"
+  private val nirmsNumber                = "1234567891234"
+  private val niphlNumber                = "12345678"
+  private val timestamp                  = Instant.parse("2021-12-17T09:30:47.45Z")
+  private val url                        = fullUrl(s"/customs/traders/goods-profiles/$eoriNumber")
   override def hawkConnectorPath: String = "/tgp/getprofile/v1"
 
   override def beforeEach(): Unit = {
@@ -55,7 +55,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
       val response = sendAndWait
 
       response.status shouldBe OK
-      response.json shouldBe createProfileResponse
+      response.json   shouldBe createProfileResponse
     }
 
     "return an error for an unauthorised eori" in {
@@ -73,11 +73,11 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         val response = sendAndWait
 
         response.status shouldBe FORBIDDEN
-         response.json shouldBe Json.obj(
-           "correlationId" -> correlationId,
-           "code" -> "FORBIDDEN",
-           "message" -> "Forbidden"
-         )
+        response.json   shouldBe Json.obj(
+          "correlationId" -> correlationId,
+          "code"          -> "FORBIDDEN",
+          "message"       -> "Forbidden"
+        )
       }
 
       "EIS return 404" in {
@@ -87,10 +87,10 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         val response = sendAndWait
 
         response.status shouldBe NOT_FOUND
-        response.json shouldBe Json.obj(
+        response.json   shouldBe Json.obj(
           "correlationId" -> correlationId,
-          "code" -> "NOT_FOUND",
-          "message" -> "Not Found"
+          "code"          -> "NOT_FOUND",
+          "message"       -> "Not Found"
         )
       }
 
@@ -101,7 +101,7 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         val response = sendAndWait
 
         response.status shouldBe BAD_REQUEST
-        response.json shouldBe expectedResponseForEIS400Error
+        response.json   shouldBe expectedResponseForEIS400Error
       }
 
       "when EIS return 400 and eori does not exist" in {
@@ -111,14 +111,14 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
         val response = sendAndWait
 
         response.status shouldBe FORBIDDEN
-        response.json shouldBe  Json.obj(
+        response.json   shouldBe Json.obj(
           "correlationId" -> correlationId,
-          "code" -> "BAD_REQUEST",
-          "message" -> "Bad Request",
-          "errors" -> Json.arr(
+          "code"          -> "FORBIDDEN",
+          "message"       -> "Forbidden",
+          "errors"        -> Json.arr(
             Json.obj(
-              "code" -> "INVALID_REQUEST_PARAMETER",
-              "message" -> "EORI number does not have a TGP",
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "EORI number does not have a TGP",
               "errorNumber" -> 7
             )
           )
@@ -133,20 +133,19 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
 
         response.status shouldBe BAD_REQUEST
 
-        response.json shouldBe  Json.obj(
+        response.json shouldBe Json.obj(
           "correlationId" -> correlationId,
-          "code" -> "BAD_REQUEST",
-          "message" -> "Bad Request",
-          "errors" -> Json.arr(
+          "code"          -> "BAD_REQUEST",
+          "message"       -> "Bad Request",
+          "errors"        -> Json.arr(
             Json.obj(
-              "code" -> "UNEXPECTED_ERROR",
-              "message" -> "Unrecognised error number",
+              "code"        -> "UNEXPECTED_ERROR",
+              "message"     -> "Unrecognised error number",
               "errorNumber" -> 123
             )
           )
         )
       }
-
 
       val table = Table(
         ("description", "code", "message", "expectedCode"),
@@ -165,80 +164,79 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
           code: String,
           message: String,
           expectedCode: String
-        ) => s"when EIS return 500 $description" in {
+        ) =>
+          s"when EIS return 500 $description" in {
 
-          withAuthorizedTrader()
-          stubEisRequest(500, Eis500ErrorResponseWithoutErrors(code, message).toString())
+            withAuthorizedTrader()
+            stubEisRequest(500, Eis500ErrorResponseWithoutErrors(code, message).toString())
 
-          val response = sendAndWait
+            val response = sendAndWait
 
-          response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json shouldBe  Json.obj(
-            "correlationId" -> correlationId,
-            "code" -> expectedCode,
-            "message" -> message
-          )
-        }
+            response.status shouldBe INTERNAL_SERVER_ERROR
+            response.json   shouldBe Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> expectedCode,
+              "message"       -> message
+            )
+          }
       }
     }
   }
 
-  private def sendAndWait = {
-    await(wsClient
-      .url(url)
-      .withHttpHeaders(Seq("Accept" -> "application/vnd.hmrc.1.0+json"): _*)
-      .get()
+  private def sendAndWait =
+    await(
+      wsClient
+        .url(url)
+        .withHttpHeaders(Seq("Accept" -> "application/vnd.hmrc.1.0+json"): _*)
+        .get()
     )
-  }
 
-  private def expectedResponseForEIS400Error = {
+  private def expectedResponseForEIS400Error =
     Json.obj(
       "correlationId" -> correlationId,
-      "code" -> "BAD_REQUEST",
-      "message" -> "Bad Request",
-      "errors" -> Json.arr(
+      "code"          -> "BAD_REQUEST",
+      "message"       -> "Bad Request",
+      "errors"        -> Json.arr(
         Json.obj(
-          "code" -> "INVALID_REQUEST_PARAMETER",
-          "message" -> "Invalid Request",
+          "code"        -> "INVALID_REQUEST_PARAMETER",
+          "message"     -> "Invalid Request",
           "errorNumber" -> 0
         ),
         Json.obj(
-          "code" -> "INVALID_REQUEST_PARAMETER",
-          "message" -> "X-Correlation-ID was missing from Header or is in the wrong format",
+          "code"        -> "INVALID_REQUEST_PARAMETER",
+          "message"     -> "X-Correlation-ID was missing from Header or is in the wrong format",
           "errorNumber" -> 1
         ),
         Json.obj(
-          "code" -> "INVALID_REQUEST_PARAMETER",
-          "message" -> "Request Date was missing from Header or is in the wrong format",
+          "code"        -> "INVALID_REQUEST_PARAMETER",
+          "message"     -> "Request Date was missing from Header or is in the wrong format",
           "errorNumber" -> 2
         ),
         Json.obj(
-          "code" -> "INVALID_REQUEST_PARAMETER",
-          "message" -> "Content-Type was missing from Header or is in the wrong format",
+          "code"        -> "INVALID_REQUEST_PARAMETER",
+          "message"     -> "Content-Type was missing from Header or is in the wrong format",
           "errorNumber" -> 3
         ),
         Json.obj(
-          "code" -> "INVALID_REQUEST_PARAMETER",
-          "message" -> "Accept was missing from Header or is in the wrong format",
+          "code"        -> "INVALID_REQUEST_PARAMETER",
+          "message"     -> "Accept was missing from Header or is in the wrong format",
           "errorNumber" -> 4
         ),
         Json.obj(
-          "code" -> "INVALID_REQUEST_PARAMETER",
-          "message" -> "X-Forwarded-Host was missing from Header or is in the wrong format",
+          "code"        -> "INVALID_REQUEST_PARAMETER",
+          "message"     -> "X-Forwarded-Host was missing from Header or is in the wrong format",
           "errorNumber" -> 5
         ),
         Json.obj(
-          "code" -> "INVALID_REQUEST_PARAMETER",
-          "message" -> "Mandatory field eori was missing from body or is in the wrong format",
+          "code"        -> "INVALID_REQUEST_PARAMETER",
+          "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
           "errorNumber" -> 6
         )
       )
     )
-  }
 
-  private def Eis400ErrorResponse: JsValue = {
-    Json.parse(
-      s"""
+  private def Eis400ErrorResponse: JsValue =
+    Json.parse(s"""
          |{
          |  "errorDetail":{
          |    "timestamp":"${timestamp.toString}",
@@ -260,11 +258,9 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
          |  }
          |}
          |""".stripMargin)
-  }
 
-  private def Eis400ErrorResponseWithUnsupportedMessage: JsValue = {
-    Json.parse(
-      s"""
+  private def Eis400ErrorResponseWithUnsupportedMessage: JsValue =
+    Json.parse(s"""
          |{
          |  "errorDetail":{
          |    "timestamp":"${timestamp.toString}",
@@ -280,11 +276,9 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
          |  }
          |}
          |""".stripMargin)
-  }
 
-  private def Eis500ErrorResponseForEoriNotExist: JsValue = {
-    Json.parse(
-      s"""
+  private def Eis500ErrorResponseForEoriNotExist: JsValue =
+    Json.parse(s"""
          |{
          |  "errorDetail":{
          |    "timestamp":"${timestamp.toString}",
@@ -300,11 +294,9 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
          |  }
          |}
          |""".stripMargin)
-  }
 
-  private def Eis500ErrorResponseWithoutErrors(code: String, message: String): JsValue = {
-    Json.parse(
-      s"""
+  private def Eis500ErrorResponseWithoutErrors(code: String, message: String): JsValue =
+    Json.parse(s"""
          |{
          |  "errorDetail":{
          |    "timestamp":"${timestamp.toString}",
@@ -318,21 +310,18 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
          |  }
          |}
          |""".stripMargin)
-  }
 
-  private def stubEisRequest(status: Int, responseBody: String): Any = {
+  private def stubEisRequest(status: Int, responseBody: String): Any =
     stubFor(
       get(urlEqualTo(s"$hawkConnectorPath/$eoriNumber"))
         .willReturn(
           aResponse()
             .withStatus(status)
             .withBody(responseBody)
-
         )
     )
-  }
 
-  private def stubEisRequest(status: Int): Any = {
+  private def stubEisRequest(status: Int): Any =
     stubFor(
       get(urlEqualTo(s"$hawkConnectorPath/$eoriNumber"))
         .willReturn(
@@ -340,15 +329,13 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
             .withStatus(status)
         )
     )
-  }
 
-  private def createProfileResponse: JsObject = {
+  private def createProfileResponse: JsObject =
     Json.obj(
-      "eori" -> eoriNumber,
-      "actorId" -> "actorId",
+      "eori"        -> eoriNumber,
+      "actorId"     -> "actorId",
       "ukimsNumber" -> ukimsNumber,
       "nirmsNumber" -> nirmsNumber,
       "niphlNumber" -> niphlNumber
     )
-  }
 }
