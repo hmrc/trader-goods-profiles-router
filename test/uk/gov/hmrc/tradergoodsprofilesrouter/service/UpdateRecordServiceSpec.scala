@@ -33,6 +33,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads.UpdateR
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateRecordEisResponse, CreateOrUpdateRecordResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.audit.AuditService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import java.time.Instant

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.service
+package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 
 import com.google.inject.Inject
 import org.apache.pekko.Done
@@ -26,9 +26,10 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.factories.AuditRemoveRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditCreateRecordRequest, BaseAuditService, AuditOutcome}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditCreateRecordRequest, AuditOutcome, BaseAuditService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,7 +38,8 @@ class AuditService @Inject() (
   override val dateTimeService: DateTimeService
 )(implicit
   ec: ExecutionContext
-) extends BaseAuditService with Logging {
+) extends BaseAuditService
+    with Logging {
 
   override val auditSource = "trader-goods-profiles-router"
   override val auditType   = "ManageGoodsRecord"

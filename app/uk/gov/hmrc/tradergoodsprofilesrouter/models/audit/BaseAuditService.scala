@@ -36,27 +36,25 @@ trait BaseAuditService {
     outcome: AuditOutcome,
     request: JsValue,
     response: Option[JsValue] = None,
-    journey: Option[String] = None,
-  )(implicit hc: HeaderCarrier): JsObject = {
+    journey: Option[String] = None
+  )(implicit hc: HeaderCarrier): JsObject =
     removeNulls(
       Json.obj(
-        "journey" -> journey,
-        "clientId" -> hc.headers(Seq(HeaderNames.ClientId)).headOption.map(_._2),
-        "requestDateTime" -> requestDateTime,
+        "journey"          -> journey,
+        "clientId"         -> hc.headers(Seq(HeaderNames.ClientId)).headOption.map(_._2),
+        "requestDateTime"  -> requestDateTime,
         "responseDateTime" -> dateTimeService.timestamp.asStringMilliSeconds,
-        "outcome" -> Json.toJson(outcome),
-        "request" -> request,
-        "response" -> response
+        "outcome"          -> Json.toJson(outcome),
+        "request"          -> request,
+        "response"         -> response
       )
     )
-  }
 
-  def createDataEvent(details: JsObject)(implicit hc: HeaderCarrier) = {
+  def createDataEvent(details: JsObject)(implicit hc: HeaderCarrier) =
     ExtendedDataEvent(
       auditSource = auditSource,
       auditType = auditType,
       tags = hc.toAuditTags(),
       detail = Json.toJson(details)
     )
-  }
 }

@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditGetRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.AuditGetRecordsResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{BaseAuditService, AuditOutcome}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditOutcome, BaseAuditService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
@@ -34,7 +34,8 @@ class AuditGetRecordService @Inject() (
   auditConnector: AuditConnector,
   override val dateTimeService: DateTimeService
 )(implicit ec: ExecutionContext)
-    extends BaseAuditService with Logging {
+    extends BaseAuditService
+    with Logging {
 
   override val auditSource = "trader-goods-profiles-router"
   override val auditType   = "GetGoodsRecord"
