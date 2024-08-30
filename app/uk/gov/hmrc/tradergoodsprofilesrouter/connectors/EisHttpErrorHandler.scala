@@ -35,26 +35,17 @@ trait EisHttpErrorHandler extends Logging {
     httpResponse.status match {
 
       case BAD_REQUEST =>
-        val checkError            = determine400Error(correlationId, httpResponse.body)
-        val containsSpecificError = checkError.errors.exists { errorsList =>
-          errorsList.exists { error =>
-            error.errorNumber == 7
-          }
-        }
-        if (containsSpecificError) {
-          EisHttpErrorResponse(
-            FORBIDDEN,
-            ErrorResponse(
-              correlationId,
-              ForbiddenCode,
-              ForbiddenMessage,
-              checkError.errors
+        val checkError: ErrorResponse = determine400Error(correlationId, httpResponse.body)
+        checkError.errors
+          .flatMap(_.filter(_.errorNumber == 7).headOption) match {
+          case Some(_) =>
+            EisHttpErrorResponse(
+              FORBIDDEN,
+              ErrorResponse(correlationId, ForbiddenCode, ForbiddenMessage, checkError.errors)
             )
-          )
-        } else
-          EisHttpErrorResponse(BAD_REQUEST, checkError)
-
-      case FORBIDDEN =>
+          case _       => EisHttpErrorResponse(BAD_REQUEST, checkError)
+        }
+      case FORBIDDEN   =>
         EisHttpErrorResponse(
           FORBIDDEN,
           ErrorResponse(
@@ -63,7 +54,7 @@ trait EisHttpErrorHandler extends Logging {
             ForbiddenMessage
           )
         )
-      case NOT_FOUND =>
+      case NOT_FOUND   =>
         EisHttpErrorResponse(
           NOT_FOUND,
           ErrorResponse(
