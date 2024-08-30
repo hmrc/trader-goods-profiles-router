@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, fieldsToErrorCode, optionalFieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{CreateRecordRequest, UpdateRecordRequest}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 
@@ -68,7 +68,7 @@ class UpdateRecordController @Inject() (
                                  .fromEither[Future](validateRecordId(recordId))
                                  .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
         updateRecordRequest <-
-          EitherT.fromEither[Future](validateRequestBody[CreateRecordRequest](fieldsToErrorCode))
+          EitherT.fromEither[Future](validateRequestBody[UpdateRecordRequest](fieldsToErrorCode))
         response            <- putRecord(eori, recordId, updateRecordRequest)
       } yield Ok(Json.toJson(response))
 
@@ -88,7 +88,7 @@ class UpdateRecordController @Inject() (
   private def putRecord(
     eori: String,
     recordId: String,
-    updateRecordRequest: CreateRecordRequest
+    updateRecordRequest: UpdateRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] =
     EitherT(
       updateRecordService.putRecord(eori, recordId, updateRecordRequest)

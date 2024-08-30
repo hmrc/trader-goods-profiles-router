@@ -23,7 +23,6 @@ import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
@@ -130,7 +129,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      val request = updateRecordPayload.as[CreateRecordPayload]
+      val request = updateRecordPayload.as[UpdateRecordPayload]
       val result  = await(eisConnector.put(request, correlationId))
 
       result.value mustBe expectedResponse
@@ -141,7 +140,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val request = updateRecordPayload.as[CreateRecordPayload]
+      val request = updateRecordPayload.as[UpdateRecordPayload]
       val result  = await(eisConnector.put(request, correlationId))
 
       result.left.value mustBe BadRequest("error")
@@ -154,7 +153,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      await(eisConnector.put(updateRecordPayload.as[CreateRecordPayload], correlationId))
+      await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
