@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.PatchRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
@@ -39,7 +39,7 @@ class UpdateRecordConnector @Inject() (
     with EisHttpErrorHandler {
 
   def updateRecord(
-    payload: UpdateRecordPayload,
+    payload: PatchRecordPayload,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
@@ -58,7 +58,7 @@ class UpdateRecordConnector @Inject() (
   }
 
   def put(
-    payload: UpdateRecordPayload,
+    payload: PatchRecordPayload,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl

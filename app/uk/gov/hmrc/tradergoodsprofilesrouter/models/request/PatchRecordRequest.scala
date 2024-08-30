@@ -28,7 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
 import java.time.Instant
 
-case class UpdateRecordRequest(
+case class PatchRecordRequest(
   actorId: String,
   traderRef: Option[String],
   comcode: Option[String],
@@ -42,9 +42,9 @@ case class UpdateRecordRequest(
   comcodeEffectiveToDate: Option[Instant]
 )
 
-object UpdateRecordRequest {
+object PatchRecordRequest {
 
-  implicit val reads: Reads[UpdateRecordRequest] =
+  implicit val reads: Reads[PatchRecordRequest] =
     ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "traderRef").readNullable(lengthBetween(1, 512)) and
       (JsPath \ "comcode").readNullable(validComcode) and
@@ -55,6 +55,53 @@ object UpdateRecordRequest {
       (JsPath \ "supplementaryUnit").readNullable[BigDecimal] and
       (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
       (JsPath \ "comcodeEffectiveFromDate").readNullable[Instant] and
+      (JsPath \ "comcodeEffectiveToDate").readNullable[Instant])(PatchRecordRequest.apply _)
+
+  implicit lazy val writes: Writes[PatchRecordRequest] = (updateRecordRequest: PatchRecordRequest) =>
+    removeNulls(
+      Json.obj(
+        "actorId"                  -> updateRecordRequest.actorId,
+        "traderRef"                -> updateRecordRequest.traderRef,
+        "comcode"                  -> updateRecordRequest.comcode,
+        "goodsDescription"         -> updateRecordRequest.goodsDescription,
+        "countryOfOrigin"          -> updateRecordRequest.countryOfOrigin,
+        "category"                 -> updateRecordRequest.category,
+        "assessments"              -> removeEmptyAssessment(updateRecordRequest.assessments),
+        "supplementaryUnit"        -> updateRecordRequest.supplementaryUnit,
+        "measurementUnit"          -> updateRecordRequest.measurementUnit,
+        "comcodeEffectiveFromDate" -> updateRecordRequest.comcodeEffectiveFromDate,
+        "comcodeEffectiveToDate"   -> updateRecordRequest.comcodeEffectiveToDate
+      )
+    )
+}
+
+case class UpdateRecordRequest(
+  actorId: String,
+  traderRef: String,
+  comcode: String,
+  goodsDescription: String,
+  countryOfOrigin: String,
+  category: Int,
+  assessments: Option[Seq[Assessment]],
+  supplementaryUnit: Option[BigDecimal],
+  measurementUnit: Option[String],
+  comcodeEffectiveFromDate: Instant,
+  comcodeEffectiveToDate: Option[Instant]
+)
+
+object UpdateRecordRequest {
+
+  implicit val reads: Reads[UpdateRecordRequest] =
+    ((JsPath \ "actorId").read(validActorId) and
+      (JsPath \ "traderRef").read(lengthBetween(1, 512)) and
+      (JsPath \ "comcode").read(validComcode) and
+      (JsPath \ "goodsDescription").read(lengthBetween(1, 512)) and
+      (JsPath \ "countryOfOrigin").read(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
+      (JsPath \ "category").read[Int](verifying[Int](category => category >= 1 && category <= 3)) and
+      (JsPath \ "assessments").readNullable[Seq[Assessment]] and
+      (JsPath \ "supplementaryUnit").readNullable[BigDecimal] and
+      (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
+      (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
       (JsPath \ "comcodeEffectiveToDate").readNullable[Instant])(UpdateRecordRequest.apply _)
 
   implicit lazy val writes: Writes[UpdateRecordRequest] = (updateRecordRequest: UpdateRecordRequest) =>

@@ -24,7 +24,7 @@ import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.PatchRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
 
 import java.time.Instant
@@ -58,7 +58,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      val request = updateRecordPayload.as[UpdateRecordPayload]
+      val request = updateRecordPayload.as[PatchRecordPayload]
       val result  = await(eisConnector.updateRecord(request, correlationId))
 
       result.value mustBe expectedResponse
@@ -68,7 +68,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val request = updateRecordPayload.as[UpdateRecordPayload]
+      val request = updateRecordPayload.as[PatchRecordPayload]
       val result  = await(eisConnector.updateRecord(request, correlationId))
 
       result.left.value mustBe BadRequest("error")
@@ -83,7 +83,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
           .thenReturn(Future.successful(Right(expectedResponse)))
         when(appConfig.isDrop1_1_enabled).thenReturn(true)
 
-        await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
+        await(eisConnector.updateRecord(updateRecordPayload.as[PatchRecordPayload], correlationId))
 
         val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
         verify(httpClientV2).patch(url"$expectedUrl")
@@ -102,7 +102,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
           .thenReturn(Future.successful(Right(expectedResponse)))
         when(appConfig.isDrop1_1_enabled).thenReturn(false)
 
-        await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
+        await(eisConnector.updateRecord(updateRecordPayload.as[PatchRecordPayload], correlationId))
 
         val expectedUrl                = s"http://localhost:1234/tgp/updaterecord/v1"
         val expectedHeaderWithClientId =
@@ -129,7 +129,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      val request = updateRecordPayload.as[UpdateRecordPayload]
+      val request = updateRecordPayload.as[PatchRecordPayload]
       val result  = await(eisConnector.put(request, correlationId))
 
       result.value mustBe expectedResponse
@@ -140,7 +140,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
-      val request = updateRecordPayload.as[UpdateRecordPayload]
+      val request = updateRecordPayload.as[PatchRecordPayload]
       val result  = await(eisConnector.put(request, correlationId))
 
       result.left.value mustBe BadRequest("error")
@@ -153,7 +153,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
-      await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
+      await(eisConnector.put(updateRecordPayload.as[PatchRecordPayload], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")

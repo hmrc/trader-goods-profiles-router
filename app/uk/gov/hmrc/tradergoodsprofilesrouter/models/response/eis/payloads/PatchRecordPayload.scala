@@ -17,13 +17,13 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{PatchRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-case class UpdateRecordPayload(
+case class PatchRecordPayload(
   eori: String,
   recordId: String,
   actorId: String,
@@ -39,11 +39,11 @@ case class UpdateRecordPayload(
   comcodeEffectiveToDate: Option[Instant] = None
 )
 
-object UpdateRecordPayload {
-  implicit val format: OFormat[UpdateRecordPayload] = Json.format[UpdateRecordPayload]
+object PatchRecordPayload {
+  implicit val format: OFormat[PatchRecordPayload] = Json.format[PatchRecordPayload]
 
-  def apply(eori: String, recordId: String, request: UpdateRecordRequest): UpdateRecordPayload =
-    UpdateRecordPayload(
+  def apply(eori: String, recordId: String, request: PatchRecordRequest): PatchRecordPayload =
+    PatchRecordPayload(
       eori = eori,
       recordId = recordId,
       actorId = request.actorId,
@@ -56,6 +56,23 @@ object UpdateRecordPayload {
       supplementaryUnit = request.supplementaryUnit,
       measurementUnit = request.measurementUnit,
       comcodeEffectiveFromDate = request.comcodeEffectiveFromDate.map(_.truncatedTo(ChronoUnit.SECONDS)),
+      comcodeEffectiveToDate = request.comcodeEffectiveToDate.map(_.truncatedTo(ChronoUnit.SECONDS))
+    )
+
+  def apply(eori: String, recordId: String, request: UpdateRecordRequest): PatchRecordPayload =
+    PatchRecordPayload(
+      eori = eori,
+      recordId = recordId,
+      actorId = request.actorId,
+      traderRef = Some(request.traderRef),
+      comcode = Some(request.comcode),
+      goodsDescription = Some(request.goodsDescription),
+      countryOfOrigin = Some(request.countryOfOrigin),
+      category = Some(request.category),
+      assessments = request.assessments,
+      supplementaryUnit = request.supplementaryUnit,
+      measurementUnit = request.measurementUnit,
+      comcodeEffectiveFromDate = Some(request.comcodeEffectiveFromDate.truncatedTo(ChronoUnit.SECONDS)),
       comcodeEffectiveToDate = request.comcodeEffectiveToDate.map(_.truncatedTo(ChronoUnit.SECONDS))
     )
 }
