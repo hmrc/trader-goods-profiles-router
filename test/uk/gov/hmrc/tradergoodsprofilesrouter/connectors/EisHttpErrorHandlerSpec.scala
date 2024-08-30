@@ -199,7 +199,6 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
             Some(
               Seq(
                 "6"    -> "Mandatory field eori was missing from body or is in the wrong format",
-                "7"    -> "EORI number does not have a TGP",
                 "8"    -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "9"    -> "Mandatory field traderRef was missing from body or is in the wrong format",
                 "10"   -> "Trying to create or update a record with a duplicate traderRef",
@@ -239,6 +238,32 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
                 "E013" -> "Mandatory field traderReference was missing from body",
                 "E014" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
                 "E015" -> "Mandatory field commodityCode was missing from body"
+              ).map { case (code, message) => Error("INVALID_REQUEST_PARAMETER", message, convertCode(code)) }
+            )
+          )
+        )
+
+      }
+      "invalid request Parameters for eori doesn't exist in the database" in new TestHarness { handler =>
+        val eisResponse = createEisErrorResponseWithDetailsAsJson(
+          "400",
+          "Internal Server Error",
+          "error: 007, message: eori doesn't exist in the database"
+        )
+
+        val httpResponse = HttpResponse(400, eisResponse, Map.empty)
+
+        val result = handler.handleErrorResponse(httpResponse, correlationId)
+
+        result mustBe EisHttpErrorResponse(
+          FORBIDDEN,
+          ErrorResponse(
+            correlationId,
+            "FORBIDDEN",
+            "Forbidden",
+            Some(
+              Seq(
+                "7" -> "EORI number does not have a TGP"
               ).map { case (code, message) => Error("INVALID_REQUEST_PARAMETER", message, convertCode(code)) }
             )
           )
@@ -367,10 +392,12 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
 
   private def generateErrorCodes = {
 
-    val numericCodes      = (6 to 31).map { o =>
-      val code = s"00$o".takeRight(3)
-      s"error: $code, message: whatever"
-    }
+    val numericCodes      = (6 to 31)
+      .filterNot(_ == 7)
+      .map { o =>
+        val code = s"00$o".takeRight(3)
+        s"error: $code, message: whatever"
+      }
     val alphanumericCodes = (1 to 15).map { o =>
       val code = s"E${"%03d".format(o)}"
       s"error: $code, message: whatever"
