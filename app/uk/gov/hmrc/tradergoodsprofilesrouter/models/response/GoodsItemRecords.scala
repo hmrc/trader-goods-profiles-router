@@ -18,6 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment, EisGoodsItemRecords}
 
 import java.time.Instant
@@ -49,14 +50,7 @@ case class GoodsItemRecords(
   updatedDateTime: Instant
 )
 
-object GoodsItemRecords {
-
-  // TODO: This will need to be removed once EIS/B&T make the same validation on their side
-  private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
-    niphlNumber match {
-      case Some(niphl) => Some(niphl.dropWhile(_ == '-'))
-      case None        => None
-    }
+object GoodsItemRecords extends NiphlNumberFilter {
 
   implicit val goodsItemRecordsReads: Reads[GoodsItemRecords] = (json: JsValue) =>
     JsSuccess(
@@ -113,7 +107,9 @@ object GoodsItemRecords {
         "declarable"               -> goodsItemRecords.declarable,
         "ukimsNumber"              -> goodsItemRecords.ukimsNumber,
         "nirmsNumber"              -> goodsItemRecords.nirmsNumber,
-        "niphlNumber"              -> removeLeadingDashes(goodsItemRecords.niphlNumber),
+        "niphlNumber"              -> removeLeadingDashes(
+          goodsItemRecords.niphlNumber
+        ), // TODO: This will need to be removed once EIS/B&T make the same validation on their side
         "locked"                   -> goodsItemRecords.locked,
         "createdDateTime"          -> goodsItemRecords.createdDateTime,
         "updatedDateTime"          -> goodsItemRecords.updatedDateTime
