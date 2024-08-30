@@ -30,16 +30,16 @@ import java.time.Instant
 
 case class UpdateRecordRequest(
   actorId: String,
-  traderRef: Option[String] = None,
-  comcode: Option[String] = None,
-  goodsDescription: Option[String] = None,
-  countryOfOrigin: Option[String] = None,
-  category: Option[Int] = None,
-  assessments: Option[Seq[Assessment]] = None,
-  supplementaryUnit: Option[BigDecimal] = None,
-  measurementUnit: Option[String] = None,
-  comcodeEffectiveFromDate: Option[Instant] = None,
-  comcodeEffectiveToDate: Option[Instant] = None
+  traderRef: Option[String],
+  comcode: Option[String],
+  goodsDescription: Option[String],
+  countryOfOrigin: Option[String],
+  category: Option[Int],
+  assessments: Option[Seq[Assessment]],
+  supplementaryUnit: Option[BigDecimal],
+  measurementUnit: Option[String],
+  comcodeEffectiveFromDate: Option[Instant],
+  comcodeEffectiveToDate: Option[Instant]
 )
 
 object UpdateRecordRequest {

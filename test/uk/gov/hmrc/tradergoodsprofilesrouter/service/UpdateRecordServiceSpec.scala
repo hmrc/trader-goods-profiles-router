@@ -63,7 +63,7 @@ class UpdateRecordServiceSpec
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(connector, uuidService)
+    reset(connector, uuidService, auditService)
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(dateTime)
   }
@@ -102,16 +102,8 @@ class UpdateRecordServiceSpec
           sut.patchRecord(eoriNumber, recordId, updateRecordRequestWIthInvalidFormattedDate(invalidFormattedDate))
         )
 
-      val expectedpayload = UpdateRecordPayload(
-        eori = eoriNumber,
-        recordId = recordId,
-        actorId = "GB098765432112",
-        comcodeEffectiveFromDate = Some(Instant.parse("2024-11-18T23:20:19Z")),
-        comcodeEffectiveToDate = Some(Instant.parse("2024-11-18T23:20:19Z"))
-      )
-
       result.value mustBe createOrUpdateRecordResponseData
-      verify(connector).updateRecord(eqTo(expectedpayload), eqTo(correlationId))(any)
+      verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
       verify(auditService)
         .emitAuditUpdateRecord(
           updateRecordPayload,
@@ -165,15 +157,37 @@ class UpdateRecordServiceSpec
     }
   }
 
-  private def updateRecordRequestWIthInvalidFormattedDate(dateTime: Instant) = {
-    val updateRequest =
-      UpdateRecordRequest(
-        actorId = "GB098765432112",
-        comcodeEffectiveFromDate = Some(dateTime),
-        comcodeEffectiveToDate = Some(dateTime)
-      )
-    updateRequest
-  }
+  private def updateRecordRequestWIthInvalidFormattedDate(dateTime: Instant) =
+    UpdateRecordRequest(
+      actorId = "GB098765432112",
+      traderRef = Some("BAN001001"),
+      comcode = Some("10410100"),
+      goodsDescription = Some("Organic bananas"),
+      countryOfOrigin = Some("EC"),
+      category = Some(1),
+      assessments = Some(
+        Seq(
+          Assessment(
+            Some("abc123"),
+            Some(1),
+            Some(
+              Condition(
+                Some("abc123"),
+                Some("Y923"),
+                Some(
+                  "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law"
+                ),
+                Some("Excluded product")
+              )
+            )
+          )
+        )
+      ),
+      supplementaryUnit = Some(500),
+      measurementUnit = Some("Square metre (m2)"),
+      comcodeEffectiveFromDate = Some(dateTime),
+      comcodeEffectiveToDate = Some(dateTime)
+    )
 
   private def expectedPayload = {
 
