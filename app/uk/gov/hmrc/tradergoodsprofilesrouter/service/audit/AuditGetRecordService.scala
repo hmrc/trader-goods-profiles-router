@@ -67,12 +67,12 @@ class AuditGetRecordService @Inject() (
     requestDateTime: String,
     status: String,
     statusCode: Int,
-    errors: Seq[String]
+    errors: Option[Seq[String]]
   )(implicit hc: HeaderCarrier): Future[Done] = {
 
     val details = createDetails(
       requestDateTime = requestDateTime,
-      outcome = AuditOutcome(status, statusCode, Option.when(errors.nonEmpty)(errors)),
+      outcome = AuditOutcome(status, statusCode, errors),
       request = Json.toJson(requestDetails)
     )
 

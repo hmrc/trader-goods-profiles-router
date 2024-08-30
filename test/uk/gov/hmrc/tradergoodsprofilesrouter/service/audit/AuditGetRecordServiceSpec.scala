@@ -147,7 +147,7 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
             dateTime,
             "FORBIDDEN",
             403,
-            errorMessages
+            Some(errorMessages)
           )
         )
 
@@ -170,7 +170,7 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
             dateTime,
             "FORBIDDEN",
             403,
-            errorMessages
+            Some(errorMessages)
           )
         )
 
