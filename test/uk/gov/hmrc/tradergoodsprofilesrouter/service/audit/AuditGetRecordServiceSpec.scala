@@ -43,18 +43,18 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
   implicit val hc: HeaderCarrier    = HeaderCarrier(otherHeaders = Seq(("X-Client-ID", "TSS")))
 
   private val auditConnector  = mock[AuditConnector]
-  private val dataTimeService = mock[DateTimeService]
+  private val dateTimeService = mock[DateTimeService]
   private val timestamp       = Instant.parse("2021-12-17T09:30:47.456Z")
   private val dateTime        = timestamp.toString
   private val eori            = "GB123456789011"
   private val recordId        = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val sut             = new AuditGetRecordService(auditConnector, dataTimeService)
+  private val sut             = new AuditGetRecordService(auditConnector, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(auditConnector, dataTimeService)
-    when(dataTimeService.timestamp).thenReturn(timestamp)
+    reset(auditConnector, dateTimeService)
+    when(dateTimeService.timestamp).thenReturn(timestamp)
     when(auditConnector.sendExtendedEvent(any)(any, any)).thenReturn(Future.successful(Success))
   }
 
