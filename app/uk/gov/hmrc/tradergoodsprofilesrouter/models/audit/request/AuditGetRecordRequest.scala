@@ -18,7 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request
 
 import play.api.libs.json.{Json, OFormat}
 
-
 case class AuditGetRecordRequest(
   eori: String,
   lastUpdatedDate: Option[String] = None,

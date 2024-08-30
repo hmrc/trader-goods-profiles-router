@@ -20,35 +20,31 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.EisGoodsItemRec
 
 trait AuditGetRecordResponseMapping {
 
-  def filterIMMReadyCount(declarable: Seq[String]): Int =
-    declarable.filter(_.equalsIgnoreCase("IMMI Ready")).length
+  def collectReviewReasonSummary(records: Seq[EisGoodsItemRecords]): Option[Map[String, Int]] = {
 
-  def filterNotIMMReadyCount(declarable: Seq[String]): Int =
-    declarable.filter(_.equalsIgnoreCase("Not Ready for IMMI")).length
-
-  def filterNotReadyForUseCount(declarable: Seq[String]): Int =
-    declarable.filter(_.equalsIgnoreCase("Not Ready for Use")).length
-
-  def collectReviewReasonSummary(records: Seq[EisGoodsItemRecords]): Option[Map[String,Int]] = {
-
-    val viewReason =
+    val reviewReason: Map[String, Int] =
       records
         .groupBy(_.reviewReason)
-        .collect{ case (Some(k),v) => k -> v.length}
+        .collect { case (Some(k), v) => k -> v.length }
 
-    if(viewReason.nonEmpty) Some(viewReason) else None
+    Option.when(reviewReason.nonEmpty)(reviewReason)
   }
 
-  def collectAccreditationStatusSummary(records: Seq[EisGoodsItemRecords]): Map[String, Int] =
-    records
-      .groupBy(_.accreditationStatus)
-      .collect{ case (k,v) => k.entryName -> v.length }
+  def collectAccreditationStatusSummary(records: Seq[EisGoodsItemRecords]): Option[Map[String, Int]] = {
+    val accreditationStatus =
+      records
+        .groupBy(_.accreditationStatus)
+        .collect { case (k, v) => k.entryName -> v.length }
+
+    Option.when(accreditationStatus.nonEmpty)(accreditationStatus)
+  }
 
   def collectCategorySummary(records: Seq[EisGoodsItemRecords]): Option[Map[Int, Int]] = {
-    val categorySummary = records
-      .groupBy(_.category)
-      .collect{ case (Some(k),v) => k -> v.length }
+    val categoriesSummary =
+      records
+        .groupBy(_.category)
+        .collect { case (Some(k), v) => k -> v.length }
 
-    if(categorySummary.nonEmpty) Some(categorySummary) else None
+    Option.when(categoriesSummary.nonEmpty)(categoriesSummary)
   }
 }

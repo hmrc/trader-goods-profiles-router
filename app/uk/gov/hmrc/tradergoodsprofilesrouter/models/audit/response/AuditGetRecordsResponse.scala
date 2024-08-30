@@ -20,62 +20,58 @@ import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.audit.AuditGetRecordResponseMapping
 
-
-case class AuditGetRecordsResponse
-(
+case class AuditGetRecordsResponse(
   totalRecords: Int,
   payloadRecords: Int,
   currentPage: Int,
   totalPages: Int,
-  nextPage: Option[Int], //todo: can this be omitted? This is optional on pagination
-  prevPage: Option[Int], //todo: can this be omitted? This is optional on pagination
-  IMMIReadyCount: Int,
-  notIMMIReadyCount: Int,
-  notReadyForUseCount: Int,
-  forReviewCount: Int,
-  reviewReasons: Option[Map[String, Int]],
-  lockedCount: Int,
-  activeCount: Int,
-  adviceStatuses: Map[String, Int],
-  categories: Option[Map[Int, Int]],
-  UKIMSNumber: String,
-  NIRMSNumber: String,
-  NIPHLNumber: String
+  nextPage: Option[Int],
+  prevPage: Option[Int],
+  IMMIReadyCount: Option[Int] = None,
+  notIMMIReadyCount: Option[Int] = None,
+  notReadyForUseCount: Option[Int] = None,
+  forReviewCount: Option[Int] = None,
+  reviewReasons: Option[Map[String, Int]] = None,
+  lockedCount: Option[Int] = None,
+  activeCount: Option[Int] = None,
+  adviceStatuses: Option[Map[String, Int]] = None,
+  categories: Option[Map[Int, Int]] = None,
+  UKIMSNumber: Option[String] = None,
+  NIRMSNumber: Option[String] = None,
+  NIPHLNumber: Option[String] = None
 )
 
 object AuditGetRecordsResponse extends AuditGetRecordResponseMapping {
   implicit val format: OFormat[AuditGetRecordsResponse] = Json.format[AuditGetRecordsResponse]
 
   def apply(response: GetEisRecordsResponse): AuditGetRecordsResponse = {
-    AuditGetRecordsResponse(
+
+    val auditResponse = AuditGetRecordsResponse(
       totalRecords = response.pagination.totalRecords,
       payloadRecords = response.goodsItemRecords.length,
       currentPage = response.pagination.currentPage,
       totalPages = response.pagination.totalPages,
       nextPage = response.pagination.nextPage,
-      prevPage = response.pagination.prevPage,
-      IMMIReadyCount = response.goodsItemRecords.filter(
-        _.declarable.equalsIgnoreCase("IMMI Ready")
-        ).length,
-      notIMMIReadyCount = response.goodsItemRecords.filter(
-        _.declarable.equalsIgnoreCase("Not Ready for IMMI")
-      ).length,
-      notReadyForUseCount = response.goodsItemRecords.filter(
-        _.declarable.equalsIgnoreCase("Not Ready for Use")
-      ).length,
-      forReviewCount = response.goodsItemRecords.filter(_.toReview).length,
-      reviewReasons = collectReviewReasonSummary(response.goodsItemRecords),
-      lockedCount = response.goodsItemRecords.filter(_.locked).length,
-      activeCount = response.goodsItemRecords.filter(_.active).length,
-      adviceStatuses = collectAccreditationStatusSummary(response.goodsItemRecords),
-      categories = collectCategorySummary(response.goodsItemRecords),
-      UKIMSNumber = response.goodsItemRecords.headOption.fold[String]("")(r => r.ukimsNumber),
-      NIRMSNumber = response.goodsItemRecords.headOption.fold[String]("")(record =>
-        record.nirmsNumber.getOrElse("")
-      ),
-      NIPHLNumber = response.goodsItemRecords.headOption.fold[String]("")(record =>
-        record.niphlNumber.getOrElse("")
-      )
+      prevPage = response.pagination.prevPage
     )
+
+    response.goodsItemRecords match {
+      case Nil     => auditResponse
+      case records =>
+        auditResponse.copy(
+          IMMIReadyCount = Some(records.filter(_.declarable.equalsIgnoreCase("IMMI Ready")).length),
+          notIMMIReadyCount = Some(records.filter(_.declarable.equalsIgnoreCase("Not Ready for IMMI")).length),
+          notReadyForUseCount = Some(records.filter(_.declarable.equalsIgnoreCase("Not Ready for Use")).length),
+          forReviewCount = Some(records.filter(_.toReview).length),
+          reviewReasons = collectReviewReasonSummary(records),
+          lockedCount = Some(records.filter(_.locked).length),
+          activeCount = Some(records.filter(_.active).length),
+          adviceStatuses = collectAccreditationStatusSummary(records),
+          categories = collectCategorySummary(records),
+          UKIMSNumber = response.goodsItemRecords.headOption.map(_.ukimsNumber),
+          NIRMSNumber = response.goodsItemRecords.headOption.map(_.nirmsNumber).flatten,
+          NIPHLNumber = response.goodsItemRecords.headOption.map(_.niphlNumber).flatten
+        )
+    }
   }
 }

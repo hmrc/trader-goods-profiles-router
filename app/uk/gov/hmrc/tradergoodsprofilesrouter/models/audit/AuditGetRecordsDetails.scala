@@ -27,10 +27,20 @@ case class AuditGetRecordsDetails(
   outcome: AuditOutcome,
   request: AuditGetRecordRequest,
   response: AuditGetRecordsResponse
-
 )
 
 object AuditGetRecordsDetails {
   implicit val format: OFormat[AuditGetRecordsDetails] = Json.format[AuditGetRecordsDetails]
+}
 
+case class AuditGetRecordsFailureDetails(
+  clientId: Option[String],
+  requestDateTime: String,
+  responseDateTime: String,
+  outcome: AuditOutcome,
+  request: AuditGetRecordRequest
+)
+
+object AuditGetRecordsFailureDetails {
+  implicit val format: OFormat[AuditGetRecordsFailureDetails] = Json.format[AuditGetRecordsFailureDetails]
 }

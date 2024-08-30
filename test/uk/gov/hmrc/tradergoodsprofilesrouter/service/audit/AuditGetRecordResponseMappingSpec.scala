@@ -16,87 +16,25 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 
+import org.scalatest.OptionValues
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.AccreditationStatus.{NotRequested, Requested, Withdrawn}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, EisGoodsItemRecords, GetEisRecordsResponse, Pagination}
 
 import java.time.Instant
 
-class AuditGetRecordResponseMappingSpec extends PlaySpec {
+class AuditGetRecordResponseMappingSpec extends PlaySpec with OptionValues {
 
   object MapperTest extends AuditGetRecordResponseMapping
-
-  "filterIMMReadyCount" should {
-    "return a Map" in {
-
-      val declarable = Seq(
-        "IMMI Ready", "Not Ready for IMMI", "IMMI Ready", "IMMI Ready", "Not Ready for IMMI"
-      )
-      MapperTest.filterIMMReadyCount(declarable) mustBe 3
-    }
-
-    "return 0 if not found" in {
-      MapperTest.filterIMMReadyCount(Seq()) mustBe 0
-    }
-
-    "ignore cases" in {
-      val declarable = Seq(
-        "ImmI ready", "Not Ready for IMMI", "immi ready", "IMMI Ready", "Not Ready for IMMI"
-      )
-      MapperTest.filterIMMReadyCount(declarable) mustBe 3
-    }
-  }
-
-  "filterNotIMMReadyCount" should {
-    "return a Map" in {
-      val declarable = Seq(
-        "IMMI Ready", "Not Ready for IMMI", "IMMI Ready", "IMMI Ready", "Not Ready for IMMI"
-      )
-      MapperTest.filterNotIMMReadyCount(declarable) mustBe 2
-    }
-
-    "return 0 if not found" in {
-      MapperTest.filterNotIMMReadyCount(Seq()) mustBe 0
-
-    }
-
-    "ignore cases" in {
-      val declarable = Seq(
-        "IMMI Ready", "not ready for immi", "IMMI Ready", "IMMI Ready", "Not Ready for IMMI"
-      )
-      MapperTest.filterNotIMMReadyCount(declarable) mustBe 2
-    }
-  }
-
-  "filterNotReadyForUseCount" should {
-    "return a Map" in {
-      val declarable = Seq(
-        "IMMI Ready", "Not Ready for Use", "IMMI Ready", "IMMI Ready", "Not Ready for IMMI"
-      )
-      MapperTest.filterNotReadyForUseCount(declarable) mustBe 1
-    }
-
-    "return 0 if not found" in {
-      MapperTest.filterNotReadyForUseCount(Seq()) mustBe 0
-
-    }
-
-    "ignore cases" in {
-      val declarable = Seq(
-        "IMMI Ready", "not ready for use", "IMMI Ready", "IMMI Ready", "Not Ready for IMMI"
-      )
-      MapperTest.filterNotReadyForUseCount(declarable) mustBe 1
-    }
-  }
 
   "collectReviewReasonSummary" should {
     "return the count of record in review" in {
       val reviewReason = Seq("Commodity code changed", "Expired", "Expired", "Expired", "Commodity code changed")
 
-      val result = MapperTest.collectReviewReasonSummary(
-        createEisMultipleRecordsResponse(reviewReason).goodsItemRecords)
+      val result =
+        MapperTest.collectReviewReasonSummary(createEisMultipleRecordsResponse(reviewReason).goodsItemRecords)
 
-      result mustBe Some(Map("Commodity code changed" -> 2, "Expired" -> 3))
+      result.value mustBe Map("Commodity code changed" -> 2, "Expired" -> 3)
     }
 
     "return None when reviewReason not available" in {
@@ -104,22 +42,35 @@ class AuditGetRecordResponseMappingSpec extends PlaySpec {
 
       result mustBe None
     }
+
+    "return None if empty records" in {
+      val result = MapperTest.collectReviewReasonSummary(Seq.empty)
+
+      result mustBe None
+    }
   }
 
   "collectAccreditationStatusSummary" should {
     "collect all the accreditationStatus" in {
-
       val accreditationStatus = Seq(NotRequested, Withdrawn, NotRequested, Requested, Withdrawn)
-      val result = MapperTest.collectAccreditationStatusSummary(createEisMultipleRecordsResponse(accreditationStatuses = accreditationStatus).goodsItemRecords)
+      val result              = MapperTest.collectAccreditationStatusSummary(
+        createEisMultipleRecordsResponse(accreditationStatuses = accreditationStatus).goodsItemRecords
+      )
 
-      result mustBe Map("Not Requested" -> 2, "Withdrawn" -> 2, "Requested" -> 1)
+      result.value mustBe Map("Not Requested" -> 2, "Withdrawn" -> 2, "Requested" -> 1)
+    }
+
+    "return None if empty records" in {
+      val result = MapperTest.collectAccreditationStatusSummary(Seq.empty)
+
+      result mustBe None
     }
   }
 
   "collectCategorySummary" should {
     "return the summary" in {
       val categories = Seq(1, 2, 3, 1, 2)
-      val result = MapperTest.collectCategorySummary(
+      val result     = MapperTest.collectCategorySummary(
         createEisMultipleRecordsResponse(categories = categories).goodsItemRecords
       )
 
@@ -131,22 +82,26 @@ class AuditGetRecordResponseMappingSpec extends PlaySpec {
 
       result mustBe None
     }
+
+    "return None if empty records" in {
+      val result = MapperTest.collectCategorySummary(Seq.empty)
+
+      result mustBe None
+    }
   }
 
-  private def createEisMultipleRecordsResponse
-  (
+  private def createEisMultipleRecordsResponse(
     reviewReasons: Seq[String] = Seq.empty,
     accreditationStatuses: Seq[AccreditationStatus] = Seq.empty,
     categories: Seq[Int] = Seq.empty
   ): GetEisRecordsResponse = {
 
-
     val records = for {
-      i <- 0 until 5
-      reviewReason = if (i < reviewReasons.size) Some(reviewReasons(i)) else None
+      i                  <- 0 until 5
+      reviewReason        = if (i < reviewReasons.size) Some(reviewReasons(i)) else None
       accreditationStatus = if (i < accreditationStatuses.size) accreditationStatuses(i) else NotRequested
-      category = if(i < categories.size) Some(categories(i)) else None
-      record = createEISGetRecordResponseWithVariable(reviewReason, accreditationStatus, category)
+      category            = if (i < categories.size) Some(categories(i)) else None
+      record              = createEISGetRecordResponseWithVariable(reviewReason, accreditationStatus, category)
     } yield record
 
     GetEisRecordsResponse(records, Pagination(4, 2, 3, Some(3), Some(1)))
@@ -157,7 +112,7 @@ class AuditGetRecordResponseMappingSpec extends PlaySpec {
     reviewReason: Option[String],
     accreditationStatus: AccreditationStatus,
     category: Option[Int]
-  ): EisGoodsItemRecords = {
+  ): EisGoodsItemRecords =
     EisGoodsItemRecords(
       eori = "GB123456789011",
       actorId = "GB1234567890",
@@ -185,5 +140,4 @@ class AuditGetRecordResponseMappingSpec extends PlaySpec {
       createdDateTime = Instant.now,
       updatedDateTime = Instant.now
     )
-  }
 }

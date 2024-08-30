@@ -24,7 +24,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditGetRecordsDetails, AuditOutcome}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditGetRecordsDetails, AuditGetRecordsFailureDetails, AuditOutcome}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditGetRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.AuditGetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
@@ -34,11 +34,11 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AuditGetRecordService @Inject()
-(
+class AuditGetRecordService @Inject() (
   auditConnector: AuditConnector,
   dateTimeService: DateTimeService
-)(implicit ec: ExecutionContext) extends Logging {
+)(implicit ec: ExecutionContext)
+    extends Logging {
 
   private val auditSource = "trader-goods-profiles-router"
   private val auditType   = "GetGoodsRecord"
@@ -58,9 +58,8 @@ class AuditGetRecordService @Inject()
       outcome = AuditOutcome(status, statusCode),
       request = requestDetails,
       response = AuditGetRecordsResponse(response)
-
     )
-    val event = ExtendedDataEvent(
+    val event   = ExtendedDataEvent(
       auditSource = auditSource,
       auditType = auditType,
       tags = hc.toAuditTags(),
@@ -69,9 +68,39 @@ class AuditGetRecordService @Inject()
     auditConnector
       .sendExtendedEvent(event)
       .map { auditResult: AuditResult =>
-        logger.info(s"[AuditService] - Update record audit event status: $auditResult.")
+        logger.info(s"[AuditGetRecordService] - Get Records audit event status: $auditResult.")
         Done
       }
   }
 
+  def emitAuditGetRecordFailure(
+    requestDetails: AuditGetRecordRequest,
+    requestDateTime: String,
+    status: String,
+    statusCode: Int,
+    errors: Seq[String]
+  )(implicit hc: HeaderCarrier): Future[Done] = {
+
+    val details = AuditGetRecordsFailureDetails(
+      clientId = hc.headers(Seq(ClientId)).headOption.map(_._2),
+      requestDateTime = requestDateTime,
+      responseDateTime = dateTimeService.timestamp.asStringMilliSeconds,
+      outcome = AuditOutcome(status, statusCode, Option.when(errors.nonEmpty)(errors)),
+      request = requestDetails
+    )
+
+    val event = ExtendedDataEvent(
+      auditSource = auditSource,
+      auditType = auditType,
+      tags = hc.toAuditTags(),
+      detail = Json.toJson(details)
+    )
+
+    auditConnector
+      .sendExtendedEvent(event)
+      .map { auditResult: AuditResult =>
+        logger.info(s"[AuditGetRecordService] - Get Records audit event status: $auditResult.")
+        Done
+      }
+  }
 }
