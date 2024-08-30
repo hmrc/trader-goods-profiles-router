@@ -28,7 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkInteg
 
 import java.time.Instant
 
-class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
+class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
   private val eori                       = "GB123456789001"
   private val recordId                   = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
@@ -59,7 +59,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe OK
@@ -80,7 +80,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestDataWithOptionalNullFields)
+            .put(updateRecordRequestDataWithOptionalNullFields)
             .futureValue
 
           response.status shouldBe OK
@@ -101,7 +101,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestDataWithConditionOptionalNullFields)
+            .put(updateRecordRequestDataWithConditionOptionalNullFields)
             .futureValue
 
           response.status shouldBe OK
@@ -122,7 +122,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestDataWithSomeOptionalNullFields)
+            .put(updateRecordRequestDataWithSomeOptionalNullFields)
             .futureValue
 
           response.status shouldBe OK
@@ -140,7 +140,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequiredRequestData)
+            .put(updateRecordRequiredRequestData)
             .futureValue
 
           response.status shouldBe OK
@@ -160,7 +160,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe FORBIDDEN
@@ -182,7 +182,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe NOT_FOUND
@@ -204,7 +204,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_GATEWAY
@@ -226,7 +226,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe SERVICE_UNAVAILABLE
@@ -251,7 +251,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -273,7 +273,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -298,7 +298,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -320,7 +320,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -345,7 +345,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -367,7 +367,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -392,7 +392,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
@@ -432,7 +432,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -480,7 +480,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -532,7 +532,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -577,7 +577,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -606,7 +606,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -624,7 +624,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           val response = wsClient
             .url(url)
             .withHttpHeaders(("Content-Type", "application/json"))
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -651,7 +651,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(invalidRequestData)
+            .put(invalidRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -678,7 +678,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(invalidOptionalRequestData)
+            .put(invalidOptionalRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -730,7 +730,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(invalidUpdateRecordRequestDataForAssessmentArray)
+            .put(invalidUpdateRecordRequestDataForAssessmentArray)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -772,7 +772,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(invalidActorIdAndComcodeRequestData)
+            .put(invalidActorIdAndComcodeRequestData)
             .futureValue
 
           response.status shouldBe BAD_REQUEST
@@ -783,7 +783,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field comcode was missing from body or is in the wrong format",
+                "message"     -> "Mandatory field comcode was missing from body or is in the wrong format",
                 "errorNumber" -> 11
               ),
               Json.obj(
@@ -807,7 +807,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe FORBIDDEN
@@ -830,7 +830,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ("Accept", "application/vnd.hmrc.1.0+json"),
               ("X-Client-ID", "tss")
             )
-            .patch(updateRecordRequestData)
+            .put(updateRecordRequestData)
             .futureValue
 
           response.status shouldBe FORBIDDEN
@@ -848,7 +848,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
   private def stubForEis(httpStatus: Int, responseBody: Option[String] = None) =
     stubFor(
-      patch(urlEqualTo(s"$hawkConnectorPath"))
+      put(urlEqualTo(s"$hawkConnectorPath"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

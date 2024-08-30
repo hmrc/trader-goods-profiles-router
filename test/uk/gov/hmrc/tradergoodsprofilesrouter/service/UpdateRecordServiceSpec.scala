@@ -75,7 +75,7 @@ class UpdateRecordServiceSpec
         .thenReturn(Future.successful(Right(eisResponse)))
       when(auditService.emitAuditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
-      val result = await(sut.updateRecord(eoriNumber, recordId, updateRecordRequest))
+      val result = await(sut.patchRecord(eoriNumber, recordId, updateRecordRequest))
 
       result.value mustBe createOrUpdateRecordResponseData
       verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
@@ -99,7 +99,7 @@ class UpdateRecordServiceSpec
       val invalidFormattedDate = Instant.parse("2024-11-18T23:20:19.1324564Z")
       val result               =
         await(
-          sut.updateRecord(eoriNumber, recordId, updateRecordRequestWIthInvalidFormattedDate(invalidFormattedDate))
+          sut.patchRecord(eoriNumber, recordId, updateRecordRequestWIthInvalidFormattedDate(invalidFormattedDate))
         )
 
       val expectedpayload = UpdateRecordPayload(
@@ -129,7 +129,7 @@ class UpdateRecordServiceSpec
         when(connector.updateRecord(any, any)(any))
           .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
-        val result = await(sut.updateRecord(eoriNumber, recordId, updateRecordRequest))
+        val result = await(sut.patchRecord(eoriNumber, recordId, updateRecordRequest))
 
         result.left.value mustBe badRequestErrorResponse
         verify(auditService)
@@ -146,7 +146,7 @@ class UpdateRecordServiceSpec
         when(connector.updateRecord(any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
-        val result = await(sut.updateRecord(eoriNumber, recordId, updateRecordRequest))
+        val result = await(sut.patchRecord(eoriNumber, recordId, updateRecordRequest))
 
         result.left.value mustBe EisHttpErrorResponse(
           INTERNAL_SERVER_ERROR,

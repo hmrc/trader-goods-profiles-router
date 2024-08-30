@@ -1,19 +1,31 @@
 # microservice specific routes
 
+# Get records
 GET        /traders/:eori/records/:recordId                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecord(eori: String, recordId: String)
 GET        /traders/:eori/records                                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetRecordsController.getTGPRecords(eori: String, lastUpdatedDate:Option[String] ?= None, page: Option[Int] ?= None, size: Option[Int] ?= None)
+
+# Create record
 POST       /traders/:eori/records                                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateRecordController.create(eori: String)
-PATCH      /traders/:eori/records/:recordId                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.UpdateRecordController.update(eori: String, recordId: String)
+
+# Update record
+PATCH      /traders/:eori/records/:recordId                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.UpdateRecordController.patch(eori: String, recordId: String)
+PUT        /traders/:eori/records/:recordId                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.UpdateRecordController.updateRecord(eori: String, recordId: String)
+
+# Delete record
 DELETE     /traders/:eori/records/:recordId                         uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RemoveRecordController.remove(eori: String, recordId: String, actorId: String)
+
+# Download data
+GET        /customs/traders/goods-profiles/:eori/download           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.DownloadTraderDataController.requestDataDownload(eori: String)
+
+# Advice
 POST       /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RequestAdviceController.requestAdvice(eori: String, recordId: String)
 
 PUT        /traders/:eori                                           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)
 
 PUT        /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.tradergoodsprofilesrouter.controllers.WithdrawAdviceController.withdrawAdvice(eori: String, recordId: String)
 
-GET        /customs/traders/goods-profiles/:eori/download           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.DownloadTraderDataController.requestDataDownload(eori: String)
 
 # Profile
 GET        /customs/traders/goods-profiles/:eori                    uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetProfileController.getProfile(eori: String)
 
-POST        /customs/traders/goods-profiles/:eori                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateProfileController.create(eori: String)
+POST       /customs/traders/goods-profiles/:eori                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateProfileController.create(eori: String)

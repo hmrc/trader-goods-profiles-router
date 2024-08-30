@@ -30,12 +30,12 @@ import java.time.Instant
 
 class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
-  private val correlationId              = "d677693e-9981-4ee3-8574-654981ebe606"
-  private val ukimsNumber                = "AC123456789124"
-  private val nirmsNumber                = "1234567891234"
-  private val niphlNumber                = "12345678"
-  private val timestamp                  = Instant.parse("2021-12-17T09:30:47.45Z")
-  private val url                        = fullUrl(s"/customs/traders/goods-profiles/$eoriNumber")
+  private val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
+  private val ukimsNumber = "AC123456789124"
+  private val nirmsNumber = "1234567891234"
+  private val niphlNumber = "--12345678"
+  private val timestamp = Instant.parse("2021-12-17T09:30:47.45Z")
+  private val url           = fullUrl(s"/customs/traders/goods-profiles/$eoriNumber")
   override def hawkConnectorPath: String = "/tgp/getprofile/v1"
 
   override def beforeEach(): Unit = {
@@ -55,7 +55,13 @@ class GetProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport
       val response = sendAndWait
 
       response.status shouldBe OK
-      response.json   shouldBe createProfileResponse
+      response.json shouldBe Json.obj(
+        "eori" -> eoriNumber,
+        "actorId" -> "actorId",
+        "ukimsNumber" -> ukimsNumber,
+        "nirmsNumber" -> nirmsNumber,
+        "niphlNumber" -> "12345678"
+      )
     }
 
     "return an error for an unauthorised eori" in {

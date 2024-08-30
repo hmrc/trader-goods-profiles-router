@@ -17,14 +17,17 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import play.api.http.MimeTypes
 import play.api.libs.json.Json.toJson
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -43,12 +46,34 @@ class UpdateRecordConnector @Inject() (
     val url = appConfig.hawkConfig.updateRecordUrl
 
     httpClientV2
-      .put(url"$url")
+      .patch(url"$url")
       .setHeader(
         buildHeadersWithDrop1Toggle(
           correlationId,
           appConfig.hawkConfig.updateRecordBearerToken,
           appConfig.hawkConfig.forwardedHost
+        ): _*
+      )
+      .withBody(toJson(payload))
+      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+  }
+
+  def put(
+    payload: CreateRecordPayload,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
+    val url = appConfig.hawkConfig.updateRecordUrl
+
+    httpClientV2
+      .put(url"$url")
+      .setHeader(
+        commonHeaders(
+          correlationId,
+          appConfig.hawkConfig.updateRecordBearerToken,
+          appConfig.hawkConfig.forwardedHost
+        ) ++ Seq(
+          HeaderNames.Accept      -> MimeTypes.JSON,
+          HeaderNames.ContentType -> MimeTypes.JSON
         ): _*
       )
       .withBody(toJson(payload))
