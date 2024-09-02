@@ -159,7 +159,6 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
     }
 
     "withdrawReason query parameter is more than 512 char" in {
-
       val result = sut.withdrawAdvice(eoriNumber, recordId)(
         FakeRequest()
           .withBody(Json.obj("withdrawReason" -> invalidWithdrawReasonFormat))
@@ -167,6 +166,7 @@ class WithdrawAdviceControllerSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       status(result) mustBe BAD_REQUEST
+
       contentAsJson(result) mustBe Json.obj(
         "correlationId" -> correlationId,
         "code"          -> "BAD_REQUEST",

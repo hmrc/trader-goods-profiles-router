@@ -206,34 +206,53 @@ object CreateTraderProfile {
 }
 
 object WithdrawAdviceConstant {
-  val InvalidOrMissingCorrelationIdCode: String = "E001"
-  val InvalidOrMissingCorrelationIdMsg: String  =
+  val InvalidOrMissingCorrelationIdCode: String      = "E001"
+  val InvalidOrMissingCorrelationIdMsg: String       =
     "X-Correlation-ID was missing from Header or is in the wrong format"
+  val InvalidOrMissingCorrelationIdResponseCode: Int = 1
 
-  val InvalidOrMissingForwardedHostCode: String = "E002"
-  val InvalidOrMissingForwardedHostMsg: String  =
-    "X-Forwarded-Host was missing from Header os is in the wrong format"
+  val InvalidOrMissingForwardedHostCode: String      = "E002"
+  val InvalidOrMissingForwardedHostMsg: String       =
+    "X-Forwarded-Host was missing from Header or is in the wrong format"
+  val InvalidOrMissingForwardedHostResponseCode: Int = 5
 
-  val InvalidOrMissingContentTypeCode: String = "E003"
-  val InvalidOrMissingContentTypeMsg: String  = "Content-Type was missing from Header or is in the wrong format"
+  val InvalidOrMissingContentTypeCode: String      = "E003"
+  val InvalidOrMissingContentTypeMsg: String       =
+    "Content-Type was missing from Header or is in the wrong format"
+  val InvalidOrMissingContentTypeResponseCode: Int = 3
 
-  val InvalidOrMissingAcceptCode: String = "E004"
-  val InvalidOrMissingAcceptMsg: String  = "Accept was missing from Header or is in the wrong format"
+  val InvalidOrMissingAcceptCode: String      = "E004"
+  val InvalidOrMissingAcceptMsg: String       =
+    "Accept was missing from Header or is in the wrong format"
+  val InvalidOrMissingAcceptResponseCode: Int = 4
 
-  val InvalidWithdrawDateCode: String = "E005"
-  val InvalidWithdrawDateMsg: String  = "Mandatory withdrawDate was missing from body"
+  val MissingWithdrawDateCode: String      = "E005"
+  val MissingWithdrawDateMsg: String       =
+    "Mandatory withdrawDate was missing from body"
+  val MissingWithdrawDateResponseCode: Int = 1013
 
-  val InvalidGoodsItemsCode: String = "E006"
-  val InvalidGoodsItemsMsg: String  = "Mandatory goodsItems was missing from body"
+  val MissingGoodsItemsCode: String      = "E006"
+  val MissingGoodsItemsMsg: String       =
+    "Mandatory goodsItems was missing from body"
+  val MissingGoodsItemsResponseCode: Int = 1014
 
-  val MissingRecordIdCode: String = "E007"
-  val InvalidRecordIdMsg: String  = "The request has already been completed and a new request cannot be requested"
+  val InvalidRecordIdCode: String      = "E007"
+  val InvalidRecordIdMsg: String       =
+    "The recordId has been provided in the wrong format"
+  val InvalidRecordIdResponseCode: Int = 25
+
+  val NoCaseFoundCode: String      = "E008"
+  val NoCaseFoundMsg: String       =
+    "There isn't an outstanding request for this record"
+  val NoCaseFoundResponseCode: Int = 1019
 
   val DecisionAlreadyMadeCode: String      = "E009"
-  val invalidWithdrawReasonMessage: String = "Digital checked that withdraw reason is > 512"
+  val DecisionAlreadyMadeMsg: String       =
+    "The request has already been completed and a new request cannot be requested"
+  val DecisionAlreadyMadeResponseCode: Int = 1017
 
+  val InvalidWithdrawReasonMessage: String     = "Digital checked that withdraw reason is > 512"
   val InvalidWithdrawReasonNullMessage: String = "Digital checked that withdraw reason is < 1"
-
 }
 
 object GetProfileSpecificError {

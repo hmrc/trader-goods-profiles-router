@@ -93,19 +93,21 @@ class WithdrawAdviceConnector @Inject() (
       .map(_ group 1)
       .collect {
         case InvalidOrMissingCorrelationIdCode =>
-          invalidRequestParameterError(InvalidOrMissingCorrelationIdMsg, 1)
+          invalidRequestParameterError(InvalidOrMissingCorrelationIdMsg, InvalidOrMissingCorrelationIdResponseCode)
         case InvalidOrMissingForwardedHostCode =>
-          invalidRequestParameterError(InvalidOrMissingForwardedHostMsg, 5)
+          invalidRequestParameterError(InvalidOrMissingForwardedHostMsg, InvalidOrMissingForwardedHostResponseCode)
         case InvalidOrMissingContentTypeCode   =>
-          invalidRequestParameterError(InvalidOrMissingContentTypeMsg, 3)
+          invalidRequestParameterError(InvalidOrMissingContentTypeMsg, InvalidOrMissingContentTypeResponseCode)
         case InvalidOrMissingAcceptCode        =>
-          invalidRequestParameterError(InvalidOrMissingAcceptMsg, 4)
-        case InvalidWithdrawDateCode           =>
-          invalidRequestParameterError(InvalidWithdrawDateMsg, 1013)
-        case InvalidGoodsItemsCode             =>
-          invalidRequestParameterError(InvalidGoodsItemsMsg, 1014)
-        case MissingRecordIdCode               => invalidRequestParameterError(InvalidRecordIdMsg, 25)
-        case DecisionAlreadyMadeCode           => invalidRequestParameterError(InvalidRecordIdMsg, 1017)
+          invalidRequestParameterError(InvalidOrMissingAcceptMsg, InvalidOrMissingAcceptResponseCode)
+        case MissingWithdrawDateCode           =>
+          invalidRequestParameterError(MissingWithdrawDateMsg, MissingWithdrawDateResponseCode)
+        case MissingGoodsItemsCode             =>
+          invalidRequestParameterError(MissingGoodsItemsMsg, MissingGoodsItemsResponseCode)
+        case InvalidRecordIdCode               => invalidRequestParameterError(InvalidRecordIdMsg, InvalidRecordIdResponseCode)
+        case NoCaseFoundCode                   => invalidRequestParameterError(NoCaseFoundMsg, NoCaseFoundResponseCode)
+        case DecisionAlreadyMadeCode           =>
+          invalidRequestParameterError(DecisionAlreadyMadeMsg, DecisionAlreadyMadeResponseCode)
         case other                             =>
           logger.warn(s"[WithdrawAdviceConnector] - Error code $other is not supported")
           unexpectedError("Unrecognised error number", other.toInt)

@@ -25,13 +25,13 @@ import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
 import play.api.mvc.{BaseController, Request, Result}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, ValidatedQueryParameters, ValidatedWithdrawAdviceQueryParameters, WithdrawReasonCharLimit, extractSimplePaths, isValidActorId}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{Reads, _}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.WithdrawReasonRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant.{InvalidWithdrawReasonNullMessage, invalidWithdrawReasonMessage}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant.{InvalidWithdrawReasonMessage, InvalidWithdrawReasonNullMessage}
 
 import java.util.{Locale, UUID}
 import scala.concurrent.ExecutionContext
@@ -133,7 +133,7 @@ trait ValidationRules {
       case Some(v) if v.withdrawReason.exists(_.isEmpty)                          =>
         Left(Error(InvalidQueryParameter, InvalidWithdrawReasonNullMessage, invalidWithdrawReasonCode))
       case Some(v) if v.withdrawReason.exists(_.length > WithdrawReasonCharLimit) =>
-        Left(Error(InvalidQueryParameter, invalidWithdrawReasonMessage, invalidWithdrawReasonCode))
+        Left(Error(InvalidQueryParameter, InvalidWithdrawReasonMessage, invalidWithdrawReasonCode))
       case Some(v)                                                                => Right(v.withdrawReason)
       case _                                                                      => Right(None)
     }
@@ -242,7 +242,7 @@ object ValidationRules {
   )
 
   case class BadRequestErrorResponse(correlationId: String, errors: Seq[Error]) {
-    def asPresentation =
+    def asPresentation: Result =
       BadRequest(
         toJson(
           ErrorResponse(
