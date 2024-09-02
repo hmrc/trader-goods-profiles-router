@@ -91,7 +91,7 @@ class WithdrawAdviceIntegrationSpec extends PegaIntegrationSpec with AuthTestSup
             ),
             Json.obj(
               "code"        -> "INVALID_REQUEST_PARAMETER",
-              "message"     -> "X-Forwarded-Host was missing from Header os is in the wrong format",
+              "message"     -> "X-Forwarded-Host was missing from Header or is in the wrong format",
               "errorNumber" -> 5
             ),
             Json.obj(
@@ -113,6 +113,16 @@ class WithdrawAdviceIntegrationSpec extends PegaIntegrationSpec with AuthTestSup
               "code"        -> "INVALID_REQUEST_PARAMETER",
               "message"     -> "Mandatory goodsItems was missing from body",
               "errorNumber" -> 1014
+            ),
+            Json.obj(
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "The recordId has been provided in the wrong format",
+              "errorNumber" -> 25
+            ),
+            Json.obj(
+              "code"        -> "INVALID_REQUEST_PARAMETER",
+              "message"     -> "There isn't an outstanding request for this record",
+              "errorNumber" -> 1019
             ),
             Json.obj(
               "code"        -> "INVALID_REQUEST_PARAMETER",
@@ -376,6 +386,8 @@ class WithdrawAdviceIntegrationSpec extends PegaIntegrationSpec with AuthTestSup
         |     "error: E004, message: Header parameter Accept is mandatory",
         |     "error: E005, message: Withdraw Date is mandatory",
         |     "error: E006, message: At least one goods Item is mandatory",
+        |     "error: E007, message: Product ID is mandatory",
+        |     "error: E008, message: No case found",
         |     "error: E009, message: The decision is already made",
         |     "status: Fail"
         |     ]
