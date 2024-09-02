@@ -85,8 +85,8 @@ class UpdateRecordPUTControllerSpec
       status(result) mustBe OK
     }
 
-    "return OK without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+    "return OK without validating the X-Client-Id when isClientIdOptional flag is true" in {
+      when(appConfig.isClientIdOptional).thenReturn(true)
       when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
@@ -102,8 +102,8 @@ class UpdateRecordPUTControllerSpec
     }
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
-    "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+    "return OK validating the the X-Client-Id when isClientIdOptional flag is false" in {
+      when(appConfig.isClientIdOptional).thenReturn(false)
       when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =
