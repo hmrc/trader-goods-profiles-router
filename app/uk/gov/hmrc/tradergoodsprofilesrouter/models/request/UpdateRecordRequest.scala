@@ -27,8 +27,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
 import java.time.Instant
 
-case class UpdateRecordRequest
-(
+case class UpdateRecordRequest(
   actorId: String,
   traderRef: String,
   comcode: String,
@@ -74,4 +73,3 @@ object UpdateRecordRequest {
       )
     )
 }
-
