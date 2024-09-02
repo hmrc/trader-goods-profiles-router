@@ -62,7 +62,6 @@ class UpdateRecordController @Inject() (
   def updateRecord(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) {
     implicit request =>
       val result = for {
-        _                   <- EitherT.fromEither[Future](validateClientIdIfSupported)
         _                   <- EitherT.fromEither[Future](validateAcceptHeader)
         _                   <- EitherT
                                  .fromEither[Future](validateRecordId(recordId))
