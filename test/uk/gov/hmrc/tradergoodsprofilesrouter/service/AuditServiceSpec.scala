@@ -36,8 +36,8 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeN
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditCreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.PatchRecordPayload
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
@@ -524,7 +524,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
              |""".stripMargin)
     .as[AuditCreateRecordRequest]
 
-  lazy val updateRecordRequestDataPayload: PatchRecordPayload =
+  lazy val updateRecordRequestDataPayload: UpdateRecordPayload =
     Json
       .parse("""
                |{
@@ -554,7 +554,7 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
                |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
                |}
                |""".stripMargin)
-      .as[PatchRecordPayload]
+      .as[UpdateRecordPayload]
 
   lazy val auditUpdateRecordRequestData: AuditUpdateRecordRequest = Json
     .parse("""

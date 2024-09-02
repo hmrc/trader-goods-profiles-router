@@ -29,7 +29,7 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, UpdateRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.PatchRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.PatchRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateRecordEisResponse, CreateOrUpdateRecordResponse}
@@ -202,7 +202,7 @@ class UpdateRecordServiceSpec
       Some(1),
       Some(condition)
     )
-    PatchRecordPayload(
+    UpdateRecordPayload(
       eoriNumber,
       recordId,
       "GB098765432112",
@@ -249,7 +249,7 @@ class UpdateRecordServiceSpec
              |""".stripMargin)
     .as[PatchRecordRequest]
 
-  val updateRecordPayload: PatchRecordPayload = Json
+  val updateRecordPayload: UpdateRecordPayload = Json
     .parse("""
              |{
              |    "eori": "GB123456789011",
@@ -279,7 +279,7 @@ class UpdateRecordServiceSpec
              |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
              |}
              |""".stripMargin)
-    .as[PatchRecordPayload]
+    .as[UpdateRecordPayload]
 
   val createOrUpdateRecordEisResponseData: CreateOrUpdateRecordEisResponse =
     Json

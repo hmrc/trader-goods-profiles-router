@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads
 
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{PatchRecordRequest, UpdateRecordRequest}
@@ -23,7 +23,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-case class PatchRecordPayload(
+case class UpdateRecordPayload(
   eori: String,
   recordId: String,
   actorId: String,
@@ -39,11 +39,11 @@ case class PatchRecordPayload(
   comcodeEffectiveToDate: Option[Instant] = None
 )
 
-object PatchRecordPayload {
-  implicit val format: OFormat[PatchRecordPayload] = Json.format[PatchRecordPayload]
+object UpdateRecordPayload {
+  implicit val format: OFormat[UpdateRecordPayload] = Json.format[UpdateRecordPayload]
 
-  def apply(eori: String, recordId: String, request: PatchRecordRequest): PatchRecordPayload =
-    PatchRecordPayload(
+  def apply(eori: String, recordId: String, request: PatchRecordRequest): UpdateRecordPayload =
+    UpdateRecordPayload(
       eori = eori,
       recordId = recordId,
       actorId = request.actorId,
@@ -59,8 +59,8 @@ object PatchRecordPayload {
       comcodeEffectiveToDate = request.comcodeEffectiveToDate.map(_.truncatedTo(ChronoUnit.SECONDS))
     )
 
-  def apply(eori: String, recordId: String, request: UpdateRecordRequest): PatchRecordPayload =
-    PatchRecordPayload(
+  def apply(eori: String, recordId: String, request: UpdateRecordRequest): UpdateRecordPayload =
+    UpdateRecordPayload(
       eori = eori,
       recordId = recordId,
       actorId = request.actorId,

@@ -29,7 +29,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditCreateRecordRequest, AuditOutcome, AuditUpdateRecordDetails}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.PatchRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
@@ -114,7 +114,7 @@ class AuditService @Inject() (
   }
 
   def emitAuditUpdateRecord(
-    updateRecordPayload: PatchRecordPayload,
+    updateRecordPayload: UpdateRecordPayload,
     requestedDateTime: String,
     status: String,
     statusCode: Int,
@@ -162,7 +162,7 @@ class AuditService @Inject() (
       payload.assessments.map(as => as.iterator.size)
     )
 
-  private def prepareAuditUpdateRecordRequest(payload: PatchRecordPayload) =
+  private def prepareAuditUpdateRecordRequest(payload: UpdateRecordPayload) =
     AuditUpdateRecordRequest(
       payload.eori,
       payload.recordId,
