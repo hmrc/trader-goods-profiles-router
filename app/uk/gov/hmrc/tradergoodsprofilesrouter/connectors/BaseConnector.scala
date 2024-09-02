@@ -65,7 +65,7 @@ trait BaseConnector {
     //ToDo: remove this and return a header without the client ID after drop1.1.
     // For drop1.1 client Id has been removed (TGP-1889)
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-    if (appConfig.isDrop1_1_enabled) headers
+    if (appConfig.isClientIdOptional) headers
     else headers :+ (HeaderNames.ClientId -> getClientId)
   }
 
@@ -82,7 +82,7 @@ trait BaseConnector {
     //ToDo: remove this and return a header without the client ID after drop1.1.
     // For drop1.1 client Id has been removed (TGP-1889)
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-    if (appConfig.isDrop1_1_enabled) headers
+    if (appConfig.isClientIdOptional) headers
     else headers :+ (HeaderNames.ClientId -> getClientId)
   }
 
