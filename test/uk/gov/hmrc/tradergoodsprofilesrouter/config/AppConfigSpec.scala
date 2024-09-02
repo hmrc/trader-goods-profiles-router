@@ -25,6 +25,7 @@ class AppConfigSpec extends PlaySpec {
     """
       |appName=trader-goods-profiles-router
       |features.drop_1_1_enabled=true
+      |features.clientIdOptional=true
     """.stripMargin
 
   private def createAppConfig(configSettings: String) = {
@@ -65,6 +66,27 @@ class AppConfigSpec extends PlaySpec {
           |""".stripMargin
       createAppConfig(validAppConfig).isDrop2Enabled mustBe true
     }
-  }
 
+    "return true for clientIdOptional when it is set to true" in {
+      val config =
+        """
+          |appName=trader-goods-profiles-router
+          |features.clientIdOptional=true
+          |""".stripMargin
+      createAppConfig(config).isClientIdOptional mustBe true
+    }
+
+    "return false for clientIdOptional when it is missing" in {
+      createAppConfig("").isClientIdOptional mustBe false
+    }
+
+    "return false for clientIdOptional when it is set to false" in {
+      val config =
+        """
+          |appName=trader-goods-profiles-router
+          |features.clientIdOptional=false
+          |""".stripMargin
+      createAppConfig(config).isClientIdOptional mustBe false
+    }
+  }
 }
