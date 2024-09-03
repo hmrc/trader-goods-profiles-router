@@ -63,10 +63,13 @@ class RemoveRecordConnector @Inject() (
    */
   private def headers(correlationId: String, accessToken: String, forwardedHost: String)(implicit
     hc: HeaderCarrier
-  ): Seq[(String, String)] =
+  ): Seq[(String, String)] = {
+    val baseHeaders = commonHeaders(correlationId, accessToken, forwardedHost) :+
+      (HeaderNames.ContentType -> MimeTypes.JSON)
     if (appConfig.isDrop2Enabled) {
-      commonHeaders(correlationId, accessToken, forwardedHost) :+
-        (HeaderNames.ContentType -> MimeTypes.JSON)
+      baseHeaders
+    } else if (appConfig.acceptHeaderEnabled) {
+      baseHeaders
     } else
       commonHeaders(correlationId, accessToken, forwardedHost) ++
         Seq(
@@ -74,4 +77,5 @@ class RemoveRecordConnector @Inject() (
           HeaderNames.ContentType -> MimeTypes.JSON,
           HeaderNames.ClientId    -> getClientId
         )
+  }
 }
