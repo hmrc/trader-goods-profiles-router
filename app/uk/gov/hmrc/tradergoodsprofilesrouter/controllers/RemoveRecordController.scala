@@ -45,7 +45,7 @@ class RemoveRecordController @Inject() (
   def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- validateHeaderIfDrop2Enabled
+        _ <- validateHeaders
         _ <- EitherT
                .fromEither[Future](validateQueryParameters(actorId, recordId))
                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
@@ -66,13 +66,18 @@ class RemoveRecordController @Inject() (
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
-  // ToDO:  remove this validation for drop 2 - TGP-2029
-  private def validateHeaderIfDrop2Enabled(implicit request: Request[_]): EitherT[Future, Result, String] =
+  private def validateHeaders(implicit request: Request[_]): EitherT[Future, Result, String] =
+    for {
+      _ <- validateClientIdHeader
+      _ <- validateAcceptHeaderIfDrop2NotEnabled
+    } yield "Success"
+
+  private def validateClientIdHeader(implicit request: Request[_]): EitherT[Future, Result, String] =
+    if (appConfig.isClientIdOptional) EitherT.rightT("Success")
+    else EitherT.fromEither[Future](validateClientId)
+
+  private def validateAcceptHeaderIfDrop2NotEnabled(implicit request: Request[_]): EitherT[Future, Result, String] =
     if (appConfig.isDrop2Enabled) EitherT.rightT("Success")
-    else
-      for {
-        _ <- EitherT.fromEither[Future](validateClientId)
-        _ <- EitherT.fromEither[Future](validateAcceptHeader)
-      } yield "Success"
+    else EitherT.fromEither[Future](validateAcceptHeader)
 
 }
