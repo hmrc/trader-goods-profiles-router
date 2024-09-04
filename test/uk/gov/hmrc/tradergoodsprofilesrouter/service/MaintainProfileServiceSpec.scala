@@ -59,7 +59,7 @@ class MaintainProfileServiceSpec
 
     reset(connector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
-    when(appConfig.isDrop1_1_enabled).thenReturn(false)
+    when(appConfig.isNiphlPaddingEnabled).thenReturn(true)
   }
 
   "maintain profile" should {
