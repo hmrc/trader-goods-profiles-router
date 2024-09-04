@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{PatchRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
 
 import java.time.Instant
@@ -42,7 +42,7 @@ case class UpdateRecordPayload(
 object UpdateRecordPayload {
   implicit val format: OFormat[UpdateRecordPayload] = Json.format[UpdateRecordPayload]
 
-  def apply(eori: String, recordId: String, request: UpdateRecordRequest): UpdateRecordPayload =
+  def apply(eori: String, recordId: String, request: PatchRecordRequest): UpdateRecordPayload =
     UpdateRecordPayload(
       eori = eori,
       recordId = recordId,
@@ -56,6 +56,23 @@ object UpdateRecordPayload {
       supplementaryUnit = request.supplementaryUnit,
       measurementUnit = request.measurementUnit,
       comcodeEffectiveFromDate = request.comcodeEffectiveFromDate.map(_.truncatedTo(ChronoUnit.SECONDS)),
+      comcodeEffectiveToDate = request.comcodeEffectiveToDate.map(_.truncatedTo(ChronoUnit.SECONDS))
+    )
+
+  def apply(eori: String, recordId: String, request: UpdateRecordRequest): UpdateRecordPayload =
+    UpdateRecordPayload(
+      eori = eori,
+      recordId = recordId,
+      actorId = request.actorId,
+      traderRef = Some(request.traderRef),
+      comcode = Some(request.comcode),
+      goodsDescription = Some(request.goodsDescription),
+      countryOfOrigin = Some(request.countryOfOrigin),
+      category = Some(request.category),
+      assessments = request.assessments,
+      supplementaryUnit = request.supplementaryUnit,
+      measurementUnit = request.measurementUnit,
+      comcodeEffectiveFromDate = Some(request.comcodeEffectiveFromDate.truncatedTo(ChronoUnit.SECONDS)),
       comcodeEffectiveToDate = request.comcodeEffectiveToDate.map(_.truncatedTo(ChronoUnit.SECONDS))
     )
 }

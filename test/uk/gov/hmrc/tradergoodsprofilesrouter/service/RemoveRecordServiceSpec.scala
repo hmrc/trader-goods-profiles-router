@@ -28,6 +28,7 @@ import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, RemoveRecordConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.audit.AuditService
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
 import java.time.Instant

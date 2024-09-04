@@ -37,6 +37,8 @@ class AppConfig @Inject() (config: Configuration) {
       .getOptional[Boolean]("features.niphlPaddingEnabled")
       .getOrElse(true)
 
+  lazy val acceptHeaderDisabled: Boolean = config.getOptional[Boolean]("feature.acceptHeaderDisabled").getOrElse(false)
+
   lazy val isDrop2Enabled: Boolean =
     config
       .getOptional[Boolean]("features.drop2Enabled")
