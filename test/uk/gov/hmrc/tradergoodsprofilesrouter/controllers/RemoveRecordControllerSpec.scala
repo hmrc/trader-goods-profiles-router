@@ -101,6 +101,16 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       status(result) mustBe NO_CONTENT
     }
 
+    "not validate content type header when feature flag is enabled" in {
+      when(mockService.removeRecord(any, any, any)(any))
+        .thenReturn(Future.successful(Right(NO_CONTENT)))
+      when(appConfig.isContentTypeHeaderDisabled).thenReturn(true)
+
+      val result = controller.remove(eori, recordId, actorId)(FakeRequest())
+
+      status(result) mustBe NO_CONTENT
+    }
+
     "return 400 Bad request when mandatory request header X-Client-ID" in {
       val expectedErrorResponse =
         ErrorResponse(
