@@ -69,7 +69,8 @@ class RemoveRecordController @Inject() (
   // ToDO:  remove this validation for drop 2 - TGP-2029
   //ToDo: remove the appConfig.isDrop2Enabled flag when we are done with the TGP-2366,2364,2367.
   private def validateHeaderIfDrop2Enabled(implicit request: Request[_]): EitherT[Future, Result, String] =
-    if (appConfig.isDrop2Enabled || appConfig.acceptHeaderDisabled) EitherT.rightT("Success")
+    if (appConfig.isDrop2Enabled || appConfig.acceptHeaderDisabled || appConfig.isContentTypeHeaderDisabled)
+      EitherT.rightT("Success")
     else
       for {
         _ <- EitherT.fromEither[Future](validateClientId)
