@@ -28,8 +28,8 @@ import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, UpdateRecordConnector}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.PatchRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{CreateOrUpdateRecordEisResponse, CreateOrUpdateRecordResponse}
@@ -158,7 +158,7 @@ class UpdateRecordServiceSpec
   }
 
   private def updateRecordRequestWIthInvalidFormattedDate(dateTime: Instant) =
-    UpdateRecordRequest(
+    PatchRecordRequest(
       actorId = "GB098765432112",
       traderRef = Some("BAN001001"),
       comcode = Some("10410100"),
@@ -219,7 +219,7 @@ class UpdateRecordServiceSpec
     )
   }
 
-  val updateRecordRequest: UpdateRecordRequest = Json
+  val updateRecordRequest: PatchRecordRequest = Json
     .parse("""
              |{
              |    "actorId": "GB098765432112",
@@ -247,7 +247,7 @@ class UpdateRecordServiceSpec
              |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
              |}
              |""".stripMargin)
-    .as[UpdateRecordRequest]
+    .as[PatchRecordRequest]
 
   val updateRecordPayload: UpdateRecordPayload = Json
     .parse("""
