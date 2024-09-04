@@ -27,7 +27,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, fieldsToErrorCode, optionalFieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.UpdateRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{PatchRecordRequest, UpdateRecordRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 
@@ -52,7 +52,7 @@ class UpdateRecordController @Inject() (
                                .fromEither[Future](validateRecordId(recordId))
                                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
       updateRecordRequest <-
-        EitherT.fromEither[Future](validateRequestBody[UpdateRecordRequest](optionalFieldsToErrorCode))
+        EitherT.fromEither[Future](validateRequestBody[PatchRecordRequest](optionalFieldsToErrorCode))
       response            <- patchRecord(eori, recordId, updateRecordRequest)
     } yield Ok(Json.toJson(response))
 
@@ -62,7 +62,6 @@ class UpdateRecordController @Inject() (
   def updateRecord(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) {
     implicit request =>
       val result = for {
-        _                   <- EitherT.fromEither[Future](validateClientIdIfSupported)
         _                   <- EitherT.fromEither[Future](validateAcceptHeader)
         _                   <- EitherT
                                  .fromEither[Future](validateRecordId(recordId))
@@ -78,7 +77,7 @@ class UpdateRecordController @Inject() (
   private def patchRecord(
     eori: String,
     recordId: String,
-    updateRecordRequest: UpdateRecordRequest
+    updateRecordRequest: PatchRecordRequest
   )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] =
     EitherT(
       updateRecordService.patchRecord(eori, recordId, updateRecordRequest)

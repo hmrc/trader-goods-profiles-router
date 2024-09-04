@@ -113,34 +113,6 @@ class UpdateRecordPUTControllerSpec
       status(result) mustBe OK
     }
 
-    "return 400 Bad request when required request field is missing" in {
-
-      val errorResponse = ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-        ApplicationConstants.BadRequestCode,
-        ApplicationConstants.BadRequestMessage,
-        Some(
-          Seq(
-            Error(
-              "INVALID_REQUEST_PARAMETER",
-              "Mandatory field actorId was missing from body or is in the wrong format",
-              8
-            )
-          )
-        )
-      )
-
-      val result = sut.updateRecord(eoriNumber, recordId)(
-        FakeRequest().withBody(invalidUpdateRecordRequestData).withHeaders(validHeaders: _*)
-      )
-
-      status(result) mustBe BAD_REQUEST
-
-      withClue("should return json response") {
-        contentAsJson(result) mustBe Json.toJson(errorResponse)
-      }
-    }
-
     "return 400 Bad request when required request field is missing from assessment array" in {
 
       val errorResponse = ErrorResponse(
@@ -182,25 +154,6 @@ class UpdateRecordPUTControllerSpec
       withClue("should return json response") {
         contentAsJson(result) mustBe Json.toJson(errorResponse)
       }
-    }
-
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
-
-      val errorResponse =
-        ErrorResponse(
-          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          ApplicationConstants.BadRequestCode,
-          ApplicationConstants.BadRequestMessage,
-          Some(Seq(Error("INVALID_HEADER", "Missing mandatory header X-Client-ID", 6000)))
-        )
-
-      val result = sut.updateRecord(eoriNumber, recordId)(
-        FakeRequest()
-          .withBody(updateRecordRequestData)
-          .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
 
     "return 400 Bad request when mandatory request header Accept is missing" in {
@@ -275,6 +228,7 @@ class UpdateRecordPUTControllerSpec
   lazy val invalidUpdateRecordRequestData: JsValue = Json
     .parse("""
         |{
+        |    "actorId": "GB098765432112",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
         |    "goodsDescription": "Organic bananas",

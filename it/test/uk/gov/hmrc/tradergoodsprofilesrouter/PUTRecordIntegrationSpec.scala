@@ -620,29 +620,6 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         }
       }
       "invalid, specifically" - {
-        "missing required header" in {
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"))
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_HEADER",
-                "message"     -> "Missing mandatory header X-Client-ID",
-                "errorNumber" -> 6000
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-        }
         "missing required request field" in {
           val response = wsClient
             .url(url)
@@ -661,9 +638,39 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
+                "code" -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
+                "errorNumber" ->13
+              ),
+              Json.obj(
+                "code" -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
+                "errorNumber" -> 23
+              ),
+              Json.obj(
+                "code" -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field category was missing from body or is in the wrong format",
+                "errorNumber" -> 14
+              ),
+              Json.obj(
+                "code" -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "errorNumber" -> 8
+              ),
+              Json.obj(
+                "code" -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
+                "errorNumber" -> 12
+              ),
+              Json.obj(
+                "code" -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field comcode was missing from body or is in the wrong format",
+                "errorNumber" -> 11
+              ),
+              Json.obj(
+                "code" -> "INVALID_REQUEST_PARAMETER",
+                "message" -> "Mandatory field traderRef was missing from body or is in the wrong format",
+                "errorNumber" -> 9
               )
             )
           )
@@ -1125,7 +1132,6 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |{
         |    "eori": "$eori",
         |    "actorId": "GB098765432112",
-        |    "recordId": "$recordId",
         |    "traderRef": "BAN001001",
         |    "comcode": "10410100",
         |    "goodsDescription": "Organic bananas",
@@ -1349,11 +1355,6 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
   val invalidRequestData: String =
     """
       |{
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
       |    "assessments": [
       |        {
       |            "assessmentId": "abc123",
@@ -1368,7 +1369,6 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |    ],
       |    "supplementaryUnit": 500,
       |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
       |}
       |""".stripMargin
