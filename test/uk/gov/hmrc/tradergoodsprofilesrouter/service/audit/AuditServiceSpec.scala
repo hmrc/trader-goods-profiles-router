@@ -36,8 +36,8 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeN
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditCreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
 import java.time.Instant

@@ -25,7 +25,7 @@ import play.api.libs.json.Reads.{maxLength, minLength, verifying}
 import play.api.libs.json._
 import play.api.mvc.Results.BadRequest
 import play.api.mvc.{BaseController, Request, Result}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{Reads, _}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.WithdrawReasonRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.UuidService
