@@ -94,7 +94,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     "not validate accept header when feature flag is enabled" in {
       when(mockService.removeRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
-      when(appConfig.acceptHeaderEnabled).thenReturn(true)
+      when(appConfig.acceptHeaderDisabled).thenReturn(true)
 
       val result = controller.remove(eori, recordId, actorId)(FakeRequest())
 
