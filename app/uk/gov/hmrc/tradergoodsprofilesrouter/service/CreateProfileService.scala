@@ -20,6 +20,7 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateProfileConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.CreateProfileEisRequest
@@ -31,7 +32,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CreateProfileService @Inject() (
   connector: CreateProfileConnector,
-  uuidService: UuidService
+  uuidService: UuidService,
+  appConfig: AppConfig
 )(implicit
   ec: ExecutionContext
 ) extends Logging {
@@ -82,8 +84,12 @@ class CreateProfileService @Inject() (
     )
 
   private def padNiphlNumber(niphlNumber: Option[String]): Option[String] =
-    niphlNumber.map { niphl =>
-      if (niphl.length >= 8) niphl else "-" * (8 - niphl.length) + niphl
+    if (appConfig.isNiphlPaddingEnabled) {
+      niphlNumber.map { niphl =>
+        if (niphl.length >= 8) niphl else "-" * (8 - niphl.length) + niphl
+      }
+    } else {
+      niphlNumber
     }
 
   private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
