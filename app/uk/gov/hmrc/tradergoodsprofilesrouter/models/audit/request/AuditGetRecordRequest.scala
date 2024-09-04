@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.factories
+package uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.AuditOutcome
 
-case class AuditRemoveRecordDetails(
-  private val journey: String = "RemoveRecord",
-  clientId: Option[String],
-  requestDateTime: String,
-  responseDateTime: String,
-  outcome: AuditOutcome,
-  request: AuditRemoveRecordRequest
+case class AuditGetRecordRequest(
+  eori: String,
+  lastUpdatedDate: Option[String] = None,
+  page: Option[Int] = None,
+  size: Option[Int] = None,
+  recordId: Option[String] = None
 )
 
-object AuditRemoveRecordDetails {
-  implicit val format: OFormat[AuditRemoveRecordDetails] = Json.format[AuditRemoveRecordDetails]
+object AuditGetRecordRequest {
+  implicit val format: OFormat[AuditGetRecordRequest] = Json.format[AuditGetRecordRequest]
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.service
+package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 
 import org.apache.pekko.Done
 import org.mockito.ArgumentMatchersSugar.any
@@ -38,6 +38,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditUpdateRec
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.{AuditCreateRecordResponse, AuditUpdateRecordResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}

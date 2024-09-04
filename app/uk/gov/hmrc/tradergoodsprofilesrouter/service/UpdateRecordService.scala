@@ -25,6 +25,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{PatchRecordRequest,
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
+import uk.gov.hmrc.tradergoodsprofilesrouter.service.audit.AuditService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
 import javax.inject.Inject
