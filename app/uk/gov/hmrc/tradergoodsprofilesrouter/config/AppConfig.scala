@@ -39,6 +39,11 @@ class AppConfig @Inject() (config: Configuration) {
 
   lazy val acceptHeaderDisabled: Boolean = config.getOptional[Boolean]("feature.acceptHeaderDisabled").getOrElse(false)
 
+  lazy val isContentTypeHeaderDisabled: Boolean =
+    config
+      .getOptional[Boolean]("features.contentTypeHeaderDisabled")
+      .getOrElse(false)
+
   lazy val isDrop2Enabled: Boolean =
     config
       .getOptional[Boolean]("features.drop2Enabled")

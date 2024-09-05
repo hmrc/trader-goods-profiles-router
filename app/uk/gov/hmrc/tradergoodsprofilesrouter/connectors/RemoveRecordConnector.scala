@@ -69,7 +69,9 @@ class RemoveRecordConnector @Inject() (
 
       Seq(HeaderNames.ContentType -> MimeTypes.JSON)
     } else if (appConfig.acceptHeaderDisabled) {
-      Seq(HeaderNames.ContentType -> MimeTypes.JSON, HeaderNames.ClientId -> getClientId)
+      Seq(HeaderNames.ClientId -> getClientId)
+    } else if (appConfig.isContentTypeHeaderDisabled) {
+      Seq(HeaderNames.Accept -> MimeTypes.JSON, HeaderNames.ClientId -> getClientId)
     } else
       Seq(
         HeaderNames.Accept      -> MimeTypes.JSON,
