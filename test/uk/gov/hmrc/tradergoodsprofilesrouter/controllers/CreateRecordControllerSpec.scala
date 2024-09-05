@@ -115,8 +115,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-    "return CREATED validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+    "return CREATED validating the the X-Client-Id when isClientIdHeaderDisabled flag is false" in {
+      when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
       when(createRecordService.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(createRecordResponseData)))
 
@@ -126,8 +126,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       status(result) mustBe CREATED
     }
 
-    "return CREATED without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+    "return CREATED without validating the X-Client-Id when isClientIdHeaderDisabled flag is true" in {
+      when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
 
       when(createRecordService.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(createRecordResponseData)))

@@ -1624,7 +1624,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
   private def sendRequestAndWait(url: String) =
     // TODO: After Drop 1.1 this should be removed and use the request without the X-CLient-ID header -  Ticket: TGP-2014
-    if (appConfig.isDrop1_1_enabled)
+    if (appConfig.isClientIdHeaderDisabled)
       await(
         wsClient
           .url(url)
