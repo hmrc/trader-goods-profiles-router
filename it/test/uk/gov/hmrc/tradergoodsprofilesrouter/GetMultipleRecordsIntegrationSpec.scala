@@ -310,7 +310,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
             "Date"             -> "Fri, 17 Dec 2021 09:30:47 GMT",
             "Accept"           -> "application/json",
             "Authorization"    -> "Bearer c29tZS10b2tlbgo="
-          ) ++ (if (!appConfig.isDrop1_1_enabled) Seq("X-Client-ID" -> "tss") else Seq.empty)
+          ) ++ (if (!appConfig.isClientIdHeaderDisabled) Seq("X-Client-ID" -> "tss") else Seq.empty)
 
           val stub    = get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
 
@@ -493,7 +493,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
   private def sendRequestAndWait(url: String) =
     // TODO: After Drop 1.1 this should be removed and use the request without the X-CLient-ID header -  Ticket: TGP-2014
-    if (appConfig.isDrop1_1_enabled)
+    if (appConfig.isClientIdHeaderDisabled)
       await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
     else
       await(
