@@ -65,6 +65,24 @@ class AppConfigSpec extends PlaySpec {
           |""".stripMargin
       createAppConfig(validAppConfig).isDrop2Enabled mustBe true
     }
+
+    "return false if contentTypeHeaderDisabled is false" in {
+      val validAppConfig =
+        """
+          |appName=trader-goods-profiles-router
+          |features.contentTypeHeaderDisabled=false
+          |""".stripMargin
+      createAppConfig(validAppConfig).isContentTypeHeaderDisabled mustBe false
+    }
+
+    "return true if contentTypeHeaderDisabled is true" in {
+      val validAppConfig =
+        """
+          |appName=trader-goods-profiles-router
+          |features.contentTypeHeaderDisabled=true
+          |""".stripMargin
+      createAppConfig(validAppConfig).isContentTypeHeaderDisabled mustBe true
+    }
   }
 
 }
