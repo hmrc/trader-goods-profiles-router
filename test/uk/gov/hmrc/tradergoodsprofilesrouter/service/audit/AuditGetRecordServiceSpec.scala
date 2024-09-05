@@ -64,11 +64,9 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
         val request = AuditGetRecordRequest(eori, Some(dateTime), Some(1), Some(10), Some(recordId))
 
         val result = await(
-          sut.emitAuditGetRecord(
+          sut.emitAuditGetRecordSucceeded(
             request,
             dateTime,
-            "SUCCEEDED",
-            200,
             createEisSingleRecordsResponse
           )
         )
@@ -87,11 +85,9 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
         val request = AuditGetRecordRequest(eori = eori)
 
         val result = await(
-          sut.emitAuditGetRecord(
+          sut.emitAuditGetRecordSucceeded(
             request,
             dateTime,
-            "SUCCEEDED",
-            200,
             createEisSingleRecordsResponse
           )
         )
@@ -104,11 +100,9 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
         val request = AuditGetRecordRequest(eori, Some(dateTime), Some(1), Some(10), Some(recordId))
 
         val result = await(
-          sut.emitAuditGetRecord(
+          sut.emitAuditGetRecordSucceeded(
             request,
             dateTime,
-            "SUCCEEDED",
-            200,
             createEisMultipleRecordsResponse
           )
         )
@@ -121,11 +115,9 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
         val request = AuditGetRecordRequest(eori, Some(dateTime), Some(1), Some(10), Some(recordId))
 
         val result = await(
-          sut.emitAuditGetRecord(
+          sut.emitAuditGetRecordSucceeded(
             request,
             dateTime,
-            "SUCCEEDED",
-            200,
             GetEisRecordsResponse(Seq.empty, Pagination(0, 0, 0, None, None))
           )
         )

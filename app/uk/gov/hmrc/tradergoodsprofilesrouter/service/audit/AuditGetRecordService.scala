@@ -19,6 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 import com.google.inject.Inject
 import org.apache.pekko.Done
 import play.api.Logging
+import play.api.http.Status.OK
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
@@ -40,17 +41,15 @@ class AuditGetRecordService @Inject() (
   override val auditSource = "trader-goods-profiles-router"
   override val auditType   = "GetGoodsRecord"
 
-  def emitAuditGetRecord(
+  def emitAuditGetRecordSucceeded(
     requestDetails: AuditGetRecordRequest,
     requestDateTime: String,
-    status: String,
-    statusCode: Int,
     response: GetEisRecordsResponse
   )(implicit hc: HeaderCarrier): Future[Done] = {
 
     val details = createDetails(
       requestDateTime = requestDateTime,
-      outcome = AuditOutcome(status, statusCode),
+      outcome = AuditOutcome("SUCCEEDED", OK),
       request = Json.toJson(requestDetails),
       response = Some(Json.toJson(AuditGetRecordsResponse(response)))
     )

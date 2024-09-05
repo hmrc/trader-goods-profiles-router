@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 import com.google.inject.Inject
 import org.apache.pekko.Done
 import play.api.Logging
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, GetRecordsConnector}
@@ -53,7 +53,7 @@ class GetRecordsService @Inject() (
       .fetchRecord(eori, recordId, correlationId, url)
       .map {
         case Right(response)     =>
-          auditGetRecordService.emitAuditGetRecord(request, requestDateTime, "SUCCESS", OK, response)
+          auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, response)
           Right(GoodsItemRecords(response.goodsItemRecords.head))
         case Left(errorResponse) =>
           logger.warn(s"""[GetRecordsService] - Error when retrieving record for eori: $eori,
@@ -99,7 +99,7 @@ class GetRecordsService @Inject() (
       .fetchRecords(eori, correlationId, size, page, lastUpdatedDate)
       .map {
         case Right(response)     =>
-          auditGetRecordService.emitAuditGetRecord(request, requestDateTime, "SUCCESS", OK, response)
+          auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, response)
           Right(GetRecordsResponse(response))
         case Left(errorResponse) =>
           logger.warn(s"""[GetRecordsService] - Error when retieving multiple record for eori: $eori,
