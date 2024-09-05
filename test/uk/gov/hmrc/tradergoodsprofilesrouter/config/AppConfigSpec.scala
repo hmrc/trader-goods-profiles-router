@@ -87,6 +87,28 @@ class AppConfigSpec extends PlaySpec {
           |""".stripMargin
       createAppConfig(validAppConfig).isContentTypeHeaderDisabled mustBe true
     }
+
+    "return true for clientIdHeaderDisabled when it is set to true" in {
+      val config =
+        """
+          |appName=trader-goods-profiles-router
+          |features.clientIdHeaderDisabled=true
+          |""".stripMargin
+      createAppConfig(config).isClientIdHeaderDisabled mustBe true
+    }
+
+    "return false for clientIdHeaderDisabled when it is missing" in {
+      createAppConfig("").isClientIdHeaderDisabled mustBe false
+    }
+
+    "return false for clientIdHeaderDisabled when it is set to false" in {
+      val config =
+        """
+          |appName=trader-goods-profiles-router
+          |features.clientIdHeaderDisabled=false
+          |""".stripMargin
+      createAppConfig(config).isClientIdHeaderDisabled mustBe false
+    }
   }
 
 }
