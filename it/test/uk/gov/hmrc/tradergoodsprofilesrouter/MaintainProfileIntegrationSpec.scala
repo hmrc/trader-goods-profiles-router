@@ -46,7 +46,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
   }
 
   // TODO: After drop 1.1 remove x-client-id from headers - Ticket: TGP-2014
-  val headers: Seq[(String, String)] = if (appConfig.isDrop1_1_enabled) {
+  val headers: Seq[(String, String)] = if (appConfig.isClientIdHeaderDisabled) {
     Seq(
       ("Content-Type", "application/json"),
       ("Accept", "application/vnd.hmrc.1.0+json")

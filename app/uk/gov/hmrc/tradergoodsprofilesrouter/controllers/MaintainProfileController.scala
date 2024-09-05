@@ -67,6 +67,6 @@ class MaintainProfileController @Inject() (
 
   // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
   private def validateClientIdIfSupported(implicit request: Request[_]) =
-    if (!appConfig.isDrop1_1_enabled) validateClientId
+    if (!appConfig.isClientIdHeaderDisabled) validateClientId
     else Right("")
 }
