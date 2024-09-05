@@ -89,11 +89,9 @@ class GetRecordsServiceSpec
       }
 
       withClue("should send an audit event") {
-        verify(auditGetRecordService).emitAuditGetRecord(
+        verify(auditGetRecordService).emitAuditGetRecordSucceeded(
           eqTo(AuditGetRecordRequest(eori = eoriNumber, recordId = Some(recordId))),
           eqTo("2024-05-06T14:14:14.233Z"),
-          eqTo("SUCCESS"),
-          eqTo(200),
           eqTo(eisResponse)
         )(any)
       }
@@ -172,11 +170,9 @@ class GetRecordsServiceSpec
       }
 
       withClue("should send an audit event") {
-        verify(auditGetRecordService).emitAuditGetRecord(
+        verify(auditGetRecordService).emitAuditGetRecordSucceeded(
           eqTo(AuditGetRecordRequest(eoriNumber, Some("2024-04-18T23:20:19.000Z"), Some(1), Some(1))),
           eqTo("2024-05-06T14:14:14.233Z"),
-          eqTo("SUCCESS"),
-          eqTo(200),
           eqTo(eisResponse)
         )(any)
       }
