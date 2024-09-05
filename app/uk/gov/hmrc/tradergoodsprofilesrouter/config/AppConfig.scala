@@ -48,4 +48,9 @@ class AppConfig @Inject() (config: Configuration) {
     config
       .getOptional[Boolean]("features.drop2Enabled")
       .getOrElse(false)
+
+  lazy val isClientIdHeaderEnabled: Boolean =
+    config
+      .getOptional[Boolean]("features.clientIdHeaderEnabled")
+      .getOrElse(false)
 }

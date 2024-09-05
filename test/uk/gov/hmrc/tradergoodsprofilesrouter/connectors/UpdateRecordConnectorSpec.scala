@@ -59,7 +59,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
         .thenReturn(Future.successful(Right(expectedResponse)))
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
-      val result  = await(eisConnector.updateRecord(request, correlationId))
+      val result  = await(eisConnector.patch(request, correlationId))
 
       result.value mustBe expectedResponse
     }
@@ -69,7 +69,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
-      val result  = await(eisConnector.updateRecord(request, correlationId))
+      val result  = await(eisConnector.patch(request, correlationId))
 
       result.left.value mustBe BadRequest("error")
     }
@@ -83,7 +83,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
           .thenReturn(Future.successful(Right(expectedResponse)))
         when(appConfig.isDrop1_1_enabled).thenReturn(true)
 
-        await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
+        await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
         val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
         verify(httpClientV2).patch(url"$expectedUrl")
@@ -102,7 +102,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
           .thenReturn(Future.successful(Right(expectedResponse)))
         when(appConfig.isDrop1_1_enabled).thenReturn(false)
 
-        await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
+        await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
         val expectedUrl                = s"http://localhost:1234/tgp/updaterecord/v1"
         val expectedHeaderWithClientId =

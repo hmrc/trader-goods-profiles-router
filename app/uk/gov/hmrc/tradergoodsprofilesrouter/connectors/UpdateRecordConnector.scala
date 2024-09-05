@@ -38,7 +38,7 @@ class UpdateRecordConnector @Inject() (
     extends BaseConnector
     with EisHttpErrorHandler {
 
-  def updateRecord(
+  def patch(
     payload: UpdateRecordPayload,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
