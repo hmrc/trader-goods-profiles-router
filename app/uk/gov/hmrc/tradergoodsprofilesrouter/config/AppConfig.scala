@@ -27,10 +27,6 @@ class AppConfig @Inject() (config: Configuration) {
   lazy val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
 
   // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-  lazy val isDrop1_1_enabled: Boolean =
-    config
-      .getOptional[Boolean]("features.drop_1_1_enabled")
-      .getOrElse(false)
 
   lazy val isNiphlPaddingEnabled: Boolean =
     config
