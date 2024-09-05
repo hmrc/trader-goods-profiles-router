@@ -48,6 +48,10 @@ class AppConfigSpec extends PlaySpec {
       createAppConfig("").isDrop2Enabled mustBe false
     }
 
+    "return false if contentTypeHeaderDisabled is missing" in {
+      createAppConfig("").isContentTypeHeaderDisabled mustBe false
+    }
+
     "return false if isDrop2Enabled is false" in {
       val validAppConfig =
         """
