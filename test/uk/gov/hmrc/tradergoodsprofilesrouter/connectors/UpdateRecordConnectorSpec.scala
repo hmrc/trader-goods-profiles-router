@@ -76,12 +76,12 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "send a request with the right url" when {
 
-      "isDrop1_1_enabled feature flag is true" in {
+      "isClientIdHeaderDisabled feature flag is true" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         val expectedResponse = createOrUpdateRecordEisResponse
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(expectedResponse)))
-        when(appConfig.isDrop1_1_enabled).thenReturn(true)
+        when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
 
         await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
@@ -95,12 +95,12 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       }
 
       // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
-      "isDrop1_1_enabled feature flag is false" in {
+      "isClientIdHeaderDisabled feature flag is false" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         val expectedResponse = createOrUpdateRecordEisResponse
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(expectedResponse)))
-        when(appConfig.isDrop1_1_enabled).thenReturn(false)
+        when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
 
         await(eisConnector.updateRecord(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 

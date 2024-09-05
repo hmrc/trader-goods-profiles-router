@@ -83,8 +83,8 @@ class UpdateRecordControllerSpec
       status(result) mustBe OK
     }
 
-    "return OK without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+    "return OK without validating the X-Client-Id when isClientIdHeaderDisabled flag is true" in {
+      when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
@@ -100,8 +100,8 @@ class UpdateRecordControllerSpec
     }
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
-    "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+    "return OK validating the the X-Client-Id when isClientIdHeaderDisabled flag is false" in {
+      when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =
