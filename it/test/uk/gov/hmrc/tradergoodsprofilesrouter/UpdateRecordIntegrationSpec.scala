@@ -628,19 +628,35 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             .futureValue
 
           response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_HEADER",
-                "message"     -> "Missing mandatory header X-Client-ID",
-                "errorNumber" -> 6000
+          if (!appConfig.isClientIdHeaderDisabled) {
+            response.status shouldBe BAD_REQUEST
+            response.json   shouldBe Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> "BAD_REQUEST",
+              "message"       -> "Bad Request",
+              "errors"        -> Json.arr(
+                Json.obj(
+                  "code"        -> "INVALID_HEADER",
+                  "message"     -> "Missing mandatory header X-Client-ID",
+                  "errorNumber" -> 6000
+                )
               )
             )
-          )
+          } else {
 
+            response.json shouldBe Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> "BAD_REQUEST",
+              "message"       -> "Bad Request",
+              "errors"        -> Json.arr(
+                Json.obj(
+                  "code"        -> "INVALID_HEADER",
+                  "message"     -> "Accept was missing from Header or is in the wrong format",
+                  "errorNumber" -> 4
+                )
+              )
+            )
+          }
           verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
         "missing required request field" in {

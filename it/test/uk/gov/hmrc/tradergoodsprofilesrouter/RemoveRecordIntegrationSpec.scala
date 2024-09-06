@@ -547,20 +547,35 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             .withHttpHeaders(("Content-Type", "application/json"))
             .delete()
             .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_HEADER",
-                "message"     -> "Missing mandatory header X-Client-ID",
-                "errorNumber" -> 6000
+          if (!appConfig.isClientIdHeaderDisabled) {
+            response.status shouldBe BAD_REQUEST
+            response.json   shouldBe Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> "BAD_REQUEST",
+              "message"       -> "Bad Request",
+              "errors"        -> Json.arr(
+                Json.obj(
+                  "code"        -> "INVALID_HEADER",
+                  "message"     -> "Missing mandatory header X-Client-ID",
+                  "errorNumber" -> 6000
+                )
               )
             )
-          )
+          } else {
+
+            response.json shouldBe Json.obj(
+              "correlationId" -> correlationId,
+              "code"          -> "BAD_REQUEST",
+              "message"       -> "Bad Request",
+              "errors"        -> Json.arr(
+                Json.obj(
+                  "code"        -> "INVALID_HEADER",
+                  "message"     -> "Accept was missing from Header or is in the wrong format",
+                  "errorNumber" -> 4
+                )
+              )
+            )
+          }
 
           verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
         }
@@ -624,7 +639,7 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         .withHeader("Date", equalTo(timestamp))
         .withHeader("Accept", equalTo("application/json"))
         .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-        .withHeader("X-Client-ID", equalTo("tss"))
+//        .withHeader("X-Client-ID", equalTo("tss"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

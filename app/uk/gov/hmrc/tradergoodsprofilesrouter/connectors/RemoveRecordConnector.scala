@@ -47,7 +47,7 @@ class RemoveRecordConnector @Inject() (
     httpClientV2
       .put(url"$url")
       .setHeader(
-        headers(
+        buildHeaders(
           correlationId,
           appConfig.hawkConfig.removeRecordBearerToken,
           appConfig.hawkConfig.forwardedHost
@@ -58,26 +58,26 @@ class RemoveRecordConnector @Inject() (
   }
 
   /*
-  ToDo: remove isDrop2Enabled flag after drop2 - TGP-2029.
+  ToDo: remove isClientIdHeaderDisabled flag after drop2 - TGP-2029.
    The header passed to EIS should have no Accept and ClientId header
    */
-  private def headers(correlationId: String, accessToken: String, forwardedHost: String)(implicit
+  override def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit
     hc: HeaderCarrier
   ): Seq[(String, String)] = {
-    val headers      = commonHeaders(correlationId, accessToken, forwardedHost)
-    val extraHeaders = if (appConfig.isDrop2Enabled) {
+    var headers = commonHeaders(correlationId, accessToken, forwardedHost)
 
-      Seq(HeaderNames.ContentType -> MimeTypes.JSON)
-    } else if (appConfig.acceptHeaderDisabled) {
-      Seq(HeaderNames.ClientId -> getClientId)
-    } else if (appConfig.isContentTypeHeaderDisabled) {
-      Seq(HeaderNames.Accept -> MimeTypes.JSON, HeaderNames.ClientId -> getClientId)
-    } else
-      Seq(
-        HeaderNames.Accept      -> MimeTypes.JSON,
-        HeaderNames.ContentType -> MimeTypes.JSON,
-        HeaderNames.ClientId    -> getClientId
-      )
-    headers ++ extraHeaders
+    if (!appConfig.acceptHeaderDisabled) {
+      headers :+= HeaderNames.Accept -> MimeTypes.JSON
+    }
+
+    if (!appConfig.isContentTypeHeaderDisabled) {
+      headers :+= HeaderNames.ContentType -> MimeTypes.JSON
+    }
+
+    if (!appConfig.isClientIdHeaderDisabled) {
+      headers :+= HeaderNames.ClientId -> getClientId
+    }
+
+    headers
   }
 }
