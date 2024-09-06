@@ -27,7 +27,6 @@ import play.api.libs.ws.WSClient
 import play.api.{Application, inject}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.http.test.WireMockSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DateTimeService, UuidService}
 
 import scala.jdk.CollectionConverters.CollectionHasAsScala
@@ -46,9 +45,6 @@ abstract class BaseIntegrationSpec
   lazy val uuidService: UuidService         = mock[UuidService]
   lazy val dateTimeService: DateTimeService = mock[DateTimeService]
 
-  // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-
-  lazy val appConfig                          = app.injector.instanceOf[AppConfig]
   override def fakeApplication(): Application =
     baseApplicationBuilder()
       .configure(extraApplicationConfig)
