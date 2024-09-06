@@ -43,23 +43,18 @@ class UpdateRecordConnector @Inject() (
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
-    val headers = commonHeaders(
-      correlationId,
-      appConfig.hawkConfig.updateRecordBearerToken,
-      appConfig.hawkConfig.forwardedHost
-    ) ++ Seq(
-      HeaderNames.Accept      -> MimeTypes.JSON,
-      HeaderNames.ContentType -> MimeTypes.JSON
-    )
 
-    httpClientV2
-      .patch(url"$url")
-      .setHeader(
-        buildHeaderForPatch(
-          correlationId): _*
-      )
-      .withBody(toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    //Todo: remove this flag when EIS has implemented the PATCH method - TGP-2417.
+    // isPatchMethodEnabled is false as default
+    if (appConfig.isPatchMethodEnabled) {
+      httpClientV2
+        .patch(url"$url")
+        .setHeader(
+          buildHeaderForPatch(correlationId): _*
+        )
+        .withBody(toJson(payload))
+        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    } else put(payload, correlationId)
   }
 
   def put(
@@ -82,15 +77,14 @@ class UpdateRecordConnector @Inject() (
   }
 
   private def buildHeaderForPatch(
-    correlationId: String,
-  ): Seq[(String, String)] = {
-      commonHeaders(
-        correlationId,
-        appConfig.hawkConfig.updateRecordBearerToken,
-        appConfig.hawkConfig.forwardedHost
-      ) ++ Seq(
-        HeaderNames.Accept      -> MimeTypes.JSON,
-        HeaderNames.ContentType -> MimeTypes.JSON
-      )
-    }
+    correlationId: String
+  ): Seq[(String, String)] =
+    commonHeaders(
+      correlationId,
+      appConfig.hawkConfig.updateRecordBearerToken,
+      appConfig.hawkConfig.forwardedHost
+    ) ++ Seq(
+      HeaderNames.Accept      -> MimeTypes.JSON,
+      HeaderNames.ContentType -> MimeTypes.JSON
+    )
 }

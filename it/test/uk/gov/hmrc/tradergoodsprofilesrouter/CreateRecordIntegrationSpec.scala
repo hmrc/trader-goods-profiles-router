@@ -22,7 +22,6 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
@@ -1622,24 +1621,4 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       )
       .toString()
 
-  private def sendRequestAndWait(url: String) =
-    // TODO: After Drop 1.1 this should be removed and use the request without the X-CLient-ID header -  Ticket: TGP-2014
-    if (appConfig.isDrop1_1_enabled)
-      await(
-        wsClient
-          .url(url)
-          .withHttpHeaders(("Content-Type", "application/json"), ("Accept", "application/vnd.hmrc.1.0+json"))
-          .post(createRecordRequestData)
-      )
-    else
-      await(
-        wsClient
-          .url(url)
-          .withHttpHeaders(
-            ("X-Client-ID", "tss"),
-            ("Content-Type", "application/json"),
-            ("Accept", "application/vnd.hmrc.1.0+json")
-          )
-          .post(createRecordRequestData)
-      )
 }
