@@ -55,36 +55,26 @@ trait BaseConnector {
     correlationId: String,
     accessToken: String,
     forwardedHost: String
-  )(implicit hc: HeaderCarrier): Seq[(String, String)] = {
-
-    val headers = commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
-      HeaderNames.Accept      -> MimeTypes.JSON,
-      HeaderNames.ContentType -> MimeTypes.JSON
-    )
-
+  )(implicit hc: HeaderCarrier): Seq[(String, String)] =
     //ToDo: remove this and return a header without the client ID after drop1.1.
     // For drop1.1 client Id has been removed (TGP-1889)
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-    if (appConfig.isClientIdHeaderDisabled) headers
-    else headers :+ (HeaderNames.ClientId -> getClientId)
-  }
+    commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
+      HeaderNames.Accept      -> MimeTypes.JSON,
+      HeaderNames.ContentType -> MimeTypes.JSON
+    ).withToggleClientID
 
   protected def buildHeadersForGetMethod(
     correlationId: String,
     accessToken: String,
     forwardedHost: String
-  )(implicit hc: HeaderCarrier): Seq[(String, String)] = {
-
-    val headers = commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
-      HeaderNames.Accept -> MimeTypes.JSON
-    )
-
+  )(implicit hc: HeaderCarrier): Seq[(String, String)] =
     //ToDo: remove this and return a header without the client ID after drop1.1.
     // For drop1.1 client Id has been removed (TGP-1889)
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-    if (appConfig.isClientIdHeaderDisabled) headers
-    else headers :+ (HeaderNames.ClientId -> getClientId)
-  }
+    commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
+      HeaderNames.Accept -> MimeTypes.JSON
+    ).withToggleClientID
 
   protected def buildHeadersForAdvice(
     correlationId: String,
@@ -98,4 +88,19 @@ trait BaseConnector {
       .headOption
       .getOrElse(throw new RuntimeException("Client ID is null"))
       ._2
+
+  implicit class FilterHeaders(val value: Seq[(String, String)]) {
+
+    def withToggleClientID(implicit hc: HeaderCarrier): Seq[(String, String)] =
+      if (!appConfig.isClientIdHeaderDisabled) value :+ (HeaderNames.ClientId -> getClientId)
+      else value
+
+    def withToggleAcceptHeader: Seq[(String, String)] =
+      if (!appConfig.acceptHeaderDisabled) value :+ HeaderNames.Accept -> MimeTypes.JSON
+      else value
+
+    def withToggleContentTypeHeader: Seq[(String, String)] =
+      if (!appConfig.isContentTypeHeaderDisabled) value :+ HeaderNames.ContentType -> MimeTypes.JSON
+      else value
+  }
 }

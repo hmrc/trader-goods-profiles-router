@@ -17,7 +17,6 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
-import play.api.http.MimeTypes
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -25,7 +24,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -63,21 +61,11 @@ class RemoveRecordConnector @Inject() (
    */
   override def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit
     hc: HeaderCarrier
-  ): Seq[(String, String)] = {
-    var headers = commonHeaders(correlationId, accessToken, forwardedHost)
+  ): Seq[(String, String)] =
+    commonHeaders(
+      correlationId,
+      accessToken,
+      forwardedHost
+    ).withToggleAcceptHeader.withToggleContentTypeHeader.withToggleClientID
 
-    if (!appConfig.acceptHeaderDisabled) {
-      headers :+= HeaderNames.Accept -> MimeTypes.JSON
-    }
-
-    if (!appConfig.isContentTypeHeaderDisabled) {
-      headers :+= HeaderNames.ContentType -> MimeTypes.JSON
-    }
-
-    if (!appConfig.isClientIdHeaderDisabled) {
-      headers :+= HeaderNames.ClientId -> getClientId
-    }
-
-    headers
-  }
 }
