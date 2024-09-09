@@ -68,7 +68,7 @@ object UpdateRecordPayload {
       comcode = Some(request.comcode),
       goodsDescription = Some(request.goodsDescription),
       countryOfOrigin = Some(request.countryOfOrigin),
-      category = Some(request.category),
+      category = request.category,
       assessments = request.assessments,
       supplementaryUnit = request.supplementaryUnit,
       measurementUnit = request.measurementUnit,

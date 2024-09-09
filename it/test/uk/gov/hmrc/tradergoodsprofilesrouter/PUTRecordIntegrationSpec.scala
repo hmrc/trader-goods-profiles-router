@@ -649,11 +649,6 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
               ),
               Json.obj(
                 "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field category was missing from body or is in the wrong format",
-                "errorNumber" -> 14
-              ),
-              Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
                 "message" -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "errorNumber" -> 8
               ),
