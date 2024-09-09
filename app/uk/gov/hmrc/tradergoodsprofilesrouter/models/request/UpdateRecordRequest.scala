@@ -33,7 +33,7 @@ case class UpdateRecordRequest(
   comcode: String,
   goodsDescription: String,
   countryOfOrigin: String,
-  category: Int,
+  category: Option[Int],
   assessments: Option[Seq[Assessment]],
   supplementaryUnit: Option[BigDecimal],
   measurementUnit: Option[String],
@@ -49,7 +49,9 @@ object UpdateRecordRequest {
       (JsPath \ "comcode").read(validComcode) and
       (JsPath \ "goodsDescription").read(lengthBetween(1, 512)) and
       (JsPath \ "countryOfOrigin").read(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
-      (JsPath \ "category").read[Int](verifying[Int](category => category >= 1 && category <= 3)) and
+      (JsPath \ "category").readNullableWithDefault(Some(1))(
+        verifying[Int](category => category >= 1 && category <= 3)
+      ) and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[BigDecimal] and
       (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and

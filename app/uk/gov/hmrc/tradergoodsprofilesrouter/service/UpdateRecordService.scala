@@ -49,7 +49,7 @@ class UpdateRecordService @Inject() (
     val requestedDateTime = dateTimeService.timestamp.asStringMilliSeconds
 
     connector
-      .updateRecord(payload, correlationId)
+      .patch(payload, correlationId)
       .map {
         case Right(response) =>
           val updateRecordResponse = CreateOrUpdateRecordResponse(response)

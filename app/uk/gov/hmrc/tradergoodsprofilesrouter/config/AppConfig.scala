@@ -43,4 +43,8 @@ class AppConfig @Inject() (config: Configuration) {
   lazy val isClientIdHeaderDisabled: Boolean =
     config.getOptional[Boolean]("features.clientIdHeaderDisabled").getOrElse(false)
 
+  lazy val isPatchMethodEnabled: Boolean =
+    config
+      .getOptional[Boolean]("features.patchMethodEnabled")
+      .getOrElse(false)
 }

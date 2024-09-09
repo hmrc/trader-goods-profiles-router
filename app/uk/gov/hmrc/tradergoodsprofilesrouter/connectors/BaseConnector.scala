@@ -28,7 +28,7 @@ trait BaseConnector {
   def appConfig: AppConfig
   def dateTimeService: DateTimeService
 
-  protected def commonHeaders(
+  def commonHeaders(
     correlationId: String,
     accessToken: String,
     forwardedHost: String
@@ -40,7 +40,7 @@ trait BaseConnector {
       HeaderNames.Authorization -> accessToken
     )
 
-  protected def buildHeaders(
+  def buildHeaders(
     correlationId: String,
     accessToken: String,
     forwardedHost: String
@@ -51,7 +51,7 @@ trait BaseConnector {
       HeaderNames.ClientId    -> getClientId
     )
 
-  protected def buildHeadersWithDrop1Toggle(
+  def buildHeadersWithDrop1Toggle(
     correlationId: String,
     accessToken: String,
     forwardedHost: String
@@ -64,7 +64,7 @@ trait BaseConnector {
       HeaderNames.ContentType -> MimeTypes.JSON
     ).withToggleClientID
 
-  protected def buildHeadersForGetMethod(
+  def buildHeadersForGetMethod(
     correlationId: String,
     accessToken: String,
     forwardedHost: String
@@ -76,7 +76,7 @@ trait BaseConnector {
       HeaderNames.Accept -> MimeTypes.JSON
     ).withToggleClientID
 
-  protected def buildHeadersForAdvice(
+  def buildHeadersForAdvice(
     correlationId: String,
     bearerToken: String,
     forwardedHost: String

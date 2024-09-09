@@ -48,6 +48,12 @@ class GetSingleRecordIntegrationSpec
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
   }
 
+  override def extraApplicationConfig: Map[String, Any] = {
+    super.extraApplicationConfig ++ Map(
+      "features.isDrop1_1_enabled" -> false
+    )
+  }
+
   "attempting to get records, when" - {
     "the request is" - {
 
@@ -431,7 +437,13 @@ class GetSingleRecordIntegrationSpec
 
   private def sendRequestAndWait(url: String) =
     await(
-      wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
+      wsClient
+        .url(url)
+        .withHttpHeaders(
+          ("X-Client-ID", "tss"),
+          ("Accept", "application/vnd.hmrc.1.0+json")
+        )
+        .get()
     )
 
   private def stubForEis(httpStatus: Int, body: Option[String] = None) =

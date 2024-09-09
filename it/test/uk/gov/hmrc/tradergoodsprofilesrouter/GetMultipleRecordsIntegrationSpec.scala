@@ -46,6 +46,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     when(dateTimeService.timestamp).thenReturn(dateTime)
   }
 
+  override def extraApplicationConfig: Map[String, Any] = {
+    super.extraApplicationConfig ++ Map(
+      "features.isDrop1_1_enabled" -> false
+    )
+  }
+
   "attempting to get records, when" - {
     "the request is" - {
 

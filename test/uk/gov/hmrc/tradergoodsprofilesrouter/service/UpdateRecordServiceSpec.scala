@@ -72,14 +72,14 @@ class UpdateRecordServiceSpec
   "updateRecord" should {
     "update a record item" in {
       val eisResponse = createOrUpdateRecordEisResponseData
-      when(connector.updateRecord(any, any)(any))
+      when(connector.patch(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
       when(auditService.emitAuditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
       val result = await(sut.patchRecord(eoriNumber, recordId, updateRecordRequest))
 
       result.value mustBe createOrUpdateRecordResponseData
-      verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
+      verify(connector).patch(eqTo(expectedPayload), eqTo(correlationId))(any)
       verify(auditService)
         .emitAuditUpdateRecord(
           updateRecordPayload,
@@ -93,7 +93,7 @@ class UpdateRecordServiceSpec
 
     "dateTime value should be formatted to yyyy-mm-dd'T'hh:mm:ssZ" in {
       val eisResponse = createOrUpdateRecordEisResponseData
-      when(connector.updateRecord(any, any)(any))
+      when(connector.patch(any, any)(any))
         .thenReturn(Future.successful(Right(eisResponse)))
       when(auditService.emitAuditUpdateRecord(any, any, any, any, any, any)(any)).thenReturn(Future.successful(Done))
 
@@ -104,7 +104,7 @@ class UpdateRecordServiceSpec
         )
 
       result.value mustBe createOrUpdateRecordResponseData
-      verify(connector).updateRecord(eqTo(expectedPayload), eqTo(correlationId))(any)
+      verify(connector).patch(eqTo(expectedPayload), eqTo(correlationId))(any)
       verify(auditService)
         .emitAuditUpdateRecord(
           updateRecordPayload,
@@ -119,7 +119,7 @@ class UpdateRecordServiceSpec
 
       "EIS return an error" in {
         val badRequestErrorResponse = createEisErrorResponse
-        when(connector.updateRecord(any, any)(any))
+        when(connector.patch(any, any)(any))
           .thenReturn(Future.successful(Left(badRequestErrorResponse)))
 
         val result = await(sut.patchRecord(eoriNumber, recordId, updateRecordRequest))
@@ -136,7 +136,7 @@ class UpdateRecordServiceSpec
       }
 
       "error when an exception is thrown" in {
-        when(connector.updateRecord(any, any)(any))
+        when(connector.patch(any, any)(any))
           .thenReturn(Future.failed(new RuntimeException("error")))
 
         val result = await(sut.patchRecord(eoriNumber, recordId, updateRecordRequest))
