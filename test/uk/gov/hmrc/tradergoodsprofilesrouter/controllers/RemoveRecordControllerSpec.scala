@@ -89,9 +89,13 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       when(mockService.removeRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
 
-      val result = controller.remove(eori, recordId, actorId)(FakeRequest().withHeaders(validHeaders.filterNot {
-        case (name, _) => name.equalsIgnoreCase("X-Client-ID")
-      }: _*))
+      val headersWithoutClientId: Seq[(String, String)] = validHeaders.filterNot { case (name, _) =>
+        name.equalsIgnoreCase("X-Client-ID")
+      }
+
+      val result = controller.remove(eori, recordId, actorId)(
+        FakeRequest().withHeaders(headersWithoutClientId: _*)
+      )
 
       status(result) mustBe NO_CONTENT
     }
@@ -101,9 +105,13 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       when(mockService.removeRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
 
-      val result = controller.remove(eori, recordId, actorId)(FakeRequest().withHeaders(validHeaders.filterNot {
-        case (name, _) => name.equalsIgnoreCase("Accept")
-      }: _*))
+      val headersWithoutClientId: Seq[(String, String)] = validHeaders.filterNot { case (name, _) =>
+        name.equalsIgnoreCase("Accept")
+      }
+
+      val result = controller.remove(eori, recordId, actorId)(
+        FakeRequest().withHeaders(headersWithoutClientId: _*)
+      )
 
       status(result) mustBe NO_CONTENT
     }
