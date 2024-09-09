@@ -51,7 +51,7 @@ class CreateProfileConnector @Inject() (
   private def headers(correlationId: String): Seq[(String, String)] =
     commonHeaders(
       correlationId,
-      appConfig.hawkConfig.getProfileBearerToken,
+      appConfig.hawkConfig.createProfileBearerToken,
       appConfig.hawkConfig.forwardedHost
     ) :+ (HeaderNames.Accept -> MimeTypes.JSON)
 }
