@@ -87,7 +87,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
     when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
-    when(appConfig.isDrop2Enabled).thenReturn(true)
 
     val result =
       await(connector.removeRecord(eori, recordId, actorId, correlationId)(hc))
