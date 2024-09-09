@@ -89,4 +89,32 @@ class AppConfigSpec extends PlaySpec {
     }
   }
 
+  "isPatchMethodEnabled" should {
+    "return true if patchMethodEnabled is true" in {
+      val validAppConfig =
+        """
+          |appName=trader-goods-profiles-router
+          |features.patchMethodEnabled=true
+          |""".stripMargin
+      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe true
+    }
+
+    "return false if patchMethodEnabled is false" in {
+      val validAppConfig =
+        """
+          |appName=trader-goods-profiles-router
+          |features.patchMethodEnabled=false
+          |""".stripMargin
+      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe false
+    }
+
+    "return false if patchMethodEnabled is nor defined" in {
+      val validAppConfig =
+        """
+          |appName=trader-goods-profiles-router
+          |""".stripMargin
+      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe false
+    }
+  }
+
 }

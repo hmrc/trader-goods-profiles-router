@@ -45,19 +45,19 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
   }
 
-  // TODO: After drop 1.1 remove x-client-id from headers - Ticket: TGP-2014
-  val headers: Seq[(String, String)] = if (appConfig.isDrop1_1_enabled) {
-    Seq(
-      ("Content-Type", "application/json"),
-      ("Accept", "application/vnd.hmrc.1.0+json")
+  override def extraApplicationConfig: Map[String, Any] = {
+    super.extraApplicationConfig ++ Map(
+      "features.isDrop1_1_enabled" -> false
     )
-  } else {
+  }
+
+  val headers: Seq[(String, String)] =
     Seq(
       ("Content-Type", "application/json"),
       ("Accept", "application/vnd.hmrc.1.0+json"),
       ("X-Client-ID", "tss")
     )
-  }
+
 
   "when trying to maintain a profile" - {
     "it should return a 200 ok when the request is successful" in {

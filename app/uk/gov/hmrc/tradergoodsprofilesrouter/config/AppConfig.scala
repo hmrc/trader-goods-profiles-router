@@ -48,4 +48,9 @@ class AppConfig @Inject() (config: Configuration) {
     config
       .getOptional[Boolean]("features.drop2Enabled")
       .getOrElse(false)
+
+  lazy val isPatchMethodEnabled: Boolean =
+    config
+      .getOptional[Boolean]("features.patchMethodEnabled")
+      .getOrElse(false)
 }
