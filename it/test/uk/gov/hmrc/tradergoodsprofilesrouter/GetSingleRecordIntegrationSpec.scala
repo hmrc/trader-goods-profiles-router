@@ -430,13 +430,9 @@ class GetSingleRecordIntegrationSpec
   }
 
   private def sendRequestAndWait(url: String) =
-    // TODO: After Drop 1.1 this should be removed and use the request without the X-CLient-ID header -  Ticket: TGP-2014
-    if (appConfig.isClientIdHeaderDisabled)
-      await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
-    else
-      await(
-        wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
-      )
+    await(
+      wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
+    )
 
   private def stubForEis(httpStatus: Int, body: Option[String] = None) =
     stubFor(
