@@ -309,10 +309,11 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
             "X-Correlation-ID" -> "d677693e-9981-4ee3-8574-654981ebe606",
             "Date"             -> "Fri, 17 Dec 2021 09:30:47 GMT",
             "Accept"           -> "application/json",
-            "Authorization"    -> "Bearer c29tZS10b2tlbgo="
-          ) ++ (if (!appConfig.isClientIdHeaderDisabled) Seq("X-Client-ID" -> "tss") else Seq.empty)
+            "Authorization"    -> "Bearer c29tZS10b2tlbgo=",
+            "X-Client-ID"      -> "tss"
+          )
 
-          val stub    = get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
+          val stub = get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
 
           headers.foreach { case (key, value) =>
             stub.withHeader(key, equalTo(value))
@@ -492,13 +493,9 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
   }
 
   private def sendRequestAndWait(url: String) =
-    // TODO: After Drop 1.1 this should be removed and use the request without the X-CLient-ID header -  Ticket: TGP-2014
-    if (appConfig.isClientIdHeaderDisabled)
-      await(wsClient.url(url).withHttpHeaders(("Accept", "application/vnd.hmrc.1.0+json")).get())
-    else
-      await(
-        wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
-      )
+    await(
+      wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
+    )
 
   private def stubForEis(
     httpStatus: Int,
