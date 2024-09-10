@@ -19,6 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response
 import play.api.libs.json._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, Assessment}
 
 import java.time.Instant
@@ -50,14 +51,7 @@ case class CreateOrUpdateRecordResponse(
   updatedDateTime: Instant
 )
 
-object CreateOrUpdateRecordResponse {
-  // TODO: This will need to be removed once EIS/B&T make the same validation on their side
-  private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
-    niphlNumber match {
-      case Some(niphl) => Some(niphl.dropWhile(_ == '-'))
-      case None        => None
-    }
-
+object CreateOrUpdateRecordResponse extends NiphlNumberFilter {
   implicit val reads: Reads[CreateOrUpdateRecordResponse] = (json: JsValue) =>
     JsSuccess(
       CreateOrUpdateRecordResponse(
@@ -113,7 +107,9 @@ object CreateOrUpdateRecordResponse {
           "declarable"               -> createOrUpdateRecordResponse.declarable,
           "ukimsNumber"              -> createOrUpdateRecordResponse.ukimsNumber,
           "nirmsNumber"              -> createOrUpdateRecordResponse.nirmsNumber,
-          "niphlNumber"              -> removeLeadingDashes(createOrUpdateRecordResponse.niphlNumber),
+          "niphlNumber"              -> removeLeadingDashes(
+            createOrUpdateRecordResponse.niphlNumber
+          ), // TODO: This will need to be removed once EIS/B&T make the same validation on their side
           "createdDateTime"          -> createOrUpdateRecordResponse.createdDateTime,
           "updatedDateTime"          -> createOrUpdateRecordResponse.updatedDateTime
         )
