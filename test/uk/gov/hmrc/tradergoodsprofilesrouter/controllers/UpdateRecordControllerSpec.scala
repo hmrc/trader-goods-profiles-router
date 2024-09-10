@@ -83,8 +83,8 @@ class UpdateRecordControllerSpec
       status(result) mustBe OK
     }
 
-    "return OK without validating the X-Client-Id when shouldSendClientIdHeader flag is false" in {
-      when(appConfig.shouldSendClientIdHeader).thenReturn(false)
+    "return OK without validating the X-Client-Id when isClientIdHeaderDisabled flag is true" in {
+      when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
@@ -101,7 +101,7 @@ class UpdateRecordControllerSpec
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
     "return OK validating the the X-Client-Id when isClientIdHeaderDisabled flag is false" in {
-      when(appConfig.shouldSendClientIdHeader).thenReturn(false)
+      when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =
@@ -181,7 +181,7 @@ class UpdateRecordControllerSpec
     }
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
-      when(appConfig.shouldSendClientIdHeader).thenReturn(true)
+
       val errorResponse =
         ErrorResponse(
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",

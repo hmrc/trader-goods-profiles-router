@@ -63,13 +63,13 @@ class AppConfigSpec extends PlaySpec {
       val config =
         """
           |appName=trader-goods-profiles-router
-          |features.shouldSendClientIdHeader=true
+          |features.clientIdHeaderDisabled=true
           |""".stripMargin
-      createAppConfig(config).shouldSendClientIdHeader mustBe true
+      createAppConfig(config).isClientIdHeaderDisabled mustBe true
     }
 
     "return false for clientIdHeaderDisabled when it is missing" in {
-      createAppConfig("").shouldSendClientIdHeader mustBe false
+      createAppConfig("").isClientIdHeaderDisabled mustBe false
     }
 
     "return false for clientIdHeaderDisabled when it is set to false" in {
@@ -78,7 +78,7 @@ class AppConfigSpec extends PlaySpec {
           |appName=trader-goods-profiles-router
           |features.clientIdHeaderDisabled=false
           |""".stripMargin
-      createAppConfig(config).shouldSendClientIdHeader mustBe false
+      createAppConfig(config).isClientIdHeaderDisabled mustBe false
     }
   }
 

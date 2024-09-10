@@ -68,8 +68,8 @@ class RemoveRecordController @Inject() (
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
   private def validateClientIdIfSupported(implicit request: Request[_]): Either[Result, String] =
-    if (appConfig.shouldSendClientIdHeader) validateClientId
-    else Right("")
+    if (appConfig.isClientIdHeaderDisabled) Right("")
+    else validateClientId
 
   private def validateAcceptHeaderIfSupported(implicit request: Request[_]): Either[Result, String] =
     if (appConfig.acceptHeaderDisabled) Right("")

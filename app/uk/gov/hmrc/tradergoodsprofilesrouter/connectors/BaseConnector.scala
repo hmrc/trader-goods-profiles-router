@@ -92,7 +92,7 @@ trait BaseConnector {
   implicit class FilterHeaders(val value: Seq[(String, String)]) {
 
     def withToggleClientID(implicit hc: HeaderCarrier): Seq[(String, String)] =
-      if (appConfig.shouldSendClientIdHeader) value :+ (HeaderNames.ClientId -> getClientId)
+      if (!appConfig.isClientIdHeaderDisabled) value :+ (HeaderNames.ClientId -> getClientId)
       else value
 
     def withToggleAcceptHeader: Seq[(String, String)] =
