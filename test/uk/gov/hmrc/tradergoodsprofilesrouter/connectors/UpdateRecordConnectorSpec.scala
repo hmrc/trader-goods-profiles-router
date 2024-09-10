@@ -51,6 +51,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     when(httpClientV2.patch(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(appConfig.isPatchMethodEnabled).thenReturn(true)
+    when(appConfig.shouldSendClientIdHeader).thenReturn(false)
     when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
       .thenReturn(Future.successful(Right(expectedResponse)))
   }
@@ -94,7 +95,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "call teh PUT method when isPatchMethodEnabled is false" in {
       when(appConfig.isPatchMethodEnabled).thenReturn(false)
-      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
@@ -106,7 +107,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
   "put" should {
 
     "update a record successfully" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
       val result  = await(eisConnector.put(request, correlationId))
@@ -115,7 +116,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
@@ -126,8 +127,8 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "send a request with the right url without clientID" in {
+      when(appConfig.shouldSendClientIdHeader).thenReturn(false)
       when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
@@ -141,8 +142,8 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "include ClientID in the header if enabled" in {
+      when(appConfig.shouldSendClientIdHeader).thenReturn(true)
       when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 

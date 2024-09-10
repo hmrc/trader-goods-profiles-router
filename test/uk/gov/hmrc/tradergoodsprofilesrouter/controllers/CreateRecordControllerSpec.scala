@@ -91,6 +91,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
 
     "return 400 Bad request when mandatory request header X-Client-ID" in {
+      when(appConfig.shouldSendClientIdHeader).thenReturn(true)
       val request = FakeRequest()
         .withBody(createRecordRequestData)
         .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
@@ -116,7 +117,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
     "return CREATED validating the the X-Client-Id when isClientIdHeaderDisabled flag is false" in {
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+      when(appConfig.shouldSendClientIdHeader).thenReturn(false)
       when(createRecordService.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(createRecordResponseData)))
 
@@ -127,7 +128,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
 
     "return CREATED without validating the X-Client-Id when isClientIdHeaderDisabled flag is true" in {
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+      when(appConfig.shouldSendClientIdHeader).thenReturn(true)
 
       when(createRecordService.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(createRecordResponseData)))

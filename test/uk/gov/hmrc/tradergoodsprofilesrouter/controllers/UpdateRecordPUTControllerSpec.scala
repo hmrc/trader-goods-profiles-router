@@ -86,7 +86,7 @@ class UpdateRecordPUTControllerSpec
     }
 
     "return OK without validating the X-Client-Id when isClientIdHeaderDisabled flag is true" in {
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+      when(appConfig.shouldSendClientIdHeader).thenReturn(true)
       when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
@@ -103,7 +103,7 @@ class UpdateRecordPUTControllerSpec
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
     "return OK validating the the X-Client-Id when isClientIdHeaderDisabled flag is false" in {
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+      when(appConfig.shouldSendClientIdHeader).thenReturn(false)
       when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =

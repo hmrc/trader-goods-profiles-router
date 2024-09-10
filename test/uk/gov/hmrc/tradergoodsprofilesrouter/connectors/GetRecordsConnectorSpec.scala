@@ -18,6 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
+import play.api.http.MimeTypes
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -43,10 +44,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
     setUpAppConfig()
-    when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+    when(appConfig.shouldSendClientIdHeader).thenReturn(true)
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
   }
 
@@ -74,10 +75,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     }
 
     "send a request with the right parameters" when {
-      "isClientIdHeaderDisabled feature flag is true" in {
-        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      "shouldSendClientIdHeader feature flag is false" in {
+        when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
         val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
-        when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+        when(appConfig.shouldSendClientIdHeader).thenReturn(false)
 
         when(requestBuilder.execute[Any](any, any))
           .thenReturn(Future.successful(Right(response)))
@@ -91,11 +92,11 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       }
 
       // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-      "isClientIdHeaderDisabled feature flag is false" in {
+      "shouldSendClientIdHeader feature flag is true" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Any](any, any))
           .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
-        when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+        when(appConfig.shouldSendClientIdHeader).thenReturn(true)
 
         await(connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1"))
 
@@ -154,7 +155,13 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       val expectedUrl            =
         s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
-      verify(requestBuilder).setHeader(expectedHeaderForGetMethod(correlationId, "dummyRecordGetBearerToken"): _*)
+
+      val expectedHeaders = expectedCommonHeader(correlationId, "dummyRecordGetBearerToken") ++ Seq(
+        "Accept"      -> MimeTypes.JSON,
+        "X-Client-ID" -> "TSS"
+      )
+
+      verify(requestBuilder).setHeader(expectedHeaders: _*)
       verifyExecuteForHttpReader(correlationId)
     }
   }

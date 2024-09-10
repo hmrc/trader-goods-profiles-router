@@ -50,6 +50,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
   "createRecord" should {
     "create a record successfully" in {
+      when(appConfig.shouldSendClientIdHeader).thenReturn(true)
       val expectedResponse = createOrUpdateRecordEisResponse
 
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
@@ -62,6 +63,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "return an error if EIS return an error" in {
+      when(appConfig.shouldSendClientIdHeader).thenReturn(true)
       when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 
@@ -72,12 +74,12 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "send a request with the right url" when {
-      "isClientIdHeaderDisabled feature flag is true" in {
+      "shouldSendClientIdHeader feature flag is false" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         val expectedResponse = createOrUpdateRecordEisResponse
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(expectedResponse)))
-        when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+        when(appConfig.shouldSendClientIdHeader).thenReturn(false)
 
         await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
 
@@ -91,11 +93,11 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       }
 
       // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-      "isClientIdHeaderDisabled feature flag is false" in {
+      "shouldSendClientIdHeader feature flag is true" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(createOrUpdateRecordEisResponse)))
-        when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+        when(appConfig.shouldSendClientIdHeader).thenReturn(true)
 
         await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
 

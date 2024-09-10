@@ -50,10 +50,11 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-    when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+    when(appConfig.shouldSendClientIdHeader).thenReturn(false)
   }
 
   "remove a record successfully" in {
+    when(appConfig.shouldSendClientIdHeader).thenReturn(true)
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
 
@@ -62,8 +63,8 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
-  "send a request with the right url for remove record when isClientIdHeaderDisabled feature flag is false" in {
-    when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+  "send a request with the right url for remove record when shouldSendClientIdHeader feature flag is true" in {
+    when(appConfig.shouldSendClientIdHeader).thenReturn(true)
 
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
@@ -81,8 +82,8 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
-  "send a request with the right url for remove record when isClientIdHeaderDisabled feature flag is true" in {
-    when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+  "send a request with the right url for remove record when shouldSendClientIdHeader feature flag is false" in {
+    when(appConfig.shouldSendClientIdHeader).thenReturn(false)
     val hc: HeaderCarrier = HeaderCarrier()
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
@@ -102,6 +103,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   }
 
   "return an error if EIS return an error" in {
+    when(appConfig.shouldSendClientIdHeader).thenReturn(true)
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Left(BadRequest("error"))))
 
