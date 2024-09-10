@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.EisGoodsItemRecords
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GoodsItemRecords
 
 trait AuditGetRecordResponseMapping {
 
-  def collectReviewReasonSummary(records: Seq[EisGoodsItemRecords]): Option[Map[String, Int]] = {
+  def collectReviewReasonSummary(records: Seq[GoodsItemRecords]): Option[Map[String, Int]] = {
 
     val reviewReason: Map[String, Int] =
       records
@@ -30,16 +30,16 @@ trait AuditGetRecordResponseMapping {
     Option.when(reviewReason.nonEmpty)(reviewReason)
   }
 
-  def collectAccreditationStatusSummary(records: Seq[EisGoodsItemRecords]): Option[Map[String, Int]] = {
-    val accreditationStatus =
+  def collectAccreditationStatusSummary(records: Seq[GoodsItemRecords]): Option[Map[String, Int]] = {
+    val adviceStatus =
       records
-        .groupBy(_.accreditationStatus)
+        .groupBy(_.adviceStatus)
         .collect { case (k, v) => k.entryName -> v.length }
 
-    Option.when(accreditationStatus.nonEmpty)(accreditationStatus)
+    Option.when(adviceStatus.nonEmpty)(adviceStatus)
   }
 
-  def collectCategorySummary(records: Seq[EisGoodsItemRecords]): Option[Map[Int, Int]] = {
+  def collectCategorySummary(records: Seq[GoodsItemRecords]): Option[Map[Int, Int]] = {
     val categoriesSummary =
       records
         .groupBy(_.category)

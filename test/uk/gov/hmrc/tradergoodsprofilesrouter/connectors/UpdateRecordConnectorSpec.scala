@@ -51,6 +51,8 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     when(httpClientV2.patch(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(appConfig.isPatchMethodEnabled).thenReturn(true)
+    when(appConfig.isPatchMethodEnabled).thenReturn(true)
+
     when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
       .thenReturn(Future.successful(Right(expectedResponse)))
   }
@@ -92,7 +94,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       verifyExecuteForHttpReader(correlationId)
     }
 
-    "call teh PUT method when isPatchMethodEnabled is false" in {
+    "call the PUT method when isPatchMethodEnabled is false" in {
       when(appConfig.isPatchMethodEnabled).thenReturn(false)
       when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
 

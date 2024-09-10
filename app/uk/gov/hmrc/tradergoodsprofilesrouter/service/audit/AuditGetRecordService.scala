@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditGetRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response.AuditGetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.{AuditOutcome, BaseAuditService}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,7 +44,7 @@ class AuditGetRecordService @Inject() (
   def emitAuditGetRecordSucceeded(
     requestDetails: AuditGetRecordRequest,
     requestDateTime: String,
-    response: GetEisRecordsResponse
+    response: GetRecordsResponse
   )(implicit hc: HeaderCarrier): Future[Done] = {
 
     val details = createDetails(

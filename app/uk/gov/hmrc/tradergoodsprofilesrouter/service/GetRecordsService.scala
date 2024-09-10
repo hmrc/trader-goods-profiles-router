@@ -53,8 +53,9 @@ class GetRecordsService @Inject() (
       .fetchRecord(eori, recordId, correlationId, url)
       .map {
         case Right(response)     =>
-          auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, response)
-          Right(GoodsItemRecords(response.goodsItemRecords.head))
+          val getRecordResponse = GetRecordsResponse(response)
+          auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, getRecordResponse)
+          Right(getRecordResponse.goodsItemRecords.head)
         case Left(errorResponse) =>
           logger.warn(s"""[GetRecordsService] - Error when retrieving record for eori: $eori,
              correlationId: $correlationId, status: ${errorResponse.httpStatus},
@@ -99,8 +100,9 @@ class GetRecordsService @Inject() (
       .fetchRecords(eori, correlationId, size, page, lastUpdatedDate)
       .map {
         case Right(response)     =>
-          auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, response)
-          Right(GetRecordsResponse(response))
+          val getRecordResponse = GetRecordsResponse(response)
+          auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, getRecordResponse)
+          Right(getRecordResponse)
         case Left(errorResponse) =>
           logger.warn(s"""[GetRecordsService] - Error when retieving multiple record for eori: $eori,
              correlationId: $correlationId, status: ${errorResponse.httpStatus},
