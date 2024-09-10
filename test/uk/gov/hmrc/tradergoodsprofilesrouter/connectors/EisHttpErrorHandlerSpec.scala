@@ -217,7 +217,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
                 "23"   -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
                 "24"   -> "Optional field comcodeEffectiveToDate is in the wrong format",
                 "25"   -> "The recordId has been provided in the wrong format",
-                "26"   -> "The requested recordId to update doesn’t exist",
+                "26"   -> "The requested recordId doesn’t exist",
                 "27"   -> "There is an ongoing accreditation request and the record can not be updated",
                 "28"   -> "The URL parameter lastUpdatedDate is in the wrong format",
                 "29"   -> "The URL parameter page is in the wrong format",
