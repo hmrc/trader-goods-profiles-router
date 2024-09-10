@@ -18,8 +18,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 
 import org.scalatest.OptionValues
 import org.scalatestplus.play.PlaySpec
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.AccreditationStatus.{NotRequested, Requested, Withdrawn}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, EisGoodsItemRecords, GetEisRecordsResponse, Pagination}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.AdviceStatus._
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Pagination
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{AdviceStatus, GetRecordsResponse, GoodsItemRecords}
 
 import java.time.Instant
 
@@ -52,12 +53,12 @@ class AuditGetRecordResponseMappingSpec extends PlaySpec with OptionValues {
 
   "collectAccreditationStatusSummary" should {
     "collect all the accreditationStatus" in {
-      val accreditationStatus = Seq(NotRequested, Withdrawn, NotRequested, Requested, Withdrawn)
-      val result              = MapperTest.collectAccreditationStatusSummary(
-        createEisMultipleRecordsResponse(accreditationStatuses = accreditationStatus).goodsItemRecords
+      val adviceStatus = Seq(NotRequested, AdviceRequestWithdrawn, NotRequested, Requested, AdviceRequestWithdrawn)
+      val result       = MapperTest.collectAccreditationStatusSummary(
+        createEisMultipleRecordsResponse(adviceStatuses = adviceStatus).goodsItemRecords
       )
 
-      result.value mustBe Map("Not Requested" -> 2, "Withdrawn" -> 2, "Requested" -> 1)
+      result.value mustBe Map("Not Requested" -> 2, "Advice request withdrawn" -> 2, "Requested" -> 1)
     }
 
     "return None if empty records" in {
@@ -92,34 +93,34 @@ class AuditGetRecordResponseMappingSpec extends PlaySpec with OptionValues {
 
   private def createEisMultipleRecordsResponse(
     reviewReasons: Seq[String] = Seq.empty,
-    accreditationStatuses: Seq[AccreditationStatus] = Seq.empty,
+    adviceStatuses: Seq[AdviceStatus] = Seq.empty,
     categories: Seq[Int] = Seq.empty
-  ): GetEisRecordsResponse = {
+  ): GetRecordsResponse = {
 
     val records = for {
-      i                  <- 0 until 5
-      reviewReason        = if (i < reviewReasons.size) Some(reviewReasons(i)) else None
-      accreditationStatus = if (i < accreditationStatuses.size) accreditationStatuses(i) else NotRequested
-      category            = if (i < categories.size) Some(categories(i)) else None
-      record              = createEISGetRecordResponseWithVariable(reviewReason, accreditationStatus, category)
+      i           <- 0 until 5
+      reviewReason = if (i < reviewReasons.size) Some(reviewReasons(i)) else None
+      adviceStatus = if (i < adviceStatuses.size) adviceStatuses(i) else NotRequested
+      category     = if (i < categories.size) Some(categories(i)) else None
+      record       = createEISGetRecordResponseWithVariable(reviewReason, adviceStatus, category)
     } yield record
 
-    GetEisRecordsResponse(records, Pagination(4, 2, 3, Some(3), Some(1)))
+    GetRecordsResponse(records, Pagination(4, 2, 3, Some(3), Some(1)))
 
   }
 
   private def createEISGetRecordResponseWithVariable(
     reviewReason: Option[String],
-    accreditationStatus: AccreditationStatus,
+    adviceStatus: AdviceStatus,
     category: Option[Int]
-  ): EisGoodsItemRecords =
-    EisGoodsItemRecords(
+  ): GoodsItemRecords =
+    GoodsItemRecords(
       eori = "GB123456789011",
       actorId = "GB1234567890",
       recordId = "d677693e-9981-4ee3-8574-654981ebe606",
       traderRef = "BAN001001",
       comcode = "10410100",
-      accreditationStatus = accreditationStatus,
+      adviceStatus = adviceStatus,
       goodsDescription = "Organic bananas",
       countryOfOrigin = "EC",
       category = category,

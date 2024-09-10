@@ -22,6 +22,7 @@ import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateProfileConnector, EisHttpErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.CreateProfileEisRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileResponse
@@ -36,7 +37,8 @@ class CreateProfileService @Inject() (
   appConfig: AppConfig
 )(implicit
   ec: ExecutionContext
-) extends Logging {
+) extends NiphlNumberFilter
+    with Logging {
 
   def createProfile(eori: String, request: CreateProfileRequest)(implicit
     hc: HeaderCarrier
@@ -90,11 +92,5 @@ class CreateProfileService @Inject() (
       }
     } else {
       niphlNumber
-    }
-
-  private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
-    niphlNumber match {
-      case Some(niphl) => Some(niphl.dropWhile(_ == '-'))
-      case None        => None
     }
 }

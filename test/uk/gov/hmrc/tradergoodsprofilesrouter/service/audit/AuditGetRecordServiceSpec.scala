@@ -30,7 +30,8 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditGetRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.AccreditationStatus.{NotRequested, Requested, Withdrawn}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{AdviceStatus, GetRecordsResponse, GoodsItemRecords}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.AdviceStatus._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis._
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
@@ -67,7 +68,7 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
           sut.emitAuditGetRecordSucceeded(
             request,
             dateTime,
-            createEisSingleRecordsResponse
+            createSingleRecordsResponse
           )
         )
 
@@ -88,7 +89,7 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
           sut.emitAuditGetRecordSucceeded(
             request,
             dateTime,
-            createEisSingleRecordsResponse
+            createSingleRecordsResponse
           )
         )
 
@@ -103,7 +104,7 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
           sut.emitAuditGetRecordSucceeded(
             request,
             dateTime,
-            createEisMultipleRecordsResponse
+            createMultipleRecordsResponse
           )
         )
 
@@ -118,13 +119,14 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
           sut.emitAuditGetRecordSucceeded(
             request,
             dateTime,
-            GetEisRecordsResponse(Seq.empty, Pagination(0, 0, 0, None, None))
+            GetRecordsResponse(Seq.empty, Pagination(0, 0, 0, None, None))
           )
         )
 
         result mustBe Done
         verifyAndReturnEvent.detail mustBe expectedDetailsForNoRecordFound
       }
+
     }
 
     "send an event for a failure response" when {
@@ -179,13 +181,13 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
     captor.value
   }
 
-  private def createEisSingleRecordsResponse =
-    GetEisRecordsResponse(
-      Seq(createEISGoodsItemRecord("IMMI Ready", true, Some("mismatch"), false, true, NotRequested, Some(3))),
+  private def createSingleRecordsResponse =
+    GetRecordsResponse(
+      Seq(createGoodsItemRecord("IMMI Ready", true, Some("mismatch"), false, true, NotRequested, Some(3))),
       Pagination(1, 1, 1, None, None)
     )
 
-  private def createEisMultipleRecordsResponse: GetEisRecordsResponse = {
+  private def createMultipleRecordsResponse: GetRecordsResponse = {
 
     val declarable = Seq(
       "IMMI Ready",
@@ -195,45 +197,45 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
       "Not Ready for IMMI"
     )
 
-    val review              = Seq(true, false, true, false, true)
-    val reviewReason        = Seq("Commodity code changed", "Expired", "Expired", "Expired", "Commodity code changed")
-    val locked              = Seq(true, false, true, false, true)
-    val active              = Seq(true, false, true, false, true)
-    val accreditationStatus = Seq(NotRequested, Withdrawn, NotRequested, Requested, Withdrawn)
-    val categories          = Seq(1, 2, 3, 2, 1)
+    val review         = Seq(true, false, true, false, true)
+    val reviewReason   = Seq("Commodity code changed", "Expired", "Expired", "Expired", "Commodity code changed")
+    val locked         = Seq(true, false, true, false, true)
+    val active         = Seq(true, false, true, false, true)
+    val adviceStatuses = Seq(NotRequested, AdviceRequestWithdrawn, NotRequested, Requested, AdviceRequestWithdrawn)
+    val categories     = Seq(1, 2, 3, 2, 1)
 
     val records = for {
       i     <- 0 until 5
-      record = createEISGoodsItemRecord(
+      record = createGoodsItemRecord(
                  declarable(i),
                  review(i),
                  Some(reviewReason(i)),
                  locked(i),
                  active(i),
-                 accreditationStatus(i),
+                 adviceStatuses(i),
                  Some(categories(i))
                )
     } yield record
 
-    GetEisRecordsResponse(records, Pagination(5, 0, 1, None, None))
+    GetRecordsResponse(records, Pagination(5, 0, 1, None, None))
   }
 
-  private def createEISGoodsItemRecord(
+  private def createGoodsItemRecord(
     declarable: String,
     review: Boolean,
     reviewReason: Option[String],
     locked: Boolean,
     active: Boolean,
-    accreditationStatus: AccreditationStatus,
+    adviceStatus: AdviceStatus,
     category: Option[Int]
-  )                                                 =
-    EisGoodsItemRecords(
+  ) =
+    GoodsItemRecords(
       eori = eori,
       actorId = "GB1234567890",
       recordId = recordId,
       traderRef = "BAN001001",
       comcode = "10410100",
-      accreditationStatus = accreditationStatus,
+      adviceStatus = adviceStatus,
       goodsDescription = "Organic bananas",
       countryOfOrigin = "EC",
       category = category,
@@ -254,6 +256,7 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
       createdDateTime = Instant.now,
       updatedDateTime = Instant.now
     )
+
   private def expectedDetailsWithoutQueryParameters =
     Json.obj(
       "clientId"         -> "TSS",
@@ -282,7 +285,7 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
         "categories"          -> Json.obj("3" -> 1),
         "UKIMSNumber"         -> "XIUKIM47699357400020231115081800",
         "NIRMSNumber"         -> "RMS-GB-123456",
-        "NIPHLNumber"         -> "--1234"
+        "NIPHLNumber"         -> "1234"
       )
     )
 
@@ -314,11 +317,11 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
         "reviewReasons"       -> Json.obj("Commodity code changed" -> 2, "Expired" -> 3),
         "lockedCount"         -> 3,
         "activeCount"         -> 3,
-        "adviceStatuses"      -> Json.obj("Not Requested" -> 2, "Withdrawn" -> 2, "Requested" -> 1),
+        "adviceStatuses"      -> Json.obj("Not Requested" -> 2, "Advice request withdrawn" -> 2, "Requested" -> 1),
         "categories"          -> Json.obj("1" -> 2, "2" -> 2, "3" -> 1),
         "UKIMSNumber"         -> "XIUKIM47699357400020231115081800",
         "NIRMSNumber"         -> "RMS-GB-123456",
-        "NIPHLNumber"         -> "--1234"
+        "NIPHLNumber"         -> "1234"
       )
     )
 
@@ -354,7 +357,7 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
         "categories"          -> Json.obj("3" -> 1),
         "UKIMSNumber"         -> "XIUKIM47699357400020231115081800",
         "NIRMSNumber"         -> "RMS-GB-123456",
-        "NIPHLNumber"         -> "--1234"
+        "NIPHLNumber"         -> "1234"
       )
     )
 

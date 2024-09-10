@@ -19,6 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsPath, OWrites, Reads}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 
 import scala.Function.unlift
 
@@ -30,13 +31,7 @@ case class MaintainProfileResponse(
   niphlNumber: Option[String]
 )
 
-object MaintainProfileResponse {
-  // TODO: This will need to be removed once EIS/B&T make the same validation on their side
-  private def removeLeadingDashes(niphlNumber: Option[String]): Option[String] =
-    niphlNumber match {
-      case Some(niphl) => Some(niphl.dropWhile(_ == '-'))
-      case None        => None
-    }
+object MaintainProfileResponse extends NiphlNumberFilter {
 
   implicit val reads: Reads[MaintainProfileResponse] =
     ((JsPath \ "eori").read[String] and
@@ -45,6 +40,7 @@ object MaintainProfileResponse {
       (JsPath \ "nirmsNumber").readNullable[String] and
       (JsPath \ "niphlNumber").readNullable[String])(MaintainProfileResponse.apply _)
 
+  // TODO: removeLeadingDashes will need to be removed once EIS/B&T make the same validation on their side
   implicit lazy val writes: OWrites[MaintainProfileResponse] =
     ((JsPath \ "eori").write[String] and
       (JsPath \ "actorId").write[String] and
