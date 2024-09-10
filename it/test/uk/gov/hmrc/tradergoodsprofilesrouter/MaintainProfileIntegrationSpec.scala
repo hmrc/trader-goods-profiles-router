@@ -54,18 +54,11 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
     )
 
   // TODO: After drop 1.1 remove x-client-id from headers - Ticket: TGP-2014
-  val headers: Seq[(String, String)] = if (appConfig.isClientIdHeaderDisabled) {
-    Seq(
-      ("Content-Type", "application/json"),
-      ("Accept", "application/vnd.hmrc.1.0+json")
-    )
-  } else {
-    Seq(
-      ("Content-Type", "application/json"),
-      ("Accept", "application/vnd.hmrc.1.0+json"),
-      ("X-Client-ID", "tss")
-    )
-  }
+  val headers: Seq[(String, String)] = Seq(
+    ("Content-Type", "application/json"),
+    ("Accept", "application/vnd.hmrc.1.0+json"),
+    ("X-Client-ID", "tss")
+  )
 
   "when trying to maintain a profile" - {
     "it should return a 200 ok when the request is successful" in {
