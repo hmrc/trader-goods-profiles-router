@@ -17,7 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.response
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.audit.AuditGetRecordResponseMapping
 
 case class AuditGetRecordsResponse(
@@ -41,10 +42,10 @@ case class AuditGetRecordsResponse(
   NIPHLNumber: Option[String] = None
 )
 
-object AuditGetRecordsResponse extends AuditGetRecordResponseMapping {
+object AuditGetRecordsResponse extends AuditGetRecordResponseMapping with NiphlNumberFilter {
   implicit val format: OFormat[AuditGetRecordsResponse] = Json.format[AuditGetRecordsResponse]
 
-  def apply(response: GetEisRecordsResponse): AuditGetRecordsResponse = {
+  def apply(response: GetRecordsResponse): AuditGetRecordsResponse = {
 
     val auditResponse = AuditGetRecordsResponse(
       totalRecords = response.pagination.totalRecords,
@@ -70,7 +71,7 @@ object AuditGetRecordsResponse extends AuditGetRecordResponseMapping {
           categories = collectCategorySummary(records),
           UKIMSNumber = response.goodsItemRecords.headOption.map(_.ukimsNumber),
           NIRMSNumber = response.goodsItemRecords.headOption.map(_.nirmsNumber).flatten,
-          NIPHLNumber = response.goodsItemRecords.headOption.map(_.niphlNumber).flatten
+          NIPHLNumber = response.goodsItemRecords.headOption.map(r => removeLeadingDashes(r.niphlNumber)).flatten
         )
     }
   }
