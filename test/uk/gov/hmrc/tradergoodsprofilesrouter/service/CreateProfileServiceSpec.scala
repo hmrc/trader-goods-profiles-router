@@ -38,16 +38,16 @@ import scala.concurrent.{ExecutionContext, Future}
 class CreateProfileServiceSpec extends PlaySpec with EitherValues with BeforeAndAfterEach {
 
   implicit val ex: ExecutionContext = ExecutionContext.global
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier    = HeaderCarrier()
 
-  private val connector = mock[CreateProfileConnector]
-  private val uuidService = mock[UuidService]
-  private val appConfig = mock[AppConfig]
+  private val connector     = mock[CreateProfileConnector]
+  private val uuidService   = mock[UuidService]
+  private val appConfig     = mock[AppConfig]
   private val correlationId = UUID.randomUUID().toString
-  private val eori = "eori"
-  private val actorId = "actorId"
-  private val ukimNumber = "ukims-123"
-  private val muirmNumber = "nuirmNumber-123"
+  private val eori          = "eori"
+  private val actorId       = "actorId"
+  private val ukimNumber    = "ukims-123"
+  private val muirmNumber   = "nuirmNumber-123"
 
   private val sut = new CreateProfileService(connector, uuidService, appConfig)
 
@@ -102,9 +102,7 @@ class CreateProfileServiceSpec extends PlaySpec with EitherValues with BeforeAnd
             correlationId,
             "INTERNAL_SERVER_ERROR",
             "INTERNAL_SERVER_ERROR",
-            Some(Seq(
-              Error("errorCode", "error message", 123
-            )))
+            Some(Seq(Error("errorCode", "error message", 123)))
           )
         )
         when(connector.createProfile(any, any)(any))
@@ -123,12 +121,13 @@ class CreateProfileServiceSpec extends PlaySpec with EitherValues with BeforeAnd
 
         result.left.value mustBe EisHttpErrorResponse(
           INTERNAL_SERVER_ERROR,
-          ErrorResponse(correlationId, UnexpectedErrorCode, "error"))
+          ErrorResponse(correlationId, UnexpectedErrorCode, "error")
+        )
       }
     }
   }
 
-  private def createProfileEisRequest(niphlNumber: String) = {
+  private def createProfileEisRequest(niphlNumber: String) =
     CreateProfileEisRequest(
       eori,
       actorId,
@@ -136,9 +135,8 @@ class CreateProfileServiceSpec extends PlaySpec with EitherValues with BeforeAnd
       Some(muirmNumber),
       Some(niphlNumber)
     )
-  }
 
-  private def createProfileResponse(niphlNumber: String) = {
+  private def createProfileResponse(niphlNumber: String) =
     CreateProfileResponse(
       eori,
       actorId,
@@ -146,7 +144,6 @@ class CreateProfileServiceSpec extends PlaySpec with EitherValues with BeforeAnd
       Some(muirmNumber),
       Some(niphlNumber)
     )
-  }
 
   private def profileRequest(niphlNumber: String): CreateProfileRequest =
     CreateProfileRequest(actorId, ukimNumber, Some(muirmNumber), Some(niphlNumber))
