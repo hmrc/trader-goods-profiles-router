@@ -81,7 +81,7 @@ object ApplicationConstants {
     "Optional field comcodeEffectiveFromDate was missing from body or is in the wrong format"
   val InvalidOrMissingComcodeEffectiveToDate               = "Optional field comcodeEffectiveToDate is in the wrong format"
   val InvalidRecordId                                      = "The recordId has been provided in the wrong format"
-  val RecordIdDoesNotExists                                = "The requested recordId to update doesn’t exist"
+  val RecordIdDoesNotExists                                = "The requested recordId doesn’t exist"
   val InvalidLastUpdatedDate                               = "The URL parameter lastUpdatedDate is in the wrong format"
   val InvalidPage                                          = "The URL parameter page is in the wrong format"
   val InvalidSize                                          = "The URL parameter size is in the wrong format"
