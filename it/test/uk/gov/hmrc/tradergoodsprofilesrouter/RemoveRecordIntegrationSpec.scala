@@ -624,7 +624,7 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         .withHeader("Date", equalTo(timestamp))
         .withHeader("Accept", equalTo("application/json"))
         .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-//        .withHeader("X-Client-ID", equalTo("tss"))
+        .withHeader("X-Client-ID", equalTo("tss"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")
