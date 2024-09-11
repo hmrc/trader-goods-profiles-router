@@ -61,8 +61,7 @@ object ApplicationConstants {
     "Mandatory field countryOfOrigin was missing from body or is in the wrong format"
   val InvalidOrMissingOptionalCountryOfOrigin              =
     "Optional field countryOfOrigin was missing from body or is in the wrong format"
-  val InvalidOrMissingCategory                             = "Mandatory field category was missing from body or is in the wrong format"
-  val InvalidOrMissingOptionalCategory                     = "Optional field category was missing from body or is in the wrong format"
+  val InvalidCategory                                      = "Optional field category is in the wrong format"
   val InvalidOrMissingAssessmentId                         = "Optional field assessmentId is in the wrong format"
   val InvalidAssessmentPrimaryCategory                     = "Optional field primaryCategory is in the wrong format"
   val InvalidAssessmentPrimaryCategoryConditionType        =
@@ -133,7 +132,7 @@ object ApplicationConstants {
   val InvalidOrMissingComcodeCode                              = "011"
   val InvalidOrMissingGoodsDescriptionCode                     = "012"
   val InvalidOrMissingCountryOfOriginCode                      = "013"
-  val InvalidOrMissingCategoryCode                             = "014"
+  val InvalidCategoryCode                                      = "014"
   val InvalidOrMissingAssessmentIdCode                         = "015"
   val InvalidAssessmentPrimaryCategoryCode                     = "016"
   val InvalidAssessmentPrimaryCategoryConditionTypeCode        = "017"
