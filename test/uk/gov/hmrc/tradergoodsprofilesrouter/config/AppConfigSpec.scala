@@ -44,6 +44,14 @@ class AppConfigSpec extends PlaySpec {
       createAppConfig("").isDrop1_1_enabled mustBe false
     }
 
+    "return true for sendClientId" in {
+      configService.sendClientId mustBe true
+    }
+
+    "return true if sendClientId is missing" in {
+      createAppConfig("").sendClientId mustBe true
+    }
+
     "return false if isDrop2Enabled is missing" in {
       createAppConfig("").isDrop2Enabled mustBe false
     }
@@ -94,9 +102,9 @@ class AppConfigSpec extends PlaySpec {
       val validAppConfig =
         """
           |appName=trader-goods-profiles-router
-          |features.patchMethodEnabled=true
+          |features.useEisPatchMethod=true
           |""".stripMargin
-      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe true
+      createAppConfig(validAppConfig).useEisPatchMethod mustBe true
     }
 
     "return false if patchMethodEnabled is false" in {
@@ -105,7 +113,7 @@ class AppConfigSpec extends PlaySpec {
           |appName=trader-goods-profiles-router
           |features.patchMethodEnabled=false
           |""".stripMargin
-      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe false
+      createAppConfig(validAppConfig).useEisPatchMethod mustBe false
     }
 
     "return false if patchMethodEnabled is nor defined" in {
@@ -113,7 +121,7 @@ class AppConfigSpec extends PlaySpec {
         """
           |appName=trader-goods-profiles-router
           |""".stripMargin
-      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe false
+      createAppConfig(validAppConfig).useEisPatchMethod mustBe false
     }
   }
 

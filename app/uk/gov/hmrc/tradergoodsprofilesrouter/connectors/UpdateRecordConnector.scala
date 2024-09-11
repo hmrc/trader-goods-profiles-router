@@ -46,22 +46,26 @@ class UpdateRecordConnector @Inject() (
 
     //Todo: remove this flag when EIS has implemented the PATCH method - TGP-2417.
     // isPatchMethodEnabled is false as default
-    if (appConfig.isPatchMethodEnabled) {
-      logger.info(s"[UpdateRecordConnector] -  calling PATCH method for update record, url $url")
+    if (appConfig.useEisPatchMethod) {
+      logger.info(
+        s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PATCH method for update record"
+      )
       httpClientV2
         .patch(url"$url")
         .setHeader(
-          buildHeaderForPatch(correlationId): _*
+          buildHeaderWithoutClientId(correlationId): _*
         )
         .withBody(toJson(payload))
         .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
     } else {
-      logger.info(s"[UpdateRecordConnector] -  calling PUT method for update record, url $url")
-      put(payload, correlationId)
+      logger.info(
+        s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PUT method for update record"
+      )
+      updateRecord(payload, correlationId)
     }
   }
 
-  def put(
+  private def updateRecord(
     payload: UpdateRecordPayload,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
@@ -80,9 +84,21 @@ class UpdateRecordConnector @Inject() (
       .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
   }
 
-  private def buildHeaderForPatch(
+  def put(
+    payload: UpdateRecordPayload,
     correlationId: String
-  ): Seq[(String, String)] =
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
+    val url = appConfig.hawkConfig.updateRecordUrl
+
+    val headers = buildHeaderWithoutClientId(correlationId)
+    httpClientV2
+      .put(url"$url")
+      .setHeader(headers: _*)
+      .withBody(toJson(payload))
+      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+  }
+
+  private def buildHeaderWithoutClientId(correlationId: String) =
     commonHeaders(
       correlationId,
       appConfig.hawkConfig.updateRecordBearerToken,
@@ -91,4 +107,20 @@ class UpdateRecordConnector @Inject() (
       HeaderNames.Accept      -> MimeTypes.JSON,
       HeaderNames.ContentType -> MimeTypes.JSON
     )
+
+  // TODO: This whole function should be removed once we rename the isDrop1_1_enabled flag to sendClientId
+  override def buildHeadersWithDrop1Toggle(
+    correlationId: String,
+    accessToken: String,
+    forwardedHost: String
+  )(implicit hc: HeaderCarrier): Seq[(String, String)] = {
+
+    val headers = commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
+      HeaderNames.Accept      -> MimeTypes.JSON,
+      HeaderNames.ContentType -> MimeTypes.JSON
+    )
+
+    if (appConfig.sendClientId) headers :+ (HeaderNames.ClientId -> getClientId)
+    else headers
+  }
 }
