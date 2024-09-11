@@ -106,7 +106,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "add the clientID when calling the PUT method" in {
       when(appConfig.useEisPatchMethod).thenReturn(false)
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+      when(appConfig.sendClientId).thenReturn(true)
       when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))

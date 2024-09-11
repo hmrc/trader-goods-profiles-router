@@ -44,6 +44,14 @@ class AppConfigSpec extends PlaySpec {
       createAppConfig("").isDrop1_1_enabled mustBe false
     }
 
+    "return true for sendClientId" in {
+      configService.sendClientId mustBe true
+    }
+
+    "return true if sendClientId is missing" in {
+      createAppConfig("").sendClientId mustBe true
+    }
+
     "return false if isDrop2Enabled is missing" in {
       createAppConfig("").isDrop2Enabled mustBe false
     }

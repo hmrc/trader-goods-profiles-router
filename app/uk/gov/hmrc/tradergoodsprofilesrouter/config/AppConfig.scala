@@ -32,6 +32,12 @@ class AppConfig @Inject() (config: Configuration) {
       .getOptional[Boolean]("features.drop_1_1_enabled")
       .getOrElse(false)
 
+  // TODO: This flag is only used for the PUT/PATCH methods in Update Record. Should replace isDrop1_1_enabled.
+  lazy val sendClientId: Boolean =
+    config
+      .getOptional[Boolean]("features.sendClientId")
+      .getOrElse(true)
+
   lazy val isNiphlPaddingEnabled: Boolean =
     config
       .getOptional[Boolean]("features.niphlPaddingEnabled")

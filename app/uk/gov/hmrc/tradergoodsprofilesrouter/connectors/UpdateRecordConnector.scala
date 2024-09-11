@@ -61,7 +61,6 @@ class UpdateRecordConnector @Inject() (
     }
   }
 
-
   private def updateRecord(
     payload: UpdateRecordPayload,
     correlationId: String
@@ -82,9 +81,9 @@ class UpdateRecordConnector @Inject() (
   }
 
   def put(
-           payload: UpdateRecordPayload,
-           correlationId: String
-         )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
+    payload: UpdateRecordPayload,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
 
     val headers = buildHeaderWithoutClientId(correlationId)
@@ -95,12 +94,29 @@ class UpdateRecordConnector @Inject() (
       .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
   }
 
-  private def buildHeaderWithoutClientId(correlationId: String) = {
-    commonHeaders(correlationId, appConfig.hawkConfig.updateRecordBearerToken,
-      appConfig.hawkConfig.forwardedHost) ++ Seq(
-      HeaderNames.Accept -> MimeTypes.JSON,
+  private def buildHeaderWithoutClientId(correlationId: String) =
+    commonHeaders(
+      correlationId,
+      appConfig.hawkConfig.updateRecordBearerToken,
+      appConfig.hawkConfig.forwardedHost
+    ) ++ Seq(
+      HeaderNames.Accept      -> MimeTypes.JSON,
       HeaderNames.ContentType -> MimeTypes.JSON
     )
-  }
 
+  // TODO: This whole function should be removed once we rename the isDrop1_1_enabled flag to sendClientId
+  override def buildHeadersWithDrop1Toggle(
+    correlationId: String,
+    accessToken: String,
+    forwardedHost: String
+  )(implicit hc: HeaderCarrier): Seq[(String, String)] = {
+
+    val headers = commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
+      HeaderNames.Accept      -> MimeTypes.JSON,
+      HeaderNames.ContentType -> MimeTypes.JSON
+    )
+
+    if (appConfig.sendClientId) headers :+ (HeaderNames.ClientId -> getClientId)
+    else headers
+  }
 }
