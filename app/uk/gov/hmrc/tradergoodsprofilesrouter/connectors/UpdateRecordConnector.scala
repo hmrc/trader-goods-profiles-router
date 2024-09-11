@@ -47,7 +47,9 @@ class UpdateRecordConnector @Inject() (
     //Todo: remove this flag when EIS has implemented the PATCH method - TGP-2417.
     // isPatchMethodEnabled is false as default
     if (appConfig.useEisPatchMethod) {
-      logger.info(s"[UpdateRecordConnector] -  calling PATCH method for update record, url $url")
+      logger.info(
+        s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PATCH method for update record"
+      )
       httpClientV2
         .patch(url"$url")
         .setHeader(
@@ -56,7 +58,9 @@ class UpdateRecordConnector @Inject() (
         .withBody(toJson(payload))
         .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
     } else {
-      logger.info(s"[UpdateRecordConnector] -  calling PUT method for update record, url $url")
+      logger.info(
+        s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PUT method for update record"
+      )
       updateRecord(payload, correlationId)
     }
   }
