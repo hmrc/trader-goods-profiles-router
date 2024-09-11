@@ -94,9 +94,9 @@ class AppConfigSpec extends PlaySpec {
       val validAppConfig =
         """
           |appName=trader-goods-profiles-router
-          |features.patchMethodEnabled=true
+          |features.useEisPatchMethod=true
           |""".stripMargin
-      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe true
+      createAppConfig(validAppConfig).useEisPatchMethod mustBe true
     }
 
     "return false if patchMethodEnabled is false" in {
@@ -105,7 +105,7 @@ class AppConfigSpec extends PlaySpec {
           |appName=trader-goods-profiles-router
           |features.patchMethodEnabled=false
           |""".stripMargin
-      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe false
+      createAppConfig(validAppConfig).useEisPatchMethod mustBe false
     }
 
     "return false if patchMethodEnabled is nor defined" in {
@@ -113,7 +113,7 @@ class AppConfigSpec extends PlaySpec {
         """
           |appName=trader-goods-profiles-router
           |""".stripMargin
-      createAppConfig(validAppConfig).isPatchMethodEnabled mustBe false
+      createAppConfig(validAppConfig).useEisPatchMethod mustBe false
     }
   }
 

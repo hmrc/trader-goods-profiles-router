@@ -46,22 +46,23 @@ class UpdateRecordConnector @Inject() (
 
     //Todo: remove this flag when EIS has implemented the PATCH method - TGP-2417.
     // isPatchMethodEnabled is false as default
-    if (appConfig.isPatchMethodEnabled) {
+    if (appConfig.useEisPatchMethod) {
       logger.info(s"[UpdateRecordConnector] -  calling PATCH method for update record, url $url")
       httpClientV2
         .patch(url"$url")
         .setHeader(
-          buildHeaderForPatch(correlationId): _*
+          buildHeaderWithoutClientId(correlationId): _*
         )
         .withBody(toJson(payload))
         .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
     } else {
       logger.info(s"[UpdateRecordConnector] -  calling PUT method for update record, url $url")
-      put(payload, correlationId)
+      updateRecord(payload, correlationId)
     }
   }
 
-  def put(
+
+  private def updateRecord(
     payload: UpdateRecordPayload,
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
@@ -80,15 +81,26 @@ class UpdateRecordConnector @Inject() (
       .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
   }
 
-  private def buildHeaderForPatch(
-    correlationId: String
-  ): Seq[(String, String)] =
-    commonHeaders(
-      correlationId,
-      appConfig.hawkConfig.updateRecordBearerToken,
-      appConfig.hawkConfig.forwardedHost
-    ) ++ Seq(
-      HeaderNames.Accept      -> MimeTypes.JSON,
+  def put(
+           payload: UpdateRecordPayload,
+           correlationId: String
+         )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
+    val url = appConfig.hawkConfig.updateRecordUrl
+
+    val headers = buildHeaderWithoutClientId(correlationId)
+    httpClientV2
+      .put(url"$url")
+      .setHeader(headers: _*)
+      .withBody(toJson(payload))
+      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+  }
+
+  private def buildHeaderWithoutClientId(correlationId: String) = {
+    commonHeaders(correlationId, appConfig.hawkConfig.updateRecordBearerToken,
+      appConfig.hawkConfig.forwardedHost) ++ Seq(
+      HeaderNames.Accept -> MimeTypes.JSON,
       HeaderNames.ContentType -> MimeTypes.JSON
     )
+  }
+
 }

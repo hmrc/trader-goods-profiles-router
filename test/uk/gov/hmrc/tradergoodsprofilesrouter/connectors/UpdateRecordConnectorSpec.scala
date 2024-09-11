@@ -48,20 +48,21 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.patch(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
-    when(appConfig.isPatchMethodEnabled).thenReturn(true)
+    when(appConfig.useEisPatchMethod).thenReturn(true)
     when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
       .thenReturn(Future.successful(Right(expectedResponse)))
   }
 
   "patch" should {
-    "update a record successfully" in {
-
+    "update a record successfully using the patch method" in {
       when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
       val result  = await(eisConnector.patch(request, correlationId))
 
       result.value mustBe expectedResponse
+      verify(httpClientV2).patch(url"http://localhost:1234/tgp/updaterecord/v1")
+      verify(httpClientV2, never()).put(any)(any)
     }
 
     "return an error if EIS return an error" in {
@@ -91,13 +92,28 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "call the PUT method when isPatchMethodEnabled is false" in {
-      when(appConfig.isPatchMethodEnabled).thenReturn(false)
+      when(appConfig.useEisPatchMethod).thenReturn(false)
       when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
       verify(httpClientV2).put(url"http://localhost:1234/tgp/updaterecord/v1")
       verify(httpClientV2, never()).patch(any)(any)
+      verify(requestBuilder).setHeader(
+        expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
+      )
+    }
+
+    "add the clientID when calling the PUT method" in {
+      when(appConfig.useEisPatchMethod).thenReturn(false)
+      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+
+      await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
+
+      verify(requestBuilder).setHeader(
+        expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
+      )
     }
   }
 
@@ -135,19 +151,6 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       )
       verifyExecuteForHttpReader(correlationId)
 
-    }
-
-    "include ClientID in the header if enabled" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
-      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-
-      await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(
-        expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
-      )
     }
   }
 
