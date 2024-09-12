@@ -662,7 +662,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             "errors"        -> Json.arr(
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field category was missing from body or is in the wrong format",
+                "message"     -> "Optional field category is in the wrong format",
                 "errorNumber" -> 14
               )
             )

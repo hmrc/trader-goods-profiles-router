@@ -234,8 +234,8 @@ trait EisHttpErrorHandler extends Logging {
             InvalidOrMissingCountryOfOrigin,
             InvalidOrMissingCountryOfOriginCode.toInt
           )
-        case InvalidOrMissingCategoryCode                             =>
-          invalidRequestParameterError(InvalidOrMissingCategory, InvalidOrMissingCategoryCode.toInt)
+        case InvalidCategoryCode                                      =>
+          invalidRequestParameterError(InvalidCategory, InvalidCategoryCode.toInt)
         case InvalidOrMissingAssessmentIdCode                         =>
           invalidRequestParameterError(
             InvalidOrMissingAssessmentId,

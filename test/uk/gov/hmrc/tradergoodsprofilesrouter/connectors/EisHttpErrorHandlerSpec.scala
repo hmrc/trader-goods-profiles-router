@@ -205,7 +205,7 @@ class EisHttpErrorHandlerSpec extends PlaySpec {
                 "11"   -> "Mandatory field comcode was missing from body or is in the wrong format",
                 "12"   -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
                 "13"   -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
-                "14"   -> "Mandatory field category was missing from body or is in the wrong format",
+                "14"   -> "Optional field category is in the wrong format",
                 "15"   -> "Optional field assessmentId is in the wrong format",
                 "16"   -> "Optional field primaryCategory is in the wrong format",
                 "17"   -> "Optional field type is in the wrong format",
