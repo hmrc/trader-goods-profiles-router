@@ -90,7 +90,9 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       verifyZeroInteractions(createRecordService)
     }
 
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
+    "return 400 Bad request when mandatory request header X-Client-ID is missing" in {
+      when(appConfig.sendClientId).thenReturn(true)
+
       val request = FakeRequest()
         .withBody(createRecordRequestData)
         .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
