@@ -68,6 +68,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     when(uuidService.uuid).thenReturn(correlationId)
     when(appConfig.hawkConfig.getRecordsMaxSize).thenReturn(500)
     when(appConfig.hawkConfig.getRecordsDefaultSize).thenReturn(500)
+    when(appConfig.sendClientId).thenReturn(true)
   }
   "getTGPRecord" should {
 
@@ -117,8 +118,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
-    "return OK without validating the X-Client-Id when sendClientId flag is true" in {
-      when(appConfig.sendClientId).thenReturn(true)
+    "return OK without validating the X-Client-Id when sendClientId flag is false" in {
+      when(appConfig.sendClientId).thenReturn(false)
       when(getRecordsService.fetchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
 
@@ -130,8 +131,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     }
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-    "return OK validating the the X-Client-Id when sendClientId flag is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
+    "return OK validating the the X-Client-Id when sendClientId flag is true" in {
+      when(appConfig.sendClientId).thenReturn(true)
 
       val result = sut.getTGPRecord("GB123456789001", recordId)(FakeRequest().withHeaders(validHeaders: _*))
       status(result) mustBe OK
@@ -176,8 +177,8 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       status(result) mustBe OK
     }
 
-    "return OK without validating the X-Client-Id when isClientIdHeaderDisabled flag is true" in {
-      when(appConfig.sendClientId).thenReturn(true)
+    "return OK without validating the X-Client-Id when isClientIdHeaderDisabled flag is false" in {
+      when(appConfig.sendClientId).thenReturn(false)
 
       val result = sut.getTGPRecords(eoriNumber)(FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) =>
         name.equalsIgnoreCase("X-Client-ID")
