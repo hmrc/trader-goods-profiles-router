@@ -56,7 +56,6 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
     // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
     "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
 
-
       when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
 

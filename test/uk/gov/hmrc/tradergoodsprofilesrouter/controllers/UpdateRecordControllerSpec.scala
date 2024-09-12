@@ -93,7 +93,7 @@ class UpdateRecordControllerSpec
         sut.patch(eoriNumber, recordId)(
           FakeRequest()
             .withBody(updateRecordRequestData)
-            .withHeaders(validHeaders : _*)
+            .withHeaders(validHeaders: _*)
         )
       status(result) mustBe OK
     }
@@ -192,7 +192,7 @@ class UpdateRecordControllerSpec
       val result = sut.patch(eoriNumber, recordId)(
         FakeRequest()
           .withBody(updateRecordRequestData)
-          .withHeaders(validHeaders : _*)
+          .withHeaders(validHeaders: _*)
       )
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(errorResponse)
