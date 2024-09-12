@@ -48,14 +48,14 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
   override def extraApplicationConfig: Map[String, Any] = {
     super.extraApplicationConfig ++ Map(
-     "features.patchMethodEnabled" -> true
+     "features.useEisPatchMethod" -> false
     )
   }
   "attempting to update a record, when" - {
     "the request is" - {
       "valid, specifically" - {
         "with all request fields" in {
-          stubPatchRequestForEis(OK, Some(updateRecordEisResponseData.toString()))
+          stubPutRequestForEis(OK, Some(updateRecordEisResponseData.toString()))
 
           val response = wsClient
             .url(url)
@@ -73,7 +73,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with optional null request fields" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             OK,
             Some(updateEisRecordResponseDataWithOptionalFields.toString())
           )
@@ -94,7 +94,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with optional condition null request fields" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             OK,
             Some(updateEisRecordResponseDataWithConditionOptionalFields.toString())
           )
@@ -115,7 +115,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with optional some optional null request fields" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             OK,
             Some(updateEisRecordResponseDataWithSomeOptionalFields.toString())
           )
@@ -136,7 +136,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "with only required fields" in {
-          stubPatchRequestForEis(OK, Some(updateRecordRequiredEisResponseData.toString()))
+          stubPutRequestForEis(OK, Some(updateRecordRequiredEisResponseData.toString()))
 
           val response = wsClient
             .url(url)
@@ -156,7 +156,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       }
       "valid but the integration call fails with response:" - {
         "Forbidden" in {
-          stubPatchRequestForEis(FORBIDDEN)
+          stubPutRequestForEis(FORBIDDEN)
 
           val response = wsClient
             .url(url)
@@ -178,7 +178,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Not Found" in {
-          stubPatchRequestForEis(NOT_FOUND)
+          stubPutRequestForEis(NOT_FOUND)
 
           val response = wsClient
             .url(url)
@@ -200,7 +200,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Gateway" in {
-          stubPatchRequestForEis(BAD_GATEWAY)
+          stubPutRequestForEis(BAD_GATEWAY)
 
           val response = wsClient
             .url(url)
@@ -222,7 +222,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Service Unavailable" in {
-          stubPatchRequestForEis(SERVICE_UNAVAILABLE)
+          stubPutRequestForEis(SERVICE_UNAVAILABLE)
 
           val response = wsClient
             .url(url)
@@ -244,7 +244,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error  with 201 errorCode" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             INTERNAL_SERVER_ERROR,
             Some(eisErrorResponse("201", "Internal Server Error"))
           )
@@ -269,7 +269,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error  with 401 errorCode" in {
-          stubPatchRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
+          stubPutRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
 
           val response = wsClient
             .url(url)
@@ -291,7 +291,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error  with 500 errorCode" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             INTERNAL_SERVER_ERROR,
             Some(eisErrorResponse("500", "Internal Server Error"))
           )
@@ -316,7 +316,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 404 errorCode" in {
-          stubPatchRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
+          stubPutRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
 
           val response = wsClient
             .url(url)
@@ -338,7 +338,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 405 errorCode" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             INTERNAL_SERVER_ERROR,
             Some(eisErrorResponse("405", "Method Not Allowed"))
           )
@@ -363,7 +363,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 502 errorCode" in {
-          stubPatchRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
+          stubPutRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
 
           val response = wsClient
             .url(url)
@@ -385,7 +385,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 503 errorCode" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             INTERNAL_SERVER_ERROR,
             Some(eisErrorResponse("503", "Service Unavailable"))
           )
@@ -410,7 +410,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with one error detail" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             BAD_REQUEST,
             Some(s"""
                  |{
@@ -457,7 +457,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with more than one error details" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             BAD_REQUEST,
             Some(s"""
                  |{
@@ -501,7 +501,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               ),
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The requested recordId to update doesn’t exist",
+                "message"     -> "The requested recordId doesn’t exist",
                 "errorNumber" -> 26
               )
             )
@@ -510,7 +510,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with unexpected error" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             BAD_REQUEST,
             Some(s"""
                  |{
@@ -557,7 +557,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request when no error list found" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             BAD_REQUEST,
             Some(s"""
                  |{
@@ -595,7 +595,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Bad Request with invalid json" in {
-          stubPatchRequestForEis(
+          stubPutRequestForEis(
             BAD_REQUEST,
             Some(s"""
                  | {
@@ -851,9 +851,9 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
     }
   }
 
-  private def stubPatchRequestForEis(httpStatus: Int, responseBody: Option[String] = None) =
+  private def stubPutRequestForEis(httpStatus: Int, responseBody: Option[String] = None) =
     stubFor(
-      patch(urlEqualTo(s"$hawkConnectorPath"))
+      put(urlEqualTo(s"$hawkConnectorPath"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

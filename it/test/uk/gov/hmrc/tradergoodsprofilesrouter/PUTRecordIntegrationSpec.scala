@@ -496,7 +496,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
               ),
               Json.obj(
                 "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The requested recordId to update doesn’t exist",
+                "message"     -> "The requested recordId doesn’t exist",
                 "errorNumber" -> 26
               )
             )

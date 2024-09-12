@@ -61,8 +61,7 @@ object ApplicationConstants {
     "Mandatory field countryOfOrigin was missing from body or is in the wrong format"
   val InvalidOrMissingOptionalCountryOfOrigin              =
     "Optional field countryOfOrigin was missing from body or is in the wrong format"
-  val InvalidOrMissingCategory                             = "Mandatory field category was missing from body or is in the wrong format"
-  val InvalidOrMissingOptionalCategory                     = "Optional field category was missing from body or is in the wrong format"
+  val InvalidCategory                                      = "Optional field category is in the wrong format"
   val InvalidOrMissingAssessmentId                         = "Optional field assessmentId is in the wrong format"
   val InvalidAssessmentPrimaryCategory                     = "Optional field primaryCategory is in the wrong format"
   val InvalidAssessmentPrimaryCategoryConditionType        =
@@ -81,7 +80,7 @@ object ApplicationConstants {
     "Optional field comcodeEffectiveFromDate was missing from body or is in the wrong format"
   val InvalidOrMissingComcodeEffectiveToDate               = "Optional field comcodeEffectiveToDate is in the wrong format"
   val InvalidRecordId                                      = "The recordId has been provided in the wrong format"
-  val RecordIdDoesNotExists                                = "The requested recordId to update doesn’t exist"
+  val RecordIdDoesNotExists                                = "The requested recordId doesn’t exist"
   val InvalidLastUpdatedDate                               = "The URL parameter lastUpdatedDate is in the wrong format"
   val InvalidPage                                          = "The URL parameter page is in the wrong format"
   val InvalidSize                                          = "The URL parameter size is in the wrong format"
@@ -133,7 +132,7 @@ object ApplicationConstants {
   val InvalidOrMissingComcodeCode                              = "011"
   val InvalidOrMissingGoodsDescriptionCode                     = "012"
   val InvalidOrMissingCountryOfOriginCode                      = "013"
-  val InvalidOrMissingCategoryCode                             = "014"
+  val InvalidCategoryCode                                      = "014"
   val InvalidOrMissingAssessmentIdCode                         = "015"
   val InvalidAssessmentPrimaryCategoryCode                     = "016"
   val InvalidAssessmentPrimaryCategoryConditionTypeCode        = "017"

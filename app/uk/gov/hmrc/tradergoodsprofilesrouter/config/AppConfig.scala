@@ -28,6 +28,12 @@ class AppConfig @Inject() (config: Configuration) {
 
   // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
 
+  // TODO: This flag is only used for the PUT/PATCH methods in Update Record. Should replace isDrop1_1_enabled.
+  lazy val sendClientId: Boolean =
+    config
+      .getOptional[Boolean]("features.sendClientId")
+      .getOrElse(true)
+
   lazy val isNiphlPaddingEnabled: Boolean =
     config
       .getOptional[Boolean]("features.niphlPaddingEnabled")
@@ -43,8 +49,8 @@ class AppConfig @Inject() (config: Configuration) {
   lazy val isClientIdHeaderDisabled: Boolean =
     config.getOptional[Boolean]("features.clientIdHeaderDisabled").getOrElse(false)
 
-  lazy val isPatchMethodEnabled: Boolean =
+  lazy val useEisPatchMethod: Boolean =
     config
-      .getOptional[Boolean]("features.patchMethodEnabled")
+      .getOptional[Boolean]("features.useEisPatchMethod")
       .getOrElse(false)
 }
