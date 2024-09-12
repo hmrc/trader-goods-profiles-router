@@ -27,6 +27,10 @@ class AppConfig @Inject() (config: Configuration) {
   lazy val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
 
   // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+  lazy val isDrop1_1_enabled: Boolean =
+    config
+      .getOptional[Boolean]("features.drop_1_1_enabled")
+      .getOrElse(false)
 
   // TODO: This flag is only used for the PUT/PATCH methods in Update Record. Should replace isDrop1_1_enabled.
   lazy val sendClientId: Boolean =
@@ -46,8 +50,8 @@ class AppConfig @Inject() (config: Configuration) {
       .getOptional[Boolean]("features.contentTypeHeaderDisabled")
       .getOrElse(false)
 
-  lazy val isClientIdHeaderDisabled: Boolean =
-    config.getOptional[Boolean]("features.clientIdHeaderDisabled").getOrElse(false)
+//  lazy val isClientIdHeaderDisabled: Boolean =
+//    config.getOptional[Boolean]("features.clientIdHeaderDisabled").getOrElse(false)
 
   lazy val useEisPatchMethod: Boolean =
     config

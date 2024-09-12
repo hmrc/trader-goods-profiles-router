@@ -50,7 +50,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-    when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+    when(appConfig.sendClientId).thenReturn(true)
   }
 
   "remove a record successfully" in {
@@ -62,8 +62,8 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
-  "send a request with the right url for remove record when isClientIdHeaderDisabled feature flag is false" in {
-    when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+  "send a request with the right url for remove record when sendClientId feature flag is true" in {
+    //when(appConfig.sendClientId).thenReturn(false)
 
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
@@ -81,8 +81,8 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
-  "send a request with the right url for remove record when isClientIdHeaderDisabled feature flag is true" in {
-    when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+  "send a request with the right url for remove record when sendClientId feature flag is true" in {
+    when(appConfig.sendClientId).thenReturn(true)
     val hc: HeaderCarrier = HeaderCarrier()
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))

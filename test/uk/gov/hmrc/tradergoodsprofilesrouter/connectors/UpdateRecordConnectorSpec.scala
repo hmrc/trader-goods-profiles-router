@@ -142,15 +142,15 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "send a request with the right url without clientID" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(appConfig.sendClientId).thenReturn(true)
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
       verify(requestBuilder).setHeader(
-        expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
+        expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
       )
       verifyExecuteForHttpReader(correlationId)
 
@@ -158,7 +158,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "include ClientID in the header if enabled" in {
       when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+      when(appConfig.sendClientId).thenReturn(true)
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 

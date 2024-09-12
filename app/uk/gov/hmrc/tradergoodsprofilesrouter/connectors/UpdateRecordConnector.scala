@@ -90,7 +90,11 @@ class UpdateRecordConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
 
-    val headers = buildHeaderWithoutClientId(correlationId)
+    val headers = buildHeadersWithDrop1Toggle(
+      correlationId,
+      appConfig.hawkConfig.updateRecordBearerToken,
+      appConfig.hawkConfig.forwardedHost
+    )
     httpClientV2
       .put(url"$url")
       .setHeader(headers: _*)
@@ -120,7 +124,7 @@ class UpdateRecordConnector @Inject() (
       HeaderNames.ContentType -> MimeTypes.JSON
     )
 
-    if (appConfig.sendClientId) headers :+ (HeaderNames.ClientId -> getClientId)
+    if (appConfig.sendClientId) headers :+ (HeaderNames.ClientId -> "TSS")
     else headers
   }
 }

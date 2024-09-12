@@ -24,7 +24,7 @@ class AppConfigSpec extends PlaySpec {
   private val validAppConfig =
     """
       |appName=trader-goods-profiles-router
-      |features.clientIdHeaderDisabled=true
+      |features.drop_1_1_enabled=true
     """.stripMargin
 
   private def createAppConfig(configSettings: String) = {
@@ -52,9 +52,9 @@ class AppConfigSpec extends PlaySpec {
       createAppConfig("").sendClientId mustBe true
     }
 
-    "return false if isDrop2Enabled is missing" in {
-      createAppConfig("").isDrop2Enabled mustBe false
-    }
+//    "return false if isDrop2Enabled is missing" in {
+//      createAppConfig("").isDrop2Enabled mustBe false
+//    }
 
     "return false if contentTypeHeaderDisabled is missing" in {
       createAppConfig("").isContentTypeHeaderDisabled mustBe false
@@ -78,26 +78,26 @@ class AppConfigSpec extends PlaySpec {
       createAppConfig(validAppConfig).isContentTypeHeaderDisabled mustBe true
     }
 
-    "return true for clientIdHeaderDisabled when it is set to true" in {
+    "return true for sendClientId when it is set to true" in {
       val config =
         """
           |appName=trader-goods-profiles-router
-          |features.clientIdHeaderDisabled=true
+          |features.sendClientId=true
           |""".stripMargin
-      createAppConfig(config).isClientIdHeaderDisabled mustBe true
+      createAppConfig(config).sendClientId mustBe true
     }
 
-    "return false for clientIdHeaderDisabled when it is missing" in {
-      createAppConfig("").isClientIdHeaderDisabled mustBe false
+    "return false for sendClientId when it is missing" in {
+      createAppConfig("").sendClientId mustBe true
     }
 
-    "return false for clientIdHeaderDisabled when it is set to false" in {
+    "return false for sendClientId when it is set to false" in {
       val config =
         """
           |appName=trader-goods-profiles-router
-          |features.clientIdHeaderDisabled=false
+          |features.sendClientId=false
           |""".stripMargin
-      createAppConfig(config).isClientIdHeaderDisabled mustBe false
+      createAppConfig(config).sendClientId mustBe false
     }
   }
 

@@ -67,7 +67,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
     reset(mockService, mockUuidService, appConfig)
 
-    when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+    when(appConfig.sendClientId).thenReturn(true)
   }
   "remove" should {
 
@@ -83,8 +83,9 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       status(result) mustBe NO_CONTENT
     }
 
-    "not validate Client Id header when isClientIdHeaderDisabled flag is enabled" in {
-      when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+    "not validate ClientId header when sendClientId flag is not enabled" in {
+
+      when(appConfig.sendClientId).thenReturn(false)
 
       when(mockService.removeRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))

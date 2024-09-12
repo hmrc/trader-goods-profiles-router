@@ -46,6 +46,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(appConfig.sendClientId).thenReturn(true)
   }
 
   "createRecord" should {
@@ -72,12 +73,12 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "send a request with the right url" when {
-      "isClientIdHeaderDisabled feature flag is true" in {
+      "sendClientId feature flag is false" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         val expectedResponse = createOrUpdateRecordEisResponse
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(expectedResponse)))
-        when(appConfig.isClientIdHeaderDisabled).thenReturn(true)
+        when(appConfig.sendClientId).thenReturn(false)
 
         await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
 
@@ -91,11 +92,11 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       }
 
       // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-      "isClientIdHeaderDisabled feature flag is false" in {
+      "sendClientId feature flag is true" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(createOrUpdateRecordEisResponse)))
-        when(appConfig.isClientIdHeaderDisabled).thenReturn(false)
+
 
         await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
 
