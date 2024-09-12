@@ -26,13 +26,7 @@ class AppConfig @Inject() (config: Configuration) {
   lazy val hawkConfig: HawkInstanceConfig = config.get[HawkInstanceConfig]("microservice.services.hawk")
   lazy val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
 
-  // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-  lazy val isDrop1_1_enabled: Boolean =
-    config
-      .getOptional[Boolean]("features.drop_1_1_enabled")
-      .getOrElse(false)
-
-  // TODO: This flag is only used for the PUT/PATCH methods in Update Record. Should replace isDrop1_1_enabled.
+  // TODO: This flag is only used for the PUT/PATCH methods in Update Record. Should replace sendClientId.
   lazy val sendClientId: Boolean =
     config
       .getOptional[Boolean]("features.sendClientId")

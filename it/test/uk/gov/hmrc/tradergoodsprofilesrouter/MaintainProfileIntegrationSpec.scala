@@ -50,7 +50,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
 
   override def extraApplicationConfig: Map[String, Any] =
     super.extraApplicationConfig ++ Map(
-      "features.isDrop1_1_enabled" -> false
+      "features.sendClientId" -> true
     )
 
   // TODO: After drop 1.1 remove x-client-id from headers - Ticket: TGP-2014

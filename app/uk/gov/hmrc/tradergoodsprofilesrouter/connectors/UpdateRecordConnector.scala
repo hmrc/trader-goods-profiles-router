@@ -112,7 +112,7 @@ class UpdateRecordConnector @Inject() (
       HeaderNames.ContentType -> MimeTypes.JSON
     )
 
-  // TODO: This whole function should be removed once we rename the isDrop1_1_enabled flag to sendClientId
+  // TODO: This whole function should be removed once we rename the sendClientId flag to sendClientId
   override def buildHeadersWithDrop1Toggle(
     correlationId: String,
     accessToken: String,
