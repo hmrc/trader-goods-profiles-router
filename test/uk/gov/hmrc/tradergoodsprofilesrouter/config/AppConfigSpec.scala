@@ -52,10 +52,6 @@ class AppConfigSpec extends PlaySpec {
       createAppConfig("").sendClientId mustBe true
     }
 
-//    "return false if isDrop2Enabled is missing" in {
-//      createAppConfig("").isDrop2Enabled mustBe false
-//    }
-
     "return false if contentTypeHeaderDisabled is missing" in {
       createAppConfig("").isContentTypeHeaderDisabled mustBe false
     }
