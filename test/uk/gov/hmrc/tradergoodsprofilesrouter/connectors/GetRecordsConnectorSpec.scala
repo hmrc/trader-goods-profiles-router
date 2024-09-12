@@ -86,7 +86,9 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
 
         val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
         verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-        verify(requestBuilder).setHeader(expectedHeaderForGetMethodWithoutClientId(correlationId, "dummyRecordGetBearerToken"): _*)
+        verify(requestBuilder).setHeader(
+          expectedHeaderForGetMethodWithoutClientId(correlationId, "dummyRecordGetBearerToken"): _*
+        )
         verifyExecuteForHttpReader(correlationId)
       }
 
@@ -95,7 +97,6 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Any](any, any))
           .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
-
 
         await(connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1"))
 

@@ -63,7 +63,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   }
 
   "send a request with the right url for remove record when sendClientId feature flag is true" in {
-    //when(appConfig.sendClientId).thenReturn(false)
+    when(appConfig.sendClientId).thenReturn(true)
 
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
@@ -81,8 +81,8 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
-  "send a request with the right url for remove record when sendClientId feature flag is true" in {
-    when(appConfig.sendClientId).thenReturn(true)
+  "send a request with the right url for remove record when sendClientId feature flag is false" in {
+    when(appConfig.sendClientId).thenReturn(false)
     val hc: HeaderCarrier = HeaderCarrier()
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))

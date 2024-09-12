@@ -97,7 +97,6 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(createOrUpdateRecordEisResponse)))
 
-
         await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
 
         val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"

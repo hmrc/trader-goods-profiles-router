@@ -93,7 +93,7 @@ class UpdateRecordControllerSpec
         sut.patch(eoriNumber, recordId)(
           FakeRequest()
             .withBody(updateRecordRequestData)
-            .withHeaders(validHeaders : _*)
+            .withHeaders(validHeaders: _*)
         )
       status(result) mustBe OK
     }
@@ -179,8 +179,7 @@ class UpdateRecordControllerSpec
       }
     }
 
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
-
+    "return 400 Bad request when X-Client-ID is not sent when sendClientId featureFlag is enabled" in {
       val errorResponse =
         ErrorResponse(
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
@@ -192,14 +191,13 @@ class UpdateRecordControllerSpec
       val result = sut.patch(eoriNumber, recordId)(
         FakeRequest()
           .withBody(updateRecordRequestData)
-          .withHeaders(validHeaders : _*)
+          .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
       )
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
 
     "return 400 Bad request when mandatory request header Accept is missing" in {
-
       val errorResponse =
         ErrorResponse(
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
