@@ -142,32 +142,19 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "send a request with the right url without clientID" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-      when(appConfig.sendClientId).thenReturn(true)
+      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
       verify(requestBuilder).setHeader(
-        expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
+        expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
       )
       verifyExecuteForHttpReader(correlationId)
 
     }
 
-    "include ClientID in the header if enabled" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-      when(appConfig.sendClientId).thenReturn(true)
-
-      await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
-
-      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(
-        expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
-      )
-    }
   }
 
   val updateRecordPayload: JsValue = Json
