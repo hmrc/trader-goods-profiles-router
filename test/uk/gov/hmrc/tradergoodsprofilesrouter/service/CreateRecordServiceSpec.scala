@@ -53,7 +53,7 @@ class CreateRecordServiceSpec
   private val dateTimeService = mock[DateTimeService]
   private val correlationId   = "1234-5678-9012"
   private val dateTime        = Instant.parse("2021-12-17T09:30:47.456Z")
-  private val appConfig = mock[AppConfig]
+  private val appConfig       = mock[AppConfig]
 
   val sut = new CreateRecordService(connector, uuidService, auditService, dateTimeService, appConfig)
 
