@@ -48,7 +48,7 @@ class CreateRecordService @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordResponse]] = {
     val correlationId     = uuidService.uuid
     val requestedDateTime = dateTimeService.timestamp.asStringMilliSeconds
-    val finalRequest = if (appConfig.optionalCategory && request.category.isEmpty) {
+    val finalRequest = if (appConfig.optionalCategory || request.category.isDefined) {
       request
     } else {
       request.copy(category = Some(1))
