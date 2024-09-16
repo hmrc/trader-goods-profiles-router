@@ -68,6 +68,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     reset(mockService, mockUuidService, appConfig)
 
     when(appConfig.sendClientId).thenReturn(true)
+    when(appConfig.sendAcceptHeader).thenReturn(true)
   }
   "remove" should {
 
@@ -100,8 +101,8 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
       status(result) mustBe NO_CONTENT
     }
-    "not validate accept header when feature flag is enabled" in {
-      when(appConfig.acceptHeaderDisabled).thenReturn(true)
+    "not validate accept header when sendAcceptHeader is false" in {
+      when(appConfig.sendAcceptHeader).thenReturn(false)
 
       when(mockService.removeRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))

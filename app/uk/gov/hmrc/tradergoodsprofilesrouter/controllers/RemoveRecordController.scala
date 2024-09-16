@@ -72,6 +72,6 @@ class RemoveRecordController @Inject() (
     else Right("")
 
   private def validateAcceptHeaderIfSupported(implicit request: Request[_]): Either[Result, String] =
-    if (appConfig.acceptHeaderDisabled) Right("")
-    else validateAcceptHeader
+    if (appConfig.sendAcceptHeader) validateAcceptHeader
+    else Right("")
 }
