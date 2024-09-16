@@ -45,28 +45,6 @@ class AppConfigSpec extends PlaySpec {
       createAppConfig("").sendClientId mustBe true
     }
 
-    "return false if contentTypeHeaderDisabled is missing" in {
-      createAppConfig("").isContentTypeHeaderDisabled mustBe false
-    }
-
-    "return false if contentTypeHeaderDisabled is false" in {
-      val validAppConfig =
-        """
-          |appName=trader-goods-profiles-router
-          |features.contentTypeHeaderDisabled=false
-          |""".stripMargin
-      createAppConfig(validAppConfig).isContentTypeHeaderDisabled mustBe false
-    }
-
-    "return true if contentTypeHeaderDisabled is true" in {
-      val validAppConfig =
-        """
-          |appName=trader-goods-profiles-router
-          |features.contentTypeHeaderDisabled=true
-          |""".stripMargin
-      createAppConfig(validAppConfig).isContentTypeHeaderDisabled mustBe true
-    }
-
     "return true for sendClientId when it is set to true" in {
       val config =
         """
