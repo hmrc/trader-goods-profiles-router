@@ -50,7 +50,7 @@ class GetSingleRecordIntegrationSpec
 
   override def extraApplicationConfig: Map[String, Any] = {
     super.extraApplicationConfig ++ Map(
-      "features.isDrop1_1_enabled" -> false
+      "features.sendClientId" -> true
     )
   }
 

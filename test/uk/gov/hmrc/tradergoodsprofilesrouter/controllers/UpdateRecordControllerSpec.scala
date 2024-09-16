@@ -69,6 +69,7 @@ class UpdateRecordControllerSpec
     reset(mockUuidService, updateRecordService)
 
     when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+    when(appConfig.sendClientId).thenReturn(true)
   }
   "PATCH /records" should {
 
@@ -83,8 +84,8 @@ class UpdateRecordControllerSpec
       status(result) mustBe OK
     }
 
-    "return OK without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+    "return OK validating the X-Client-Id when sendClientId flag is true" in {
+
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
 
@@ -92,16 +93,14 @@ class UpdateRecordControllerSpec
         sut.patch(eoriNumber, recordId)(
           FakeRequest()
             .withBody(updateRecordRequestData)
-            .withHeaders(validHeaders.filterNot { case (name, _) =>
-              name.equalsIgnoreCase("X-Client-ID")
-            }: _*)
+            .withHeaders(validHeaders: _*)
         )
       status(result) mustBe OK
     }
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
-    "return OK validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+    "return OK validating the the X-Client-Id when sendClientId flag is false" in {
+      when(appConfig.sendClientId).thenReturn(false)
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =
@@ -180,8 +179,7 @@ class UpdateRecordControllerSpec
       }
     }
 
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
-
+    "return 400 Bad request when X-Client-ID is not sent when sendClientId featureFlag is enabled" in {
       val errorResponse =
         ErrorResponse(
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
@@ -200,7 +198,6 @@ class UpdateRecordControllerSpec
     }
 
     "return 400 Bad request when mandatory request header Accept is missing" in {
-
       val errorResponse =
         ErrorResponse(
           "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",

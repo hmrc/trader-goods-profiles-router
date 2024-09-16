@@ -46,11 +46,10 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     when(dateTimeService.timestamp).thenReturn(dateTime)
   }
 
-  override def extraApplicationConfig: Map[String, Any] = {
+  override def extraApplicationConfig: Map[String, Any] =
     super.extraApplicationConfig ++ Map(
-      "features.isDrop1_1_enabled" -> false
+      "features.sendClientId" -> true
     )
-  }
 
   "attempting to get records, when" - {
     "the request is" - {
@@ -315,10 +314,11 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
             "X-Correlation-ID" -> "d677693e-9981-4ee3-8574-654981ebe606",
             "Date"             -> "Fri, 17 Dec 2021 09:30:47 GMT",
             "Accept"           -> "application/json",
-            "Authorization"    -> "Bearer c29tZS10b2tlbgo="
-          ) ++ Seq("X-Client-ID" -> "tss")
+            "Authorization"    -> "Bearer c29tZS10b2tlbgo=",
+            "X-Client-ID"      -> "tss"
+          )
 
-          val stub    = get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
+          val stub = get(urlEqualTo(s"$hawkConnectorPath/$eori?size=500"))
 
           headers.foreach { case (key, value) =>
             stub.withHeader(key, equalTo(value))
@@ -498,12 +498,9 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
   }
 
   private def sendRequestAndWait(url: String) =
-      await(
-        wsClient
-          .url(url)
-          .withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json"))
-          .get()
-      )
+    await(
+      wsClient.url(url).withHttpHeaders(("X-Client-ID", "tss"), ("Accept", "application/vnd.hmrc.1.0+json")).get()
+    )
 
   private def stubForEis(
     httpStatus: Int,

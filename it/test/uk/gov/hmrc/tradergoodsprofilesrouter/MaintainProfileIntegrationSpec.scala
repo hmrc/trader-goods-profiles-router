@@ -17,12 +17,14 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.{reset, when}
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, reset, when}
 import org.scalatest.BeforeAndAfterEach
+import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
@@ -30,10 +32,11 @@ import java.time.Instant
 
 class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
-  val eori          = "GB123456789001"
-  val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime      = "2021-12-17T09:30:47.456Z"
-  val timestamp     = "Fri, 17 Dec 2021 09:30:47 Z"
+  val eori              = "GB123456789001"
+  val correlationId     = "d677693e-9981-4ee3-8574-654981ebe606"
+  val dateTime          = "2021-12-17T09:30:47.456Z"
+  val timestamp         = "Fri, 17 Dec 2021 09:30:47 Z"
+  private val appConfig = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   override def hawkConnectorPath: String = "/tgp/maintainprofile/v1"
 
@@ -45,19 +48,17 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
   }
 
-  override def extraApplicationConfig: Map[String, Any] = {
+  override def extraApplicationConfig: Map[String, Any] =
     super.extraApplicationConfig ++ Map(
-      "features.isDrop1_1_enabled" -> false
-    )
-  }
-
-  val headers: Seq[(String, String)] =
-    Seq(
-      ("Content-Type", "application/json"),
-      ("Accept", "application/vnd.hmrc.1.0+json"),
-      ("X-Client-ID", "tss")
+      "features.sendClientId" -> true
     )
 
+  // TODO: After drop 1.1 remove x-client-id from headers - Ticket: TGP-2014
+  val headers: Seq[(String, String)] = Seq(
+    ("Content-Type", "application/json"),
+    ("Accept", "application/vnd.hmrc.1.0+json"),
+    ("X-Client-ID", "tss")
+  )
 
   "when trying to maintain a profile" - {
     "it should return a 200 ok when the request is successful" in {

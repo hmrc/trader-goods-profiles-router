@@ -45,6 +45,8 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
+    when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
+    when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.patch(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
@@ -152,6 +154,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       verifyExecuteForHttpReader(correlationId)
 
     }
+
   }
 
   val updateRecordPayload: JsValue = Json

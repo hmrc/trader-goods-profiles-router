@@ -90,7 +90,9 @@ class UpdateRecordConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
 
-    val headers = buildHeaderWithoutClientId(correlationId)
+    val headers = buildHeaderWithoutClientId(
+      correlationId
+    )
     httpClientV2
       .put(url"$url")
       .setHeader(headers: _*)
@@ -108,19 +110,4 @@ class UpdateRecordConnector @Inject() (
       HeaderNames.ContentType -> MimeTypes.JSON
     )
 
-  // TODO: This whole function should be removed once we rename the isDrop1_1_enabled flag to sendClientId
-  override def buildHeadersWithDrop1Toggle(
-    correlationId: String,
-    accessToken: String,
-    forwardedHost: String
-  )(implicit hc: HeaderCarrier): Seq[(String, String)] = {
-
-    val headers = commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
-      HeaderNames.Accept      -> MimeTypes.JSON,
-      HeaderNames.ContentType -> MimeTypes.JSON
-    )
-
-    if (appConfig.sendClientId) headers :+ (HeaderNames.ClientId -> getClientId)
-    else headers
-  }
 }

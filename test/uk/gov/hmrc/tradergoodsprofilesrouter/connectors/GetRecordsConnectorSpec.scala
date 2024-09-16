@@ -43,10 +43,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
     setUpAppConfig()
-    when(appConfig.isDrop1_1_enabled).thenReturn(true)
+    when(appConfig.sendClientId).thenReturn(true)
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
   }
 
@@ -74,10 +74,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     }
 
     "send a request with the right parameters" when {
-      "isDrop1_1_enabled feature flag is true" in {
-        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      "sendClientId feature flag is false" in {
+        when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
         val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
-        when(appConfig.isDrop1_1_enabled).thenReturn(true)
+        when(appConfig.sendClientId).thenReturn(false)
 
         when(requestBuilder.execute[Any](any, any))
           .thenReturn(Future.successful(Right(response)))
@@ -86,16 +86,17 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
 
         val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
         verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-        verify(requestBuilder).setHeader(expectedHeaderForGetMethod(correlationId, "dummyRecordGetBearerToken"): _*)
+        verify(requestBuilder).setHeader(
+          expectedHeaderForGetMethodWithoutClientId(correlationId, "dummyRecordGetBearerToken"): _*
+        )
         verifyExecuteForHttpReader(correlationId)
       }
 
       // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-      "isDrop1_1_enabled feature flag is false" in {
+      "sendClientId feature flag is true" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Any](any, any))
           .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
-        when(appConfig.isDrop1_1_enabled).thenReturn(false)
 
         await(connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1"))
 
@@ -103,7 +104,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
         verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
 
         val expectedHeaderWithClientId =
-          expectedHeaderForGetMethod(correlationId, "dummyRecordGetBearerToken") :+ ("X-Client-ID" -> "TSS")
+          expectedHeaderForGetMethod(correlationId, "dummyRecordGetBearerToken")
         verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
         verifyExecuteForHttpReader(correlationId)
       }

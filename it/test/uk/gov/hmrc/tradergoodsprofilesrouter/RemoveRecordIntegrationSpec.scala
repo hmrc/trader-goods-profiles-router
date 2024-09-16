@@ -44,6 +44,7 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
+
   }
 
   "attempting to remove record, when" - {
@@ -624,7 +625,6 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         .withHeader("Date", equalTo(timestamp))
         .withHeader("Accept", equalTo("application/json"))
         .withHeader("Authorization", equalTo("Bearer c29tZS10b2tlbgo="))
-        .withHeader("X-Client-ID", equalTo("tss"))
         .willReturn(
           aResponse()
             .withHeader("Content-Type", "application/json")

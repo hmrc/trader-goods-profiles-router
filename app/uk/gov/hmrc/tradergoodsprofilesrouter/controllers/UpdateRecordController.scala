@@ -96,6 +96,6 @@ class UpdateRecordController @Inject() (
 
   // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
   private def validateClientIdIfSupported(implicit request: Request[_]) =
-    if (!appConfig.isDrop1_1_enabled) validateClientId
+    if (appConfig.sendClientId) validateClientId
     else Right("")
 }

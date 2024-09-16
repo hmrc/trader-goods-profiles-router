@@ -60,7 +60,7 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
         val expectedUrl = s"http://localhost:1234/tgp/getprofile/v1/$eori"
         verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
         verify(requestBuilder).setHeader(
-          expectedHeaderForGetMethod(correlationId, "dummyGetProfileBearerToken"): _*
+          expectedHeaderForGetMethodWithoutClientId(correlationId, "dummyGetProfileBearerToken"): _*
         )
         verifyExecuteForHttpReader(correlationId)
       }

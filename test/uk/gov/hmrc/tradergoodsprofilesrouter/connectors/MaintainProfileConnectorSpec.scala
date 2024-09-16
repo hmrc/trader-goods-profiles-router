@@ -49,12 +49,12 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(appConfig.sendClientId).thenReturn(true)
   }
 
   "maintain Profile" should {
     // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
     "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
 
       when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
@@ -73,8 +73,8 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
     }
 
     // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
-    "return a 200 ok if EIS successfully without x-client-id when isDrop1_1_enabled is true" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+    "return a 200 ok if EIS successfully without x-client-id when sendClientid is false" in {
+      when(appConfig.sendClientId).thenReturn(false)
       when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
       when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
@@ -104,7 +104,6 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
     }
 
     "return an error if EIS returns one" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
       when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 

@@ -90,7 +90,9 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       verifyZeroInteractions(createRecordService)
     }
 
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
+    "return 400 Bad request when mandatory request header X-Client-ID is missing" in {
+      when(appConfig.sendClientId).thenReturn(true)
+
       val request = FakeRequest()
         .withBody(createRecordRequestData)
         .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
@@ -115,8 +117,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     }
 
     // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
-    "return CREATED validating the the X-Client-Id when drop_1_1_enabled flag is false" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(false)
+    "return CREATED validating the the X-Client-Id when sendClientId flag is false" in {
+      when(appConfig.sendClientId).thenReturn(false)
       when(createRecordService.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(createRecordResponseData)))
 
@@ -126,8 +128,8 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       status(result) mustBe CREATED
     }
 
-    "return CREATED without validating the X-Client-Id when drop_1_1_enabled flag is true" in {
-      when(appConfig.isDrop1_1_enabled).thenReturn(true)
+    "return CREATED without validating the X-Client-Id when sendClientId flag is true" in {
+      when(appConfig.sendClientId).thenReturn(true)
 
       when(createRecordService.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(createRecordResponseData)))

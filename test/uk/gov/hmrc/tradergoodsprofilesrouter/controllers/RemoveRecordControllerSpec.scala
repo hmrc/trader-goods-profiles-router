@@ -17,6 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import org.mockito.ArgumentMatchersSugar.any
+import org.mockito.Mockito.RETURNS_DEEP_STUBS
 import org.mockito.MockitoSugar.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
@@ -41,7 +42,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
   private val mockService     = mock[RemoveRecordService]
   private val mockUuidService = mock[UuidService]
-  private val appConfig       = mock[AppConfig]
+  private val appConfig       = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   private val eori     = "GB123456789011"
   private val actorId  = "GB123456789011"
@@ -66,7 +67,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
     reset(mockService, mockUuidService, appConfig)
 
-    when(appConfig.isDrop2Enabled).thenReturn(false)
+    when(appConfig.sendClientId).thenReturn(true)
   }
   "remove" should {
 
@@ -82,21 +83,36 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       status(result) mustBe NO_CONTENT
     }
 
-    "not validate headers when drop2 feature flag is enabled" in {
+    "not validate ClientId header when sendClientId flag is not enabled" in {
+
+      when(appConfig.sendClientId).thenReturn(false)
+
       when(mockService.removeRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
-      when(appConfig.isDrop2Enabled).thenReturn(true)
 
-      val result = controller.remove(eori, recordId, actorId)(FakeRequest())
+      val headersWithoutClientId: Seq[(String, String)] = validHeaders.filterNot { case (name, _) =>
+        name.equalsIgnoreCase("X-Client-ID")
+      }
+
+      val result = controller.remove(eori, recordId, actorId)(
+        FakeRequest().withHeaders(headersWithoutClientId: _*)
+      )
 
       status(result) mustBe NO_CONTENT
     }
     "not validate accept header when feature flag is enabled" in {
-      when(mockService.removeRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Right(NO_CONTENT)))
       when(appConfig.acceptHeaderDisabled).thenReturn(true)
 
-      val result = controller.remove(eori, recordId, actorId)(FakeRequest())
+      when(mockService.removeRecord(any, any, any)(any))
+        .thenReturn(Future.successful(Right(NO_CONTENT)))
+
+      val headersWithoutClientId: Seq[(String, String)] = validHeaders.filterNot { case (name, _) =>
+        name.equalsIgnoreCase("Accept")
+      }
+
+      val result = controller.remove(eori, recordId, actorId)(
+        FakeRequest().withHeaders(headersWithoutClientId: _*)
+      )
 
       status(result) mustBe NO_CONTENT
     }

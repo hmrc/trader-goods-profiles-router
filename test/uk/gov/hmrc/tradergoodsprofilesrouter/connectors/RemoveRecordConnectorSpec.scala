@@ -50,7 +50,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
-    when(appConfig.isDrop2Enabled).thenReturn(false)
+    when(appConfig.sendClientId).thenReturn(true)
   }
 
   "remove a record successfully" in {
@@ -62,7 +62,9 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
-  "send a request with the right url for remove record when drop2Enabled feature flag is false" in {
+  "send a request with the right url for remove record when sendClientId feature flag is true" in {
+    when(appConfig.sendClientId).thenReturn(true)
+
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
 
@@ -79,12 +81,12 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe OK
   }
 
-  "send a request with the right url for remove record when drop2Enabled feature flag is true" in {
+  "send a request with the right url for remove record when sendClientId feature flag is false" in {
+    when(appConfig.sendClientId).thenReturn(false)
     val hc: HeaderCarrier = HeaderCarrier()
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
-    when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
-    when(appConfig.isDrop2Enabled).thenReturn(true)
+    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
     val result =
       await(connector.removeRecord(eori, recordId, actorId, correlationId)(hc))
@@ -117,6 +119,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     "X-Forwarded-Host" -> forwardedHost,
     "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
     "Authorization"    -> s"Bearer $accessToken",
+    "Accept"           -> "application/json",
     "Content-Type"     -> MimeTypes.JSON
   )
 }
