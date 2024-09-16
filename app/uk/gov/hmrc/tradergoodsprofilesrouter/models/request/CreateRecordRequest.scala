@@ -49,7 +49,7 @@ object CreateRecordRequest {
       (JsPath \ "comcode").read(validComcode) and
       (JsPath \ "goodsDescription").read(lengthBetween(1, 512)) and
       (JsPath \ "countryOfOrigin").read(lengthBetween(1, 2).andKeep(verifying(isValidCountryCode))) and
-      (JsPath \ "category").readNullableWithDefault(Some(1))(
+      (JsPath \ "category").readNullable(
         verifying[Int](category => category >= 1 && category <= 3)
       ) and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
