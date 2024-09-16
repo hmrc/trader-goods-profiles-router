@@ -96,11 +96,8 @@ trait BaseConnector {
       else value
 
     def withToggleAcceptHeader: Seq[(String, String)] =
-      if (!appConfig.acceptHeaderDisabled) value :+ HeaderNames.Accept -> MimeTypes.JSON
+      if (appConfig.sendAcceptHeader) value :+ HeaderNames.Accept -> MimeTypes.JSON
       else value
 
-    def withToggleContentTypeHeader: Seq[(String, String)] =
-      if (!appConfig.isContentTypeHeaderDisabled) value :+ HeaderNames.ContentType -> MimeTypes.JSON
-      else value
   }
 }

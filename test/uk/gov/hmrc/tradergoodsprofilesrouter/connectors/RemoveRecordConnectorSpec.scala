@@ -51,6 +51,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
     when(appConfig.sendClientId).thenReturn(true)
+    when(appConfig.sendAcceptHeader).thenReturn(true)
   }
 
   "remove a record successfully" in {
@@ -84,6 +85,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   "send a request with the right url for remove record when sendClientId feature flag is false" in {
     when(appConfig.sendClientId).thenReturn(false)
     val hc: HeaderCarrier = HeaderCarrier()
+
     when(requestBuilder.execute[Either[Result, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
     when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
@@ -93,7 +95,49 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
     val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
     verify(httpClientV2).put(url"$expectedUrl")(hc)
-    verify(requestBuilder).setHeader(expectedHeaderForDrop2(correlationId, "dummyRecordRemoveBearerToken"): _*)
+    verify(requestBuilder).setHeader(expectedHeaderWithoutClientId(correlationId, "dummyRecordRemoveBearerToken"): _*)
+    verify(requestBuilder)
+      .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
+    verifyExecuteForStatusHttpReader(correlationId)
+
+    result.value mustBe OK
+  }
+
+  "send a request with the right url for remove record when sendAcceptHeader feature flag is true" in {
+    when(appConfig.sendAcceptHeader).thenReturn(true)
+
+    when(requestBuilder.execute[Either[Result, Int]](any, any))
+      .thenReturn(Future.successful(Right(OK)))
+
+    val result =
+      await(connector.removeRecord(eori, recordId, actorId, correlationId))
+
+    val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
+    verify(httpClientV2).put(url"$expectedUrl")
+    verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
+    verify(requestBuilder)
+      .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
+    verifyExecuteForStatusHttpReader(correlationId)
+
+    result.value mustBe OK
+  }
+
+  "send a request with the right url for remove record when sendAcceptHeader feature flag is false" in {
+    when(appConfig.sendAcceptHeader).thenReturn(false)
+    when(appConfig.sendClientId).thenReturn(true)
+
+    when(requestBuilder.execute[Either[Result, Int]](any, any))
+      .thenReturn(Future.successful(Right(OK)))
+    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+
+    val result =
+      await(connector.removeRecord(eori, recordId, actorId, correlationId))
+
+    val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
+    verify(httpClientV2).put(url"$expectedUrl")
+    verify(requestBuilder).setHeader(
+      expectedHeaderWithoutAcceptHeader(correlationId, "dummyRecordRemoveBearerToken"): _*
+    )
     verify(requestBuilder)
       .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
     verifyExecuteForStatusHttpReader(correlationId)
@@ -110,7 +154,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.left.value mustBe BadRequest("error")
   }
 
-  private def expectedHeaderForDrop2(
+  private def expectedHeaderWithoutClientId(
     correlationId: String,
     accessToken: String,
     forwardedHost: String = "MDTP"
@@ -121,5 +165,18 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     "Authorization"    -> s"Bearer $accessToken",
     "Accept"           -> "application/json",
     "Content-Type"     -> MimeTypes.JSON
+  )
+
+  private def expectedHeaderWithoutAcceptHeader(
+    correlationId: String,
+    accessToken: String,
+    forwardedHost: String = "MDTP"
+  ): Seq[(String, String)] = Seq(
+    "X-Correlation-ID" -> correlationId,
+    "X-Forwarded-Host" -> forwardedHost,
+    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
+    "Authorization"    -> s"Bearer $accessToken",
+    "Content-Type"     -> MimeTypes.JSON,
+    "X-Client-ID"      -> "TSS"
   )
 }
