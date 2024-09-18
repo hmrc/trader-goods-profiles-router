@@ -23,12 +23,11 @@ sbt run
 
 ### Test the API locally
 
-Notice: You can use the run_local.sh script file to load all needed services and start the trader-goods-profiles service.
 #### Start the services
-* Open a terminal window, type the below command and press enter. This will load locally all the auth services necessary for testing :
+* Open a terminal window, type the below command and press enter. This will load locally all the auth services and TGP services necessary for testing :
 
     ```
-    sm2 --start AUTH_ALL
+    sm2 --start TGP_API
     ```
 
 #### Generate an access token
@@ -365,7 +364,7 @@ To get a sense of the various scenarios, you could look at the integration [test
 
 ## Dev
 
-Before pushing, you can run [verify.sh](./verify.sh) which will run all the tests, as well as check the format.
+Before pushing, you can run [precheck.sh](./precheck.sh) which will run all the tests, as well as check the format.
 
 ### Tests
 
