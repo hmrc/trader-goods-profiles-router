@@ -104,7 +104,7 @@ class GetRecordsService @Inject() (
           auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, getRecordResponse)
           Right(getRecordResponse)
         case Left(errorResponse) =>
-          logger.warn(s"""[GetRecordsService] - Error when retieving multiple record for eori: $eori,
+          logger.warn(s"""[GetRecordsService] - Error when retrieving multiple record for eori: $eori,
              correlationId: $correlationId, status: ${errorResponse.httpStatus},
              body: ${Json.toJson(errorResponse.errorResponse)}""".stripMargin)
 
