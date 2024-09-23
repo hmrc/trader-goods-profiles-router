@@ -107,29 +107,22 @@ trait EisHttpErrorHandler extends Logging {
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         detail.errorCode match {
-          //todo: 200 is only required for GetRecord and 201 only for create. We may
-          // want to refactor this to only use the right code for the right request
-          // as this is assuming that GetRecord also can get a 201 and CreateRecord can also get
-          // a 200
           case "200" | "201" =>
             ErrorResponse(
               correlationId,
               InvalidOrEmptyPayloadCode,
               InvalidOrEmptyPayloadMessage
             )
-
           case "400" =>
             val errors = Try(Json.parse(message).as[ErrorDetail]).toOption
               .map(extractError(correlationId, _))
               .flatten
-
             ErrorResponse(
               correlationId,
               InternalErrorResponseCode,
               InternalErrorResponseMessage,
               errors
             )
-
           case "401" =>
             ErrorResponse(
               correlationId,
@@ -189,7 +182,7 @@ trait EisHttpErrorHandler extends Logging {
     ErrorResponse(
       correlationId,
       BadRequestCode,
-      BadRequestMessage, // Todo: would not be better to add details.errorMessage here instead of bad request as we already node that is a bad request
+      BadRequestMessage,
       extractError(correlationId, detail)
     )
 

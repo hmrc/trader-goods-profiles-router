@@ -94,7 +94,7 @@ class UpdateRecordController @Inject() (
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
-  // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
+  // TODO: After Release 2 this should be removed
   private def validateClientIdIfSupported(implicit request: Request[_]) =
     if (appConfig.sendClientId) validateClientId
     else Right("")

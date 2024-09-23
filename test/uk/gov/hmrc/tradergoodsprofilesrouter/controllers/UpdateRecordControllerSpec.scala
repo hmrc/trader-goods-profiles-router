@@ -98,7 +98,7 @@ class UpdateRecordControllerSpec
       status(result) mustBe OK
     }
 
-    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-1903
+    // TODO: After Release 2 this should be removed
     "return OK validating the the X-Client-Id when sendClientId flag is false" in {
       when(appConfig.sendClientId).thenReturn(false)
       when(updateRecordService.patchRecord(any, any, any)(any))

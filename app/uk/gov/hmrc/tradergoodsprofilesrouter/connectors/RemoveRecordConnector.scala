@@ -27,7 +27,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.RemoveEisRecordR
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
-import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
 class RemoveRecordConnector @Inject() (
@@ -59,7 +58,7 @@ class RemoveRecordConnector @Inject() (
   }
 
   /*
-  ToDo: remove isClientIdHeaderDisabled flag after drop2 - TGP-2029.
+  ToDo: remove isClientIdHeaderDisabled flag after release 2
    The header passed to EIS should have no Accept and ClientId header
    */
   override def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit

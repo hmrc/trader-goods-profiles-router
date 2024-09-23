@@ -67,10 +67,12 @@ class RemoveRecordController @Inject() (
     )
       .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
+  // TODO: After Release 2 this should be removed
   private def validateClientIdIfSupported(implicit request: Request[_]): Either[Result, String] =
     if (appConfig.sendClientId) validateClientId
     else Right("")
 
+  // TODO: After Release 2 this should be removed
   private def validateAcceptHeaderIfSupported(implicit request: Request[_]): Either[Result, String] =
     if (appConfig.sendAcceptHeader) validateAcceptHeader
     else Right("")
