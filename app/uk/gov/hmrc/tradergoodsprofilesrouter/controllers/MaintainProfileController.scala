@@ -21,14 +21,12 @@ import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.mvc.{Action, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.fieldsToErrorCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -50,20 +48,12 @@ class MaintainProfileController @Inject() (
       _                      <- EitherT.fromEither[Future](validateAcceptHeader)
       maintainProfileRequest <-
         EitherT.fromEither[Future](validateRequestBody[MaintainProfileRequest](fieldsToErrorCode))
-      response               <- maintainProfile(eori, maintainProfileRequest)
+      response               <- EitherT(maintainProfileService.maintainProfile(eori, maintainProfileRequest))
+                                  .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
     } yield Ok(Json.toJson(response))
 
     result.merge
   }
-
-  private def maintainProfile(
-    eori: String,
-    maintainProfileRequest: MaintainProfileRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, MaintainProfileResponse] =
-    EitherT(
-      maintainProfileService.maintainProfile(eori, maintainProfileRequest)
-    )
-      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
   // TODO: After Release 2 this should be removed
   private def validateClientIdIfSupported(implicit request: Request[_]) =

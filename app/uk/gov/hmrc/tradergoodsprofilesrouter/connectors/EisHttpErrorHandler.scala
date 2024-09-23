@@ -113,7 +113,7 @@ trait EisHttpErrorHandler extends Logging {
               InvalidOrEmptyPayloadCode,
               InvalidOrEmptyPayloadMessage
             )
-          case "400" =>
+          case "400"         =>
             val errors = Try(Json.parse(message).as[ErrorDetail]).toOption
               .map(extractError(correlationId, _))
               .flatten
@@ -123,39 +123,39 @@ trait EisHttpErrorHandler extends Logging {
               InternalErrorResponseMessage,
               errors
             )
-          case "401" =>
+          case "401"         =>
             ErrorResponse(
               correlationId,
               UnauthorizedCode,
               UnauthorizedMessage
             )
-          case "404" =>
+          case "404"         =>
             ErrorResponse(correlationId, NotFoundCode, NotFoundMessage)
-          case "405" =>
+          case "405"         =>
             ErrorResponse(
               correlationId,
               MethodNotAllowedCode,
               MethodNotAllowedMessage
             )
-          case "500" =>
+          case "500"         =>
             ErrorResponse(
               correlationId,
               InternalServerErrorCode,
               InternalServerErrorMessage
             )
-          case "502" =>
+          case "502"         =>
             ErrorResponse(
               correlationId,
               BadGatewayCode,
               BadGatewayMessage
             )
-          case "503" =>
+          case "503"         =>
             ErrorResponse(
               correlationId,
               ServiceUnavailableCode,
               ServiceUnavailableMessage
             )
-          case _     =>
+          case _             =>
             ErrorResponse(correlationId, UnknownCode, UnknownMessage)
         }
       case JsError(_)           =>

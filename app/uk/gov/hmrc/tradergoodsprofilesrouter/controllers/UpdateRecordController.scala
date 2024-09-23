@@ -21,14 +21,12 @@ import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.mvc.{Action, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, fieldsToErrorCode, optionalFieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{PatchRecordRequest, UpdateRecordRequest}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{UpdateRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -53,7 +51,8 @@ class UpdateRecordController @Inject() (
                                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
       updateRecordRequest <-
         EitherT.fromEither[Future](validateRequestBody[PatchRecordRequest](optionalFieldsToErrorCode))
-      response            <- patchRecord(eori, recordId, updateRecordRequest)
+      response            <- EitherT(updateRecordService.patchRecord(eori, recordId, updateRecordRequest))
+                               .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
     } yield Ok(Json.toJson(response))
 
     result.merge
@@ -66,33 +65,13 @@ class UpdateRecordController @Inject() (
         _                   <- EitherT
                                  .fromEither[Future](validateRecordId(recordId))
                                  .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-        updateRecordRequest <-
-          EitherT.fromEither[Future](validateRequestBody[UpdateRecordRequest](fieldsToErrorCode))
-        response            <- putRecord(eori, recordId, updateRecordRequest)
+        updateRecordRequest <- EitherT.fromEither[Future](validateRequestBody[UpdateRecordRequest](fieldsToErrorCode))
+        response            <- EitherT(updateRecordService.putRecord(eori, recordId, updateRecordRequest))
+                                 .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
       } yield Ok(Json.toJson(response))
 
       result.merge
   }
-
-  private def patchRecord(
-    eori: String,
-    recordId: String,
-    updateRecordRequest: PatchRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] =
-    EitherT(
-      updateRecordService.patchRecord(eori, recordId, updateRecordRequest)
-    )
-      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
-
-  private def putRecord(
-    eori: String,
-    recordId: String,
-    updateRecordRequest: UpdateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] =
-    EitherT(
-      updateRecordService.putRecord(eori, recordId, updateRecordRequest)
-    )
-      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
   // TODO: After Release 2 this should be removed
   private def validateClientIdIfSupported(implicit request: Request[_]) =

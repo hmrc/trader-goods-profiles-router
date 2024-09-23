@@ -20,13 +20,11 @@ import cats.data.EitherT
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json
 import play.api.mvc._
-import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{GetRecordsResponse, GoodsItemRecords}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{GetRecordsService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.{InvalidQueryParameter, InvalidSizeCode}
 
@@ -55,7 +53,8 @@ class GetRecordsController @Inject() (
       _          <- EitherT
                       .fromEither[Future](validateRecordId(recordId))
                       .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
-      recordItem <- getSingleRecord(eori, recordId)
+      recordItem <- EitherT(getRecordService.fetchRecord(eori, recordId, appConfig.hawkConfig.getRecordsUrl))
+                      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
     } yield Ok(Json.toJson(recordItem))
 
     result.merge
@@ -72,7 +71,8 @@ class GetRecordsController @Inject() (
       _         <- EitherT.fromEither[Future](validateAcceptHeader)
       validDate <- validateDate(lastUpdatedDate)
       validSize <- validateMaxSize(size)
-      records   <- getRecords(eori, validSize, page, validDate)
+      records   <- EitherT(getRecordService.fetchRecords(eori, validSize, page, validDate))
+                     .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
     } yield Ok(Json.toJson(records))
 
     result.merge
@@ -92,7 +92,8 @@ class GetRecordsController @Inject() (
             )
           )
         )
-      case _                                                           => EitherT.right(Future.successful(size.getOrElse(appConfig.hawkConfig.getRecordsDefaultSize)))
+
+      case _ => EitherT.right(Future.successful(size.getOrElse(appConfig.hawkConfig.getRecordsDefaultSize)))
     }
 
   private def validateDate(lastUpdateDate: Option[String]): EitherT[Future, Result, Option[Instant]] =
@@ -109,26 +110,6 @@ class GetRecordsController @Inject() (
         )
       )
     )
-
-  private def getRecords(
-    eori: String,
-    size: Int,
-    page: Option[Int],
-    validDate: Option[Instant]
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, GetRecordsResponse] =
-    EitherT(
-      getRecordService.fetchRecords(eori, size, page, validDate)
-    )
-      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
-
-  private def getSingleRecord(
-    eori: String,
-    recordId: String
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, GoodsItemRecords] =
-    EitherT(
-      getRecordService.fetchRecord(eori, recordId, appConfig.hawkConfig.getRecordsUrl)
-    )
-      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
   // TODO: After Release 2 this should be removed
   private def validateClientIdIfSupported(implicit request: Request[_]) =

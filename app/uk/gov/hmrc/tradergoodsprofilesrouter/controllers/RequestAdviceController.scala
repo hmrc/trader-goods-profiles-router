@@ -21,11 +21,10 @@ import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.mvc.{Action, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, fieldsToErrorCode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.RequestAdvice
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RequestAdviceService, UuidService}
 
@@ -51,17 +50,11 @@ class RequestAdviceController @Inject() (
                                   .fromEither[Future](validateRecordId(recordId))
                                   .leftMap(e => BadRequestErrorResponse(uuidService.uuid, Seq(e)).asPresentation)
         requestAdviceRequest <- EitherT.fromEither[Future](validateRequestBody[RequestAdvice](fieldsToErrorCode))
-        _                    <- requestAdvice(eori, recordId, requestAdviceRequest)
+        _                    <- service
+                                  .requestAdvice(eori, recordId, requestAdviceRequest)
+                                  .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
       } yield Created
 
       result.merge
   }
-
-  private def requestAdvice(
-    eori: String,
-    recordId: String,
-    request: RequestAdvice
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, Int] =
-    service.requestAdvice(eori, recordId, request).leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
-
 }

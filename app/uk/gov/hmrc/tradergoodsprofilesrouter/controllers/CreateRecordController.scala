@@ -21,14 +21,12 @@ import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Request, Result}
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.mvc.{Action, ControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.fieldsToErrorCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -49,20 +47,12 @@ class CreateRecordController @Inject() (
       _                   <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _                   <- EitherT.fromEither[Future](validateAcceptHeader)
       createRecordRequest <- EitherT.fromEither[Future](validateRequestBody[CreateRecordRequest](fieldsToErrorCode))
-      response            <- createRecord(eori, createRecordRequest)
+      response            <- EitherT(createRecordService.createRecord(eori, createRecordRequest))
+                               .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
     } yield Created(Json.toJson(response))
 
     result.merge
   }
-
-  private def createRecord(
-    eori: String,
-    createRecordRequest: CreateRecordRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateOrUpdateRecordResponse] =
-    EitherT(
-      createRecordService.createRecord(eori, createRecordRequest)
-    )
-      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 
   // TODO: After Release 2 this should be removed
   private def validateClientIdIfSupported(implicit request: Request[_]) =
