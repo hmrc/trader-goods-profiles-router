@@ -8,14 +8,7 @@ Enterprise Integration Services).
 
 By default, this service runs on port `10904`.
 
-## Running
-
-In order to run the following examples, ensure you first have [trader-goods-profiles-stubs](https://github.com/hmrc/trader-goods-profiles-stubs) running;
-
-
-You can then run this service in a variety of ways.
-
-For sbt:
+To run this service locally with sbt:
 
 ``` 
 sbt run
@@ -24,7 +17,7 @@ sbt run
 ### Test the API locally
 
 #### Start the services
-* Open a terminal window, type the below command and press enter. This will load locally all the auth services and TGP services necessary for testing :
+* Open a terminal window, type the below command and press enter. This will load locally all the auth services and TGP services necessary for testing:
 
     ```
     sm2 --start TGP_API
@@ -51,6 +44,8 @@ sbt run
 * Send the request.
 
 ## Postman collection
+
+Use this postman collection to hit all the endpoints in this service.
 
 [postman collection](TGP_Router.postman_collection.json)
 
