@@ -1,0 +1,881 @@
+{
+	"info": {
+		"_postman_id": "8d47cba6-0518-4971-9fb6-bb3a96c6f191",
+		"name": "TGP Router",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1839159"
+	},
+	"item": [
+		{
+			"name": "Get records",
+			"item": [
+				{
+					"name": "get single record",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "uk.gov.hmrc",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001",
+								"records",
+								"8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get multiple records",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "uk.gov.hmrc",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001/records/?lastUpdatedDate=2021-12-17T09:30:47Z&page=1&size=1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001",
+								"records",
+								""
+							],
+							"query": [
+								{
+									"key": "lastUpdatedDate",
+									"value": "2021-12-17T09:30:47Z"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create record",
+			"item": [
+				{
+					"name": "create record",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actorId\": \"GB987654321098\",\n  \"traderRef\": \"SKU123458\",\n  \"comcode\": \"0810100000\",\n  \"goodsDescription\": \"Bananas\",\n  \"countryOfOrigin\": \"GB\",\n  \"assessments\": [\n    {\n      \"assessmentId\": \"a06846e9a5f61fa4ecf2c4e3b23631fc\",\n      \"primaryCategory\": 1,\n      \"condition\": {\n        \"type\": \"certificate\",\n        \"conditionId\": \"Y923\",\n        \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n        \"conditionTraderText\": \"Excluded product\"\n      }\n    }\n  ],\n  \"supplementaryUnit\": 13,\n  \"measurementUnit\": \"Kilograms\",\n  \"comcodeEffectiveFromDate\": \"2023-01-01T00:00:00Z\",\n  \"comcodeEffectiveToDate\": \"2028-01-01T00:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001/records",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001",
+								"records"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Update records",
+			"item": [
+				{
+					"name": "Update record",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "test",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actorId\": \"GB987654321098\",\n  \"traderRef\": \"SKU123458\",\n  \"comcode\": \"0810100000\",\n  \"goodsDescription\": \"Bananas\",\n  \"countryOfOrigin\": \"GB\",\n  \"assessments\": [\n    {\n      \"assessmentId\": \"a06846e9a5f61fa4ecf2c4e3b23631fc\",\n      \"primaryCategory\": 1,\n      \"condition\": {\n        \"type\": \"certificate\",\n        \"conditionId\": \"Y923\",\n        \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n        \"conditionTraderText\": \"Excluded product\"\n      }\n    }\n  ],\n  \"supplementaryUnit\": 13,\n  \"measurementUnit\": \"Kilograms\",\n  \"comcodeEffectiveFromDate\": \"2023-01-01T00:00:00Z\",\n  \"comcodeEffectiveToDate\": \"2028-01-01T00:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001/records/1a375b27-d7f7-4457-9fdf-9e41b2ddad58",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001",
+								"records",
+								"1a375b27-d7f7-4457-9fdf-9e41b2ddad58"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update record",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "test",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actorId\": \"GB987654321098\",\n  \"traderRef\": \"SKU123458\",\n  \"comcode\": \"0810100000\",\n  \"goodsDescription\": \"Bananas\",\n  \"countryOfOrigin\": \"GB\",\n  \"assessments\": [\n    {\n      \"assessmentId\": \"a06846e9a5f61fa4ecf2c4e3b23631fc\",\n      \"primaryCategory\": 1,\n      \"condition\": {\n        \"type\": \"certificate\",\n        \"conditionId\": \"Y923\",\n        \"conditionDescription\": \"Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law\",\n        \"conditionTraderText\": \"Excluded product\"\n      }\n    }\n  ],\n  \"supplementaryUnit\": 13,\n  \"measurementUnit\": \"Kilograms\",\n  \"comcodeEffectiveFromDate\": \"2023-01-01T00:00:00Z\",\n  \"comcodeEffectiveToDate\": \"2028-01-01T00:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001/records/1a375b27-d7f7-4457-9fdf-9e41b2ddad58",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001",
+								"records",
+								"1a375b27-d7f7-4457-9fdf-9e41b2ddad58"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delete record",
+			"item": [
+				{
+					"name": "Delete record",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "test",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001/records/8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f?actorId=GB123456789001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001",
+								"records",
+								"8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+							],
+							"query": [
+								{
+									"key": "actorId",
+									"value": "GB123456789001"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Download Data",
+			"item": [
+				{
+					"name": "request download data",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "uk.gov.hmrc",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/customs/traders/goods-profiles/GB123456789001/download",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"customs",
+								"traders",
+								"goods-profiles",
+								"GB123456789001",
+								"download"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Advice",
+			"item": [
+				{
+					"name": "requestAdvice",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"actorId\": \"GB9876543210983\",\n    \"requestorName\": \"Mr. Phil Edwards\",\n    \"requestorEmail\": \"Phil.Edwards@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001/records/c4f7f0eb-e65f-49cc-a644-892f61788570/advice",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001",
+								"records",
+								"c4f7f0eb-e65f-49cc-a644-892f61788570",
+								"advice"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "withdraw advice",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"actorId\": \"GB9876543210983\",\n    \"requestorName\": \"Mr. Phil Edwards\",\n    \"requestorEmail\": \"Phil.Edwards@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001/records/c4f7f0eb-e65f-49cc-a644-892f61788570/advice",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001",
+								"records",
+								"c4f7f0eb-e65f-49cc-a644-892f61788570",
+								"advice"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "get profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPk5xGDc69IDAzVrNRKYdDCV5E0uQ6ZmC2zYJhI2z6AaigBMMXeBpwFXMT1MNm0gcdNVf5Kh7Qz/mIlP46JBJFZv6t01r9vh83qacC8dW5aJy4Q1io62SO11G8lWSk2+8MJPRfGV0M+zlL+YxoCr6RHz9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/customs/traders/goods-profiles/GB123456789001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"customs",
+								"traders",
+								"goods-profiles",
+								"GB123456789001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "maintain profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPthIj6qWwE5mZ7iTazqjsc2BtQch3IbGVdI+f5kEYVdADKb2nCun7wHX313UemVqTDk4NwzGDjEsBOJJjcOJWv4Lyafp9BfSSuZCX6OHwcK2xf8YFYWN6oYBtFyigyYW0OMb7n7m8XFnDQtd78VMV9X9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"actorId\": \"GB123456789001\",\n    \"ukimsNumber\": \"XIUKIM47699357400020231115081800\",\n    \"nirmsNumber\": \"RMS-GB-123456\",\n    \"niphlNumber\": \"12345\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/traders/GB123456789001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"traders",
+								"GB123456789001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "BXQ3/Treo4kQCZvVcCqKPthIj6qWwE5mZ7iTazqjsc2BtQch3IbGVdI+f5kEYVdADKb2nCun7wHX313UemVqTDk4NwzGDjEsBOJJjcOJWv4Lyafp9BfSSuZCX6OHwcK2xf8YFYWN6oYBtFyigyYW0OMb7n7m8XFnDQtd78VMV9X9KwIkeIPK/mMlBESjue4V",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Correlation-ID",
+								"value": "3e8dae97-b586-4cef-8511-68ac12da9028",
+								"type": "text"
+							},
+							{
+								"key": "X-Forwarded-Host",
+								"value": "anything you want",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.hmrc.1.0+json",
+								"type": "text"
+							},
+							{
+								"key": "Date",
+								"value": "Mon, 07 Nov 1994 08:49:37 UTC",
+								"type": "text"
+							},
+							{
+								"key": "X-Client-ID",
+								"value": "",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"actorId\": \"GB123456789001\",\n    \"ukimsNumber\": \"XIUKIM47699357400020231115081800\",\n    \"nirmsNumber\": \"RMS-GB-123456\",\n    \"niphlNumber\": \"12345\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:10904/trader-goods-profiles-router/customs/traders/goods-profiles/GB123456789001",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "10904",
+							"path": [
+								"trader-goods-profiles-router",
+								"customs",
+								"traders",
+								"goods-profiles",
+								"GB123456789001"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
