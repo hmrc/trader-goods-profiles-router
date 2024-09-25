@@ -47,7 +47,7 @@ class GetProfileService @Inject() (
           errorResponse
       }
       .recover { case ex: Throwable =>
-        logger.warn(s"""[GetProfileService] - Exception when retrieving profile for eori: $eori,
+        logger.warn(s"""[GetProfileService] - Exception thrown when retrieving profile for eori: $eori,
                correlationId: $correlationId, message: ${ex.getMessage}""".stripMargin)
 
         Left(

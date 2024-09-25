@@ -38,8 +38,8 @@ class GetProfileController @Inject() (
   def getProfile(eori: String): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     (for {
       _        <- EitherT.fromEither[Future](validateAcceptHeader)
-      response <-
-        EitherT(getProfileService.getProfile(eori)).leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
-    } yield (Ok(Json.toJson(response)))).merge
+      response <- EitherT(getProfileService.getProfile(eori))
+                    .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+    } yield Ok(Json.toJson(response))).merge
   }
 }

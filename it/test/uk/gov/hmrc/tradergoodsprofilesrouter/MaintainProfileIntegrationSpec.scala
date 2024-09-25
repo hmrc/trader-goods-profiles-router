@@ -53,7 +53,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
       "features.sendClientId" -> true
     )
 
-  // TODO: After drop 1.1 remove x-client-id from headers - Ticket: TGP-2014
+  // TODO: After Release 2 remove x-client-id from headers
   val headers: Seq[(String, String)] = Seq(
     ("Content-Type", "application/json"),
     ("Accept", "application/vnd.hmrc.1.0+json"),

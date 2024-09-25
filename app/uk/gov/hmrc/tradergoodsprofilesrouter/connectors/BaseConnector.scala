@@ -56,9 +56,7 @@ trait BaseConnector {
     accessToken: String,
     forwardedHost: String
   )(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    //ToDo: remove this and return a header without the client ID after drop1.1.
-    // For drop1.1 client Id has been removed (TGP-1889)
-    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+    // TODO: remove with withToggleClientID after sendClientId feature flag is safely disabled
     commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
       HeaderNames.Accept      -> MimeTypes.JSON,
       HeaderNames.ContentType -> MimeTypes.JSON
@@ -69,9 +67,7 @@ trait BaseConnector {
     accessToken: String,
     forwardedHost: String
   )(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    //ToDo: remove this and return a header without the client ID after drop1.1.
-    // For drop1.1 client Id has been removed (TGP-1889)
-    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+    // TODO: remove with withToggleClientID after sendClientId feature flag is safely disabled
     commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
       HeaderNames.Accept -> MimeTypes.JSON
     ).withToggleClientID

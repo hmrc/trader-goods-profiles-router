@@ -20,13 +20,11 @@ import cats.data.EitherT
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Result}
-import uk.gov.hmrc.http.HeaderCarrier
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.fieldsToErrorCode
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateProfileRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateProfileService, UuidService}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -44,20 +42,11 @@ class CreateProfileController @Inject() (
   def create(eori: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
     val result = for {
       _                    <- EitherT.fromEither[Future](validateAcceptHeader)
-      createProfileRequest <-
-        EitherT.fromEither[Future](validateRequestBody[CreateProfileRequest](fieldsToErrorCode))
-      response             <- createProfile(eori, createProfileRequest)
+      createProfileRequest <- EitherT.fromEither[Future](validateRequestBody[CreateProfileRequest](fieldsToErrorCode))
+      response             <- EitherT(createProfileService.createProfile(eori, createProfileRequest))
+                                .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
     } yield Ok(Json.toJson(response))
 
     result.merge
   }
-
-  private def createProfile(
-    eori: String,
-    createProfileRequest: CreateProfileRequest
-  )(implicit hc: HeaderCarrier): EitherT[Future, Result, CreateProfileResponse] =
-    EitherT(
-      createProfileService.createProfile(eori, createProfileRequest)
-    )
-      .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
 }

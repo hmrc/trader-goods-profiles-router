@@ -19,13 +19,11 @@ GET        /customs/traders/goods-profiles/:eori/download           uk.gov.hmrc.
 
 # Advice
 POST       /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.tradergoodsprofilesrouter.controllers.RequestAdviceController.requestAdvice(eori: String, recordId: String)
-
-PUT        /traders/:eori                                           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)
-
 PUT        /traders/:eori/records/:recordId/advice                  uk.gov.hmrc.tradergoodsprofilesrouter.controllers.WithdrawAdviceController.withdrawAdvice(eori: String, recordId: String)
 
+# Maintain Profile
+PUT        /traders/:eori                                           uk.gov.hmrc.tradergoodsprofilesrouter.controllers.MaintainProfileController.maintain(eori: String)
 
 # Profile
 GET        /customs/traders/goods-profiles/:eori                    uk.gov.hmrc.tradergoodsprofilesrouter.controllers.GetProfileController.getProfile(eori: String)
-
 POST       /customs/traders/goods-profiles/:eori                   uk.gov.hmrc.tradergoodsprofilesrouter.controllers.CreateProfileController.create(eori: String)

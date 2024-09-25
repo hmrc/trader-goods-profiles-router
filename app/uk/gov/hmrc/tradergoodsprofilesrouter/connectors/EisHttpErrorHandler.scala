@@ -107,62 +107,55 @@ trait EisHttpErrorHandler extends Logging {
     Json.parse(message).validate[ErrorDetail] match {
       case JsSuccess(detail, _) =>
         detail.errorCode match {
-          //todo: 200 is only required for GetRecord and 201 only for create. We may
-          // want to refactor this to only use the right code for the right request
-          // as this is assuming that GetRecord also can get a 201 and CreateRecord can also get
-          // a 200
           case "200" | "201" =>
             ErrorResponse(
               correlationId,
               InvalidOrEmptyPayloadCode,
               InvalidOrEmptyPayloadMessage
             )
-
-          case "400" =>
+          case "400"         =>
             val errors = Try(Json.parse(message).as[ErrorDetail]).toOption
               .map(extractError(correlationId, _))
               .flatten
-
             ErrorResponse(
               correlationId,
               InternalErrorResponseCode,
               InternalErrorResponseMessage,
               errors
             )
-
-          case "401" =>
+          case "401"         =>
             ErrorResponse(
               correlationId,
               UnauthorizedCode,
               UnauthorizedMessage
             )
-          case "404" =>
+          case "404"         =>
             ErrorResponse(correlationId, NotFoundCode, NotFoundMessage)
-          case "405" =>
+          case "405"         =>
             ErrorResponse(
               correlationId,
               MethodNotAllowedCode,
               MethodNotAllowedMessage
             )
-          case "500" =>
+          case "500"         =>
             ErrorResponse(
               correlationId,
               InternalServerErrorCode,
               InternalServerErrorMessage
             )
-          case "502" =>
+          case "502"         =>
             ErrorResponse(
               correlationId,
               BadGatewayCode,
               BadGatewayMessage
             )
-          case "503" =>
+          case "503"         =>
             ErrorResponse(
               correlationId,
               ServiceUnavailableCode,
               ServiceUnavailableMessage
             )
-          case _     =>
+          case _             =>
             ErrorResponse(correlationId, UnknownCode, UnknownMessage)
         }
       case JsError(_)           =>
@@ -189,7 +182,7 @@ trait EisHttpErrorHandler extends Logging {
     ErrorResponse(
       correlationId,
       BadRequestCode,
-      BadRequestMessage, // Todo: would not be better to add details.errorMessage here instead of bad request as we already node that is a bad request
+      BadRequestMessage,
       extractError(correlationId, detail)
     )
 

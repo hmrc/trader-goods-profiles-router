@@ -307,7 +307,7 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
-        // TODO: Remove x-client-id - Ticket: TGP-2014
+
         "Bad Request with unexpected error" in {
           val headers = Seq(
             "X-Forwarded-Host" -> "MDTP",
