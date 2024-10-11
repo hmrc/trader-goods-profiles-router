@@ -74,7 +74,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       }
     }
 
-    "send a request with an empty withdraw reason" in {
+    "send request without withdrawReason when not specified" in {
       when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
 
@@ -146,8 +146,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
                   |      },
                   |      "requestDetail":{
                   |         "withdrawDetail":{
-                  |            "withdrawDate":"2024-05-12T12:15:15Z",
-                  |            "withdrawReason": null
+                  |            "withdrawDate":"2024-05-12T12:15:15Z"
                   |         },
                   |         "goodsItems":[
                   |            {
