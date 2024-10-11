@@ -75,16 +75,18 @@ class WithdrawAdviceConnector @Inject() (
   private def createPayload(
     publicRecordID: String,
     withdrawReason: Option[String]
-  )(implicit hc: HeaderCarrier): WithdrawAdvicePayload =
+  )(implicit hc: HeaderCarrier): WithdrawAdvicePayload = {
+    val trimmedWithdrawReason = withdrawReason.map(_.trim)
     WithdrawAdvicePayload(
       WithdrawRequest(
         Some(RequestCommon(Some(getClientId))),
         RequestDetail(
-          WithdrawDetail(dateTimeService.timestamp, withdrawReason),
+          WithdrawDetail(dateTimeService.timestamp, trimmedWithdrawReason),
           Seq(PublicRecordID(publicRecordID))
         )
       )
     )
+  }
 
   override def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {
     val regex = """error:\s*(\w+),\s*message:\s*(.*)""".r

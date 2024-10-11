@@ -38,9 +38,10 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
   private val uuidService   = mock[UuidService]
   private val correlationId = UUID.randomUUID().toString
 
-  private val withdrawDate   = Instant.parse("2024-05-12T12:15:15.678Z")
-  private val recordId       = "recordId"
-  private val withdrawReason = "Withdraw Reason"
+  private val withdrawDate             = Instant.parse("2024-05-12T12:15:15.678Z")
+  private val recordId                 = "recordId"
+  private val withdrawReason           = "Withdraw Reason"
+  private val withdrawReasonWithSpaces = "  Withdraw Reason  "
 
   val sut = new WithdrawAdviceConnector(appConfig, httpClientV2, uuidService, dateTimeService)
 
@@ -82,6 +83,23 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
 
       result.value mustBe NO_CONTENT
       verify(requestBuilder).withBody(createExpectedPayloadWithoutWithdrawReason)
+    }
+
+    "send request with trimmed withdrawReason" in {
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
+        .thenReturn(Future.successful(Right(NO_CONTENT)))
+
+      val result = await(sut.put(recordId, Some(withdrawReasonWithSpaces)))
+
+      result.value mustBe NO_CONTENT
+
+      withClue("should send request to EIS with the right parameters") {
+        val expectedUrl = s"http://localhost:1234/tgp/withdrawaccreditation/v1"
+        verify(httpClientV2).put(url"$expectedUrl")
+        verify(requestBuilder).setHeader(expectedHeader: _*)
+        verify(requestBuilder).withBody(createExpectedPayload)
+        verifyExecuteForStatusHttpReader(correlationId)
+      }
     }
 
     "return an error when EIS httpclient return an error" in {
@@ -156,4 +174,24 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
                   |      }
                   |   }
                   |}""".stripMargin)
+
+//  private def createExpectedPayloadWithTrimmedWithdrawReason: JsValue =
+//    Json.parse(s"""{
+//                  |   "withdrawRequest":{
+//                  |      "requestCommon": {
+//                  |        "clientID": "TSS"
+//                  |      },
+//                  |      "requestDetail":{
+//                  |         "withdrawDetail":{
+//                  |            "withdrawDate":"2024-05-12T12:15:15Z",
+//                  |            "withdrawReason": "$withdrawReasonWithSpaces"
+//                  |         },
+//                  |         "goodsItems":[
+//                  |            {
+//                  |               "publicRecordID":"$recordId"
+//                  |            }
+//                  |         ]
+//                  |      }
+//                  |   }
+//                  |}""".stripMargin)
 }
