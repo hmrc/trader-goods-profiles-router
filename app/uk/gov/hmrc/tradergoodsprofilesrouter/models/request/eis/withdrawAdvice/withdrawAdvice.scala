@@ -34,11 +34,14 @@ object withdrawAdvice {
   object WithdrawDetail {
     import play.api.libs.functional.syntax._
 
-    implicit val format: Reads[WithdrawDetail] = Json.reads[WithdrawDetail]
+    implicit val format: Reads[WithdrawDetail] = (
+      (JsPath \ "withdrawDate").read[String].map(Instant.parse) and
+        (JsPath \ "withdrawReason").readNullable[String].map(_.map(_.trim))
+    )(WithdrawDetail.apply _)
 
     implicit val write: Writes[WithdrawDetail] = (
       (JsPath \ "withdrawDate").write[String] and
-        (JsPath \ "withdrawReason").writeOptionWithNull[String]
+        (JsPath \ "withdrawReason").writeNullable[String]
     )(e => (e.withdrawDate.asStringSeconds, e.withdrawReason))
   }
 
