@@ -174,5 +174,4 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
                   |      }
                   |   }
                   |}""".stripMargin)
-
 }
