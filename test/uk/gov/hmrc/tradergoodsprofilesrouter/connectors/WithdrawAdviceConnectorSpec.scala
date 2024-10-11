@@ -85,7 +85,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       verify(requestBuilder).withBody(createExpectedPayloadWithoutWithdrawReason)
     }
 
-    "send request with trimmed withdrawReason" in {
+    "send a request with trimmed withdrawReason" in {
       when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
 
