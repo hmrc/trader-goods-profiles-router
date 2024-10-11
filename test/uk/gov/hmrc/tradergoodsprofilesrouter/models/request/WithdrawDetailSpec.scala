@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice.withdrawAdvice.WithdrawDetail
 
 import java.time.Instant
 
-class WithdrawDetailSpec extends AnyFlatSpec with Matchers {
+class WithdrawDetailSpec extends PlaySpec {
 
-  "WithdrawDetail" should "trim spaces from withdrawReason" in {
+  "WithdrawDetail should trim spaces from withdrawReason" in {
     val jsonWithSpaces = Json.parse(
       """
         |{
@@ -43,7 +43,7 @@ class WithdrawDetailSpec extends AnyFlatSpec with Matchers {
     jsonWithSpaces.as[WithdrawDetail] shouldEqual expectedWithdrawDetail
   }
 
-  it should "handle None withdrawReason when not specified" in {
+  "WithdrawDetail handle None withdrawReason when not specified" in {
     val jsonWithoutReason = Json.parse(
       """
         |{
