@@ -175,23 +175,4 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
                   |   }
                   |}""".stripMargin)
 
-//  private def createExpectedPayloadWithTrimmedWithdrawReason: JsValue =
-//    Json.parse(s"""{
-//                  |   "withdrawRequest":{
-//                  |      "requestCommon": {
-//                  |        "clientID": "TSS"
-//                  |      },
-//                  |      "requestDetail":{
-//                  |         "withdrawDetail":{
-//                  |            "withdrawDate":"2024-05-12T12:15:15Z",
-//                  |            "withdrawReason": "$withdrawReasonWithSpaces"
-//                  |         },
-//                  |         "goodsItems":[
-//                  |            {
-//                  |               "publicRecordID":"$recordId"
-//                  |            }
-//                  |         ]
-//                  |      }
-//                  |   }
-//                  |}""".stripMargin)
 }
