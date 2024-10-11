@@ -74,7 +74,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       }
     }
 
-    "send request without withdrawReason when not specified" in {
+    "send a request without withdrawReason when not specified" in {
       when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
 
