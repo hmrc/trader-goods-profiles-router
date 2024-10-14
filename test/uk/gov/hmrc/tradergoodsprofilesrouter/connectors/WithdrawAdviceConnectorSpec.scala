@@ -85,6 +85,23 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
       verify(requestBuilder).withBody(createExpectedPayloadWithoutWithdrawReason)
     }
 
+    "send a request without withdrawReason when reason is only empty spaces" in {
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
+        .thenReturn(Future.successful(Right(NO_CONTENT)))
+
+      val result = await(sut.put(recordId, Some(" ")))
+
+      result.value mustBe NO_CONTENT
+
+      withClue("should send request to EIS with the right parameters") {
+        val expectedUrl = s"http://localhost:1234/tgp/withdrawaccreditation/v1"
+        verify(httpClientV2).put(url"$expectedUrl")
+        verify(requestBuilder).setHeader(expectedHeader: _*)
+        verify(requestBuilder).withBody(createExpectedPayloadWithoutWithdrawReason)
+        verifyExecuteForStatusHttpReader(correlationId)
+      }
+    }
+
     "send a request with trimmed withdrawReason" in {
       when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
