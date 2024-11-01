@@ -18,9 +18,10 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import com.google.inject.Inject
 import play.api.Logging
-import play.api.http.Status.{ACCEPTED, INTERNAL_SERVER_ERROR}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{DownloadTraderDataConnector, EisHttpErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CorrelationId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
 
@@ -32,12 +33,12 @@ class DownloadTraderDataService @Inject() (
 )(implicit ec: ExecutionContext)
     extends Logging {
 
-  def requestDownload(eori: String)(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] = {
+  def requestDownload(eori: String)(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CorrelationId]] = {
     val correlationId = uuidService.uuid
     connector
       .requestDownload(eori, correlationId)
       .map {
-        case Right(_)       => Right(ACCEPTED)
+        case Right(_)       => Right(CorrelationId(correlationId))
         case Left(response) =>
           logger.warn(
             s"""[DownloadTraderDataService] - unexpected response from EIS: $eori correlationId: $correlationId, response: $response"""
