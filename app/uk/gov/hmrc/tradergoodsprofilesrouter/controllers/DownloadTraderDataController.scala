@@ -39,9 +39,9 @@ class DownloadTraderDataController @Inject() (
     implicit request: Request[AnyContent] =>
       val result = for {
         correlationId <- EitherT(
-               service.requestDownload(eori)
-             )
-               .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+                           service.requestDownload(eori)
+                         )
+                           .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
       } yield Accepted(Json.toJson(correlationId))
 
       result.merge
