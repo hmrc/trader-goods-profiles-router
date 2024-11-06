@@ -38,11 +38,11 @@ class DownloadTraderDataController @Inject() (
   def requestDataDownload(eori: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- EitherT(
-               service.requestDownload(eori)
-             )
-               .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
-      } yield Accepted
+        correlationId <- EitherT(
+                           service.requestDownload(eori)
+                         )
+                           .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
+      } yield Accepted(Json.toJson(correlationId))
 
       result.merge
   }
