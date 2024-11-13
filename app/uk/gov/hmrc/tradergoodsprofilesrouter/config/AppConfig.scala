@@ -26,7 +26,6 @@ class AppConfig @Inject() (config: Configuration) {
   lazy val hawkConfig: HawkInstanceConfig = config.get[HawkInstanceConfig]("microservice.services.hawk")
   lazy val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
 
-  // TODO: This flag is only used for the PUT/PATCH methods in Update Record. Should replace sendClientId.
   lazy val sendClientId: Boolean =
     config
       .getOptional[Boolean]("features.sendClientId")

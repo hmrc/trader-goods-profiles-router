@@ -43,7 +43,7 @@ class MaintainProfileConnector @Inject() (
     httpClientV2
       .put(url"$url")
       .setHeader(
-        buildHeadersWithDrop1Toggle( // TODO: Update this when removing x-client-id TGP-2014
+        buildHeadersWithDrop1Toggle( // TODO: change to only send required headers after release 2
           correlationId,
           appConfig.hawkConfig.maintainProfileBearerToken,
           appConfig.hawkConfig.forwardedHost

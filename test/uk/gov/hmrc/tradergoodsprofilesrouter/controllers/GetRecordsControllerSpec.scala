@@ -130,7 +130,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       status(result) mustBe OK
     }
 
-    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+    // TODO: After Release 2 this should be removed
     "return OK validating the the X-Client-Id when sendClientId flag is true" in {
       when(appConfig.sendClientId).thenReturn(true)
 
@@ -169,7 +169,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
-    // TODO: After Drop 1.1 this should be removed - Ticket: TGP-2014
+    // TODO: After Release 2 this should be removed
     "return OK validating the the X-Client-Id when sendClientId flag is false" in {
       when(appConfig.sendClientId).thenReturn(false)
 

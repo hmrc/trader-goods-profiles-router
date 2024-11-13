@@ -60,7 +60,7 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
   )
 
   "PUT /profile/maintain " should {
-    // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
+    // TODO: Remove this and Create a single test without the client-id after release 2
     "return a 200 ok when the call to EIS is successful to maintain a record" in {
       when(appConfig.sendClientId).thenReturn(true)
 
@@ -73,7 +73,7 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
       contentAsJson(result) mustBe Json.toJson(maintainProfileResponse)
     }
 
-    // TODO: Remove this and Create a single test without the client-id after drop 1.1- Ticket: TGP-2014
+    // TODO: Remove this and Create a single test without the client-id after release 2
     "return a 200 Ok without validating the x-client-id when the sendClientId is false" in {
       when(appConfig.sendClientId).thenReturn(false)
       when(mockMaintainProfileService.maintainProfile(any, any)(any))

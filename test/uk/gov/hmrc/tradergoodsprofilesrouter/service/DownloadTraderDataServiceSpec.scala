@@ -25,6 +25,7 @@ import play.api.http.Status.{ACCEPTED, BAD_REQUEST, INTERNAL_SERVER_ERROR}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{DownloadTraderDataConnector, EisHttpErrorResponse}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CorrelationId
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.CreateRecordDataSupport
 
@@ -56,12 +57,12 @@ class DownloadTraderDataServiceSpec
   }
 
   "download trader data" should {
-    "return ACCEPTED when the request is accepted by EIS" in {
+    "return correlationId when the request is accepted by EIS" in {
       when(connector.requestDownload(eori, correlationId)).thenReturn(Future.successful(Right(ACCEPTED)))
 
       val result = await(service.requestDownload(eori))
 
-      result.value mustBe ACCEPTED
+      result.value mustBe CorrelationId(correlationId)
     }
 
     "return any error that is returned by EIS" in {
