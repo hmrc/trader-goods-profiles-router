@@ -63,7 +63,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       val result  = await(eisConnector.patch(request, correlationId))
 
       result.value mustBe expectedResponse
-      verify(httpClientV2).patch(url"http://localhost:1234/tgp/updaterecord/v1")
+      verify(httpClientV2).patch(url"http://localhost:1234/tgp/puttgprecord/v1")
       verify(httpClientV2, never()).put(any)(any)
     }
 
@@ -83,7 +83,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
-      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
+      val expectedUrl = s"http://localhost:1234/tgp/puttgprecord/v1"
       verify(httpClientV2).patch(url"$expectedUrl")
       verify(httpClientV2, never()).put(any)(any)
       verify(requestBuilder).setHeader(
@@ -99,7 +99,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
-      verify(httpClientV2).put(url"http://localhost:1234/tgp/updaterecord/v1")
+      verify(httpClientV2).put(url"http://localhost:1234/tgp/puttgprecord/v1")
       verify(httpClientV2, never()).patch(any)(any)
       verify(requestBuilder).setHeader(
         expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
@@ -146,7 +146,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
-      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
+      val expectedUrl = s"http://localhost:1234/tgp/puttgprecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
       verify(requestBuilder).setHeader(
         expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*

@@ -36,7 +36,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
   val dateTime                           = "2021-12-17T09:30:47.456Z"
   val timestamp                          = "Fri, 17 Dec 2021 09:30:47 GMT"
   private val url                        = fullUrl(s"/traders/$eori/records/$recordId")
-  override def hawkConnectorPath: String = "/tgp/updaterecord/v1"
+  override def hawkConnectorPath: String = "/tgp/puttgprecord/v1"
 
   override def beforeEach(): Unit = {
     reset(authConnector)

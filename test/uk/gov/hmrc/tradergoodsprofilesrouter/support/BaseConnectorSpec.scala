@@ -109,7 +109,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       getRecords = "/tgp/getrecords/v1",
       createRecord = "/tgp/createrecord/v1",
       removeRecord = "/tgp/removerecord/v1",
-      updateRecord = "/tgp/updaterecord/v1",
+      updateRecord = "/tgp/puttgprecord/v1",
       maintainProfile = "/tgp/maintainprofile/v1",
       createProfile = "/tgp/createprofile/v1",
       getProfile = "/tgp/getprofile/v1",
