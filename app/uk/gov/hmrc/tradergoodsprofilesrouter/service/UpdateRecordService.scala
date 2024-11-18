@@ -47,7 +47,6 @@ class UpdateRecordService @Inject() (
     val correlationId     = uuidService.uuid
     val payload           = UpdateRecordPayload(eori, recordId, request)
     val requestedDateTime = dateTimeService.timestamp.asStringMilliSeconds
-
     connector
       .patch(payload, correlationId)
       .map {
@@ -126,7 +125,7 @@ class UpdateRecordService @Inject() (
           val failureReason = response.errorResponse.errors.map { error =>
             error.map(e => e.message)
           }
-
+println("\n\n\n***********HGOT HERE\n\n\n\n")
           auditService.emitAuditUpdateRecord(
             payload,
             requestedDateTime,
