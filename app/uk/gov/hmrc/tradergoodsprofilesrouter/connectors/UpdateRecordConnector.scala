@@ -46,7 +46,7 @@ class UpdateRecordConnector @Inject() (
     httpClientV2
       .patch(url"$url")
       .setHeader(
-        buildHeaderWithoutClientId(correlationId): _*
+        buildPatchHeaderWithoutClientId(correlationId): _*
       )
       .withBody(toJson(payload))
       .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
@@ -59,7 +59,7 @@ class UpdateRecordConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.putUpdateRecordUrl
 
-    val headers = buildHeaderWithoutClientId(
+    val headers = buildPutHeaderWithoutClientId(
       correlationId
     )
     httpClientV2
@@ -69,10 +69,20 @@ class UpdateRecordConnector @Inject() (
       .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
   }
 
-  private def buildHeaderWithoutClientId(correlationId: String) =
+  private def buildPutHeaderWithoutClientId(correlationId: String) =
     commonHeaders(
       correlationId,
       appConfig.hawkConfig.updateRecordBearerToken,
+      appConfig.hawkConfig.forwardedHost
+    ) ++ Seq(
+      HeaderNames.Accept      -> MimeTypes.JSON,
+      HeaderNames.ContentType -> MimeTypes.JSON
+    )
+
+  private def buildPatchHeaderWithoutClientId(correlationId: String) =
+    commonHeaders(
+      correlationId,
+      appConfig.hawkConfig.patchRecordBearerToken,
       appConfig.hawkConfig.forwardedHost
     ) ++ Seq(
       HeaderNames.Accept      -> MimeTypes.JSON,

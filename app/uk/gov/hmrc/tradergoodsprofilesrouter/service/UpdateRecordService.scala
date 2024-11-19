@@ -125,7 +125,7 @@ class UpdateRecordService @Inject() (
           val failureReason = response.errorResponse.errors.map { error =>
             error.map(e => e.message)
           }
-          println("\n\n\n***********HGOT HERE\n\n\n\n")
+
           auditService.emitAuditUpdateRecord(
             payload,
             requestedDateTime,
