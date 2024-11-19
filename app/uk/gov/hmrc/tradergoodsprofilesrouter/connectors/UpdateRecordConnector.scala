@@ -43,13 +43,13 @@ class UpdateRecordConnector @Inject() (
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
-      httpClientV2
-        .patch(url"$url")
-        .setHeader(
-          buildHeaderWithoutClientId(correlationId): _*
-        )
-        .withBody(toJson(payload))
-        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    httpClientV2
+      .patch(url"$url")
+      .setHeader(
+        buildHeaderWithoutClientId(correlationId): _*
+      )
+      .withBody(toJson(payload))
+      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
 
   }
 

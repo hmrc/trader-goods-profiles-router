@@ -45,7 +45,7 @@ case class HawkInstanceConfig(
   lazy val createRecordUrl: String    = s"$protocol://$host:$port$createRecord"
   lazy val removeRecordUrl: String    = s"$protocol://$host:$port$removeRecord"
   lazy val updateRecordUrl: String    = s"$protocol://$host:$port$updateRecord"
-  lazy val putUpdateRecordUrl: String    = s"$protocol://$host:$port$putUpdateRecord"
+  lazy val putUpdateRecordUrl: String = s"$protocol://$host:$port$putUpdateRecord"
   lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
   lazy val createProfileUrl: String   = s"$protocol://$host:$port$createProfile"
 
