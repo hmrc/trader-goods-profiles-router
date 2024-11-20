@@ -38,5 +38,10 @@ class AppConfig @Inject() (config: Configuration) {
 
   lazy val sendAcceptHeader: Boolean = config.getOptional[Boolean]("features.sendAcceptHeader").getOrElse(true)
 
+  lazy val useEisPatchMethod: Boolean =
+    config
+      .getOptional[Boolean]("features.useEisPatchMethod")
+      .getOrElse(false)
+
   lazy val optionalCategory: Boolean = config.getOptional[Boolean]("features.categoryOptional").getOrElse(false)
 }

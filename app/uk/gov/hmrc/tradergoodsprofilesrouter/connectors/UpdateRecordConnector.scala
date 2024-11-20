@@ -43,14 +43,44 @@ class UpdateRecordConnector @Inject() (
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
+
+    //Todo: remove this flag when EIS has implemented the PATCH method - TGP-2417.
+    if (appConfig.useEisPatchMethod) {
+      logger.info(
+        s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PATCH method for update record"
+      )
+      httpClientV2
+        .patch(url"$url")
+        .setHeader(
+          buildPatchHeaderWithoutClientId(correlationId): _*
+        )
+        .withBody(toJson(payload))
+        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    } else {
+      logger.info(
+        s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PUT method for update record"
+      )
+      updateRecord(payload, correlationId)
+    }
+  }
+
+  private def updateRecord(
+    payload: UpdateRecordPayload,
+    correlationId: String
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
+    val url = appConfig.hawkConfig.putUpdateRecordUrl
+
     httpClientV2
-      .patch(url"$url")
+      .put(url"$url")
       .setHeader(
-        buildPatchHeaderWithoutClientId(correlationId): _*
+        buildHeadersWithDrop1Toggle(
+          correlationId,
+          appConfig.hawkConfig.updateRecordBearerToken,
+          appConfig.hawkConfig.forwardedHost
+        ): _*
       )
       .withBody(toJson(payload))
       .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
-
   }
 
   def put(
