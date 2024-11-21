@@ -116,7 +116,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       getProfile = "/tgp/getprofile/v1",
       forwardedHost = "MDTP",
       updateRecordToken = "dummyRecordUpdateBearerToken",
-      patchRecordToken = "dummyPatchRecordBearerToken",
+      putRecordToken = "dummyPutRecordBearerToken",
       recordGetToken = "dummyRecordGetBearerToken",
       recordCreateToken = "dummyRecordCreateBearerToken",
       recordRemoveToken = "dummyRecordRemoveBearerToken",

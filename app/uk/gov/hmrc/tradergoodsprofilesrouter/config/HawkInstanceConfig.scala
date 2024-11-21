@@ -32,7 +32,7 @@ case class HawkInstanceConfig(
   getProfile: String,
   forwardedHost: String,
   updateRecordToken: String,
-  patchRecordToken: String,
+  putRecordToken: String,
   recordGetToken: String,
   recordCreateToken: String,
   recordRemoveToken: String,
@@ -53,7 +53,7 @@ case class HawkInstanceConfig(
   lazy val getProfileUrl: String = s"$protocol://$host:$port$getProfile"
 
   lazy val updateRecordBearerToken       = s"Bearer $updateRecordToken"
-  lazy val patchRecordBearerToken        = s"Bearer $patchRecordToken"
+  lazy val putRecordBearerToken        = s"Bearer $putRecordToken"
   lazy val getRecordBearerToken          = s"Bearer $recordGetToken"
   lazy val createRecordBearerToken       = s"Bearer $recordCreateToken"
   lazy val removeRecordBearerToken       = s"Bearer $recordRemoveToken"
@@ -82,7 +82,7 @@ object HawkInstanceConfig {
         config.get[String]("get-profile"),
         config.get[String]("forwarded-host"),
         config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),
-        config.getOptional[String]("patch-record-token").getOrElse("dummyPatchRecordBearerToken"),
+        config.getOptional[String]("put-record-token").getOrElse("dummyPutRecordBearerToken"),
         config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
         config.getOptional[String]("record-create-token").getOrElse("dummyRecordCreateBearerToken"),
         config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),
