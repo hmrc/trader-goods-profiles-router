@@ -99,7 +99,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
-      verify(httpClientV2).put(url"http://localhost:1234/tgp/puttgprecord/v1")
+      verify(httpClientV2).put(url"http://localhost:1234/tgp/updaterecord/v1")
       verify(httpClientV2, never()).patch(any)(any)
       verify(requestBuilder).setHeader(
         expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
