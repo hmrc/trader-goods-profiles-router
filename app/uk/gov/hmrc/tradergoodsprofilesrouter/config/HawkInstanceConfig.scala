@@ -53,7 +53,7 @@ case class HawkInstanceConfig(
   lazy val getProfileUrl: String = s"$protocol://$host:$port$getProfile"
 
   lazy val updateRecordBearerToken       = s"Bearer $updateRecordToken"
-  lazy val putRecordBearerToken        = s"Bearer $putRecordToken"
+  lazy val putRecordBearerToken          = s"Bearer $putRecordToken"
   lazy val getRecordBearerToken          = s"Bearer $recordGetToken"
   lazy val createRecordBearerToken       = s"Bearer $recordCreateToken"
   lazy val removeRecordBearerToken       = s"Bearer $recordRemoveToken"
