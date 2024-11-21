@@ -146,10 +146,10 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
-      val expectedUrl = s"http://localhost:1234/tgp/updaterecord/v1"
+      val expectedUrl = s"http://localhost:1234/tgp/puttgprecord/v1"
       verify(httpClientV2).put(url"$expectedUrl")
       verify(requestBuilder).setHeader(
-        expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
+        expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyPutRecordBearerToken"): _*
       )
       verifyExecuteForHttpReader(correlationId)
 

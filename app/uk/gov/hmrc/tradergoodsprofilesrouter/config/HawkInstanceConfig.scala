@@ -26,11 +26,13 @@ case class HawkInstanceConfig(
   createRecord: String,
   removeRecord: String,
   updateRecord: String,
+  putUpdateRecord: String,
   maintainProfile: String,
   createProfile: String,
   getProfile: String,
   forwardedHost: String,
   updateRecordToken: String,
+  putRecordToken: String,
   recordGetToken: String,
   recordCreateToken: String,
   recordRemoveToken: String,
@@ -44,12 +46,14 @@ case class HawkInstanceConfig(
   lazy val createRecordUrl: String    = s"$protocol://$host:$port$createRecord"
   lazy val removeRecordUrl: String    = s"$protocol://$host:$port$removeRecord"
   lazy val updateRecordUrl: String    = s"$protocol://$host:$port$updateRecord"
+  lazy val putUpdateRecordUrl: String = s"$protocol://$host:$port$putUpdateRecord"
   lazy val maintainProfileUrl: String = s"$protocol://$host:$port$maintainProfile"
   lazy val createProfileUrl: String   = s"$protocol://$host:$port$createProfile"
 
   lazy val getProfileUrl: String = s"$protocol://$host:$port$getProfile"
 
   lazy val updateRecordBearerToken       = s"Bearer $updateRecordToken"
+  lazy val putRecordBearerToken          = s"Bearer $putRecordToken"
   lazy val getRecordBearerToken          = s"Bearer $recordGetToken"
   lazy val createRecordBearerToken       = s"Bearer $recordCreateToken"
   lazy val removeRecordBearerToken       = s"Bearer $recordRemoveToken"
@@ -72,11 +76,13 @@ object HawkInstanceConfig {
         config.get[String]("create-record"),
         config.get[String]("remove-record"),
         config.get[String]("update-record"),
+        config.get[String]("put-update-record"),
         config.get[String]("maintain-profile"),
         config.get[String]("create-profile"),
         config.get[String]("get-profile"),
         config.get[String]("forwarded-host"),
         config.getOptional[String]("record-update-token").getOrElse("dummyRecordUpdateBearerToken"),
+        config.getOptional[String]("put-record-token").getOrElse("dummyPutRecordBearerToken"),
         config.getOptional[String]("record-get-token").getOrElse("dummyRecordGetBearerToken"),
         config.getOptional[String]("record-create-token").getOrElse("dummyRecordCreateBearerToken"),
         config.getOptional[String]("record-remove-token").getOrElse("dummyRecordRemoveBearerToken"),

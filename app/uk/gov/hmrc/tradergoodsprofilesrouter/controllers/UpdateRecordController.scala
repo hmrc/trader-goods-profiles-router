@@ -54,7 +54,6 @@ class UpdateRecordController @Inject() (
       response            <- EitherT(updateRecordService.patchRecord(eori, recordId, updateRecordRequest))
                                .leftMap(e => Status(e.httpStatus)(Json.toJson(e.errorResponse)))
     } yield Ok(Json.toJson(response))
-
     result.merge
   }
 

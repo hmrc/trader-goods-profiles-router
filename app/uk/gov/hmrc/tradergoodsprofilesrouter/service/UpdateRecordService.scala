@@ -47,7 +47,6 @@ class UpdateRecordService @Inject() (
     val correlationId     = uuidService.uuid
     val payload           = UpdateRecordPayload(eori, recordId, request)
     val requestedDateTime = dateTimeService.timestamp.asStringMilliSeconds
-
     connector
       .patch(payload, correlationId)
       .map {
