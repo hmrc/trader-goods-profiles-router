@@ -38,10 +38,10 @@ object CreateProfileResponse extends NiphlNumberFilter {
       (JsPath \ "niphlNumber").readNullable[String])(CreateProfileResponse.apply _)
 
   implicit lazy val writes: OWrites[CreateProfileResponse] =
-    ((JsPath \ "eori").write[String] and
+    (JsPath \ "eori").write[String] and
       (JsPath \ "actorId").write[String] and
       (JsPath \ "ukimsNumber").writeNullable[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes))
-      (response => (response.eori, response.actorId, response.ukimsNumber, response.nirmsNumber, response.niphlNumber))
+      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes)
+  (response => (response.eori, response.actorId, response.ukimsNumber, response.nirmsNumber, response.niphlNumber))
 }

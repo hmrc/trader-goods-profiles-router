@@ -39,10 +39,10 @@ object MaintainProfileResponse extends NiphlNumberFilter {
 
   // ✅ Fix: Replacing `unlift` with a function that extracts case class values
   implicit lazy val writes: OWrites[MaintainProfileResponse] =
-    ((JsPath \ "eori").write[String] and
+    (JsPath \ "eori").write[String] and
       (JsPath \ "actorId").write[String] and
       (JsPath \ "ukimsNumber").writeNullable[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes))
-      (response => (response.eori, response.actorId, response.ukimsNumber, response.nirmsNumber, response.niphlNumber))
+      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes)
+  (response => (response.eori, response.actorId, response.ukimsNumber, response.nirmsNumber, response.niphlNumber))
 }
