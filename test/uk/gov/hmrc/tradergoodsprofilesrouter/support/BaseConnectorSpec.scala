@@ -150,9 +150,9 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   protected def verifyExecuteForHttpReader(expectedCorrelationId: String): Assertion = {
     val captor = ArgumentCaptor.forClass(classOf[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]])
 
-    verify(requestBuilder).execute(captor.capture()) // ✅ Properly capturing argument
+    verify(requestBuilder).execute(captor.capture(), any[scala.concurrent.ExecutionContext])
 
-    val httpReader = captor.getValue // Now safe to use
+    val httpReader = captor.getValue
     assert(httpReader.correlationId == expectedCorrelationId,
       s"Expected correlationId $expectedCorrelationId, but got ${httpReader.correlationId}")
   }

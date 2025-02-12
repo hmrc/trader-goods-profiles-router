@@ -17,11 +17,9 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 
 import org.apache.pekko.Done
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, verify, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
@@ -32,12 +30,11 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.model.ExtendedDataEvent
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditGetRecordRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.AdviceStatus.*
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.*
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{AdviceStatus, GetRecordsResponse, GoodsItemRecords}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.AdviceStatus._
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis._
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.verify
+
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -16,11 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, verify, when}
 import play.api.http.Status.ACCEPTED
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -47,7 +44,7 @@ class DownloadTraderDataConnectorSpec extends BaseConnectorSpec {
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
   }
 
   "download trader data" should {

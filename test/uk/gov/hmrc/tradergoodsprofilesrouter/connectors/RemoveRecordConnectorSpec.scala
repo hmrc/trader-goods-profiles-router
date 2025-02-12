@@ -16,20 +16,16 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.{any, eq as meq}
 import org.mockito.Mockito.{reset, verify, when}
-import org.mockito.{ArgumentCaptor, ArgumentMatchers}
-import org.scalactic.Prettifier.default
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.BodyWritable
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import org.mockito.ArgumentMatchers.{any, eq => meq}
-
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.net.URL
@@ -179,7 +175,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     )
 
     // Use the alias meq for equality matcher to avoid Scala's eq conflict.
-    import org.mockito.ArgumentMatchers.{eq => meq, any}
+    import org.mockito.ArgumentMatchers.{any, eq as meq}
     verify(requestBuilder).withBody(
       meq(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId))
     )(any, any, any)

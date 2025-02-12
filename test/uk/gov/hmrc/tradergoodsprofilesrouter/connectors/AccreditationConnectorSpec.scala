@@ -22,7 +22,6 @@ import org.mockito.Mockito.{reset, verify, when}
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.Json
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -61,7 +60,7 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
 
   }
