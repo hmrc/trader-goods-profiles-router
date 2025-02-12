@@ -17,18 +17,15 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validNiphl}
 
-import scala.Function.unlift
-
 case class MaintainProfileRequest(
-  actorId: String,
-  ukimsNumber: String,
-  nirmsNumber: Option[String],
-  niphlNumber: Option[String]
-)
+                                   actorId: String,
+                                   ukimsNumber: String,
+                                   nirmsNumber: Option[String],
+                                   niphlNumber: Option[String]
+                                 )
 
 object MaintainProfileRequest {
 
@@ -36,12 +33,15 @@ object MaintainProfileRequest {
     ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "ukimsNumber").read(lengthBetween(32, 32)) and
       (JsPath \ "nirmsNumber").readNullable(lengthBetween(13, 13)) and
-      (JsPath \ "niphlNumber")
-        .readNullable(validNiphl))(MaintainProfileRequest.apply _)
+      (JsPath \ "niphlNumber").readNullable(validNiphl))(MaintainProfileRequest.apply _)
 
   implicit lazy val writes: OWrites[MaintainProfileRequest] =
     ((JsPath \ "actorId").write[String] and
       (JsPath \ "ukimsNumber").write[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String])(unlift(MaintainProfileRequest.unapply))
+      (JsPath \ "niphlNumber").writeNullable[String])(
+      request => (request.actorId, request.ukimsNumber, request.nirmsNumber, request.niphlNumber)
+    )
 }
+
+

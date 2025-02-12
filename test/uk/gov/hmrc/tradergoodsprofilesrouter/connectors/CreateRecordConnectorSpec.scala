@@ -16,18 +16,22 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
 
 import java.time.Instant
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataSupport {
 
@@ -45,7 +49,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
     when(appConfig.sendClientId).thenReturn(true)
   }
 
@@ -74,7 +78,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "send a request with the right url" when {
       "sendClientId feature flag is false" in {
-        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+        when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
         val expectedResponse = createOrUpdateRecordEisResponse
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(expectedResponse)))
@@ -88,12 +92,12 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
           expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordCreateBearerToken"): _*
         )
         verify(requestBuilder).withBody(createRecordEisPayload)
-        verifyExecuteForHttpReader(correlationId)
+        verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
       }
 
       // TODO: After Release 2 remove x-client-id from headers
       "sendClientId feature flag is true" in {
-        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+        when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(createOrUpdateRecordEisResponse)))
 
@@ -111,7 +115,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
         verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
         verify(requestBuilder).withBody(createRecordEisPayload)
-        verifyExecuteForHttpReader(correlationId)
+        verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
       }
     }
   }

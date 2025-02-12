@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, verify, when}
-import org.mockito.captor.ArgCaptor
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, verify, when}
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.Json
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
@@ -124,10 +126,10 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
         |""".stripMargin)
 
   private def verifyExecuteHttpRequest(expectedCorrelationId: String) = {
-    val captor = ArgCaptor[StatusHttpReader]
+    val captor = ArgumentCaptor.forClass(classOf[StatusHttpReader])
     verify(requestBuilder).execute(captor.capture, any)
 
-    val httpReader = captor.value
+    val httpReader = captor.getValue
     httpReader.correlationId mustBe expectedCorrelationId
   }
 }

@@ -17,9 +17,11 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 
 import org.apache.pekko.Done
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, verify, when}
-import org.mockito.captor.ArgCaptor
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
@@ -34,7 +36,8 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.{AdviceStatus, GetR
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.AdviceStatus._
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis._
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-
+import org.mockito.ArgumentCaptor
+import org.mockito.Mockito.verify
 import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -175,10 +178,10 @@ class AuditGetRecordServiceSpec extends PlaySpec with BeforeAndAfterEach {
   }
 
   private def verifyAndReturnEvent = {
-    val captor = ArgCaptor[ExtendedDataEvent]
+    val captor: ArgumentCaptor[ExtendedDataEvent] = ArgumentCaptor.forClass(classOf[ExtendedDataEvent])
     verify(auditConnector).sendExtendedEvent(captor.capture)(any, any)
 
-    captor.value
+    captor.getValue
   }
 
   private def createSingleRecordsResponse =

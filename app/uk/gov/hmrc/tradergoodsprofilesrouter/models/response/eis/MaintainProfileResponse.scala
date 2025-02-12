@@ -17,19 +17,16 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 
-import scala.Function.unlift
-
 case class MaintainProfileResponse(
-  eori: String,
-  actorId: String,
-  ukimsNumber: Option[String],
-  nirmsNumber: Option[String],
-  niphlNumber: Option[String]
-)
+                                    eori: String,
+                                    actorId: String,
+                                    ukimsNumber: Option[String],
+                                    nirmsNumber: Option[String],
+                                    niphlNumber: Option[String]
+                                  )
 
 object MaintainProfileResponse extends NiphlNumberFilter {
 
@@ -40,13 +37,13 @@ object MaintainProfileResponse extends NiphlNumberFilter {
       (JsPath \ "nirmsNumber").readNullable[String] and
       (JsPath \ "niphlNumber").readNullable[String])(MaintainProfileResponse.apply _)
 
-  // TODO: removeLeadingDashes will need to be removed once EIS/B&T make the same validation on their side
+  // ✅ Fix: Replacing `unlift` with a function that extracts case class values
   implicit lazy val writes: OWrites[MaintainProfileResponse] =
     ((JsPath \ "eori").write[String] and
       (JsPath \ "actorId").write[String] and
       (JsPath \ "ukimsNumber").writeNullable[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes))(
-      unlift(MaintainProfileResponse.unapply)
-    )
+      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes))
+      (response => (response.eori, response.actorId, response.ukimsNumber, response.nirmsNumber, response.niphlNumber))
 }
+

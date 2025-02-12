@@ -17,18 +17,15 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.{JsPath, OWrites, Reads}
+import play.api.libs.json.{JsPath, OWrites, Reads, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validNiphl}
 
-import scala.Function.unlift
-
 case class CreateProfileRequest(
-  actorId: String,
-  ukimsNumber: String,
-  nirmsNumber: Option[String],
-  niphlNumber: Option[String]
-)
+                                 actorId: String,
+                                 ukimsNumber: String,
+                                 nirmsNumber: Option[String],
+                                 niphlNumber: Option[String]
+                               )
 
 object CreateProfileRequest {
 
@@ -36,12 +33,17 @@ object CreateProfileRequest {
     ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "ukimsNumber").read(lengthBetween(32, 32)) and
       (JsPath \ "nirmsNumber").readNullable(lengthBetween(13, 13)) and
-      (JsPath \ "niphlNumber")
-        .readNullable(validNiphl))(CreateProfileRequest.apply _)
+      (JsPath \ "niphlNumber").readNullable(validNiphl)
+      )(CreateProfileRequest.apply)
 
-  implicit lazy val writes: OWrites[CreateProfileRequest] =
-    ((JsPath \ "actorId").write[String] and
-      (JsPath \ "ukimsNumber").write[String] and
-      (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String])(unlift(CreateProfileRequest.unapply))
+  implicit val writes: OWrites[CreateProfileRequest] =
+    OWrites[CreateProfileRequest] { request =>
+      Json.obj(
+        "actorId" -> request.actorId,
+        "ukimsNumber" -> request.ukimsNumber,
+        "nirmsNumber" -> request.nirmsNumber,
+        "niphlNumber" -> request.niphlNumber
+      )
+    }
 }
+

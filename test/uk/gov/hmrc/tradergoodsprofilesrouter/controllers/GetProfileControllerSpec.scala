@@ -16,8 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.MockitoSugar.{reset, verify, verifyZeroInteractions, when}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.{atLeastOnce, reset, verify, verifyNoInteractions, when}
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
@@ -128,7 +131,7 @@ class GetProfileControllerSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       withClue("should not send the request to Eis") {
-        verifyZeroInteractions(getProfileService)
+        verifyNoInteractions(getProfileService)
       }
     }
   }

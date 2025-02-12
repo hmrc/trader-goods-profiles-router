@@ -16,19 +16,26 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.Mockito.{reset, verify, when}
+import org.mockito.{ArgumentCaptor, ArgumentMatchers}
+import org.scalactic.Prettifier.default
 import play.api.http.MimeTypes
-import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.BodyWritable
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
+
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
+import java.net.URL
 import java.time.Instant
 import scala.concurrent.Future
+
 
 class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
@@ -49,77 +56,137 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
     when(appConfig.sendClientId).thenReturn(true)
     when(appConfig.sendAcceptHeader).thenReturn(true)
   }
 
   "remove a record successfully" in {
     when(requestBuilder.execute[Either[Result, Int]](any, any))
-      .thenReturn(Future.successful(Right(OK)))
+      .thenReturn(Future.successful(Right(200)))
 
     val result = await(connector.removeRecord(eori, recordId, actorId, correlationId))
 
-    result.value mustBe OK
+    result.value mustBe 200
   }
+
 
   "send a request with the right url for remove record when sendClientId feature flag is true" in {
     when(appConfig.sendClientId).thenReturn(true)
 
-    when(requestBuilder.execute[Either[Result, Int]](any, any))
-      .thenReturn(Future.successful(Right(OK)))
+    when(requestBuilder.execute[Either[Result, Int]](any(), any()))
+      .thenReturn(Future.successful(Right(200)))
 
-    val result =
-      await(connector.removeRecord(eori, recordId, actorId, correlationId))
+    val result = await(connector.removeRecord(eori, recordId, actorId, correlationId))
 
-    val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
+    val expectedUrl = new URL("http://localhost:1234/tgp/removerecord/v1")
+
+    // ✅ Fix: Use `eq(expectedUrl)`
     verify(httpClientV2).put(url"$expectedUrl")
     verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
-    verify(requestBuilder)
-      .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
-    verifyExecuteForStatusHttpReader(correlationId)
 
-    result.value mustBe OK
+    val expectedJson = Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId)
+    val jsonCaptor = ArgumentCaptor.forClass(classOf[JsValue])
+
+    verify(requestBuilder).withBody(jsonCaptor.capture())(any[BodyWritable[JsValue]], any(),any())
+    jsonCaptor.getValue mustBe expectedJson
+
+    verifyExecuteForStatusHttpReader(correlationId)
+    result.value mustBe 200
   }
+
 
   "send a request with the right url for remove record when sendClientId feature flag is false" in {
     when(appConfig.sendClientId).thenReturn(false)
     val hc: HeaderCarrier = HeaderCarrier()
 
     when(requestBuilder.execute[Either[Result, Int]](any, any))
-      .thenReturn(Future.successful(Right(OK)))
-    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      .thenReturn(Future.successful(Right(200)))
+    when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
 
     val result =
       await(connector.removeRecord(eori, recordId, actorId, correlationId)(hc))
 
     val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
     verify(httpClientV2).put(url"$expectedUrl")(hc)
-    verify(requestBuilder).setHeader(expectedHeaderWithoutClientId(correlationId, "dummyRecordRemoveBearerToken"): _*)
-    verify(requestBuilder)
-      .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
+
+    val headersCaptor: ArgumentCaptor[Seq[(String, String)]] = ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
+    verify(requestBuilder).setHeader(headersCaptor.capture(): _*)
+
+    val capturedHeaders = headersCaptor.getValue
+    println("Captured Headers: " + capturedHeaders)
+
+    capturedHeaders must contain allOf(
+      "X-Correlation-ID" -> correlationId,
+      "X-Forwarded-Host" -> "MDTP",
+      "Authorization" -> "Bearer dummyRecordRemoveBearerToken"
+    )
+
+    capturedHeaders must not contain ("X-Client-ID" -> "TSS")
+
+    val jsonCaptor: ArgumentCaptor[JsValue] = ArgumentCaptor.forClass(classOf[JsValue])
+    verify(requestBuilder).withBody(jsonCaptor.capture())(any(), any(), any())
+
+    val capturedJson = jsonCaptor.getValue
+    println("Captured JSON: " + capturedJson)
+
+    capturedJson mustBe Json.obj(
+      "eori" -> eori,
+      "recordId" -> recordId,
+      "actorId" -> actorId
+    )
+
+    // Verify execute is called with the correct StatusHttpReader
     verifyExecuteForStatusHttpReader(correlationId)
 
-    result.value mustBe OK
+    // Validate result
+    result.value mustBe 200
   }
 
   "send a request with the right url for remove record when sendAcceptHeader feature flag is true" in {
     when(appConfig.sendAcceptHeader).thenReturn(true)
 
-    when(requestBuilder.execute[Either[Result, Int]](any, any))
-      .thenReturn(Future.successful(Right(OK)))
+    // Stub setHeader by matching the entire Seq as varargs.
+    when(requestBuilder.setHeader(any[Seq[(String, String)]]: _*))
+      .thenReturn(requestBuilder)
 
-    val result =
-      await(connector.removeRecord(eori, recordId, actorId, correlationId))
+    // Stub withBody and execute.
+    when(requestBuilder.withBody(any[JsValue])(any, any, any))
+      .thenReturn(requestBuilder)
+    when(requestBuilder.execute[Either[Result, Int]](any, any))
+      .thenReturn(Future.successful(Right(200)))
+
+    val result = await(connector.removeRecord(eori, recordId, actorId, correlationId))
 
     val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
     verify(httpClientV2).put(url"$expectedUrl")
-    verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
-    verify(requestBuilder)
-      .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
+
+    // Capture the headers passed to setHeader.
+    val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
+      ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
+    verify(requestBuilder).setHeader(headersCaptor.capture(): _*)
+
+    // The captured value is already a Scala Seq.
+    val capturedHeaders: Seq[(String, String)] = headersCaptor.getValue
+
+    println("Captured Headers: " + capturedHeaders)
+
+    capturedHeaders must contain allOf(
+      "X-Correlation-ID" -> correlationId,
+      "Authorization" -> "Bearer dummyRecordRemoveBearerToken",
+      "X-Forwarded-Host" -> "MDTP",
+      "Accept" -> "application/json"
+    )
+
+    // Use the alias meq for equality matcher to avoid Scala's eq conflict.
+    import org.mockito.ArgumentMatchers.{eq => meq, any}
+    verify(requestBuilder).withBody(
+      meq(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId))
+    )(any, any, any)
+
     verifyExecuteForStatusHttpReader(correlationId)
 
-    result.value mustBe OK
+    result.value mustBe 200
   }
 
   "send a request with the right url for remove record when sendAcceptHeader feature flag is false" in {
@@ -127,8 +194,8 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(appConfig.sendClientId).thenReturn(true)
 
     when(requestBuilder.execute[Either[Result, Int]](any, any))
-      .thenReturn(Future.successful(Right(OK)))
-    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      .thenReturn(Future.successful(Right(200)))
+    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
 
     val result =
       await(connector.removeRecord(eori, recordId, actorId, correlationId))
@@ -138,11 +205,13 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     verify(requestBuilder).setHeader(
       expectedHeaderWithoutAcceptHeader(correlationId, "dummyRecordRemoveBearerToken"): _*
     )
-    verify(requestBuilder)
-      .withBody(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId).as[JsValue])
+    verify(requestBuilder).withBody(
+      meq(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId))
+    )(any[play.api.libs.ws.BodyWritable[JsValue]], any, any)
+
     verifyExecuteForStatusHttpReader(correlationId)
 
-    result.value mustBe OK
+    result.value mustBe 200
   }
 
   "return an error if EIS return an error" in {

@@ -16,11 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.scalatest.matchers.should.Matchers._
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.Json
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice.withdrawAdvice.WithdrawDetail
-
 import java.time.Instant
 
 class WithdrawDetailSpec extends PlaySpec {
@@ -37,13 +36,13 @@ class WithdrawDetailSpec extends PlaySpec {
 
     val expectedWithdrawDetail = WithdrawDetail(
       withdrawDate = Instant.parse("2023-10-11T12:00:00Z"),
-      withdrawReason = Some("some reason")
+      withdrawReason = Some("some reason") // Ensures trimming is tested
     )
 
     jsonWithSpaces.as[WithdrawDetail] shouldEqual expectedWithdrawDetail
   }
 
-  "WithdrawDetail handle None withdrawReason when not specified" in {
+  "WithdrawDetail should handle None withdrawReason when not specified" in {
     val jsonWithoutReason = Json.parse(
       """
         |{

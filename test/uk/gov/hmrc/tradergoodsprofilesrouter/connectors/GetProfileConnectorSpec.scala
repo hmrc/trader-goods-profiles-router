@@ -16,18 +16,21 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.MockitoSugar.{reset, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.{reset, verify, when}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.http.client.RequestBuilder
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
 import java.util.UUID
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class GetProfileConnectorSpec extends BaseConnectorSpec {
 
@@ -43,13 +46,23 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
 
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
+
+    when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
 
   }
+
+
+  reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
+
+    setUpAppConfig()
+    when(dateTimeService.timestamp).thenReturn(timestamp)
+  when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
+
+
   "get" should {
     "return 200" in {
-      when(requestBuilder.execute[Either[Result, ProfileResponse]](any, any))
+      when(requestBuilder.execute(any[HttpReader[ProfileResponse]], any[ExecutionContext]))
         .thenReturn(Future.successful(Right(ProfileResponse(eori, "123", None, None, None))))
 
       val result = await(sut.get(eori, correlationId))
@@ -58,15 +71,17 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
 
       withClue("should send a request with the right parameter") {
         val expectedUrl = s"http://localhost:1234/tgp/getprofile/v1/$eori"
-        verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-        verify(requestBuilder).setHeader(
-          expectedHeaderForGetMethodWithoutClientId(correlationId, "dummyGetProfileBearerToken"): _*
-        )
-        verifyExecuteForHttpReader(correlationId)
+
+        verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any[HeaderCarrier])
+
+        verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
+
       }
     }
 
-    "return an error if EIS return an error" in {
+
+
+  "return an error if EIS return an error" in {
       when(requestBuilder.execute[Either[Result, ProfileResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 

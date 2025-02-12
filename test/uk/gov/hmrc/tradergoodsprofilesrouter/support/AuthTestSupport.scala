@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
-import org.mockito.ArgumentMatchers
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.MockitoSugar.when
-import org.scalatestplus.mockito.MockitoSugar.mock
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.when
+import org.scalatestplus.mockito.MockitoSugar.*
 import uk.gov.hmrc.auth.core.authorise.Predicate
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{affinityGroup, authorisedEnrolments}
-import uk.gov.hmrc.auth.core.retrieve.~
+import uk.gov.hmrc.auth.core.retrieve.{Retrieval, ~}
 import uk.gov.hmrc.auth.core.syntax.retrieved.authSyntaxForRetrieved
 import uk.gov.hmrc.auth.core.{AffinityGroup, AuthConnector, Enrolment, Enrolments}
 
@@ -39,37 +38,30 @@ trait AuthTestSupport {
   private val enrolment           = Enrolment(enrolmentKey).withIdentifier(tgpIdentifierName, eoriNumber)
 
   def withAuthorizedTrader(): Unit = {
-    val retrieval = Enrolments(Set(enrolment)) and
-      Some(AffinityGroup.Organisation)
-
+    val retrieval = Enrolments(Set(enrolment)) and Some(AffinityGroup.Organisation)
     withAuthorization(retrieval)
   }
 
   def withAuthorizedTrader(enrolment: Enrolment): Unit = {
-    val retrieval = Enrolments(Set(enrolment)) and
-      Some(AffinityGroup.Organisation)
-
+    val retrieval = Enrolments(Set(enrolment)) and Some(AffinityGroup.Organisation)
     withAuthorization(retrieval)
   }
 
   def withAuthorization(retrieval: Enrolments ~ Option[AffinityGroup]): Unit =
-    when(authConnector.authorise(ArgumentMatchers.argThat((p: Predicate) => true), eqTo(authFetch))(any, any))
+    when(authConnector.authorise(any[Predicate], eqTo(authFetch))(any, any))
       .thenReturn(Future.successful(retrieval))
 
   def authorizeWithAffinityGroup(affinityGrp: Option[AffinityGroup]): Unit = {
     val retrieval = Enrolments(Set(enrolment)) and affinityGrp
-
     withAuthorization(retrieval)
   }
 
   def withUnauthorizedTrader(error: Throwable): Unit =
-    when(authConnector.authorise(any, any)(any, any)).thenReturn(Future.failed(error))
+    when(authConnector.authorise(any[Predicate], any[Retrieval[Any]])(any, any))
+      .thenReturn(Future.failed(error))
 
   def withUnauthorizedEmptyIdentifier(): Unit = {
-    val retrieval = Enrolments(Set(Enrolment(enrolmentKey))) and
-      Some(AffinityGroup.Organisation)
-
+    val retrieval = Enrolments(Set(Enrolment(enrolmentKey))) and Some(AffinityGroup.Organisation)
     withAuthorization(retrieval)
   }
-
 }

@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
-import org.mockito.MockitoSugar.{reset, verifyZeroInteractions, when}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, atLeastOnce, reset, verify, verifyNoInteractions, when}
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
-import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.{BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
@@ -75,7 +76,7 @@ class RequestAdviceServiceSpec
     val result = service.requestAdvice(eori, recordId, request)
 
     whenReady(result.value) { r =>
-      r.value shouldBe CREATED
+      r.value mustBe CREATED
       verify(appConfig.pegaConfig).getRecordsUrl
       verify(getRecordService).fetchRecord(eqTo(eori), eqTo(recordId), eqTo("/localhost"))(any)
     }
@@ -94,7 +95,7 @@ class RequestAdviceServiceSpec
       val result = service.requestAdvice(eori, recordId, request)
 
       whenReady(result.value) {
-        _.left.value shouldBe badRequestErrorResponse
+        _.left.value mustBe badRequestErrorResponse
       }
     }
 
@@ -128,7 +129,7 @@ class RequestAdviceServiceSpec
 
       whenReady(result.value) { r =>
         r.left.value mustBe badRequestErrorResponse
-        verifyZeroInteractions(connector)
+        verifyNoInteractions(connector)
       }
     }
 
@@ -140,7 +141,7 @@ class RequestAdviceServiceSpec
       val result = service.requestAdvice(eori, recordId, request)
       whenReady(result.value) { r =>
         r.left.value mustBe badRequestErrorResponse
-        verifyZeroInteractions(connector)
+        verifyNoInteractions(connector)
       }
 
     }
@@ -169,7 +170,7 @@ class RequestAdviceServiceSpec
             )
           )
         )
-        verifyZeroInteractions(connector)
+        verifyNoInteractions(connector)
       }
 
     }
