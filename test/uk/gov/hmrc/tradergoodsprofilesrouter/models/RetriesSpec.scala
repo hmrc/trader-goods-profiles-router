@@ -39,7 +39,7 @@ class RetriesSpec extends BaseConnectorSpec with ScalaFutures with MockitoSugar 
     override protected def actorSystem: ActorSystem = ActorSystem()
     override protected def configuration: Config    = ConfigFactory.parseString(
       """
-        |http-verbs.retries.intervals = [10ms, 10ms, 10ms]
+        |http-verbs.retries.intervals = [1ms, 2ms, 3ms]
         |""".stripMargin
     )
   }
@@ -155,7 +155,7 @@ class RetriesSpec extends BaseConnectorSpec with ScalaFutures with MockitoSugar 
   }
 
   private def connectorCallMocks(): Unit = {
-    val retriesConfig = List(Duration.ofMillis(1), Duration.ofMillis(1), Duration.ofMillis(1)).asJava
+    val retriesConfig = List(Duration.ofMillis(1), Duration.ofMillis(2), Duration.ofMillis(3)).asJava
 
     val timestamp = Instant.parse("2024-05-12T12:15:15.456321Z")
 
