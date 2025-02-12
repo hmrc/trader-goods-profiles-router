@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{never, reset, verify, when}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.writeableOf_JsValue
@@ -61,7 +61,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
 
       val request: UpdateRecordPayload = updateRecordPayload.as[UpdateRecordPayload]
-      val result  = await(eisConnector.patch(request, correlationId))
+      val result                       = await(eisConnector.patch(request, correlationId))
 
       result.value mustBe expectedResponse
       verify(httpClientV2).patch(url"http://localhost:1234/tgp/updaterecord/v1")
@@ -143,14 +143,18 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "send a request with the right url without clientID" in {
       when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
-      when(requestBuilder.execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]](), any[ExecutionContext]()))
+      when(
+        requestBuilder
+          .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]](), any[ExecutionContext]())
+      )
         .thenReturn(Future.successful(Right(expectedResponse)))
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/puttgprecord/v1"
       verify(httpClientV2).put(eqTo(url"$expectedUrl"))(any[HeaderCarrier]())
-      verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]](), any[ExecutionContext]())
+      verify(requestBuilder)
+        .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]](), any[ExecutionContext]())
     }
 
   }

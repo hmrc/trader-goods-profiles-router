@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.service.audit
 
 import org.apache.pekko.Done
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
@@ -92,7 +92,9 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
         .thenReturn(Future.successful(AuditResult.Success)) // Mock audit response
 
       val failureReason = Some(Seq("Some failure reason")) // Simulating failure reason
-      val result = await(sut.emitAuditRemoveRecord(eori, recordId, actorId, dateTime, "FAILED", INTERNAL_SERVER_ERROR, failureReason))
+      val result        = await(
+        sut.emitAuditRemoveRecord(eori, recordId, actorId, dateTime, "FAILED", INTERNAL_SERVER_ERROR, failureReason)
+      )
 
       result mustBe Done
 

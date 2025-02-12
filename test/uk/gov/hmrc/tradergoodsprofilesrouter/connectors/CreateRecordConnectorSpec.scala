@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
@@ -92,7 +92,8 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
           expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordCreateBearerToken"): _*
         )
         verify(requestBuilder).withBody(createRecordEisPayload)
-        verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
+        verify(requestBuilder)
+          .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
       }
 
       // TODO: After Release 2 remove x-client-id from headers
@@ -115,7 +116,8 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
         verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
         verify(requestBuilder).withBody(createRecordEisPayload)
-        verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
+        verify(requestBuilder)
+          .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
       }
     }
   }

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.{any, eq as meq}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{reset, verify, when}
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
@@ -31,7 +31,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 import java.net.URL
 import java.time.Instant
 import scala.concurrent.Future
-
 
 class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
@@ -66,7 +65,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe 200
   }
 
-
   "send a request with the right url for remove record when sendClientId feature flag is true" in {
     when(appConfig.sendClientId).thenReturn(true)
 
@@ -82,15 +80,14 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
 
     val expectedJson = Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId)
-    val jsonCaptor = ArgumentCaptor.forClass(classOf[JsValue])
+    val jsonCaptor   = ArgumentCaptor.forClass(classOf[JsValue])
 
-    verify(requestBuilder).withBody(jsonCaptor.capture())(any[BodyWritable[JsValue]], any(),any())
+    verify(requestBuilder).withBody(jsonCaptor.capture())(any[BodyWritable[JsValue]], any(), any())
     jsonCaptor.getValue mustBe expectedJson
 
     verifyExecuteForStatusHttpReader(correlationId)
     result.value mustBe 200
   }
-
 
   "send a request with the right url for remove record when sendClientId feature flag is false" in {
     when(appConfig.sendClientId).thenReturn(false)
@@ -112,13 +109,13 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     val capturedHeaders = headersCaptor.getValue
     println("Captured Headers: " + capturedHeaders)
 
-    capturedHeaders must contain allOf(
+    capturedHeaders    must contain allOf (
       "X-Correlation-ID" -> correlationId,
       "X-Forwarded-Host" -> "MDTP",
-      "Authorization" -> "Bearer dummyRecordRemoveBearerToken"
+      "Authorization"    -> "Bearer dummyRecordRemoveBearerToken"
     )
 
-    capturedHeaders must not contain ("X-Client-ID" -> "TSS")
+    capturedHeaders    must not contain ("X-Client-ID" -> "TSS")
 
     val jsonCaptor: ArgumentCaptor[JsValue] = ArgumentCaptor.forClass(classOf[JsValue])
     verify(requestBuilder).withBody(jsonCaptor.capture())(any(), any(), any())
@@ -127,9 +124,9 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     println("Captured JSON: " + capturedJson)
 
     capturedJson mustBe Json.obj(
-      "eori" -> eori,
+      "eori"     -> eori,
       "recordId" -> recordId,
-      "actorId" -> actorId
+      "actorId"  -> actorId
     )
 
     // Verify execute is called with the correct StatusHttpReader
@@ -167,15 +164,15 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
     println("Captured Headers: " + capturedHeaders)
 
-    capturedHeaders must contain allOf(
+    capturedHeaders    must contain allOf (
       "X-Correlation-ID" -> correlationId,
-      "Authorization" -> "Bearer dummyRecordRemoveBearerToken",
+      "Authorization"    -> "Bearer dummyRecordRemoveBearerToken",
       "X-Forwarded-Host" -> "MDTP",
-      "Accept" -> "application/json"
+      "Accept"           -> "application/json"
     )
 
     // Use the alias meq for equality matcher to avoid Scala's eq conflict.
-    import org.mockito.ArgumentMatchers.{any, eq as meq}
+    import org.mockito.ArgumentMatchers.{any, eq => meq}
     verify(requestBuilder).withBody(
       meq(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId))
     )(any, any, any)

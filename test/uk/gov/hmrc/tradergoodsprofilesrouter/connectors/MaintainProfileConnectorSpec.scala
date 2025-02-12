@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.*
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
@@ -68,7 +68,8 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyMaintainProfileBearerToken"): _*)
       verify(requestBuilder).withBody(eqTo(Json.toJson(maintainProfileEisRequest)))(any, any, any)
       verify(requestBuilder).execute(any, any)
-      verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
+      verify(requestBuilder)
+        .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
 
       result.value mustBe maintainProfileResponse
     }
@@ -99,7 +100,8 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       verify(requestBuilder, never()).setHeader("X-Client-ID" -> "TSS")
       verify(requestBuilder).withBody(eqTo(Json.toJson(maintainProfileEisRequest)))(any, any, any)
       verify(requestBuilder).execute(any, any)
-      verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
+      verify(requestBuilder)
+        .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
 
       result.value mustBe maintainProfileResponse
     }

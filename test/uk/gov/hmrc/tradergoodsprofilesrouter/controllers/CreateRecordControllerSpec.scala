@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{RETURNS_DEEP_STUBS, atLeastOnce, reset, verify, verifyNoInteractions, when}
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue

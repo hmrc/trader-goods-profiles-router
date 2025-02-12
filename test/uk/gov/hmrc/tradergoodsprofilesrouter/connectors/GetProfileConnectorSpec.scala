@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{reset, verify, when}
 import play.api.mvc.Result
 import play.api.mvc.Results.BadRequest
@@ -52,13 +52,11 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
 
   }
 
-
   reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
-    setUpAppConfig()
-    when(dateTimeService.timestamp).thenReturn(timestamp)
+  setUpAppConfig()
+  when(dateTimeService.timestamp).thenReturn(timestamp)
   when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-
 
   "get" should {
     "return 200" in {
@@ -74,14 +72,13 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
 
         verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any[HeaderCarrier])
 
-        verify(requestBuilder).execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
+        verify(requestBuilder)
+          .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
 
       }
     }
 
-
-
-  "return an error if EIS return an error" in {
+    "return an error if EIS return an error" in {
       when(requestBuilder.execute[Either[Result, ProfileResponse]](any, any))
         .thenReturn(Future.successful(Left(BadRequest("error"))))
 

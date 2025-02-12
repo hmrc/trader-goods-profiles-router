@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatestplus.mockito.MockitoSugar
@@ -36,7 +36,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.*
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 import cats.implicits._
-
 
 import scala.concurrent.ExecutionContext
 
@@ -96,7 +95,9 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
     }
 
     "return a 400 Bad Request when clientId is missing" in {
-      val headersWithoutClientId = validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase(HeaderNames.ClientId) }
+      val headersWithoutClientId = validHeaders.filterNot { case (name, _) =>
+        name.equalsIgnoreCase(HeaderNames.ClientId)
+      }
 
       val result = sut.requestAdvice(eori, recordId)(
         FakeRequest().withBody(requestAccreditationData).withHeaders(headersWithoutClientId: _*)

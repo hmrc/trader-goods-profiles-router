@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
 import org.apache.pekko.Done
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.{BeforeAndAfterEach, EitherValues}

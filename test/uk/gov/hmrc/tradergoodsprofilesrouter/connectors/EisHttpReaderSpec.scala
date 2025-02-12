@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq as eqTo}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
 import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
@@ -46,10 +46,13 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
   "HttpReader" should {
     "handle error response" in {
       val errorHandlerSpy = mock[TestEisHttpReaderHandler]
-      val eisResponse = HttpResponse(400, Json.toJson(getEisRecordsResponseData), Map.empty) // ✅ Ensure valid JSON response
+      val eisResponse     =
+        HttpResponse(400, Json.toJson(getEisRecordsResponseData), Map.empty) // ✅ Ensure valid JSON response
 
       when(errorHandlerSpy.handleErrorResponse(any[HttpResponse], any[String]))
-        .thenReturn(EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")))
+        .thenReturn(
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
+        )
 
       HttpReader[GetEisRecordsResponse](correlationId, errorHandlerSpy.handleErrorResponse)
         .read("GET", "any-url", eisResponse)
@@ -61,10 +64,12 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
   "remove record responseHandler" should {
     "handle error response" in {
       val errorHandlerSpy = mock[TestEisHttpReaderHandler]
-      val eisResponse = HttpResponse(400, "")
+      val eisResponse     = HttpResponse(400, "")
 
       when(errorHandlerSpy.handleErrorResponse(any[HttpResponse], any[String]))
-        .thenReturn(EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error")))
+        .thenReturn(
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
+        )
 
       StatusHttpReader(correlationId, errorHandlerSpy.handleErrorResponse)
         .read("GET", "any-url", eisResponse)
@@ -73,4 +78,3 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
     }
   }
 }
-
