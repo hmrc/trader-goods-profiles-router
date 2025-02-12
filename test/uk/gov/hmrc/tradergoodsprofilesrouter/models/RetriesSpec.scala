@@ -33,6 +33,8 @@ import scala.jdk.CollectionConverters._
 
 class RetriesSpec extends BaseConnectorSpec with ScalaFutures with MockitoSugar with GetRecordsDataSupport {
 
+  private implicit val patience: PatienceConfig = PatienceConfig(timeout = 10.seconds, interval = 500.millis)
+
   object TestRetries extends Retries {
     override protected def actorSystem: ActorSystem = ActorSystem()
     override protected def configuration: Config    = ConfigFactory.parseString(
@@ -51,6 +53,7 @@ class RetriesSpec extends BaseConnectorSpec with ScalaFutures with MockitoSugar 
   "retryFor" should {
 
     "retry when BAD_GATEWAY error occurs" in {
+
       var attempt = 0
 
       def failingBlock: Future[Either[EisHttpErrorResponse, String]] = Future {
