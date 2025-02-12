@@ -20,12 +20,12 @@ import play.api.libs.json.{Json, OFormat, OWrites}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 
 case class MaintainProfileResponse(
-                                    eori: String,
-                                    actorId: String,
-                                    ukimsNumber: Option[String],
-                                    nirmsNumber: Option[String],
-                                    niphlNumber: Option[String]
-                                  )
+  eori: String,
+  actorId: String,
+  ukimsNumber: Option[String],
+  nirmsNumber: Option[String],
+  niphlNumber: Option[String]
+)
 
 object MaintainProfileResponse extends NiphlNumberFilter {
 

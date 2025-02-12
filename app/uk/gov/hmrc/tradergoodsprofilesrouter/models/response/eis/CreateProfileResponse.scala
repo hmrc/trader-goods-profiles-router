@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
 
 case class CreateProfileResponse(
   eori: String,
