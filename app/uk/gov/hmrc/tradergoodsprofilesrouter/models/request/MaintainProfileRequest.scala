@@ -21,11 +21,11 @@ import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validNiphl}
 
 case class MaintainProfileRequest(
-                                   actorId: String,
-                                   ukimsNumber: String,
-                                   nirmsNumber: Option[String],
-                                   niphlNumber: Option[String]
-                                 )
+  actorId: String,
+  ukimsNumber: String,
+  nirmsNumber: Option[String],
+  niphlNumber: Option[String]
+)
 
 object MaintainProfileRequest {
 
@@ -39,9 +39,7 @@ object MaintainProfileRequest {
     ((JsPath \ "actorId").write[String] and
       (JsPath \ "ukimsNumber").write[String] and
       (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String])(
-      request => (request.actorId, request.ukimsNumber, request.nirmsNumber, request.niphlNumber)
+      (JsPath \ "niphlNumber").writeNullable[String])(request =>
+      (request.actorId, request.ukimsNumber, request.nirmsNumber, request.niphlNumber)
     )
 }
-
-

@@ -26,14 +26,14 @@ import scala.reflect.ClassTag
 object EisHttpReader extends Logging {
 
   case class HttpReader[T](correlationId: String, errorHandler: (HttpResponse, String) => EisHttpErrorResponse)(implicit
-                                                                                                                reads: Reads[T],
-                                                                                                                ct: ClassTag[T]
+    reads: Reads[T],
+    ct: ClassTag[T]
   ) extends HttpReads[Either[EisHttpErrorResponse, T]] {
     override def read(method: String, url: String, response: HttpResponse): Either[EisHttpErrorResponse, T] =
       response match {
         case response if isSuccessful(response.status) =>
           Right(parseJson[T](response))
-        case response =>
+        case response                                  =>
           logger.warn(
             s"[HttpReader] - Downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body}"
           )
@@ -42,11 +42,11 @@ object EisHttpReader extends Logging {
   }
 
   case class StatusHttpReader(correlationId: String, errorHandler: (HttpResponse, String) => EisHttpErrorResponse)
-    extends HttpReads[Either[EisHttpErrorResponse, Int]] {
+      extends HttpReads[Either[EisHttpErrorResponse, Int]] {
     override def read(method: String, url: String, response: HttpResponse): Either[EisHttpErrorResponse, Int] =
       response match {
         case response if isSuccessful(response.status) => Right(response.status)
-        case response =>
+        case response                                  =>
           logger.warn(
             s"[StatusHttpReader] - Downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body}"
           )
@@ -54,20 +54,21 @@ object EisHttpReader extends Logging {
       }
   }
 
-  def parseJson[T](response: HttpResponse)(implicit reads: Reads[T], ct: ClassTag[T]): T = {
+  def parseJson[T](response: HttpResponse)(implicit reads: Reads[T], ct: ClassTag[T]): T =
     response.json.validate[T] match {
       case JsSuccess(result, _) => result
-      case JsError(errors) =>
-        val errorMsg = errors.map { case (path, validationErrors) =>
-          s"$path -> ${validationErrors.map(_.message).mkString(", ")}"
-        }.mkString("; ")
+      case JsError(errors)      =>
+        val errorMsg = errors
+          .map { case (path, validationErrors) =>
+            s"$path -> ${validationErrors.map(_.message).mkString(", ")}"
+          }
+          .mkString("; ")
 
         logger.warn(
           s"[EisHttpReader] - JSON validation failed for type: ${ct.runtimeClass.getSimpleName}, errors: $errorMsg"
         )
         throw new RuntimeException(s"Response body could not be parsed as type ${ct.runtimeClass.getSimpleName}")
     }
-  }
 
   def isSuccessful(status: Int): Boolean = status >= 200 && status < 300
 }

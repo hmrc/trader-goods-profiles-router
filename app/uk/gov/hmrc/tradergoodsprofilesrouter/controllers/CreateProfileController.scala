@@ -41,7 +41,7 @@ class CreateProfileController @Inject() (
 
   def create(eori: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
     val result = for {
-      _                    <- EitherT.fromEither[Future](validateAcceptHeader)
+      _ <- EitherT.fromEither[Future](validateAcceptHeader)
 
       createProfileRequest <- EitherT.fromEither[Future](validateRequestBody[CreateProfileRequest](fieldsToErrorCode))
       response             <- EitherT(createProfileService.createProfile(eori, createProfileRequest))

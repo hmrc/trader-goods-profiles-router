@@ -33,7 +33,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
 class AuditService @Inject() (
   auditConnector: AuditConnector,
   override val dateTimeService: DateTimeService

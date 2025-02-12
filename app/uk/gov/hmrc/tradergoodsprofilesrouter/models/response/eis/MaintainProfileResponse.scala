@@ -21,12 +21,12 @@ import play.api.libs.json.{JsPath, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 
 case class MaintainProfileResponse(
-                                    eori: String,
-                                    actorId: String,
-                                    ukimsNumber: Option[String],
-                                    nirmsNumber: Option[String],
-                                    niphlNumber: Option[String]
-                                  )
+  eori: String,
+  actorId: String,
+  ukimsNumber: Option[String],
+  nirmsNumber: Option[String],
+  niphlNumber: Option[String]
+)
 
 object MaintainProfileResponse extends NiphlNumberFilter {
 
@@ -46,4 +46,3 @@ object MaintainProfileResponse extends NiphlNumberFilter {
       (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes))
       (response => (response.eori, response.actorId, response.ukimsNumber, response.nirmsNumber, response.niphlNumber))
 }
-

@@ -17,15 +17,15 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
 import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{JsPath, OWrites, Reads, Json}
+import play.api.libs.json.{JsPath, Json, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validNiphl}
 
 case class CreateProfileRequest(
-                                 actorId: String,
-                                 ukimsNumber: String,
-                                 nirmsNumber: Option[String],
-                                 niphlNumber: Option[String]
-                               )
+  actorId: String,
+  ukimsNumber: String,
+  nirmsNumber: Option[String],
+  niphlNumber: Option[String]
+)
 
 object CreateProfileRequest {
 
@@ -33,17 +33,15 @@ object CreateProfileRequest {
     ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "ukimsNumber").read(lengthBetween(32, 32)) and
       (JsPath \ "nirmsNumber").readNullable(lengthBetween(13, 13)) and
-      (JsPath \ "niphlNumber").readNullable(validNiphl)
-      )(CreateProfileRequest.apply)
+      (JsPath \ "niphlNumber").readNullable(validNiphl))(CreateProfileRequest.apply)
 
   implicit val writes: OWrites[CreateProfileRequest] =
     OWrites[CreateProfileRequest] { request =>
       Json.obj(
-        "actorId" -> request.actorId,
+        "actorId"     -> request.actorId,
         "ukimsNumber" -> request.ukimsNumber,
         "nirmsNumber" -> request.nirmsNumber,
         "niphlNumber" -> request.niphlNumber
       )
     }
 }
-

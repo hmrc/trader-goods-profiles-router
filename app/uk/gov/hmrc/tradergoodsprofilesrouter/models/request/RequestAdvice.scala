@@ -21,24 +21,23 @@ import play.api.libs.json.{JsPath, Json, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validEmailAddress}
 
 case class RequestAdvice(
-                          actorId: String,
-                          requestorName: String,
-                          requestorEmail: String
-                        )
+  actorId: String,
+  requestorName: String,
+  requestorEmail: String
+)
 
 object RequestAdvice {
 
   implicit val reads: Reads[RequestAdvice] =
     ((JsPath \ "actorId").read(lengthBetween(14, 17)) and
       (JsPath \ "requestorName").read(lengthBetween(1, 70)) and
-      (JsPath \ "requestorEmail").read(lengthBetween(3, 254).keepAnd(validEmailAddress))
-      )(RequestAdvice.apply)
+      (JsPath \ "requestorEmail").read(lengthBetween(3, 254).keepAnd(validEmailAddress)))(RequestAdvice.apply)
 
   implicit val writes: OWrites[RequestAdvice] =
     OWrites[RequestAdvice] { requestAdvice =>
       Json.obj(
-        "actorId"       -> requestAdvice.actorId,
-        "requestorName" -> requestAdvice.requestorName,
+        "actorId"        -> requestAdvice.actorId,
+        "requestorName"  -> requestAdvice.requestorName,
         "requestorEmail" -> requestAdvice.requestorEmail
       )
     }
