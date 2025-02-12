@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,28 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{JsPath, OWrites, Reads}
+import play.api.libs.json.{Json, OFormat, OWrites}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 
 case class MaintainProfileResponse(
-  eori: String,
-  actorId: String,
-  ukimsNumber: Option[String],
-  nirmsNumber: Option[String],
-  niphlNumber: Option[String]
-)
+                                    eori: String,
+                                    actorId: String,
+                                    ukimsNumber: Option[String],
+                                    nirmsNumber: Option[String],
+                                    niphlNumber: Option[String]
+                                  )
 
 object MaintainProfileResponse extends NiphlNumberFilter {
 
-  implicit val reads: Reads[MaintainProfileResponse] =
-    ((JsPath \ "eori").read[String] and
-      (JsPath \ "actorId").read[String] and
-      (JsPath \ "ukimsNumber").readNullable[String] and
-      (JsPath \ "nirmsNumber").readNullable[String] and
-      (JsPath \ "niphlNumber").readNullable[String])(MaintainProfileResponse.apply _)
+  implicit val format: OFormat[MaintainProfileResponse] = Json.format[MaintainProfileResponse]
 
-  // ✅ Fix: Replacing `unlift` with a function that extracts case class values
-  implicit lazy val writes: OWrites[MaintainProfileResponse] =
-    (JsPath \ "eori").write[String] and
-      (JsPath \ "actorId").write[String] and
-      (JsPath \ "ukimsNumber").writeNullable[String] and
-      (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes)
-  (response => (response.eori, response.actorId, response.ukimsNumber, response.nirmsNumber, response.niphlNumber))
+  implicit lazy val writes: OWrites[MaintainProfileResponse] = OWrites { response =>
+    Json.obj(
+      "eori"        -> response.eori,
+      "actorId"     -> response.actorId,
+      "ukimsNumber" -> response.ukimsNumber,
+      "nirmsNumber" -> response.nirmsNumber,
+      "niphlNumber" -> removeLeadingDashes(response.niphlNumber) // ✅ FIXED: Apply directly
+    )
+  }
 }

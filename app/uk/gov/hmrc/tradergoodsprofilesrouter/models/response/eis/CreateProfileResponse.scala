@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.{JsPath, OWrites, Reads}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
+
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
 
 case class CreateProfileResponse(
   eori: String,
@@ -28,20 +28,29 @@ case class CreateProfileResponse(
   niphlNumber: Option[String]
 )
 
+trait NiphlNumberFilter {
+  def removeLeadingDashes(niphl: Option[String]): Option[String] =
+    niphl.map(_.stripPrefix("-"))
+}
+
 object CreateProfileResponse extends NiphlNumberFilter {
 
   implicit val reads: Reads[CreateProfileResponse] =
-    ((JsPath \ "eori").read[String] and
-      (JsPath \ "actorId").read[String] and
-      (JsPath \ "ukimsNumber").readNullable[String] and
-      (JsPath \ "nirmsNumber").readNullable[String] and
-      (JsPath \ "niphlNumber").readNullable[String])(CreateProfileResponse.apply _)
+    (
+      (JsPath \ "eori").read[String] and
+        (JsPath \ "actorId").read[String] and
+        (JsPath \ "ukimsNumber").readNullable[String] and
+        (JsPath \ "nirmsNumber").readNullable[String] and
+        (JsPath \ "niphlNumber").readNullable[String]
+    )(CreateProfileResponse.apply _)
 
-  implicit lazy val writes: OWrites[CreateProfileResponse] =
-    (JsPath \ "eori").write[String] and
-      (JsPath \ "actorId").write[String] and
-      (JsPath \ "ukimsNumber").writeNullable[String] and
-      (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes)
-  (response => (response.eori, response.actorId, response.ukimsNumber, response.nirmsNumber, response.niphlNumber))
+  implicit lazy val writes: OWrites[CreateProfileResponse] = new OWrites[CreateProfileResponse] {
+    def writes(response: CreateProfileResponse): JsObject = Json.obj(
+      "eori"        -> response.eori,
+      "actorId"     -> response.actorId,
+      "ukimsNumber" -> response.ukimsNumber,
+      "nirmsNumber" -> response.nirmsNumber,
+      "niphlNumber" -> removeLeadingDashes(response.niphlNumber)
+    )
+  }
 }
