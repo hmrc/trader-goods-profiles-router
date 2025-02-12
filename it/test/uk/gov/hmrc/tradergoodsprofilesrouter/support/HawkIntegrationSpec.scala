@@ -20,13 +20,12 @@ abstract class HawkIntegrationSpec extends BaseIntegrationSpec {
 
   def hawkConnectorPath: String
 
-  override def extraApplicationConfig: Map[String, Any] = {
+  override def extraApplicationConfig: Map[String, Any] =
     Map(
       s"microservice.services.hawk.host" -> wireMockHost,
       s"microservice.services.hawk.port" -> wireMockPort,
-      s"microservice.services.hawk.uri" -> hawkConnectorPath,
-      "auditing.enabled" -> false
+      s"microservice.services.hawk.uri"  -> hawkConnectorPath,
+      "auditing.enabled"                 -> false
     )
-  }
 
 }

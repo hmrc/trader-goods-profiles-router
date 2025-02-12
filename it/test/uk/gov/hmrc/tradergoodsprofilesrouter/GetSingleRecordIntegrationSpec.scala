@@ -48,11 +48,10 @@ class GetSingleRecordIntegrationSpec
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
   }
 
-  override def extraApplicationConfig: Map[String, Any] = {
+  override def extraApplicationConfig: Map[String, Any] =
     super.extraApplicationConfig ++ Map(
       "features.sendClientId" -> true
     )
-  }
 
   "attempting to get records, when" - {
     "the request is" - {

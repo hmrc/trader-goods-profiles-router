@@ -45,7 +45,6 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
   }
 
-
   "attempting to update a record, when" - {
     "the request is" - {
       "valid, specifically" - {
