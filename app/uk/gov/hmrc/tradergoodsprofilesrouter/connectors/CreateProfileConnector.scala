@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import play.api.http.MimeTypes
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -32,7 +34,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class CreateProfileConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -41,11 +45,14 @@ class CreateProfileConnector @Inject() (
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] = {
     val url = appConfig.hawkConfig.createProfileUrl
-    httpClientV2
-      .post(url"$url")
-      .setHeader(headers(correlationId): _*)
-      .withBody(Json.toJson(request))
-      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+
+    retryFor[Int]("create profile")(retryCondition) {
+      httpClientV2
+        .post(url"$url")
+        .setHeader(headers(correlationId): _*)
+        .withBody(Json.toJson(request))
+        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    }
   }
 
   private def headers(correlationId: String): Seq[(String, String)] =

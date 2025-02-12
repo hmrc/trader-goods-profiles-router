@@ -17,16 +17,26 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import play.api.http.MimeTypes
+import play.api.http.Status.{BAD_GATEWAY, INTERNAL_SERVER_ERROR}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.Retries
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService.DateTimeFormat
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 
-trait BaseConnector {
+trait BaseConnector extends Retries {
 
   def appConfig: AppConfig
   def dateTimeService: DateTimeService
+
+  def retryCondition: PartialFunction[EisHttpErrorResponse, Boolean] = {
+    case EisHttpErrorResponse(BAD_GATEWAY, _) => true
+    case EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(_, "BAD_GATEWAY", _, _)) => true
+    case EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(_, "502", _, _)) => true
+  }
+
 
   def commonHeaders(
     correlationId: String,

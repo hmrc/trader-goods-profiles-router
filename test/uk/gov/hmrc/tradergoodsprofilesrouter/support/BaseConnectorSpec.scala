@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{verify, when}
 import org.mockito.captor.ArgCaptor
@@ -33,7 +35,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
 
 import scala.concurrent.ExecutionContext
 
-trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValues {
+trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValues with EisErrorSupport {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
@@ -48,6 +50,8 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   val httpClientV2: HttpClientV2       = mock[HttpClientV2]
   val requestBuilder: RequestBuilder   = mock[RequestBuilder]
   val dateTimeService: DateTimeService = mock[DateTimeService]
+  val config: Config               = mock[Config]
+  val as: ActorSystem = ActorSystem()
 
   def expectedCommonHeader(
     correlationId: String,

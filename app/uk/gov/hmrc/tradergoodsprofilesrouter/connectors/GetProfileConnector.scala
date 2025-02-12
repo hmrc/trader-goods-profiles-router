@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import play.api.http.MimeTypes
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -35,7 +37,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetProfileConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -47,10 +51,12 @@ class GetProfileConnector @Inject() (
 
     val url = s"${appConfig.hawkConfig.getProfileUrl}/$eori"
 
-    httpClientV2
-      .get(url"$url")
-      .setHeader(headers(correlationId): _*)
-      .execute(HttpReader[ProfileResponse](correlationId, handleErrorResponse), ec)
+    retryFor[ProfileResponse]("get profile")(retryCondition) {
+      httpClientV2
+        .get(url"$url")
+        .setHeader(headers(correlationId): _*)
+        .execute(HttpReader[ProfileResponse](correlationId, handleErrorResponse), ec)
+    }
   }
 
   private def headers(correlationId: String): Seq[(String, String)] =

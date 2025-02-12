@@ -31,13 +31,12 @@ import scala.util.Try
 
 trait EisHttpErrorHandler extends Logging {
 
-  def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): EisHttpErrorResponse =
+  def handleErrorResponse(httpResponse: HttpResponse, correlationId: String): EisHttpErrorResponse = {
     httpResponse.status match {
-
       case BAD_REQUEST =>
         val checkError: ErrorResponse = determine400Error(correlationId, httpResponse.body)
         checkError.errors
-          .flatMap(_.filter(_.errorNumber == 7).headOption) match {
+          .flatMap(_.find(_.errorNumber == 7)) match {
           case Some(_) =>
             EisHttpErrorResponse(
               FORBIDDEN,
@@ -102,6 +101,7 @@ trait EisHttpErrorHandler extends Logging {
           ErrorResponse(correlationId, UnexpectedErrorCode, UnexpectedErrorMessage)
         )
     }
+  }
 
   private def determine500Error(correlationId: String, message: String): ErrorResponse =
     Json.parse(message).validate[ErrorDetail] match {

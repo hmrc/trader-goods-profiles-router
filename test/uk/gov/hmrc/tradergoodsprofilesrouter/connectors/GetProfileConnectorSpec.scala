@@ -18,8 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
-import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ProfileResponse
@@ -29,12 +27,12 @@ import java.time.Instant
 import java.util.UUID
 import scala.concurrent.Future
 
-class GetProfileConnectorSpec extends BaseConnectorSpec {
+class GetProfileConnectorSpec extends BaseConnectorSpec  {
 
   private val eori          = "123"
   private val timestamp     = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId = UUID.randomUUID().toString
-  private val sut           = new GetProfileConnector(appConfig, httpClientV2, dateTimeService)
+  private val sut           = new GetProfileConnector(appConfig, httpClientV2, dateTimeService,as,config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -49,7 +47,7 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
   }
   "get" should {
     "return 200" in {
-      when(requestBuilder.execute[Either[Result, ProfileResponse]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, ProfileResponse]](any, any))
         .thenReturn(Future.successful(Right(ProfileResponse(eori, "123", None, None, None))))
 
       val result = await(sut.get(eori, correlationId))
@@ -67,12 +65,12 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, ProfileResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, ProfileResponse]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val result = await(sut.get(eori, correlationId))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
   }
 
