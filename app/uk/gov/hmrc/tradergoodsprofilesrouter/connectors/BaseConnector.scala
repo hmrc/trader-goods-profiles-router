@@ -32,11 +32,10 @@ trait BaseConnector extends Retries {
   def dateTimeService: DateTimeService
 
   def retryCondition: PartialFunction[EisHttpErrorResponse, Boolean] = {
-    case EisHttpErrorResponse(BAD_GATEWAY, _) => true
+    case EisHttpErrorResponse(BAD_GATEWAY, _)                                               => true
     case EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(_, "BAD_GATEWAY", _, _)) => true
-    case EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(_, "502", _, _)) => true
+    case EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(_, "502", _, _))         => true
   }
-
 
   def commonHeaders(
     correlationId: String,

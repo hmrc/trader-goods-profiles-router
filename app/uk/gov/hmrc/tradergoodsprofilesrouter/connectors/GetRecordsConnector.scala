@@ -42,11 +42,11 @@ class GetRecordsConnector @Inject() (
     with EisHttpErrorHandler {
 
   def fetchRecord(
-                   eori: String,
-                   recordId: String,
-                   correlationId: String,
-                   urlPath: String
-                 )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
+    eori: String,
+    recordId: String,
+    correlationId: String,
+    urlPath: String
+  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
     val url = s"$urlPath/$eori/$recordId"
 
     retryFor[GetEisRecordsResponse]("fetch record")(retryCondition) {

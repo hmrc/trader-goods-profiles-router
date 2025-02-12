@@ -24,10 +24,13 @@ trait EisErrorSupport {
 
   private val genericErrorMessage = "There was an error"
 
-  val badGatewayEISError: EisHttpErrorResponse = EisHttpErrorResponse(BAD_GATEWAY, ErrorResponse("correlationId", s"$BAD_GATEWAY", genericErrorMessage, None))
-  val badRequestEISError: EisHttpErrorResponse = EisHttpErrorResponse(BAD_REQUEST, ErrorResponse("correlationId", s"$BAD_REQUEST", genericErrorMessage, None))
-  val forbiddenEISError: EisHttpErrorResponse = EisHttpErrorResponse(
-    FORBIDDEN, ErrorResponse("correlationId", s"$FORBIDDEN", "Forbidden Error")
+  val badGatewayEISError: EisHttpErrorResponse =
+    EisHttpErrorResponse(BAD_GATEWAY, ErrorResponse("correlationId", s"$BAD_GATEWAY", genericErrorMessage, None))
+  val badRequestEISError: EisHttpErrorResponse =
+    EisHttpErrorResponse(BAD_REQUEST, ErrorResponse("correlationId", s"$BAD_REQUEST", genericErrorMessage, None))
+  val forbiddenEISError: EisHttpErrorResponse  = EisHttpErrorResponse(
+    FORBIDDEN,
+    ErrorResponse("correlationId", s"$FORBIDDEN", "Forbidden Error")
   )
 
 }

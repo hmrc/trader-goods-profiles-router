@@ -35,7 +35,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
 
-  private val connector = new MaintainProfileConnector(appConfig, httpClientV2, dateTimeService,as,config)
+  private val connector = new MaintainProfileConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

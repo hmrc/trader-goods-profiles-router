@@ -33,7 +33,7 @@ import java.time.Instant
 import java.util.UUID
 import scala.concurrent.Future
 
-class WithdrawAdviceConnectorSpec extends BaseConnectorSpec  with BeforeAndAfterEach {
+class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterEach {
 
   private val uuidService   = mock[UuidService]
   private val correlationId = UUID.randomUUID().toString

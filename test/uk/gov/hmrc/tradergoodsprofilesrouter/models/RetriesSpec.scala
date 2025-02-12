@@ -31,17 +31,11 @@ import java.time.{Duration, Instant}
 import scala.concurrent.Future
 import scala.jdk.CollectionConverters._
 
-class RetriesSpec
-  extends BaseConnectorSpec
-    with ScalaFutures
-    with MockitoSugar
-
-    with GetRecordsDataSupport {
-
+class RetriesSpec extends BaseConnectorSpec with ScalaFutures with MockitoSugar with GetRecordsDataSupport {
 
   object TestRetries extends Retries {
     override protected def actorSystem: ActorSystem = ActorSystem()
-    override protected def configuration: Config = ConfigFactory.parseString(
+    override protected def configuration: Config    = ConfigFactory.parseString(
       """
         |http-verbs.retries.intervals = [10ms, 10ms, 10ms]
         |""".stripMargin
@@ -50,8 +44,8 @@ class RetriesSpec
 
   val successfulResponse: Right[Nothing, String] = Right("Success")
 
-  def retryCondition: PartialFunction[EisHttpErrorResponse, Boolean] = {
-    case EisHttpErrorResponse(BAD_GATEWAY, _) => true
+  def retryCondition: PartialFunction[EisHttpErrorResponse, Boolean] = { case EisHttpErrorResponse(BAD_GATEWAY, _) =>
+    true
   }
 
   "retryFor" should {
@@ -117,8 +111,8 @@ class RetriesSpec
   "when connector fails" should {
     val connector = new GetRecordsConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
-    val eori = "GB123456789011"
-    val recordId = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+    val eori                  = "GB123456789011"
+    val recordId              = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
     val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
     "repeat until failure" in {
@@ -132,7 +126,8 @@ class RetriesSpec
           Future.successful(Left(badRequestEISError))
         )
 
-      val result = connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1").futureValue
+      val result =
+        connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1").futureValue
 
       result.left.value mustBe badRequestEISError
     }
@@ -149,7 +144,8 @@ class RetriesSpec
           Future.successful(Right(response))
         )
 
-      val result = connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1").futureValue
+      val result =
+        connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1").futureValue
 
       result.value mustBe response
     }

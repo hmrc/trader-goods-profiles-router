@@ -26,11 +26,11 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetReco
 import java.time.Instant
 import scala.concurrent.Future
 
-class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport  {
+class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSupport {
 
-  private val eori = "GB123456789011"
-  private val recordId = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  private val timestamp = Instant.parse("2024-05-12T12:15:15.456321Z")
+  private val eori                  = "GB123456789011"
+  private val recordId              = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val connector = new GetRecordsConnector(appConfig, httpClientV2, dateTimeService, as, config)
@@ -73,7 +73,6 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       }
     }
 
-
     "send a request with the right parameters" when {
       "sendClientId feature flag is false" in {
         when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
@@ -115,7 +114,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
 
   "fetchRecords" should {
     "fetch multiple records successfully" in {
-      val defaultSize = 500
+      val defaultSize                     = 500
       val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
 
       when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
@@ -153,7 +152,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       await(connector.fetchRecords(eori, correlationId, 1, Some(1), Some(timestamp)))
 
       val expectedLastUpdateDate = Instant.parse("2024-05-12T12:15:15Z")
-      val expectedUrl =
+      val expectedUrl            =
         s"http://localhost:1234/tgp/getrecords/v1/$eori?lastUpdatedDate=$expectedLastUpdateDate&page=1&size=1"
       verify(httpClientV2).get(url"$expectedUrl")
       verify(requestBuilder).setHeader(expectedHeaderForGetMethod(correlationId, "dummyRecordGetBearerToken"): _*)

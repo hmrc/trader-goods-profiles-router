@@ -31,13 +31,13 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 import java.time.Instant
 import scala.concurrent.Future
 
-class AccreditationConnectorSpec extends BaseConnectorSpec  {
+class AccreditationConnectorSpec extends BaseConnectorSpec {
 
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val sut: RequestAdviceConnector =
-    new RequestAdviceConnector(appConfig, httpClientV2, dateTimeService,as,config)
+    new RequestAdviceConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   private val expectedHeader: Seq[(String, String)] =
     Seq(

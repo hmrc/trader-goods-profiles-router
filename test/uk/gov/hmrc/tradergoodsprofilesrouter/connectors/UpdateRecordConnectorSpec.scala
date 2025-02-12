@@ -29,12 +29,12 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateR
 import java.time.Instant
 import scala.concurrent.Future
 
-class UpdateRecordConnectorSpec extends BaseConnectorSpec  with CreateRecordDataSupport {
+class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataSupport {
 
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
   private val expectedResponse      = createOrUpdateRecordEisResponse
-  private val eisConnector          = new UpdateRecordConnector(appConfig, httpClientV2, dateTimeService,as,config)
+  private val eisConnector          = new UpdateRecordConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

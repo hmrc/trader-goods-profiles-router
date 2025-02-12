@@ -50,8 +50,8 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   val httpClientV2: HttpClientV2       = mock[HttpClientV2]
   val requestBuilder: RequestBuilder   = mock[RequestBuilder]
   val dateTimeService: DateTimeService = mock[DateTimeService]
-  val config: Config               = mock[Config]
-  val as: ActorSystem = ActorSystem()
+  val config: Config                   = mock[Config]
+  val as: ActorSystem                  = ActorSystem()
 
   def expectedCommonHeader(
     correlationId: String,

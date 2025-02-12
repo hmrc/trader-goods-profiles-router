@@ -37,26 +37,23 @@ trait Retries {
   private val logger = LoggerFactory.getLogger("application")
 
   def retryFor[A](
-                   label    : String
-                 )(condition: PartialFunction[EisHttpErrorResponse, Boolean]
-                 )(block    : => Future[Either[EisHttpErrorResponse, A]]
-                 )(implicit
-                   ec: ExecutionContext
-                 ): Future[Either[EisHttpErrorResponse, A]] = {
+    label: String
+  )(condition: PartialFunction[EisHttpErrorResponse, Boolean])(block: => Future[Either[EisHttpErrorResponse, A]])(
+    implicit ec: ExecutionContext
+  ): Future[Either[EisHttpErrorResponse, A]] = {
 
-     def loop(remainingIntervals: Seq[FiniteDuration]): Future[Either[EisHttpErrorResponse, A]] = {
+    def loop(remainingIntervals: Seq[FiniteDuration]): Future[Either[EisHttpErrorResponse, A]] =
       block.flatMap {
         case Left(error) if condition.lift(error).getOrElse(false) && remainingIntervals.nonEmpty =>
-          val delay = remainingIntervals.head
+          val delay   = remainingIntervals.head
           logger.warn(s"Retrying $label in $delay due to error: ${error.errorResponse}")
           val mdcData = Mdc.mdcData
           after(delay, actorSystem.scheduler) {
             Mdc.putMdc(mdcData)
             loop(remainingIntervals.tail)
           }
-        case result => Future.successful(result)
+        case result                                                                               => Future.successful(result)
       }
-    }
 
     loop(intervals)
   }

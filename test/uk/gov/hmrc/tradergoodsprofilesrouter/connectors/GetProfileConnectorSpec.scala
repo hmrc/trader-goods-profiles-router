@@ -27,12 +27,12 @@ import java.time.Instant
 import java.util.UUID
 import scala.concurrent.Future
 
-class GetProfileConnectorSpec extends BaseConnectorSpec  {
+class GetProfileConnectorSpec extends BaseConnectorSpec {
 
   private val eori          = "123"
   private val timestamp     = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId = UUID.randomUUID().toString
-  private val sut           = new GetProfileConnector(appConfig, httpClientV2, dateTimeService,as,config)
+  private val sut           = new GetProfileConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

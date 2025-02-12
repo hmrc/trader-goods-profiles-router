@@ -28,7 +28,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 import java.time.Instant
 import scala.concurrent.Future
 
-class RemoveRecordConnectorSpec extends BaseConnectorSpec  {
+class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
   private val eori                  = "GB123456789011"
   private val actorId               = "GB123456789011"
@@ -36,7 +36,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec  {
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val connector = new RemoveRecordConnector(appConfig, httpClientV2, dateTimeService,as,config)
+  private val connector = new RemoveRecordConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
