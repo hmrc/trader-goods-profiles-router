@@ -16,14 +16,17 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar.{reset, when}
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.mockito.Mockito.when
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.scalatest.concurrent.ScalaFutures.*
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status._
+import org.scalatestplus.mockito.MockitoSugar.mock
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import sttp.model.Uri.UriContext
-import uk.gov.hmrc.auth.core.Enrolment
+import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
@@ -39,12 +42,11 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
   private val url                        = fullUrl(s"/traders/$eori/records")
 
   override def beforeEach(): Unit = {
-    reset(authConnector)
-    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(dateTime)
   }
+
 
   override def extraApplicationConfig: Map[String, Any] =
     super.extraApplicationConfig ++ Map(
@@ -56,6 +58,8 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
       "valid without optional query parameter" in {
         stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()))
+
+        println(getMultipleRecordEisResponseData.toString())
 
         val response = sendRequestAndWait(url)
 

@@ -16,16 +16,20 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status._
+import org.scalatest.concurrent.ScalaFutures.*
+import play.api.http.Status.*
 import play.api.libs.json.Json
+import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
+import play.api.libs.ws.WSBodyWritables.writeableOf_String
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport, HawkIntegrationSpec}
 
 import java.time.Instant
+
 
 class RequestAdviceIntegrationSpec
     extends HawkIntegrationSpec
@@ -63,20 +67,21 @@ class RequestAdviceIntegrationSpec
   "attempting to create accreditation, when" - {
     "the request is" - {
       "valid, specifically" - {
+
+
         "with all request fields" in {
           stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(CREATED, createAccreditationRequestData)
 
-          val response = await(
-            wsClient
-              .url(url)
-              .withHttpHeaders(
-                ("Content-Type", "application/json"),
-                ("X-Client-ID", "tss"),
-                ("Accept", "application/vnd.hmrc.1.0+json")
-              )
-              .post(requestAdviceData)
-          )
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              "Content-Type" -> "application/json",
+              "X-Client-ID" -> "tss",
+              "Accept" -> "application/vnd.hmrc.1.0+json"
+            )
+            .post(requestAdviceData)
+            .futureValue // ✅ Replaces `await()`
 
           response.status shouldBe CREATED
 
@@ -525,3 +530,4 @@ class RequestAdviceIntegrationSpec
              |""".stripMargin
 
 }
+

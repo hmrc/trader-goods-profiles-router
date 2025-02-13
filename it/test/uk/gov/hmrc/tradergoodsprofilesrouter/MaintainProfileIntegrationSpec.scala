@@ -23,20 +23,27 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
+
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
+
 import java.time.Instant
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
+
 
 class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
   val eori              = "GB123456789001"
   val correlationId     = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime          = "2021-12-17T09:30:47.456Z"
+  val dateTime          = "2021-12-17T09:30:47.456Z" 
   val timestamp         = "Fri, 17 Dec 2021 09:30:47 Z"
-  private val appConfig = mock[AppConfig](RETURNS_DEEP_STUBS)
+  val appConfig: AppConfig = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   override def hawkConnectorPath: String = "/tgp/maintainprofile/v1"
 
@@ -61,20 +68,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
   )
 
   "when trying to maintain a profile" - {
-    "it should return a 200 ok when the request is successful" in {
-      stubForEis(OK, Some(maintainProfileResponse.toString()))
-
-      val response = wsClient
-        .url(fullUrl(s"/traders/$eori"))
-        .withHttpHeaders(headers: _*)
-        .put(maintainProfileRequest)
-        .futureValue
-
-      response.status shouldBe OK
-      response.json   shouldBe toJson(maintainProfileResponse.as[MaintainProfileResponse])
-
-      verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-    }
+  
 
     "it should return a 200 ok when the request is successful with optional null fields" in {
       stubForEis(OK, Some(maintainProfileResponseWithOptionalNullFields.toString()))

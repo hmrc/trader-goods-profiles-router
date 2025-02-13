@@ -15,10 +15,10 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar.{reset, when}
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment
@@ -41,9 +41,10 @@ class GetSingleRecordIntegrationSpec
   override def hawkConnectorPath: String = s"/tgp/getrecords/v1"
 
   override def beforeEach(): Unit = {
-    reset(authConnector)
+    super.beforeEach() // ✅ Call superclass first!
+    reset() // ✅ Now it exists
     withAuthorizedTrader()
-    super.beforeEach()
+
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
   }
