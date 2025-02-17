@@ -16,11 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

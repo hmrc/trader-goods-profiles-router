@@ -21,7 +21,6 @@ import org.mockito.Mockito.{never, reset, verify, when}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.writeableOf_JsValue
 import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader

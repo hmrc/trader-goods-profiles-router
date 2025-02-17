@@ -30,7 +30,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecord
 
 import java.time.Instant
 
-
 class RequestAdviceIntegrationSpec
     extends HawkIntegrationSpec
     with AuthTestSupport
@@ -68,7 +67,6 @@ class RequestAdviceIntegrationSpec
     "the request is" - {
       "valid, specifically" - {
 
-
         "with all request fields" in {
           stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
           stubForEis(CREATED, createAccreditationRequestData)
@@ -77,8 +75,8 @@ class RequestAdviceIntegrationSpec
             .url(url)
             .withHttpHeaders(
               "Content-Type" -> "application/json",
-              "X-Client-ID" -> "tss",
-              "Accept" -> "application/vnd.hmrc.1.0+json"
+              "X-Client-ID"  -> "tss",
+              "Accept"       -> "application/vnd.hmrc.1.0+json"
             )
             .post(requestAdviceData)
             .futureValue // ✅ Replaces `await()`
@@ -530,4 +528,3 @@ class RequestAdviceIntegrationSpec
              |""".stripMargin
 
 }
-

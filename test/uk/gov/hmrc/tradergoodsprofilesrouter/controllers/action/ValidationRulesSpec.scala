@@ -15,16 +15,12 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
+import org.mockito.Mockito.when
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsValue, Json, OFormat}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
 import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.stubControllerComponents

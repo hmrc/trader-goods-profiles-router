@@ -370,10 +370,10 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json shouldBe Json.obj(
+          response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code" -> "BAD_GATEWAY",
-            "message" -> "Bad Gateway"
+            "code"          -> "BAD_GATEWAY",
+            "message"       -> "Bad Gateway"
           )
 
           verifyThatDownstreamApiWasRetried(hawkConnectorPath)

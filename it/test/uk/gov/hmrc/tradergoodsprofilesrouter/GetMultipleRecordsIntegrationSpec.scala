@@ -503,12 +503,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     )
 
   private def stubForEis(
-                          httpStatus: Int,
-                          body: Option[String] = None,
-                          lastUpdatedDate: Option[String] = None,
-                          page: Option[Int] = None,
-                          size: Option[Int] = None
-                        ) = {
+    httpStatus: Int,
+    body: Option[String] = None,
+    lastUpdatedDate: Option[String] = None,
+    page: Option[Int] = None,
+    size: Option[Int] = None
+  ) = {
     val uri =
       uri"$hawkConnectorPath/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=${size.getOrElse(500)}"
 

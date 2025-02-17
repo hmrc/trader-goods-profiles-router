@@ -16,19 +16,15 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.EitherValues
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, StatusHttpReader}
-import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorHandler, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport // ✅ Ensure Json library is imported if needed
@@ -47,7 +43,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
     "handle error response" in {
       val errorHandlerSpy = mock[TestEisHttpReaderHandler]
       val eisResponse     =
-        HttpResponse(400, Json.toJson(getEisRecordsResponseData), Map.empty) // ✅ Ensure valid JSON response
+        HttpResponse(400, Json.toJson(getEisRecordsResponseData), Map.empty)
 
       when(errorHandlerSpy.handleErrorResponse(any[HttpResponse], any[String]))
         .thenReturn(

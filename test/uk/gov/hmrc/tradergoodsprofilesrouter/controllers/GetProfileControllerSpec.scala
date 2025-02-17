@@ -17,17 +17,14 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{atLeastOnce, reset, verify, verifyNoInteractions, when}
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
+import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
 import play.api.libs.json.Json
-import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}

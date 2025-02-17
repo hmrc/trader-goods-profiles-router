@@ -206,7 +206,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
-       "Bad Gateway" in {
+        "Bad Gateway" in {
           stubForEis(BAD_GATEWAY)
 
           val response = wsClient
@@ -650,33 +650,33 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
-                "errorNumber" ->13
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
+                "errorNumber" -> 13
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
                 "errorNumber" -> 23
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field actorId was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "errorNumber" -> 8
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
                 "errorNumber" -> 12
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field comcode was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field comcode was missing from body or is in the wrong format",
                 "errorNumber" -> 11
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field traderRef was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field traderRef was missing from body or is in the wrong format",
                 "errorNumber" -> 9
               )
             )

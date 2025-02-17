@@ -17,13 +17,10 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
-import org.mockito.Mockito.{atLeastOnce, reset, verify, when}
-import org.scalatest.freespec.AnyFreeSpec
+import cats.implicits.*
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED}
 import play.api.libs.json.{JsValue, Json}
@@ -35,7 +32,6 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAct
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.*
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
-import cats.implicits._
 
 import scala.concurrent.ExecutionContext
 

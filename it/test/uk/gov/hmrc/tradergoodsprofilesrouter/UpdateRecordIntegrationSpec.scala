@@ -30,12 +30,12 @@ import java.time.Instant
 
 class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
-  private val eori = "GB123456789001"
+  private val eori     = "GB123456789001"
   private val recordId = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  val correlationId = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime = "2021-12-17T09:30:47.456Z"
-  val timestamp = "Fri, 17 Dec 2021 09:30:47 GMT"
-  private val url = fullUrl(s"/traders/$eori/records/$recordId")
+  val correlationId    = "d677693e-9981-4ee3-8574-654981ebe606"
+  val dateTime         = "2021-12-17T09:30:47.456Z"
+  val timestamp        = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val url      = fullUrl(s"/traders/$eori/records/$recordId")
 
   def stubPutRequestForEis(httpStatus: Int, responseBody: Option[String] = None): StubMapping =
     stubFor(
@@ -50,8 +50,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
   val updateRecordEisResponseData: JsValue =
     Json
-      .parse(
-        """
+      .parse("""
           |{
           |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
           |  "eori": "GB123456789012",
@@ -123,8 +122,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
   val updateRecordResponseData: JsValue =
     Json
-      .parse(
-        """
+      .parse("""
           |{
           |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
           |  "eori": "GB123456789012",
@@ -166,8 +164,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
   val updateEisRecordResponseDataWithOptionalFields: JsValue =
     Json
-      .parse(
-        """
+      .parse("""
           |{
           |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
           |  "eori": "GB123456789012",
@@ -209,8 +206,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
   val updateRecordResponseDataWithOptionalFields: JsValue =
     Json
-      .parse(
-        """
+      .parse("""
           |{
           |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
           |  "eori": "GB123456789012",
@@ -268,7 +264,6 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-
   def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json
       .parse(
@@ -289,7 +284,6 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       )
       .toString()
 
-
   override def hawkConnectorPath: String = "/tgp/puttgprecord/v1"
 
   override def beforeEach(): Unit = {
@@ -302,7 +296,6 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
   }
 
-
   "attempting to update a record, when" - {
     "the request is" - {
       "valid, specifically" - {
@@ -311,16 +304,18 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(List(
-              "Content-Type" -> "application/json",
-              "Accept" -> "application/vnd.hmrc.1.0+json",
-              "X-Client-ID" -> "tss"
-            ): _*) // ✅ Fix: Convert headers to List before spreading
+            .withHttpHeaders(
+              List(
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            ) // ✅ Fix: Convert headers to List before spreading
             .put(Json.parse(updateRecordRequestData))
             .futureValue
 
           response.status shouldBe OK
-          response.json shouldBe Json.toJson(updateRecordResponseData) // ✅ Fix: Remove unnecessary `.as[T]`
+          response.json   shouldBe Json.toJson(updateRecordResponseData) // ✅ Fix: Remove unnecessary `.as[T]`
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
@@ -332,16 +327,18 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(Seq( // ✅ Fix: Convert headers to `Seq`
-              "Content-Type" -> "application/json",
-              "Accept" -> "application/vnd.hmrc.1.0+json",
-              "X-Client-ID" -> "tss"
-            ): _*)
+            .withHttpHeaders(
+              Seq( // ✅ Fix: Convert headers to `Seq`
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
             .put(Json.parse(updateRecordRequestDataWithOptionalNullFields)) // ✅ Ensure JSON is properly serialized
             .futureValue
 
           response.status shouldBe OK
-          response.json shouldBe Json.toJson(updateRecordResponseDataWithOptionalFields) // ✅ Fix JSON comparison
+          response.json   shouldBe Json.toJson(updateRecordResponseDataWithOptionalFields) // ✅ Fix JSON comparison
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
@@ -352,19 +349,21 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
             val response = wsClient
               .url(url)
-              .withHttpHeaders(Seq( // ✅ Fix header formatting
-                "Content-Type" -> "application/json",
-                "Accept" -> "application/vnd.hmrc.1.0+json",
-                "X-Client-ID" -> "tss"
-              ): _*)
+              .withHttpHeaders(
+                Seq( // ✅ Fix header formatting
+                  "Content-Type" -> "application/json",
+                  "Accept"       -> "application/vnd.hmrc.1.0+json",
+                  "X-Client-ID"  -> "tss"
+                ): _*
+              )
               .put(Json.parse(updateRecordRequestData)) // ✅ Ensure JSON serialization
               .futureValue
 
             response.status shouldBe FORBIDDEN
-            response.json shouldBe Json.obj( // ✅ Explicit conversion for correlationId
+            response.json   shouldBe Json.obj( // ✅ Explicit conversion for correlationId
               "correlationId" -> Json.toJson(correlationId),
-              "code" -> Json.toJson("FORBIDDEN"),
-              "message" -> Json.toJson("Forbidden")
+              "code"          -> Json.toJson("FORBIDDEN"),
+              "message"       -> Json.toJson("Forbidden")
             )
 
             verifyThatDownstreamApiWasCalled(hawkConnectorPath)
@@ -374,19 +373,21 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
             val response = wsClient
               .url(url)
-              .withHttpHeaders(Seq( // ✅ Ensure headers are properly formatted
-                "Content-Type" -> "application/json",
-                "Accept" -> "application/vnd.hmrc.1.0+json",
-                "X-Client-ID" -> "tss"
-              ): _*)
+              .withHttpHeaders(
+                Seq( // ✅ Ensure headers are properly formatted
+                  "Content-Type" -> "application/json",
+                  "Accept"       -> "application/vnd.hmrc.1.0+json",
+                  "X-Client-ID"  -> "tss"
+                ): _*
+              )
               .put(Json.parse(updateRecordRequestData)) // ✅ Ensure JSON serialization
               .futureValue
 
             response.status shouldBe NOT_FOUND
-            response.json shouldBe Json.obj( // ✅ Ensure explicit JSON conversion
+            response.json   shouldBe Json.obj( // ✅ Ensure explicit JSON conversion
               "correlationId" -> Json.toJson(correlationId),
-              "code" -> Json.toJson("NOT_FOUND"),
-              "message" -> Json.toJson("Not Found")
+              "code"          -> Json.toJson("NOT_FOUND"),
+              "message"       -> Json.toJson("Not Found")
             )
 
             verifyThatDownstreamApiWasCalled(hawkConnectorPath)
@@ -396,19 +397,21 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
             val response = wsClient
               .url(url)
-              .withHttpHeaders(Seq( // ✅ Ensuring proper header formatting
-                "Content-Type" -> "application/json",
-                "Accept" -> "application/vnd.hmrc.1.0+json",
-                "X-Client-ID" -> "tss"
-              ): _*)
+              .withHttpHeaders(
+                Seq( // ✅ Ensuring proper header formatting
+                  "Content-Type" -> "application/json",
+                  "Accept"       -> "application/vnd.hmrc.1.0+json",
+                  "X-Client-ID"  -> "tss"
+                ): _*
+              )
               .put(Json.parse(updateRecordRequestDataWithOptionalNullFields))
               .futureValue
 
             response.status shouldBe BAD_GATEWAY
-            response.json shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
+            response.json   shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
               "correlationId" -> Json.toJson(correlationId),
-              "code" -> Json.toJson("BAD_GATEWAY"),
-              "message" -> Json.toJson("Bad Gateway")
+              "code"          -> Json.toJson("BAD_GATEWAY"),
+              "message"       -> Json.toJson("Bad Gateway")
             )
 
             verifyThatDownstreamApiWasRetried(hawkConnectorPath)
@@ -418,24 +421,26 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
             val response = wsClient
               .url(url)
-              .withHttpHeaders(Seq( // ✅ Ensuring proper header formatting
-                "Content-Type" -> "application/json",
-                "Accept" -> "application/vnd.hmrc.1.0+json",
-                "X-Client-ID" -> "tss"
-              ): _*)
+              .withHttpHeaders(
+                Seq( // ✅ Ensuring proper header formatting
+                  "Content-Type" -> "application/json",
+                  "Accept"       -> "application/vnd.hmrc.1.0+json",
+                  "X-Client-ID"  -> "tss"
+                ): _*
+              )
               .put(Json.parse(updateRecordRequestData)) // ✅ Ensuring JSON serialization
               .futureValue
 
             response.status shouldBe SERVICE_UNAVAILABLE
-            response.json shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
+            response.json   shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
               "correlationId" -> Json.toJson(correlationId),
-              "code" -> Json.toJson("SERVICE_UNAVAILABLE"),
-              "message" -> Json.toJson("Service Unavailable")
+              "code"          -> Json.toJson("SERVICE_UNAVAILABLE"),
+              "message"       -> Json.toJson("Service Unavailable")
             )
 
             verifyThatDownstreamApiWasCalled(hawkConnectorPath)
           }
-          }
+        }
 
         "Internal Server Error with 201 errorCode" in {
           stubPutRequestForEis(
@@ -445,125 +450,133 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
 
           val response = wsClient
             .url(url)
-            .withHttpHeaders(Seq(
-              "Content-Type" -> "application/json",
-              "Accept" -> "application/vnd.hmrc.1.0+json",
-              "X-Client-ID" -> "tss"
-            ): _*)
+            .withHttpHeaders(
+              Seq(
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
             .put(Json.parse(updateRecordRequestData))
             .futureValue
 
-         response.status shouldBe INTERNAL_SERVER_ERROR
+          response.status shouldBe INTERNAL_SERVER_ERROR
 
           (response.json \ "correlationId").as[String] shouldBe correlationId
-          (response.json \ "code").as[String] shouldBe "INVALID_OR_EMPTY_PAYLOAD"
-          (response.json \ "message").as[String] shouldBe "Invalid Response Payload or Empty payload"
+          (response.json \ "code").as[String]          shouldBe "INVALID_OR_EMPTY_PAYLOAD"
+          (response.json \ "message").as[String]       shouldBe "Invalid Response Payload or Empty payload"
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
         "Internal Server Error with 401 errorCode" in {
-            stubPutRequestForEis(
-              INTERNAL_SERVER_ERROR,
-              Some(eisErrorResponse("401", "Unauthorized")) // ✅ Fixed typo in message
-            )
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("401", "Unauthorized")) // ✅ Fixed typo in message
+          )
 
-            val response = wsClient
-              .url(url)
-              .withHttpHeaders(Seq( // ✅ Ensuring proper header formatting
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              Seq( // ✅ Ensuring proper header formatting
                 "Content-Type" -> "application/json",
-                "Accept" -> "application/vnd.hmrc.1.0+json",
-                "X-Client-ID" -> "tss"
-              ): _*)
-              .put(Json.parse(updateRecordRequestData)) // ✅ Ensuring correct JSON conversion
-              .futureValue
-
-            response.status shouldBe INTERNAL_SERVER_ERROR
-            response.json shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
-              "correlationId" -> Json.toJson(correlationId),
-              "code" -> Json.toJson("UNAUTHORIZED"),
-              "message" -> Json.toJson("Unauthorized") // ✅ Fixed typo: "Unauthorised" -> "Unauthorized"
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
             )
+            .put(Json.parse(updateRecordRequestData)) // ✅ Ensuring correct JSON conversion
+            .futureValue
 
-            verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-          }
-          "Internal Server Error with 500 errorCode" in {
-            stubPutRequestForEis(
-              INTERNAL_SERVER_ERROR,
-              Some(eisErrorResponse("500", "Internal Server Error"))
-            )
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
+            "correlationId" -> Json.toJson(correlationId),
+            "code"          -> Json.toJson("UNAUTHORIZED"),
+            "message"       -> Json.toJson("Unauthorized") // ✅ Fixed typo: "Unauthorised" -> "Unauthorized"
+          )
 
-            val response = wsClient
-              .url(url)
-              .withHttpHeaders(Seq( // ✅ Ensuring proper header formatting
-                "Content-Type" -> "application/json",
-                "Accept" -> "application/vnd.hmrc.1.0+json",
-                "X-Client-ID" -> "tss"
-              ): _*)
-              .put(Json.parse(updateRecordRequestData)) // ✅ Ensuring correct JSON conversion
-              .futureValue
-
-            response.status shouldBe INTERNAL_SERVER_ERROR
-            response.json shouldBe Json.obj( // ✅ Ensuring proper JSON formatting
-              "correlationId" -> Json.toJson(correlationId),
-              "code" -> Json.toJson("INTERNAL_SERVER_ERROR"),
-              "message" -> Json.toJson("Internal Server Error")
-            )
-
-            verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-          }
-          "Internal Server Error with 404 errorCode" in {
-            stubPutRequestForEis(
-              INTERNAL_SERVER_ERROR,
-              Some(eisErrorResponse("404", "Not Found"))
-            )
-
-            val response = wsClient
-              .url(url)
-              .withHttpHeaders(Seq( // ✅ Ensure proper header formatting
-                "Content-Type" -> "application/json",
-                "Accept" -> "application/vnd.hmrc.1.0+json",
-                "X-Client-ID" -> "tss"
-              ): _*)
-              .put(Json.parse(updateRecordRequestData)) // ✅ Ensure proper JSON serialization
-              .futureValue
-
-            response.status shouldBe INTERNAL_SERVER_ERROR
-            response.json shouldBe Json.obj( // ✅ Ensure proper JSON formatting
-              "correlationId" -> Json.toJson(correlationId),
-              "code" -> Json.toJson("NOT_FOUND"),
-              "message" -> Json.toJson("Not Found")
-            )
-
-            verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-          }
-          "Internal Server Error with 502 errorCode" in {
-            stubPutRequestForEis(
-              INTERNAL_SERVER_ERROR,
-              Some(eisErrorResponse("502", "Bad Gateway"))
-            )
-
-            val response = wsClient
-              .url(url)
-              .withHttpHeaders(
-                "Content-Type" -> "application/json",
-                "Accept" -> "application/vnd.hmrc.1.0+json",
-                "X-Client-ID" -> "tss"
-              )
-              .put(updateRecordRequestData)
-              .futureValue
-
-            response.status shouldBe INTERNAL_SERVER_ERROR
-            response.json shouldBe Json.obj(
-              "correlationId" -> correlationId,
-              "code" -> "BAD_GATEWAY",
-              "message" -> "Bad Gateway"
-            )
-
-            verifyThatDownstreamApiWasRetried(hawkConnectorPath)
-          }
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
+        "Internal Server Error with 500 errorCode" in {
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("500", "Internal Server Error"))
+          )
 
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              Seq( // ✅ Ensuring proper header formatting
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
+            .put(Json.parse(updateRecordRequestData)) // ✅ Ensuring correct JSON conversion
+            .futureValue
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj( // ✅ Ensuring proper JSON formatting
+            "correlationId" -> Json.toJson(correlationId),
+            "code"          -> Json.toJson("INTERNAL_SERVER_ERROR"),
+            "message"       -> Json.toJson("Internal Server Error")
+          )
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+        "Internal Server Error with 404 errorCode" in {
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("404", "Not Found"))
+          )
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              Seq( // ✅ Ensure proper header formatting
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
+            .put(Json.parse(updateRecordRequestData)) // ✅ Ensure proper JSON serialization
+            .futureValue
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj( // ✅ Ensure proper JSON formatting
+            "correlationId" -> Json.toJson(correlationId),
+            "code"          -> Json.toJson("NOT_FOUND"),
+            "message"       -> Json.toJson("Not Found")
+          )
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+        "Internal Server Error with 502 errorCode" in {
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("502", "Bad Gateway"))
+          )
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              "Content-Type" -> "application/json",
+              "Accept"       -> "application/vnd.hmrc.1.0+json",
+              "X-Client-ID"  -> "tss"
+            )
+            .put(updateRecordRequestData)
+            .futureValue
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_GATEWAY",
+            "message"       -> "Bad Gateway"
+          )
+
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
+        }
       }
+
+    }
 
   }
 

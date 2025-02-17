@@ -22,8 +22,6 @@ import org.mockito.Mockito.{reset, verify, when}
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.BodyWritable
-import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
@@ -107,7 +105,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     verify(requestBuilder).setHeader(headersCaptor.capture(): _*)
 
     val capturedHeaders = headersCaptor.getValue
-    println("Captured Headers: " + capturedHeaders)
 
     capturedHeaders    must contain allOf (
       "X-Correlation-ID" -> correlationId,
@@ -121,7 +118,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     verify(requestBuilder).withBody(jsonCaptor.capture())(any(), any(), any())
 
     val capturedJson = jsonCaptor.getValue
-    println("Captured JSON: " + capturedJson)
 
     capturedJson mustBe Json.obj(
       "eori"     -> eori,
@@ -162,8 +158,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     // The captured value is already a Scala Seq.
     val capturedHeaders: Seq[(String, String)] = headersCaptor.getValue
 
-    println("Captured Headers: " + capturedHeaders)
-
     capturedHeaders    must contain allOf (
       "X-Correlation-ID" -> correlationId,
       "Authorization"    -> "Bearer dummyRecordRemoveBearerToken",
@@ -172,7 +166,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     )
 
     // Use the alias meq for equality matcher to avoid Scala's eq conflict.
-    import org.mockito.ArgumentMatchers.{any, eq => meq}
     verify(requestBuilder).withBody(
       meq(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId))
     )(any, any, any)
@@ -215,19 +208,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
     result.left.value mustBe badRequestEISError
   }
-
-  private def expectedHeaderWithoutClientId(
-    correlationId: String,
-    accessToken: String,
-    forwardedHost: String = "MDTP"
-  ): Seq[(String, String)] = Seq(
-    "X-Correlation-ID" -> correlationId,
-    "X-Forwarded-Host" -> forwardedHost,
-    "Date"             -> "Sun, 12 May 2024 12:15:15 GMT",
-    "Authorization"    -> s"Bearer $accessToken",
-    "Accept"           -> "application/json",
-    "Content-Type"     -> MimeTypes.JSON
-  )
 
   private def expectedHeaderWithoutAcceptHeader(
     correlationId: String,
