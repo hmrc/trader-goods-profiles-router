@@ -21,8 +21,6 @@ import org.mockito.MockitoSugar.{reset, verify, when}
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
@@ -38,7 +36,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val connector = new RemoveRecordConnector(appConfig, httpClientV2, dateTimeService)
+  private val connector = new RemoveRecordConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -55,7 +53,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   }
 
   "remove a record successfully" in {
-    when(requestBuilder.execute[Either[Result, Int]](any, any))
+    when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
 
     val result = await(connector.removeRecord(eori, recordId, actorId, correlationId))
@@ -66,7 +64,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   "send a request with the right url for remove record when sendClientId feature flag is true" in {
     when(appConfig.sendClientId).thenReturn(true)
 
-    when(requestBuilder.execute[Either[Result, Int]](any, any))
+    when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
 
     val result =
@@ -86,7 +84,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(appConfig.sendClientId).thenReturn(false)
     val hc: HeaderCarrier = HeaderCarrier()
 
-    when(requestBuilder.execute[Either[Result, Int]](any, any))
+    when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
     when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
@@ -106,7 +104,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   "send a request with the right url for remove record when sendAcceptHeader feature flag is true" in {
     when(appConfig.sendAcceptHeader).thenReturn(true)
 
-    when(requestBuilder.execute[Either[Result, Int]](any, any))
+    when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
 
     val result =
@@ -126,7 +124,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(appConfig.sendAcceptHeader).thenReturn(false)
     when(appConfig.sendClientId).thenReturn(true)
 
-    when(requestBuilder.execute[Either[Result, Int]](any, any))
+    when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
       .thenReturn(Future.successful(Right(OK)))
     when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
 
@@ -146,12 +144,12 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   }
 
   "return an error if EIS return an error" in {
-    when(requestBuilder.execute[Either[Result, Int]](any, any))
-      .thenReturn(Future.successful(Left(BadRequest("error"))))
+    when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
+      .thenReturn(Future.successful(Left(badRequestEISError)))
 
     val result = await(connector.removeRecord(eori, recordId, actorId, correlationId))
 
-    result.left.value mustBe BadRequest("error")
+    result.left.value mustBe badRequestEISError
   }
 
   private def expectedHeaderWithoutClientId(

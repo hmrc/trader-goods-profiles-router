@@ -133,7 +133,7 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
         }
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE, removeEisRecordRequest)
@@ -281,7 +281,7 @@ class RemoveRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEis(

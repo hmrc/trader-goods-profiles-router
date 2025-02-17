@@ -210,7 +210,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
         }
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
@@ -367,13 +367,13 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj(
+          response.json shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code"          -> "BAD_GATEWAY",
-            "message"       -> "Bad Gateway"
+            "code" -> "BAD_GATEWAY",
+            "message" -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEis(
@@ -980,7 +980,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         )
     )
 
-  val createRecordEisResponseData: JsValue =
+  private lazy val createRecordEisResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -1022,7 +1022,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         |}
         |""".stripMargin)
 
-  val createRecordResponseData: JsValue =
+  private lazy val createRecordResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -1064,7 +1064,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  val createEisRecordResponseDataWithOptionalNullFields: JsValue =
+  private lazy val createEisRecordResponseDataWithOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1106,7 +1106,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  val createEisRecordResponseDataWithConditionOptionalNullFields: JsValue =
+  private lazy val createEisRecordResponseDataWithConditionOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1143,7 +1143,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  val createEisRecordResponseDataWithSomeOptionalNullFields: JsValue =
+  private lazy val createEisRecordResponseDataWithSomeOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1179,7 +1179,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  val createRecordResponseDataWithOptionalNullFields: JsValue =
+  private lazy val createRecordResponseDataWithOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1210,7 +1210,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  val createRecordResponseDataWithSomeOptionalNullFields: JsValue =
+  private lazy val createRecordResponseDataWithSomeOptionalNullFields: JsValue =
     Json
       .parse("""
                |{
@@ -1245,7 +1245,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  val createRecordRequestData: String =
+  private lazy val createRecordRequestData: String =
     """
         |{
         |    "actorId": "GB098765432112",
@@ -1272,7 +1272,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         |}
         |""".stripMargin
 
-  val createRecordRequestDataWithOptionalNullFields: String =
+  private lazy val createRecordRequestDataWithOptionalNullFields: String =
     """
       |{
       |    "actorId": "GB098765432112",
@@ -1300,7 +1300,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  val createRecordRequestDataWithConditionOptionalNullFields: String =
+  private lazy val createRecordRequestDataWithConditionOptionalNullFields: String =
     """
       |{
       |    "actorId": "GB098765432112",
@@ -1323,7 +1323,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  val createRecordRequestDataWithSomeOptionalNullFields: String =
+  private lazy val createRecordRequestDataWithSomeOptionalNullFields: String =
     """
       |{
       |    "actorId": "GB098765432112",
@@ -1345,7 +1345,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  val createRecordRequiredRequestData: String =
+  private lazy val createRecordRequiredRequestData: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1359,7 +1359,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  val createRecordRequiredEisResponseData: JsValue =
+  private lazy val createRecordRequiredEisResponseData: JsValue =
     Json
       .parse("""
           |{
@@ -1390,7 +1390,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           |}
           |""".stripMargin)
 
-  val createRecordRequiredResponseData: JsValue =
+  private lazy val createRecordRequiredResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -1421,7 +1421,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                |}
                |""".stripMargin)
 
-  val invalidRequestData: String =
+  private lazy val invalidRequestData: String =
     """
       |{    
       |    "traderRef": "BAN001001",
@@ -1448,7 +1448,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  val invalidCategoryRequestData: String =
+  private lazy val invalidCategoryRequestData: String =
     """
       |{
       |  "eori": "GB123456789001",
@@ -1477,7 +1477,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  val invalidOptionalRequestData: String =
+  private lazy val invalidOptionalRequestData: String =
     """
       |{
       |  "eori": "GB123456789001",
@@ -1506,7 +1506,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  val invalidCreateRecordRequestDataForAssessmentArray: JsValue = Json
+  private lazy val invalidCreateRecordRequestDataForAssessmentArray: JsValue = Json
     .parse("""
              |{
              |    "traderRef": "BAN001001",
@@ -1543,7 +1543,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
              |}
              |""".stripMargin)
 
-  val invalidActorIdAndComcodeRequestData: String =
+  private lazy val invalidActorIdAndComcodeRequestData: String =
     """
       |{
       |  "eori": "GB123456789001",
@@ -1572,7 +1572,7 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  val outOfRangeSupplementaryUnitRequestData: JsValue = Json
+  private lazy val outOfRangeSupplementaryUnitRequestData: JsValue = Json
     .parse("""
              |{
              |    "eori": "GB123456789012",

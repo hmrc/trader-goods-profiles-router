@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import play.api.http.MimeTypes
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -32,7 +34,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class RemoveRecordConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -44,17 +48,20 @@ class RemoveRecordConnector @Inject() (
     correlationId: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, Int]] = {
     val url = appConfig.hawkConfig.removeRecordUrl
-    httpClientV2
-      .put(url"$url")
-      .setHeader(
-        buildHeaders(
-          correlationId,
-          appConfig.hawkConfig.removeRecordBearerToken,
-          appConfig.hawkConfig.forwardedHost
-        ): _*
-      )
-      .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
-      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+
+    retryFor[Int]("remove record")(retryCondition) {
+      httpClientV2
+        .put(url"$url")
+        .setHeader(
+          buildHeaders(
+            correlationId,
+            appConfig.hawkConfig.removeRecordBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
+        .withBody(Json.toJson(RemoveEisRecordRequest(eori, recordId, actorId)))
+        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    }
   }
 
   /*

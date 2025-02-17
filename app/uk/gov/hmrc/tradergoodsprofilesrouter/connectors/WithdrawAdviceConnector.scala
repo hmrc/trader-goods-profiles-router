@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -37,7 +39,9 @@ class WithdrawAdviceConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
   uuidService: UuidService,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -49,17 +53,19 @@ class WithdrawAdviceConnector @Inject() (
 
     val correlationId = uuidService.uuid
 
-    httpClientV2
-      .put(url"$url")
-      .setHeader(
-        buildHeadersForAdvice(
-          correlationId,
-          appConfig.pegaConfig.getWithdrawAdviceBearerToken,
-          appConfig.pegaConfig.forwardedHost
-        ): _*
-      )
-      .withBody(Json.toJson(createPayload(recordId, withdrawReason)))
-      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    retryFor[Int]("withdraw advice")(retryCondition) {
+      httpClientV2
+        .put(url"$url")
+        .setHeader(
+          buildHeadersForAdvice(
+            correlationId,
+            appConfig.pegaConfig.getWithdrawAdviceBearerToken,
+            appConfig.pegaConfig.forwardedHost
+          ): _*
+        )
+        .withBody(Json.toJson(createPayload(recordId, withdrawReason)))
+        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    }
       .recover { case ex: Throwable =>
         logger.error(
           s"[WithdrawAdviceConnector] - Error withdrawing Advice, recordId $recordId, message ${ex.getMessage}",

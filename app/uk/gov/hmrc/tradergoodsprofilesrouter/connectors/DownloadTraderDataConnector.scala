@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
@@ -24,14 +26,16 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttp
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error.{invalidRequestParameterError, unexpectedError}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.DownloadTraderDataConstants.{EoriDoesNotExistsCode, EoriDoesNotExistsMsg, EoriIsNotLinkedToAnyMsg, EoriIsNotLinkedToAnyRecord, InvalidCorrelationHeaderErrorCode, InvalidCorrelationHeaderErrorMsg, InvalidDateHeaderErrorCode, InvalidDateHeaderErrorMsg, InvalidForwardedHostCode, InvalidForwardedHostMsg, InvalidOrMissingEoriCode, InvalidOrMissingEoriMsg}
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.DownloadTraderDataConstants._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class DownloadTraderDataConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -40,16 +44,19 @@ class DownloadTraderDataConnector @Inject() (
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, Int]] = {
     val url = url"${appConfig.pegaConfig.downloadTraderDataUrl}/$eori/download"
-    httpClientV2
-      .get(url)
-      .setHeader(
-        commonHeaders(
-          correlationId,
-          appConfig.pegaConfig.downloadTraderDataBearerToken,
-          appConfig.pegaConfig.forwardedHost
-        ): _*
-      )
-      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+
+    retryFor[Int]("request download")(retryCondition) {
+      httpClientV2
+        .get(url)
+        .setHeader(
+          commonHeaders(
+            correlationId,
+            appConfig.pegaConfig.downloadTraderDataBearerToken,
+            appConfig.pegaConfig.forwardedHost
+          ): _*
+        )
+        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    }
   }
 
   override def parseFaultDetail(rawDetail: String, correlationId: String): Option[errors.Error] = {

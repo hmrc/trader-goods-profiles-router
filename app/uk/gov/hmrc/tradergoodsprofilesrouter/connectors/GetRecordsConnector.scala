@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import sttp.model.Uri.UriContext
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -32,7 +34,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class GetRecordsConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -43,19 +47,20 @@ class GetRecordsConnector @Inject() (
     correlationId: String,
     urlPath: String
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, GetEisRecordsResponse]] = {
-    val url =
-      s"$urlPath/$eori/$recordId"
+    val url = s"$urlPath/$eori/$recordId"
 
-    httpClientV2
-      .get(url"$url")
-      .setHeader(
-        buildHeadersForGetMethod(
-          correlationId,
-          appConfig.hawkConfig.getRecordBearerToken,
-          appConfig.hawkConfig.forwardedHost
-        ): _*
-      )
-      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+    retryFor[GetEisRecordsResponse]("fetch record")(retryCondition) {
+      httpClientV2
+        .get(url"$url")
+        .setHeader(
+          buildHeadersForGetMethod(
+            correlationId,
+            appConfig.hawkConfig.getRecordBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
+        .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+    }
   }
 
   def fetchRecords(
@@ -69,16 +74,18 @@ class GetRecordsConnector @Inject() (
     val uri                                     =
       uri"${appConfig.hawkConfig.getRecordsUrl}/$eori?lastUpdatedDate=$formattedLastUpdateDate&page=$page&size=$size"
 
-    httpClientV2
-      .get(url"$uri")
-      .setHeader(
-        buildHeadersForGetMethod(
-          correlationId,
-          appConfig.hawkConfig.getRecordBearerToken,
-          appConfig.hawkConfig.forwardedHost
-        ): _*
-      )
-      .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+    retryFor[GetEisRecordsResponse]("fetch records")(retryCondition) {
+      httpClientV2
+        .get(url"$uri")
+        .setHeader(
+          buildHeadersForGetMethod(
+            correlationId,
+            appConfig.hawkConfig.getRecordBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
+        .execute(HttpReader[GetEisRecordsResponse](correlationId, handleErrorResponse), ec)
+    }
   }
 
 }

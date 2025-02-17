@@ -17,14 +17,12 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.{RETURNS_DEEP_STUBS, reset, when}
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
@@ -36,7 +34,6 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
   val correlationId     = "d677693e-9981-4ee3-8574-654981ebe606"
   val dateTime          = "2021-12-17T09:30:47.456Z"
   val timestamp         = "Fri, 17 Dec 2021 09:30:47 Z"
-  private val appConfig = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   override def hawkConnectorPath: String = "/tgp/maintainprofile/v1"
 

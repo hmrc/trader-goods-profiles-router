@@ -223,7 +223,7 @@ class GetSingleRecordIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("503", "Service Unavailable")))

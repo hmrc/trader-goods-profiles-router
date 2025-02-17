@@ -18,8 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.any
 import org.mockito.MockitoSugar.{reset, verify, when}
-import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
@@ -34,7 +32,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
   private val timestamp              = Instant.parse("2024-05-12T12:15:15.456321Z")
   implicit val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val connector = new CreateRecordConnector(appConfig, httpClientV2, dateTimeService)
+  private val connector = new CreateRecordConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -53,7 +51,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     "create a record successfully" in {
       val expectedResponse = createOrUpdateRecordEisResponse
 
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Right(expectedResponse)))
 
       val request = createRecordEisPayload.as[CreateRecordPayload]
@@ -63,20 +61,20 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val request = createRecordEisPayload.as[CreateRecordPayload]
       val result  = await(connector.createRecord(request, correlationId))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
 
     "send a request with the right url" when {
       "sendClientId feature flag is false" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
         val expectedResponse = createOrUpdateRecordEisResponse
-        when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+        when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(expectedResponse)))
         when(appConfig.sendClientId).thenReturn(false)
 
@@ -94,7 +92,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       // TODO: After Release 2 remove x-client-id from headers
       "sendClientId feature flag is true" in {
         when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
-        when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+        when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
           .thenReturn(Future.successful(Right(createOrUpdateRecordEisResponse)))
 
         await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))

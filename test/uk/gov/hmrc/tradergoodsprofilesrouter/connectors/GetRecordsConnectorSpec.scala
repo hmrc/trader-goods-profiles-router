@@ -18,8 +18,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{reset, verify, when}
-import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
@@ -35,7 +33,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val connector = new GetRecordsConnector(appConfig, httpClientV2, dateTimeService)
+  private val connector = new GetRecordsConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -51,10 +49,10 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
   }
 
   "fetchRecord" should {
+    val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
     "fetch a record successfully" in {
-      val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
 
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
       val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
@@ -62,15 +60,17 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       result.value mustBe response
     }
 
-    "return an error whenEIS return an error" in {
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+    "handle errors" when {
+      "EIS return an error" in {
+        when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
+          .thenReturn(Future.successful(Left(badRequestEISError)))
 
-      val result = await(
-        connector.fetchRecord(eori, recordId, correlationId, s"http://localhost:1234/tgp/getrecords/v1")
-      )
+        val result = await(
+          connector.fetchRecord(eori, recordId, correlationId, s"http://localhost:1234/tgp/getrecords/v1")
+        )
 
-      result.left.value mustBe BadRequest("error")
+        result.left.value mustBe badRequestEISError
+      }
     }
 
     "send a request with the right parameters" when {
@@ -117,7 +117,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       val defaultSize                     = 500
       val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
 
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
         .thenReturn(Future.successful(Right(response)))
 
       val result = await(connector.fetchRecords(eori, correlationId, defaultSize))
@@ -126,21 +126,21 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
 
     "return an error if EIS return an error with static stub" in {
-      when(requestBuilder.execute[Either[Result, GetEisRecordsResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, GetEisRecordsResponse]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val result = await(connector.fetchRecord(eori, recordId, correlationId, appConfig.hawkConfig.getRecordsUrl))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
 
     "send a request with the right url for fetch records" in {

@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -31,7 +33,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class CreateRecordConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -42,16 +46,18 @@ class CreateRecordConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.createRecordUrl
 
-    httpClientV2
-      .post(url"$url")
-      .setHeader(
-        buildHeadersWithDrop1Toggle(
-          correlationId,
-          appConfig.hawkConfig.createRecordBearerToken,
-          appConfig.hawkConfig.forwardedHost
-        ): _*
-      )
-      .withBody(Json.toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    retryFor[CreateOrUpdateRecordEisResponse]("create record")(retryCondition) {
+      httpClientV2
+        .post(url"$url")
+        .setHeader(
+          buildHeadersWithDrop1Toggle(
+            correlationId,
+            appConfig.hawkConfig.createRecordBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
+        .withBody(Json.toJson(payload))
+        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    }
   }
 }

@@ -22,8 +22,6 @@ import org.mockito.captor.ArgCaptor
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.Json
-import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
@@ -39,7 +37,7 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
   private val sut: RequestAdviceConnector =
-    new RequestAdviceConnector(appConfig, httpClientV2, dateTimeService)
+    new RequestAdviceConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   private val expectedHeader: Seq[(String, String)] =
     Seq(
@@ -66,7 +64,7 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
 
   "request Advice" should {
     "return 200 OK" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(200)))
 
       val traderDetails = TraderDetails("eori", "any-name", None, "sample@sample.com", "ukims", Seq.empty)
@@ -92,14 +90,14 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
     }
 
     "return an error" in {
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val traderDetails = TraderDetails("eori", "any-name", None, "sample@sample.com", "ukims", Seq.empty)
 
       val result = await(sut.requestAdvice(traderDetails, correlationId))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
   }
 

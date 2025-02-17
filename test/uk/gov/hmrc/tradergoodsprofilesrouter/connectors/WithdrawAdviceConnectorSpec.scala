@@ -43,7 +43,7 @@ class WithdrawAdviceConnectorSpec extends BaseConnectorSpec with BeforeAndAfterE
   private val withdrawReason           = "Withdraw Reason"
   private val withdrawReasonWithSpaces = "  Withdraw Reason  "
 
-  val sut = new WithdrawAdviceConnector(appConfig, httpClientV2, uuidService, dateTimeService)
+  val sut = new WithdrawAdviceConnector(appConfig, httpClientV2, uuidService, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

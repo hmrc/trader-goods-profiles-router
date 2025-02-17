@@ -214,7 +214,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
         }
         "Service Unavailable" in {
           stubForEis(SERVICE_UNAVAILABLE)
@@ -377,7 +377,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEis(
@@ -859,7 +859,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         )
     )
 
-  val updateRecordEisResponseData: JsValue =
+  private lazy val updateRecordEisResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -901,7 +901,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |}
         |""".stripMargin)
 
-  val updateRecordResponseData: JsValue =
+  private lazy val updateRecordResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -943,7 +943,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateEisRecordResponseDataWithOptionalFields: JsValue =
+  private lazy val updateEisRecordResponseDataWithOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -985,7 +985,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
+  private lazy val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1022,7 +1022,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
+  private lazy val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1058,7 +1058,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateRecordResponseDataWithOptionalFields: JsValue =
+  private lazy val updateRecordResponseDataWithOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1088,7 +1088,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateRecordResponseDataWithSomeOptionalFields: JsValue =
+  private lazy val updateRecordResponseDataWithSomeOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1122,7 +1122,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateRecordRequestData: String =
+  private lazy val updateRecordRequestData: String =
     s"""
         |{
         |    "eori": "$eori",
@@ -1151,47 +1151,8 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |}
         |""".stripMargin
 
-  val updateEisRecordRequestData: String =
-    """
-      |{
-      |    "eori": "GB123456789001",
-      |    "actorId": "GB098765432112",
-      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
-      |    "assessments": [],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
-      |}
-      |""".stripMargin
 
-  val updateEisRecordRequestDataWithSomeOptionalFields: String =
-    """
-      |{
-      |    "eori": "GB123456789001",
-      |    "actorId": "GB098765432112",
-      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
-      |    "assessments": [
-      |        {
-      |            "primaryCategory": 1
-      |        }
-      |    ],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
-      |}
-      |""".stripMargin
-
-  val updateRecordRequestDataWithOptionalNullFields: String =
+  private lazy val updateRecordRequestDataWithOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1221,7 +1182,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val updateRecordRequestDataWithConditionOptionalNullFields: String =
+  private lazy val updateRecordRequestDataWithConditionOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1246,7 +1207,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val updateRecordRequestDataWithSomeOptionalNullFields: String =
+  private lazy val updateRecordRequestDataWithSomeOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1270,7 +1231,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val updateRecordRequiredRequestData: String =
+  private lazy val updateRecordRequiredRequestData: String =
     """
       |{
       |    "eori": "GB123456789012",
@@ -1285,7 +1246,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val updateRecordRequiredEisResponseData: JsValue =
+  private lazy val updateRecordRequiredEisResponseData: JsValue =
     Json
       .parse("""
           |{
@@ -1316,7 +1277,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
           |}
           |""".stripMargin)
 
-  val updateRecordRequiredResponseData: JsValue =
+  private lazy val updateRecordRequiredResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -1347,7 +1308,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val invalidRequestData: String =
+  private lazy val invalidRequestData: String =
     """
       |{
       |    "assessments": [
@@ -1368,7 +1329,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val invalidOptionalRequestData: String =
+  private lazy val invalidOptionalRequestData: String =
     """
       |{
       |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1398,7 +1359,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
+  private lazy val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
     .parse("""
              |{
              |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1437,7 +1398,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
              |}
              |""".stripMargin)
 
-  val invalidActorIdAndComcodeRequestData: String =
+  private lazy val invalidActorIdAndComcodeRequestData: String =
     """
       |{
       |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",

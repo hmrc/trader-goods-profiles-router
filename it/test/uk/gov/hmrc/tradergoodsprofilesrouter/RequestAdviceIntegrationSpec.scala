@@ -153,7 +153,7 @@ class RequestAdviceIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatMultipleDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasRetried(pegaConnectorPath)
         }
 
         "Service Unavailable for fetch records" in {
@@ -360,7 +360,7 @@ class RequestAdviceIntegrationSpec
             "message"       -> "Bad Gateway"
           )
 
-          verifyThatMultipleDownstreamApiWasCalled()
+          verifyThatDownstreamApiWasRetried(pegaConnectorPath)
         }
         "Internal Server Error with 503 errorCode" in {
           stubForEisFetchRecords(OK, getEisRecordsResponseData.toString())
