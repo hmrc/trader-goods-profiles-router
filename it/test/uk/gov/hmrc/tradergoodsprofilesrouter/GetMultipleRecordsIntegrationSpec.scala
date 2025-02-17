@@ -17,16 +17,13 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import org.mockito.Mockito.when
-import com.github.tomakehurst.wiremock.client.WireMock.*
-import org.scalatest.concurrent.ScalaFutures.*
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
-import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import sttp.model.Uri.UriContext
-import uk.gov.hmrc.auth.core.{AuthConnector, Enrolment}
+import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.GetRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
@@ -42,11 +39,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
   private val url                        = fullUrl(s"/traders/$eori/records")
 
   override def beforeEach(): Unit = {
+    reset(authConnector)
+    withAuthorizedTrader()
     super.beforeEach()
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(dateTime)
   }
-
 
   override def extraApplicationConfig: Map[String, Any] =
     super.extraApplicationConfig ++ Map(
@@ -58,8 +56,6 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
 
       "valid without optional query parameter" in {
         stubForEis(OK, Some(getMultipleRecordEisResponseData.toString()))
-
-        println(getMultipleRecordEisResponseData.toString())
 
         val response = sendRequestAndWait(url)
 
@@ -334,21 +330,21 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
                 .withHeader("Content-Type", "application/json")
                 .withStatus(BAD_REQUEST)
                 .withBody(s"""
-                     |{
-                     |  "errorDetail": {
-                     |    "timestamp": "2023-09-14T11:29:18Z",
-                     |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                     |    "errorCode": "400",
-                     |    "errorMessage": "Invalid request parameter",
-                     |    "source": "BACKEND",
-                     |    "sourceFaultDetail": {
-                     |      "detail": [
-                     |      "error: 040, message: undefined"
-                     |      ]
-                     |    }
-                     |  }
-                     |}
-                     |""".stripMargin)
+                             |{
+                             |  "errorDetail": {
+                             |    "timestamp": "2023-09-14T11:29:18Z",
+                             |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
+                             |    "errorCode": "400",
+                             |    "errorMessage": "Invalid request parameter",
+                             |    "source": "BACKEND",
+                             |    "sourceFaultDetail": {
+                             |      "detail": [
+                             |      "error: 040, message: undefined"
+                             |      ]
+                             |    }
+                             |  }
+                             |}
+                             |""".stripMargin)
             )
           )
 
@@ -507,12 +503,12 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     )
 
   private def stubForEis(
-    httpStatus: Int,
-    body: Option[String] = None,
-    lastUpdatedDate: Option[String] = None,
-    page: Option[Int] = None,
-    size: Option[Int] = None
-  ) = {
+                          httpStatus: Int,
+                          body: Option[String] = None,
+                          lastUpdatedDate: Option[String] = None,
+                          page: Option[Int] = None,
+                          size: Option[Int] = None
+                        ) = {
     val uri =
       uri"$hawkConnectorPath/$eori?lastUpdatedDate=$lastUpdatedDate&page=$page&size=${size.getOrElse(500)}"
 
@@ -536,137 +532,137 @@ class GetMultipleRecordsIntegrationSpec extends HawkIntegrationSpec with AuthTes
     Json
       .parse(
         s"""
-       |{
-       |  "errorDetail": {
-       |    "timestamp": "2023-09-14T11:29:18Z",
-       |    "correlationId": "$correlationId",
-       |    "errorCode": "$errorCode",
-       |    "errorMessage": "$errorMessage",
-       |    "source": "BACKEND",
-       |    "sourceFaultDetail": {
-       |      "detail": null
-       |    }
-       |  }
-       |}
-       |""".stripMargin
+           |{
+           |  "errorDetail": {
+           |    "timestamp": "2023-09-14T11:29:18Z",
+           |    "correlationId": "$correlationId",
+           |    "errorCode": "$errorCode",
+           |    "errorMessage": "$errorMessage",
+           |    "source": "BACKEND",
+           |    "sourceFaultDetail": {
+           |      "detail": null
+           |    }
+           |  }
+           |}
+           |""".stripMargin
       )
       .toString()
 
   def getMultipleRecordEisResponseData: JsValue =
     Json.parse(s"""
-    |{
-    |"goodsItemRecords":
-    |[
-    |  {
-    |    "eori": "$eori",
-    |    "actorId": "GB1234567890",
-    |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-    |    "traderRef": "BAN001001",
-    |    "comcode": "10410100",
-    |    "accreditationStatus": "Approved",
-    |    "goodsDescription": "Organic bananas",
-    |    "countryOfOrigin": "EC",
-    |    "category": 3,
-    |    "assessments": [
-    |      {
-    |        "assessmentId": "abc123",
-    |        "primaryCategory": 1,
-    |        "condition": {
-    |          "type": "abc123",
-    |          "conditionId": "Y923",
-    |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-    |          "conditionTraderText": "Excluded product"
-    |        }
-    |      }
-    |    ],
-    |    "supplementaryUnit": 500,
-    |    "measurementUnit": "square meters(m^2)",
-    |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-    |    "comcodeEffectiveToDate": "",
-    |    "version": 1,
-    |    "active": true,
-    |    "toReview": false,
-    |    "reviewReason": null,
-    |    "declarable": "IMMI declarable",
-    |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-    |    "nirmsNumber": "RMS-GB-123456",
-    |    "niphlNumber": "6 S12345",
-    |    "locked": false,
-    |    "createdDateTime": "2024-11-18T23:20:19Z",
-    |    "updatedDateTime": "2024-11-18T23:20:19Z"
-    |  },
-    |    {
-    |    "eori": "$eori",
-    |    "actorId": "GB1234567890",
-    |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-    |    "traderRef": "BAN001001",
-    |    "comcode": "10410100",
-    |    "accreditationStatus": "Rejected",
-    |    "goodsDescription": "Organic bananas",
-    |    "countryOfOrigin": "EC",
-    |    "supplementaryUnit": 500,
-    |    "measurementUnit": "square meters(m^2)",
-    |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-    |    "comcodeEffectiveToDate": "",
-    |    "version": 1,
-    |    "active": true,
-    |    "toReview": false,
-    |    "reviewReason": null,
-    |    "declarable": "IMMI declarable",
-    |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-    |    "locked": false,
-    |    "createdDateTime": "2024-11-18T23:20:19Z",
-    |    "updatedDateTime": "2024-11-18T23:20:19Z"
-    |  },
-    |    {
-    |    "eori": "$eori",
-    |    "actorId": "GB1234567890",
-    |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-    |    "traderRef": "BAN001001",
-    |    "comcode": "10410100",
-    |    "accreditationStatus": "Withdrawn",
-    |    "goodsDescription": "Organic bananas test",
-    |    "countryOfOrigin": "EC",
-    |    "category": 3,
-    |    "assessments": [
-    |      {
-    |        "assessmentId": "abc123",
-    |        "primaryCategory": 1,
-    |        "condition": {
-    |          "type": "abc123",
-    |          "conditionId": "Y923",
-    |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-    |          "conditionTraderText": "Excluded product"
-    |        }
-    |      }
-    |    ],
-    |    "supplementaryUnit": 500,
-    |    "measurementUnit": "square meters(m^2)",
-    |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-    |    "comcodeEffectiveToDate": "",
-    |    "version": 1,
-    |    "active": true,
-    |    "toReview": false,
-    |    "reviewReason": null,
-    |    "declarable": "IMMI declarable",
-    |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-    |    "nirmsNumber": "RMS-GB-123456",
-    |    "niphlNumber": "6 S12345",
-    |    "locked": false,
-    |    "createdDateTime": "2024-11-18T23:20:19Z",
-    |    "updatedDateTime": "2024-11-18T23:20:19Z"
-    |  }
-    |],
-    |"pagination":
-    | {
-    |   "totalRecords": 3,
-    |   "currentPage": 0,
-    |   "totalPages": 1,
-    |   "nextPage": null,
-    |   "prevPage": null
-    | }
-    |}
-    |""".stripMargin)
+                  |{
+                  |"goodsItemRecords":
+                  |[
+                  |  {
+                  |    "eori": "$eori",
+                  |    "actorId": "GB1234567890",
+                  |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                  |    "traderRef": "BAN001001",
+                  |    "comcode": "10410100",
+                  |    "accreditationStatus": "Approved",
+                  |    "goodsDescription": "Organic bananas",
+                  |    "countryOfOrigin": "EC",
+                  |    "category": 3,
+                  |    "assessments": [
+                  |      {
+                  |        "assessmentId": "abc123",
+                  |        "primaryCategory": 1,
+                  |        "condition": {
+                  |          "type": "abc123",
+                  |          "conditionId": "Y923",
+                  |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                  |          "conditionTraderText": "Excluded product"
+                  |        }
+                  |      }
+                  |    ],
+                  |    "supplementaryUnit": 500,
+                  |    "measurementUnit": "square meters(m^2)",
+                  |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                  |    "comcodeEffectiveToDate": "",
+                  |    "version": 1,
+                  |    "active": true,
+                  |    "toReview": false,
+                  |    "reviewReason": null,
+                  |    "declarable": "IMMI declarable",
+                  |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                  |    "nirmsNumber": "RMS-GB-123456",
+                  |    "niphlNumber": "6 S12345",
+                  |    "locked": false,
+                  |    "createdDateTime": "2024-11-18T23:20:19Z",
+                  |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                  |  },
+                  |    {
+                  |    "eori": "$eori",
+                  |    "actorId": "GB1234567890",
+                  |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                  |    "traderRef": "BAN001001",
+                  |    "comcode": "10410100",
+                  |    "accreditationStatus": "Rejected",
+                  |    "goodsDescription": "Organic bananas",
+                  |    "countryOfOrigin": "EC",
+                  |    "supplementaryUnit": 500,
+                  |    "measurementUnit": "square meters(m^2)",
+                  |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                  |    "comcodeEffectiveToDate": "",
+                  |    "version": 1,
+                  |    "active": true,
+                  |    "toReview": false,
+                  |    "reviewReason": null,
+                  |    "declarable": "IMMI declarable",
+                  |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                  |    "locked": false,
+                  |    "createdDateTime": "2024-11-18T23:20:19Z",
+                  |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                  |  },
+                  |    {
+                  |    "eori": "$eori",
+                  |    "actorId": "GB1234567890",
+                  |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+                  |    "traderRef": "BAN001001",
+                  |    "comcode": "10410100",
+                  |    "accreditationStatus": "Withdrawn",
+                  |    "goodsDescription": "Organic bananas test",
+                  |    "countryOfOrigin": "EC",
+                  |    "category": 3,
+                  |    "assessments": [
+                  |      {
+                  |        "assessmentId": "abc123",
+                  |        "primaryCategory": 1,
+                  |        "condition": {
+                  |          "type": "abc123",
+                  |          "conditionId": "Y923",
+                  |          "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+                  |          "conditionTraderText": "Excluded product"
+                  |        }
+                  |      }
+                  |    ],
+                  |    "supplementaryUnit": 500,
+                  |    "measurementUnit": "square meters(m^2)",
+                  |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+                  |    "comcodeEffectiveToDate": "",
+                  |    "version": 1,
+                  |    "active": true,
+                  |    "toReview": false,
+                  |    "reviewReason": null,
+                  |    "declarable": "IMMI declarable",
+                  |    "ukimsNumber": "XIUKIM47699357400020231115081800",
+                  |    "nirmsNumber": "RMS-GB-123456",
+                  |    "niphlNumber": "6 S12345",
+                  |    "locked": false,
+                  |    "createdDateTime": "2024-11-18T23:20:19Z",
+                  |    "updatedDateTime": "2024-11-18T23:20:19Z"
+                  |  }
+                  |],
+                  |"pagination":
+                  | {
+                  |   "totalRecords": 3,
+                  |   "currentPage": 0,
+                  |   "totalPages": 1,
+                  |   "nextPage": null,
+                  |   "prevPage": null
+                  | }
+                  |}
+                  |""".stripMargin)
 
   def getMultipleRecordResponseData: JsValue =
     Json.parse(s"""
