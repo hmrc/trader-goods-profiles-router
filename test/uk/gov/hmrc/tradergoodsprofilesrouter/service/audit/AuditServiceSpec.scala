@@ -86,9 +86,9 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
     "send an event with reason failure" in {
 
       when(auditConnector.sendExtendedEvent(any)(any, any))
-        .thenReturn(Future.successful(AuditResult.Success)) // Mock audit response
+        .thenReturn(Future.successful(AuditResult.Success))
 
-      val failureReason = Some(Seq("Some failure reason")) // Simulating failure reason
+      val failureReason = Some(Seq("Some failure reason"))
       val result        = await(
         sut.emitAuditRemoveRecord(eori, recordId, actorId, dateTime, "FAILED", INTERNAL_SERVER_ERROR, failureReason)
       )

@@ -73,7 +73,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
     val expectedUrl = new URL("http://localhost:1234/tgp/removerecord/v1")
 
-    // ✅ Fix: Use `eq(expectedUrl)`
+
     verify(httpClientV2).put(url"$expectedUrl")
     verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
 
@@ -125,21 +125,21 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
       "actorId"  -> actorId
     )
 
-    // Verify execute is called with the correct StatusHttpReader
+
     verifyExecuteForStatusHttpReader(correlationId)
 
-    // Validate result
+
     result.value mustBe 200
   }
 
   "send a request with the right url for remove record when sendAcceptHeader feature flag is true" in {
     when(appConfig.sendAcceptHeader).thenReturn(true)
 
-    // Stub setHeader by matching the entire Seq as varargs.
+
     when(requestBuilder.setHeader(any[Seq[(String, String)]]: _*))
       .thenReturn(requestBuilder)
 
-    // Stub withBody and execute.
+
     when(requestBuilder.withBody(any[JsValue])(any, any, any))
       .thenReturn(requestBuilder)
     when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
@@ -150,12 +150,12 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
     verify(httpClientV2).put(url"$expectedUrl")
 
-    // Capture the headers passed to setHeader.
+
     val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
       ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
     verify(requestBuilder).setHeader(headersCaptor.capture(): _*)
 
-    // The captured value is already a Scala Seq.
+
     val capturedHeaders: Seq[(String, String)] = headersCaptor.getValue
 
     capturedHeaders    must contain allOf (
@@ -165,7 +165,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
       "Accept"           -> "application/json"
     )
 
-    // Use the alias meq for equality matcher to avoid Scala's eq conflict.
+    //
     verify(requestBuilder).withBody(
       meq(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId))
     )(any, any, any)

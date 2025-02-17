@@ -41,8 +41,8 @@ class GetSingleRecordIntegrationSpec
   override def hawkConnectorPath: String = s"/tgp/getrecords/v1"
 
   override def beforeEach(): Unit = {
-    super.beforeEach() // ✅ Call superclass first!
-    reset() // ✅ Now it exists
+    super.beforeEach()
+    reset()
     withAuthorizedTrader()
 
     when(uuidService.uuid).thenReturn(correlationId)

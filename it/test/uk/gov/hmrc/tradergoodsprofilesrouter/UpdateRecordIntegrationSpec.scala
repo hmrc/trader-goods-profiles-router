@@ -290,7 +290,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
     super.beforeEach()
 
     reset()
-    withAuthorizedTrader() // ✅ Set up necessary authentication state
+    withAuthorizedTrader()
 
     when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
@@ -310,12 +310,12 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
                 "Accept"       -> "application/vnd.hmrc.1.0+json",
                 "X-Client-ID"  -> "tss"
               ): _*
-            ) // ✅ Fix: Convert headers to List before spreading
+            )
             .put(Json.parse(updateRecordRequestData))
             .futureValue
 
           response.status shouldBe OK
-          response.json   shouldBe Json.toJson(updateRecordResponseData) // ✅ Fix: Remove unnecessary `.as[T]`
+          response.json   shouldBe Json.toJson(updateRecordResponseData)
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
@@ -328,17 +328,17 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           val response = wsClient
             .url(url)
             .withHttpHeaders(
-              Seq( // ✅ Fix: Convert headers to `Seq`
+              Seq(
                 "Content-Type" -> "application/json",
                 "Accept"       -> "application/vnd.hmrc.1.0+json",
                 "X-Client-ID"  -> "tss"
               ): _*
             )
-            .put(Json.parse(updateRecordRequestDataWithOptionalNullFields)) // ✅ Ensure JSON is properly serialized
+            .put(Json.parse(updateRecordRequestDataWithOptionalNullFields))
             .futureValue
 
           response.status shouldBe OK
-          response.json   shouldBe Json.toJson(updateRecordResponseDataWithOptionalFields) // ✅ Fix JSON comparison
+          response.json   shouldBe Json.toJson(updateRecordResponseDataWithOptionalFields)
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
@@ -350,17 +350,17 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             val response = wsClient
               .url(url)
               .withHttpHeaders(
-                Seq( // ✅ Fix header formatting
+                Seq(
                   "Content-Type" -> "application/json",
                   "Accept"       -> "application/vnd.hmrc.1.0+json",
                   "X-Client-ID"  -> "tss"
                 ): _*
               )
-              .put(Json.parse(updateRecordRequestData)) // ✅ Ensure JSON serialization
+              .put(Json.parse(updateRecordRequestData))
               .futureValue
 
             response.status shouldBe FORBIDDEN
-            response.json   shouldBe Json.obj( // ✅ Explicit conversion for correlationId
+            response.json   shouldBe Json.obj(
               "correlationId" -> Json.toJson(correlationId),
               "code"          -> Json.toJson("FORBIDDEN"),
               "message"       -> Json.toJson("Forbidden")
@@ -374,17 +374,17 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             val response = wsClient
               .url(url)
               .withHttpHeaders(
-                Seq( // ✅ Ensure headers are properly formatted
+                Seq(
                   "Content-Type" -> "application/json",
                   "Accept"       -> "application/vnd.hmrc.1.0+json",
                   "X-Client-ID"  -> "tss"
                 ): _*
               )
-              .put(Json.parse(updateRecordRequestData)) // ✅ Ensure JSON serialization
+              .put(Json.parse(updateRecordRequestData))
               .futureValue
 
             response.status shouldBe NOT_FOUND
-            response.json   shouldBe Json.obj( // ✅ Ensure explicit JSON conversion
+            response.json   shouldBe Json.obj(
               "correlationId" -> Json.toJson(correlationId),
               "code"          -> Json.toJson("NOT_FOUND"),
               "message"       -> Json.toJson("Not Found")
@@ -398,7 +398,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             val response = wsClient
               .url(url)
               .withHttpHeaders(
-                Seq( // ✅ Ensuring proper header formatting
+                Seq(
                   "Content-Type" -> "application/json",
                   "Accept"       -> "application/vnd.hmrc.1.0+json",
                   "X-Client-ID"  -> "tss"
@@ -408,7 +408,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               .futureValue
 
             response.status shouldBe BAD_GATEWAY
-            response.json   shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
+            response.json   shouldBe Json.obj(
               "correlationId" -> Json.toJson(correlationId),
               "code"          -> Json.toJson("BAD_GATEWAY"),
               "message"       -> Json.toJson("Bad Gateway")
@@ -422,17 +422,17 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             val response = wsClient
               .url(url)
               .withHttpHeaders(
-                Seq( // ✅ Ensuring proper header formatting
+                Seq(
                   "Content-Type" -> "application/json",
                   "Accept"       -> "application/vnd.hmrc.1.0+json",
                   "X-Client-ID"  -> "tss"
                 ): _*
               )
-              .put(Json.parse(updateRecordRequestData)) // ✅ Ensuring JSON serialization
+              .put(Json.parse(updateRecordRequestData))
               .futureValue
 
             response.status shouldBe SERVICE_UNAVAILABLE
-            response.json   shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
+            response.json   shouldBe Json.obj(
               "correlationId" -> Json.toJson(correlationId),
               "code"          -> Json.toJson("SERVICE_UNAVAILABLE"),
               "message"       -> Json.toJson("Service Unavailable")
@@ -471,26 +471,26 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         "Internal Server Error with 401 errorCode" in {
           stubPutRequestForEis(
             INTERNAL_SERVER_ERROR,
-            Some(eisErrorResponse("401", "Unauthorized")) // ✅ Fixed typo in message
+            Some(eisErrorResponse("401", "Unauthorized"))
           )
 
           val response = wsClient
             .url(url)
             .withHttpHeaders(
-              Seq( // ✅ Ensuring proper header formatting
+              Seq(
                 "Content-Type" -> "application/json",
                 "Accept"       -> "application/vnd.hmrc.1.0+json",
                 "X-Client-ID"  -> "tss"
               ): _*
             )
-            .put(Json.parse(updateRecordRequestData)) // ✅ Ensuring correct JSON conversion
+            .put(Json.parse(updateRecordRequestData))
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj( // ✅ Ensuring proper JSON conversion
+          response.json   shouldBe Json.obj(
             "correlationId" -> Json.toJson(correlationId),
             "code"          -> Json.toJson("UNAUTHORIZED"),
-            "message"       -> Json.toJson("Unauthorized") // ✅ Fixed typo: "Unauthorised" -> "Unauthorized"
+            "message"       -> Json.toJson("Unauthorized")
           )
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
@@ -504,17 +504,17 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           val response = wsClient
             .url(url)
             .withHttpHeaders(
-              Seq( // ✅ Ensuring proper header formatting
+              Seq(
                 "Content-Type" -> "application/json",
                 "Accept"       -> "application/vnd.hmrc.1.0+json",
                 "X-Client-ID"  -> "tss"
               ): _*
             )
-            .put(Json.parse(updateRecordRequestData)) // ✅ Ensuring correct JSON conversion
+            .put(Json.parse(updateRecordRequestData))
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj( // ✅ Ensuring proper JSON formatting
+          response.json   shouldBe Json.obj(
             "correlationId" -> Json.toJson(correlationId),
             "code"          -> Json.toJson("INTERNAL_SERVER_ERROR"),
             "message"       -> Json.toJson("Internal Server Error")
@@ -531,17 +531,17 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
           val response = wsClient
             .url(url)
             .withHttpHeaders(
-              Seq( // ✅ Ensure proper header formatting
+              Seq(
                 "Content-Type" -> "application/json",
                 "Accept"       -> "application/vnd.hmrc.1.0+json",
                 "X-Client-ID"  -> "tss"
               ): _*
             )
-            .put(Json.parse(updateRecordRequestData)) // ✅ Ensure proper JSON serialization
+            .put(Json.parse(updateRecordRequestData))
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj( // ✅ Ensure proper JSON formatting
+          response.json   shouldBe Json.obj(
             "correlationId" -> Json.toJson(correlationId),
             "code"          -> Json.toJson("NOT_FOUND"),
             "message"       -> Json.toJson("Not Found")

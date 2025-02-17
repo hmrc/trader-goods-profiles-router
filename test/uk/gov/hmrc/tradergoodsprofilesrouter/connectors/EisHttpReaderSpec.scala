@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.HttpResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, StatusHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
-import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport // ✅ Ensure Json library is imported if needed
+import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
 
 class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherValues {
 
