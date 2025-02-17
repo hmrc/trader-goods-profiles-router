@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, verify, when}
 import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
@@ -37,7 +36,7 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
   private val eori          = "123"
   private val timestamp     = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId = UUID.randomUUID().toString
-  private val sut           = new GetProfileConnector(appConfig, httpClientV2, dateTimeService)
+  private val sut           = new GetProfileConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -79,12 +78,12 @@ class GetProfileConnectorSpec extends BaseConnectorSpec {
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.execute[Either[Result, ProfileResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, ProfileResponse]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val result = await(sut.get(eori, correlationId))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
   }
 

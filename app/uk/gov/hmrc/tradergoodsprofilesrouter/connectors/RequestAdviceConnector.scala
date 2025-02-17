@@ -15,6 +15,8 @@
  */
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.Json
 import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -31,7 +33,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class RequestAdviceConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -42,17 +46,20 @@ class RequestAdviceConnector @Inject() (
     val url = appConfig.pegaConfig.requestAdviceUrl
 
     val adviceEisRequest = RequestEisAccreditationRequest(request, dateTimeService.timestamp.asStringSeconds)
-    httpClientV2
-      .post(url"$url")
-      .setHeader(
-        buildHeadersForAdvice(
-          correlationId,
-          appConfig.pegaConfig.requestAdviceBearerToken,
-          appConfig.pegaConfig.forwardedHost
-        ): _*
-      )
-      .withBody(Json.toJson(adviceEisRequest))
-      .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+
+    retryFor[Int]("request advice")(retryCondition) {
+      httpClientV2
+        .post(url"$url")
+        .setHeader(
+          buildHeadersForAdvice(
+            correlationId,
+            appConfig.pegaConfig.requestAdviceBearerToken,
+            appConfig.pegaConfig.forwardedHost
+          ): _*
+        )
+        .withBody(Json.toJson(adviceEisRequest))
+        .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
+    }
   }
 
 }

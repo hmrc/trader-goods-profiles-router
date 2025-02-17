@@ -16,12 +16,11 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.*
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
@@ -38,7 +37,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
 
-  private val connector = new MaintainProfileConnector(appConfig, httpClientV2, dateTimeService)
+  private val connector = new MaintainProfileConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -107,13 +106,13 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
     }
 
     "return an error if EIS returns one" in {
-      when(requestBuilder.execute[Either[Result, MaintainProfileResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val result =
         await(connector.maintainProfile(maintainProfileEisRequest.as[MaintainProfileEisRequest], correlationId))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
   }
 

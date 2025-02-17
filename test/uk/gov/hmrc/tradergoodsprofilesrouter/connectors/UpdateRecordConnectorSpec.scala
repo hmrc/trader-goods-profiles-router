@@ -37,7 +37,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
   private val expectedResponse      = createOrUpdateRecordEisResponse
-  private val eisConnector          = new UpdateRecordConnector(appConfig, httpClientV2, dateTimeService)
+  private val eisConnector          = new UpdateRecordConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -52,7 +52,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     when(httpClientV2.patch(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(appConfig.useEisPatchMethod).thenReturn(true)
-    when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
+    when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
       .thenReturn(Future.successful(Right(expectedResponse)))
   }
 
@@ -70,13 +70,13 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "return an error if EIS return an error" in {
       when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
       val result  = await(eisConnector.patch(request, correlationId))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
 
     "send a request with the right url" in {
@@ -132,13 +132,13 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
     "return an error if EIS return an error" in {
       when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-      when(requestBuilder.execute[Either[Result, CreateOrUpdateRecordEisResponse]](any, any))
-        .thenReturn(Future.successful(Left(BadRequest("error"))))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
       val result  = await(eisConnector.put(request, correlationId))
 
-      result.left.value mustBe BadRequest("error")
+      result.left.value mustBe badRequestEISError
     }
 
     "send a request with the right url without clientID" in {
@@ -159,7 +159,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
   }
 
-  val updateRecordPayload: JsValue = Json
+  private lazy val updateRecordPayload: JsValue = Json
     .parse("""
              |{
              |    "eori": "GB123456789001",

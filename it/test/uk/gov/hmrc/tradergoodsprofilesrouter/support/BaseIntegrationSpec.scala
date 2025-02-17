@@ -76,4 +76,10 @@ abstract class BaseIntegrationSpec
     }
   def verifyThatDownstreamApiWasNotCalled(connectorPath: String): Unit =
     verify(0, postRequestedFor(urlEqualTo(connectorPath)))
+
+  def verifyThatDownstreamApiWasRetried(connectorPath: String): Unit =
+    withClue(s"We expected a downstream API (stub) to be retried at $connectorPath, but it wasn't.") {
+      val event = getAllServeEvents.asScala.count(_.getWasMatched)
+      event > 1 shouldBe true
+    }
 }

@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import play.api.http.MimeTypes
 import play.api.libs.json.Json.toJson
 import play.api.libs.ws.writeableOf_JsValue
@@ -34,7 +36,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class UpdateRecordConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -50,13 +54,16 @@ class UpdateRecordConnector @Inject() (
       logger.info(
         s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PATCH method for update record"
       )
-      httpClientV2
-        .patch(url"$url")
-        .setHeader(
-          buildHeaderWithoutClientId(correlationId, isPutBearerToken = false): _*
-        )
-        .withBody(toJson(payload))
-        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+
+      retryFor[CreateOrUpdateRecordEisResponse]("patch record")(retryCondition) {
+        httpClientV2
+          .patch(url"$url")
+          .setHeader(
+            buildHeaderWithoutClientId(correlationId, isPutBearerToken = false): _*
+          )
+          .withBody(toJson(payload))
+          .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+      }
     } else {
       logger.info(
         s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PUT method for update record"
@@ -71,17 +78,19 @@ class UpdateRecordConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
 
-    httpClientV2
-      .put(url"$url")
-      .setHeader(
-        buildHeadersWithDrop1Toggle(
-          correlationId,
-          appConfig.hawkConfig.updateRecordBearerToken,
-          appConfig.hawkConfig.forwardedHost
-        ): _*
-      )
-      .withBody(toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    retryFor[CreateOrUpdateRecordEisResponse]("put record")(retryCondition) {
+      httpClientV2
+        .put(url"$url")
+        .setHeader(
+          buildHeadersWithDrop1Toggle(
+            correlationId,
+            appConfig.hawkConfig.updateRecordBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
+        .withBody(toJson(payload))
+        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    }
   }
 
   def put(
@@ -94,11 +103,14 @@ class UpdateRecordConnector @Inject() (
       correlationId,
       isPutBearerToken = true
     )
-    httpClientV2
-      .put(url"$url")
-      .setHeader(headers: _*)
-      .withBody(toJson(payload))
-      .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+
+    retryFor[CreateOrUpdateRecordEisResponse]("put record")(retryCondition) {
+      httpClientV2
+        .put(url"$url")
+        .setHeader(headers: _*)
+        .withBody(toJson(payload))
+        .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
+    }
   }
 
   private def buildHeaderWithoutClientId(correlationId: String, isPutBearerToken: Boolean) =

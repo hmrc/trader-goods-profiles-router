@@ -16,32 +16,31 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.Mockito.{RETURNS_DEEP_STUBS, reset, when}
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
-
 import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
-
 
 import java.time.Instant
 import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.writeableOf_JsValue
+import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
+import org.mockito.Mockito.{RETURNS_DEEP_STUBS, atLeastOnce, reset, verify, verifyNoInteractions, when}
 
 
 class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
   val eori              = "GB123456789001"
   val correlationId     = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime          = "2021-12-17T09:30:47.456Z" 
+  val dateTime          = "2021-12-17T09:30:47.456Z"
   val timestamp         = "Fri, 17 Dec 2021 09:30:47 Z"
   val appConfig: AppConfig = mock[AppConfig](RETURNS_DEEP_STUBS)
 
@@ -68,7 +67,7 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
   )
 
   "when trying to maintain a profile" - {
-  
+
 
     "it should return a 200 ok when the request is successful with optional null fields" in {
       stubForEis(OK, Some(maintainProfileResponseWithOptionalNullFields.toString()))

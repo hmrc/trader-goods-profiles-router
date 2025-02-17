@@ -19,8 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, verify, when}
 import play.api.http.Status.ACCEPTED
-import play.api.mvc.Result
-import play.api.mvc.Results.BadRequest
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
@@ -34,7 +32,7 @@ class DownloadTraderDataConnectorSpec extends BaseConnectorSpec {
   private val timestamp             = Instant.parse("2024-05-12T12:15:15.456321Z")
   private val correlationId: String = "3e8dae97-b586-4cef-8511-68ac12da9028"
 
-  private val connector = new DownloadTraderDataConnector(appConfig, httpClientV2, dateTimeService)
+  private val connector = new DownloadTraderDataConnector(appConfig, httpClientV2, dateTimeService, as, config)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -57,7 +55,7 @@ class DownloadTraderDataConnectorSpec extends BaseConnectorSpec {
           "Authorization"    -> "Bearer dummyDownloadTraderDataToken"
         )
 
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
         .thenReturn(Future.successful(Right(ACCEPTED)))
 
       val result = await(connector.requestDownload(eori, correlationId))
@@ -69,14 +67,13 @@ class DownloadTraderDataConnectorSpec extends BaseConnectorSpec {
     }
 
     "return any error that EIS return" in {
-      val errorResponse = BadRequest("error")
 
-      when(requestBuilder.execute[Either[Result, Int]](any, any))
-        .thenReturn(Future.successful(Left(errorResponse)))
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
+        .thenReturn(Future.successful(Left(badRequestEISError)))
 
       val result = await(connector.requestDownload(eori, correlationId))
 
-      result.left.value mustBe errorResponse
+      result.left.value mustBe badRequestEISError
     }
   }
 

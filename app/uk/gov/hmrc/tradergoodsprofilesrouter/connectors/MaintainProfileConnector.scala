@@ -17,6 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
 import com.google.inject.Inject
+import com.typesafe.config.Config
+import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.Json
 import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.client.HttpClientV2
@@ -32,7 +34,9 @@ import scala.concurrent.{ExecutionContext, Future}
 class MaintainProfileConnector @Inject() (
   override val appConfig: AppConfig,
   httpClientV2: HttpClientV2,
-  override val dateTimeService: DateTimeService
+  override val dateTimeService: DateTimeService,
+  override val actorSystem: ActorSystem,
+  override val configuration: Config
 )(implicit val ec: ExecutionContext)
     extends BaseConnector
     with EisHttpErrorHandler {
@@ -41,16 +45,19 @@ class MaintainProfileConnector @Inject() (
     hc: HeaderCarrier
   ): Future[Either[EisHttpErrorResponse, MaintainProfileResponse]] = {
     val url = appConfig.hawkConfig.maintainProfileUrl
-    httpClientV2
-      .put(url"$url")
-      .setHeader(
-        buildHeadersWithDrop1Toggle( // TODO: change to only send required headers after release 2
-          correlationId,
-          appConfig.hawkConfig.maintainProfileBearerToken,
-          appConfig.hawkConfig.forwardedHost
-        ): _*
-      )
-      .withBody(Json.toJson(request))
-      .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
+
+    retryFor[MaintainProfileResponse]("maintain profile")(retryCondition) {
+      httpClientV2
+        .put(url"$url")
+        .setHeader(
+          buildHeadersWithDrop1Toggle( // TODO: change to only send required headers after release 2
+            correlationId,
+            appConfig.hawkConfig.maintainProfileBearerToken,
+            appConfig.hawkConfig.forwardedHost
+          ): _*
+        )
+        .withBody(Json.toJson(request))
+        .execute(HttpReader[MaintainProfileResponse](correlationId, handleErrorResponse), ec)
+    }
   }
 }

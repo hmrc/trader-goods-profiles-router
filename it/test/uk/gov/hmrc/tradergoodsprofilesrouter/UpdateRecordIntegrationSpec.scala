@@ -411,7 +411,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               "message" -> Json.toJson("Bad Gateway")
             )
 
-            verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+            verifyThatDownstreamApiWasRetried(hawkConnectorPath)
           }
           "Service Unavailable" in {
             stubPutRequestForEis(SERVICE_UNAVAILABLE)
@@ -559,7 +559,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
               "message" -> "Bad Gateway"
             )
 
-            verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+            verifyThatDownstreamApiWasRetried(hawkConnectorPath)
           }
         }
 
