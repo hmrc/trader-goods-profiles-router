@@ -66,7 +66,22 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
   )
 
   "when trying to maintain a profile" - {
+    "when trying to maintain a profile" - {
+      "it should return a 200 ok when the request is successful" in {
+        stubForEis(OK, Some(maintainProfileResponse.toString()))
 
+        val response = wsClient
+          .url(fullUrl(s"/traders/$eori"))
+          .withHttpHeaders(headers: _*)
+          .put(maintainProfileRequest)
+          .futureValue
+
+        response.status shouldBe OK
+        response.json shouldBe toJson(maintainProfileResponse.as[MaintainProfileResponse])
+
+        verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+      }
+    }
     "it should return a 200 ok when the request is successful with optional null fields" in {
       stubForEis(OK, Some(maintainProfileResponseWithOptionalNullFields.toString()))
 
