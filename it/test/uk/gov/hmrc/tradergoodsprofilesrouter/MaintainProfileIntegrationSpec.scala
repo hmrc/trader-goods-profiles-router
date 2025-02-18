@@ -65,7 +65,6 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
     ("X-Client-ID", "tss")
   )
 
-  "when trying to maintain a profile" - {
     "when trying to maintain a profile" - {
       "it should return a 200 ok when the request is successful" in {
         stubForEis(OK, Some(maintainProfileResponse.toString()))
@@ -80,8 +79,8 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
         response.json shouldBe toJson(maintainProfileResponse.as[MaintainProfileResponse])
 
         verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-      }
     }
+
     "it should return a 200 ok when the request is successful with optional null fields" in {
       stubForEis(OK, Some(maintainProfileResponseWithOptionalNullFields.toString()))
 
