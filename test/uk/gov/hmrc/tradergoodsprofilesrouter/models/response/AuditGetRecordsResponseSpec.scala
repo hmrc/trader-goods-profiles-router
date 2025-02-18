@@ -68,10 +68,9 @@ class AuditGetRecordsResponseSpec extends AnyWordSpec with Matchers {
     )
 
     val getRecordsResponse = GetRecordsResponse(
-      goodsItemRecords = goodsItemRecords.map(GoodsItemRecords(_)), 
+      goodsItemRecords = goodsItemRecords.map(GoodsItemRecords(_)),
       pagination = pagination
     )
-
 
     "correctly map from GetRecordsResponse" in {
       val result = AuditGetRecordsResponse(getRecordsResponse)
@@ -93,7 +92,7 @@ class AuditGetRecordsResponseSpec extends AnyWordSpec with Matchers {
       result.categories mustBe Some(Map(1 -> 1))
       result.UKIMSNumber mustBe Some("UKIMS123")
       result.NIRMSNumber mustBe Some("NIRMS456")
-      result.NIPHLNumber mustBe Some("NIPHL789") 
+      result.NIPHLNumber mustBe Some("NIPHL789")
     }
 
     "serialize correctly" in {

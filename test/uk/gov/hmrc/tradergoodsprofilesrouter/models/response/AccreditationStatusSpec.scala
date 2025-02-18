@@ -33,12 +33,14 @@ class AccreditationStatusSpec extends AnyWordSpec with Matchers {
     "deserialize correctly from JSON" in {
       Json.fromJson[AccreditationStatus](Json.toJson("Approved")) mustBe JsSuccess(AccreditationStatus.Approved)
       Json.fromJson[AccreditationStatus](Json.toJson("Requested")) mustBe JsSuccess(AccreditationStatus.Requested)
-      Json.fromJson[AccreditationStatus](Json.toJson("Not Requested")) mustBe JsSuccess(AccreditationStatus.NotRequested)
+      Json.fromJson[AccreditationStatus](Json.toJson("Not Requested")) mustBe JsSuccess(
+        AccreditationStatus.NotRequested
+      )
     }
 
     "fail to deserialize an unknown status" in {
       val invalidJson = Json.toJson("Unknown Status")
-      val result = Json.fromJson[AccreditationStatus](invalidJson)
+      val result      = Json.fromJson[AccreditationStatus](invalidJson)
 
       result mustBe a[JsError] // Expected to fail
     }

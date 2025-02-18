@@ -21,15 +21,14 @@ import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditGetRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.AccreditationRequest
 
-
 class AccreditationRequestSpec extends PlaySpec {
 
   "AuditGetRecordRequest" should {
 
     "serialize correctly" in {
-      val request = AuditGetRecordRequest("GB123456789012", Some("2024-02-10T12:00:00Z"), Some(1), Some(10), Some("record-123"))
-      val expectedJson = Json.parse(
-        """{
+      val request      =
+        AuditGetRecordRequest("GB123456789012", Some("2024-02-10T12:00:00Z"), Some(1), Some(10), Some("record-123"))
+      val expectedJson = Json.parse("""{
           |  "eori": "GB123456789012",
           |  "lastUpdatedDate": "2024-02-10T12:00:00Z",
           |  "page": 1,
@@ -41,8 +40,7 @@ class AccreditationRequestSpec extends PlaySpec {
     }
 
     "deserialize valid JSON correctly" in {
-      val json = Json.parse(
-        """{
+      val json = Json.parse("""{
           |  "eori": "GB123456789012",
           |  "lastUpdatedDate": "2024-02-10T12:00:00Z",
           |  "page": 1,
@@ -50,21 +48,23 @@ class AccreditationRequestSpec extends PlaySpec {
           |  "recordId": "record-123"
           |}""".stripMargin)
 
-      json.validate[AuditGetRecordRequest] mustBe JsSuccess(AuditGetRecordRequest("GB123456789012", Some("2024-02-10T12:00:00Z"), Some(1), Some(10), Some("record-123")))
+      json.validate[AuditGetRecordRequest] mustBe JsSuccess(
+        AuditGetRecordRequest("GB123456789012", Some("2024-02-10T12:00:00Z"), Some(1), Some(10), Some("record-123"))
+      )
     }
 
     "handle missing optional fields" in {
-      val json = Json.parse(
-        """{
+      val json = Json.parse("""{
           |  "eori": "GB123456789012"
           |}""".stripMargin)
 
-      json.validate[AuditGetRecordRequest] mustBe JsSuccess(AuditGetRecordRequest("GB123456789012", None, None, None, None))
+      json.validate[AuditGetRecordRequest] mustBe JsSuccess(
+        AuditGetRecordRequest("GB123456789012", None, None, None, None)
+      )
     }
 
     "fail to deserialize invalid JSON" in {
-      val invalidJson = Json.parse(
-        """{
+      val invalidJson = Json.parse("""{
           |  "eori": 123456,
           |  "lastUpdatedDate": "invalid-date",
           |  "page": "not-a-number"

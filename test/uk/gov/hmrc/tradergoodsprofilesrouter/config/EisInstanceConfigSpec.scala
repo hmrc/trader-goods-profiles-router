@@ -76,15 +76,15 @@ class EISInstanceConfigSpec extends AnyWordSpec with Matchers {
 
     "load configuration correctly with default values for missing tokens" in {
       val config = Configuration(
-        "eis.protocol" -> "http",
-        "eis.host" -> "localhost",
-        "eis.port" -> 8080,
-        "eis.get-records" -> "/get",
-        "eis.create-record" -> "/create",
-        "eis.remove-record" -> "/remove",
-        "eis.update-record" -> "/update",
+        "eis.protocol"         -> "http",
+        "eis.host"             -> "localhost",
+        "eis.port"             -> 8080,
+        "eis.get-records"      -> "/get",
+        "eis.create-record"    -> "/create",
+        "eis.remove-record"    -> "/remove",
+        "eis.update-record"    -> "/update",
         "eis.maintain-profile" -> "/maintain",
-        "eis.forwarded-host" -> "some-host"
+        "eis.forwarded-host"   -> "some-host"
       )
 
       val eisInstanceConfig = EISInstanceConfig.configLoader.load(config.underlying, "eis") // ✅ Use "eis" as path

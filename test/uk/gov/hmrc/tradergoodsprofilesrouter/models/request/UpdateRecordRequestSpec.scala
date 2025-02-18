@@ -28,8 +28,7 @@ class UpdateRecordRequestSpec extends AnyWordSpec with Matchers {
   "UpdateRecordRequest JSON format" should {
 
     "successfully deserialize valid JSON" in {
-      val json = Json.parse(
-        """{
+      val json = Json.parse("""{
           |  "actorId": "GB987654321098",
           |  "traderRef": "TR123",
           |  "comcode": "12345678",
@@ -49,8 +48,7 @@ class UpdateRecordRequestSpec extends AnyWordSpec with Matchers {
     }
 
     "fail to deserialize invalid actorId" in {
-      val invalidJson = Json.parse(
-        """{
+      val invalidJson = Json.parse("""{
           |  "actorId": "123",
           |  "traderRef": "TR123",
           |  "comcode": "12345678",
@@ -65,8 +63,7 @@ class UpdateRecordRequestSpec extends AnyWordSpec with Matchers {
     }
 
     "fail to deserialize invalid countryOfOrigin" in {
-      val invalidJson = Json.parse(
-        """{
+      val invalidJson = Json.parse("""{
           |  "actorId": "GB987654321098",
           |  "traderRef": "TR123",
           |  "comcode": "12345678",
@@ -95,8 +92,7 @@ class UpdateRecordRequestSpec extends AnyWordSpec with Matchers {
         comcodeEffectiveToDate = Some(Instant.parse("2024-12-31T12:00:00Z"))
       )
 
-      val expectedJson = Json.parse(
-        """{
+      val expectedJson = Json.parse("""{
           |  "actorId": "GB987654321098",
           |  "traderRef": "TR123",
           |  "comcode": "12345678",
@@ -128,8 +124,7 @@ class UpdateRecordRequestSpec extends AnyWordSpec with Matchers {
         comcodeEffectiveToDate = None
       )
 
-      val expectedJson = Json.parse(
-        """{
+      val expectedJson = Json.parse("""{
           |  "actorId": "GB987654321098",
           |  "traderRef": "TR123",
           |  "comcode": "12345678",
@@ -142,4 +137,3 @@ class UpdateRecordRequestSpec extends AnyWordSpec with Matchers {
     }
   }
 }
-

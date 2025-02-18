@@ -41,12 +41,10 @@ class PatchRecordRequestSpec extends AnyWordSpec with Matchers {
   "PatchRecordRequest JSON Reads" should {
 
     "successfully deserialize a valid JSON" in {
-      val validJson = Json.parse(
-        """{
+      val validJson = Json.parse("""{
           |  "actorId": "GB987654321098",
           |  "traderRef": "TR123"
           |}""".stripMargin)
-
 
       val result = validJson.validate[PatchRecordRequest]
 
@@ -54,12 +52,10 @@ class PatchRecordRequestSpec extends AnyWordSpec with Matchers {
     }
 
     "fail to deserialize an invalid actorId" in {
-      val invalidJson = Json.parse(
-        """{
+      val invalidJson = Json.parse("""{
           |  "actorId": "GB12",
           |  "traderRef": "TR123"
           |}""".stripMargin)
-
 
       val result = invalidJson.validate[PatchRecordRequest]
 
@@ -67,4 +63,3 @@ class PatchRecordRequestSpec extends AnyWordSpec with Matchers {
     }
   }
 }
-

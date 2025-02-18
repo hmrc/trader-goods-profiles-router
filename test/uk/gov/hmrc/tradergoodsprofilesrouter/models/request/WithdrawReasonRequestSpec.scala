@@ -49,18 +49,17 @@ class WithdrawReasonRequestSpec extends AnyWordSpec with Matchers {
     }
 
     "serialize to JSON correctly" in {
-      val request = WithdrawReasonRequest(Some("Incorrect data entry"))
+      val request      = WithdrawReasonRequest(Some("Incorrect data entry"))
       val expectedJson = Json.parse("""{ "withdrawReason": "Incorrect data entry" }""")
 
       Json.toJson(request) shouldBe expectedJson
     }
 
     "serialize to JSON correctly when withdrawReason is None" in {
-      val request = WithdrawReasonRequest(None)
+      val request      = WithdrawReasonRequest(None)
       val expectedJson = Json.parse("""{}""")
 
       Json.toJson(request) shouldBe expectedJson
     }
   }
 }
-

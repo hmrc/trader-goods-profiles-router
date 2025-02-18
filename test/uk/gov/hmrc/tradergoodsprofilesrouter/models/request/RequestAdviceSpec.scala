@@ -51,7 +51,6 @@ class RequestAdviceSpec extends PlaySpec {
       result mustBe a[JsError]
     }
 
-
     "fail to deserialize when requestorEmail is invalid" in {
       val invalidJson = Json.parse(
         """{
@@ -68,7 +67,7 @@ class RequestAdviceSpec extends PlaySpec {
 
     "serialize correctly" in {
       val requestAdvice = RequestAdvice("ABCDEFGHIJKLMNO", "John Doe", "john.doe@example.com")
-      val expectedJson = Json.parse(
+      val expectedJson  = Json.parse(
         """{
             "actorId": "ABCDEFGHIJKLMNO",
             "requestorName": "John Doe",
@@ -80,4 +79,3 @@ class RequestAdviceSpec extends PlaySpec {
     }
   }
 }
-

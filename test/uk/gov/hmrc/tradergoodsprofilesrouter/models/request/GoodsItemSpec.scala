@@ -102,4 +102,3 @@ class GoodsItemSpec extends AnyWordSpec with Matchers {
     }
   }
 }
-

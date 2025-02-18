@@ -16,20 +16,18 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice
 
-
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice.withdrawAdvice.*
 
 import java.time.Instant
 
-
 class WithdrawAdviceSpec extends PlaySpec {
 
   "RequestCommon" should {
     "serialize and deserialize correctly" in {
       val model = RequestCommon(Some("client-123"))
-      val json = Json.toJson(model)
+      val json  = Json.toJson(model)
 
       json mustBe Json.parse("""{"clientID": "client-123"}""")
       json.validate[RequestCommon] mustBe JsSuccess(model)
@@ -44,8 +42,8 @@ class WithdrawAdviceSpec extends PlaySpec {
   "WithdrawDetail" should {
     "serialize and deserialize correctly" in {
       val instant = Instant.parse("2024-02-17T12:00:00Z")
-      val model = WithdrawDetail(instant, Some("Reason for withdrawal"))
-      val json = Json.toJson(model)
+      val model   = WithdrawDetail(instant, Some("Reason for withdrawal"))
+      val json    = Json.toJson(model)
 
       json mustBe Json.parse("""{"withdrawDate": "2024-02-17T12:00:00Z", "withdrawReason": "Reason for withdrawal"}""")
       json.validate[WithdrawDetail] mustBe JsSuccess(model)
@@ -53,7 +51,7 @@ class WithdrawAdviceSpec extends PlaySpec {
 
     "handle missing withdrawReason" in {
       val instant = Instant.parse("2024-02-17T12:00:00Z")
-      val json = Json.parse("""{"withdrawDate": "2024-02-17T12:00:00Z"}""")
+      val json    = Json.parse("""{"withdrawDate": "2024-02-17T12:00:00Z"}""")
 
       json.validate[WithdrawDetail] mustBe JsSuccess(WithdrawDetail(instant, None))
     }
@@ -62,7 +60,7 @@ class WithdrawAdviceSpec extends PlaySpec {
   "PublicRecordID" should {
     "serialize and deserialize correctly" in {
       val model = PublicRecordID("PR123")
-      val json = Json.toJson(model)
+      val json  = Json.toJson(model)
 
       json mustBe Json.parse("""{"publicRecordID": "PR123"}""")
       json.validate[PublicRecordID] mustBe JsSuccess(model)
@@ -71,11 +69,11 @@ class WithdrawAdviceSpec extends PlaySpec {
 
   "RequestDetail" should {
     "serialize and deserialize correctly" in {
-      val instant = Instant.parse("2024-02-17T12:00:00Z")
+      val instant        = Instant.parse("2024-02-17T12:00:00Z")
       val withdrawDetail = WithdrawDetail(instant, Some("Valid reason"))
-      val publicRecord = PublicRecordID("PR123")
-      val model = RequestDetail(withdrawDetail, Seq(publicRecord))
-      val json = Json.toJson(model)
+      val publicRecord   = PublicRecordID("PR123")
+      val model          = RequestDetail(withdrawDetail, Seq(publicRecord))
+      val json           = Json.toJson(model)
 
       json mustBe Json.parse(
         """{
@@ -90,12 +88,12 @@ class WithdrawAdviceSpec extends PlaySpec {
 
   "WithdrawRequest" should {
     "serialize and deserialize correctly" in {
-      val instant = Instant.parse("2024-02-17T12:00:00Z")
+      val instant        = Instant.parse("2024-02-17T12:00:00Z")
       val withdrawDetail = WithdrawDetail(instant, Some("Valid reason"))
-      val publicRecord = PublicRecordID("PR123")
-      val requestDetail = RequestDetail(withdrawDetail, Seq(publicRecord))
-      val model = WithdrawRequest(Some(RequestCommon(Some("client-123"))), requestDetail)
-      val json = Json.toJson(model)
+      val publicRecord   = PublicRecordID("PR123")
+      val requestDetail  = RequestDetail(withdrawDetail, Seq(publicRecord))
+      val model          = WithdrawRequest(Some(RequestCommon(Some("client-123"))), requestDetail)
+      val json           = Json.toJson(model)
 
       json mustBe Json.parse(
         """{
@@ -113,13 +111,13 @@ class WithdrawAdviceSpec extends PlaySpec {
 
   "WithdrawAdvicePayload" should {
     "serialize and deserialize correctly" in {
-      val instant = Instant.parse("2024-02-17T12:00:00Z")
-      val withdrawDetail = WithdrawDetail(instant, Some("Valid reason"))
-      val publicRecord = PublicRecordID("PR123")
-      val requestDetail = RequestDetail(withdrawDetail, Seq(publicRecord))
+      val instant         = Instant.parse("2024-02-17T12:00:00Z")
+      val withdrawDetail  = WithdrawDetail(instant, Some("Valid reason"))
+      val publicRecord    = PublicRecordID("PR123")
+      val requestDetail   = RequestDetail(withdrawDetail, Seq(publicRecord))
       val withdrawRequest = WithdrawRequest(Some(RequestCommon(Some("client-123"))), requestDetail)
-      val model = WithdrawAdvicePayload(withdrawRequest)
-      val json = Json.toJson(model)
+      val model           = WithdrawAdvicePayload(withdrawRequest)
+      val json            = Json.toJson(model)
 
       json mustBe Json.parse(
         """{
@@ -137,4 +135,3 @@ class WithdrawAdviceSpec extends PlaySpec {
     }
   }
 }
-

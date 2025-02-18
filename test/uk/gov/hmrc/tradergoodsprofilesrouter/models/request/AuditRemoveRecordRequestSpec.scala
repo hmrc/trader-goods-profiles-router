@@ -17,16 +17,15 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.factories
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsSuccess, JsError, Json}
+import play.api.libs.json.{JsError, JsSuccess, Json}
 
 class AuditRemoveRecordRequestSpec extends PlaySpec {
 
   "AuditRemoveRecordRequest" should {
 
     "serialize correctly" in {
-      val request = AuditRemoveRecordRequest("GB123456789012", "record-123", "actor-456")
-      val expectedJson = Json.parse(
-        """{
+      val request      = AuditRemoveRecordRequest("GB123456789012", "record-123", "actor-456")
+      val expectedJson = Json.parse("""{
           |  "eori": "GB123456789012",
           |  "recordId": "record-123",
           |  "actorId": "actor-456"
@@ -36,19 +35,19 @@ class AuditRemoveRecordRequestSpec extends PlaySpec {
     }
 
     "deserialize valid JSON correctly" in {
-      val json = Json.parse(
-        """{
+      val json = Json.parse("""{
           |  "eori": "GB123456789012",
           |  "recordId": "record-123",
           |  "actorId": "actor-456"
           |}""".stripMargin)
 
-      json.validate[AuditRemoveRecordRequest] mustBe JsSuccess(AuditRemoveRecordRequest("GB123456789012", "record-123", "actor-456"))
+      json.validate[AuditRemoveRecordRequest] mustBe JsSuccess(
+        AuditRemoveRecordRequest("GB123456789012", "record-123", "actor-456")
+      )
     }
 
     "fail to deserialize invalid JSON" in {
-      val invalidJson = Json.parse(
-        """{
+      val invalidJson = Json.parse("""{
           |  "eori": "GB123456789012",
           |  "recordId": 12345,
           |  "actorId": "actor-456"

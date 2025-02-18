@@ -56,7 +56,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
 
     "successfully parse JSON response" in {
       val jsonResponse: JsValue = Json.obj("message" -> "Success")
-      val httpResponse = HttpResponse(OK, jsonResponse.toString())
+      val httpResponse          = HttpResponse(OK, jsonResponse.toString())
 
       val reader = HttpReader[JsValue](correlationId, successErrorHandler)
 
