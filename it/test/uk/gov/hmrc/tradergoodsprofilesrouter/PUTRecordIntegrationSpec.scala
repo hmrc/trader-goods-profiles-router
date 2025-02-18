@@ -17,23 +17,14 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.github.tomakehurst.wiremock.client.WireMock.*
-import org.scalatest.concurrent.ScalaFutures.*
-
-import java.time.Instant
-import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
-import play.api.libs.ws.writeableOf_JsValue
-import com.github.tomakehurst.wiremock.client.WireMock.*
-import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import org.mockito.Mockito.{reset, when}
-import org.scalatest.concurrent.ScalaFutures.*
-import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
-import play.api.libs.ws.WSBodyWritables.writeableOf_String
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status._
+import org.scalatest.concurrent.ScalaFutures.*
+import play.api.http.Status.*
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.WSBodyWritables.{writeableOf_JsValue, writeableOf_String}
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
@@ -76,6 +67,25 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
 
           response.status shouldBe OK
           response.json   shouldBe toJson(updateRecordResponseData.as[CreateOrUpdateRecordResponse])
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+
+        "with a supplementary unit and no measurement unit" in {
+          stubForEis(OK, Some(updateRecordSupplementaryNoMeasureEisResponseData.toString()))
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
+            .put(updateRecordRequestDataSupplementaryNoMeasure)
+            .futureValue
+
+          response.status shouldBe OK
+          response.json   shouldBe toJson(updateRecordResponseDataSupplementaryNoMeasure.as[CreateOrUpdateRecordResponse])
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
@@ -871,7 +881,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         )
     )
 
-  val updateRecordEisResponseData: JsValue =
+  private lazy val updateRecordEisResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -913,7 +923,50 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |}
         |""".stripMargin)
 
-  val updateRecordResponseData: JsValue =
+  private lazy val updateRecordSupplementaryNoMeasureEisResponseData: JsValue =
+    Json
+      .parse(
+        """
+          |{
+          |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+          |  "eori": "GB123456789012",
+          |  "actorId": "GB098765432112",
+          |  "traderRef": "BAN001001",
+          |  "comcode": "10410100",
+          |  "accreditationStatus": "Withdrawn",
+          |  "goodsDescription": "Organic bananas",
+          |  "countryOfOrigin": "EC",
+          |  "category": 1,
+          |  "supplementaryUnit": 500,
+          |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+          |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+          |  "version": 1,
+          |  "active": true,
+          |  "toReview": false,
+          |  "reviewReason": "Commodity code change",
+          |  "declarable": "SPIMM",
+          |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+          |  "nirmsNumber": "RMS-GB-123456",
+          |  "niphlNumber": "12345",
+          |  "createdDateTime": "2024-11-18T23:20:19Z",
+          |  "updatedDateTime": "2024-11-18T23:20:19Z",
+          |  "assessments": [
+          |    {
+          |      "assessmentId": "abc123",
+          |      "primaryCategory": 1,
+          |      "condition": {
+          |        "type": "abc123",
+          |        "conditionId": "Y923",
+          |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+          |        "conditionTraderText": "Excluded product"
+          |      }
+          |    }
+          |  ]
+          |}
+          |""".stripMargin)
+
+
+  private lazy val updateRecordResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -955,7 +1008,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateEisRecordResponseDataWithOptionalFields: JsValue =
+  private lazy val updateEisRecordResponseDataWithOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -997,7 +1050,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
+  private lazy val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1034,7 +1087,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
+  private lazy val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1070,7 +1123,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateRecordResponseDataWithOptionalFields: JsValue =
+  private lazy val updateRecordResponseDataWithOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1100,7 +1153,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateRecordResponseDataWithSomeOptionalFields: JsValue =
+  private lazy val updateRecordResponseDataWithSomeOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1134,7 +1187,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val updateRecordRequestData: String =
+  private lazy val updateRecordRequestData: String =
     s"""
         |{
         |    "eori": "$eori",
@@ -1163,47 +1216,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |}
         |""".stripMargin
 
-  val updateEisRecordRequestData: String =
-    """
-      |{
-      |    "eori": "GB123456789001",
-      |    "actorId": "GB098765432112",
-      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
-      |    "assessments": [],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
-      |}
-      |""".stripMargin
-
-  val updateEisRecordRequestDataWithSomeOptionalFields: String =
-    """
-      |{
-      |    "eori": "GB123456789001",
-      |    "actorId": "GB098765432112",
-      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
-      |    "assessments": [
-      |        {
-      |            "primaryCategory": 1
-      |        }
-      |    ],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
-      |}
-      |""".stripMargin
-
-  val updateRecordRequestDataWithOptionalNullFields: String =
+  private lazy val updateRecordRequestDataWithOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1233,7 +1246,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val updateRecordRequestDataWithConditionOptionalNullFields: String =
+  private lazy val updateRecordRequestDataWithConditionOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1258,7 +1271,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val updateRecordRequestDataWithSomeOptionalNullFields: String =
+  private lazy val updateRecordRequestDataWithSomeOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1282,7 +1295,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val updateRecordRequiredRequestData: String =
+  private lazy val updateRecordRequiredRequestData: String =
     """
       |{
       |    "eori": "GB123456789012",
@@ -1297,7 +1310,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val updateRecordRequiredEisResponseData: JsValue =
+  private lazy val updateRecordRequiredEisResponseData: JsValue =
     Json
       .parse("""
           |{
@@ -1328,7 +1341,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
           |}
           |""".stripMargin)
 
-  val updateRecordRequiredResponseData: JsValue =
+  private lazy val updateRecordRequiredResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -1359,7 +1372,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  val invalidRequestData: String =
+  private lazy val invalidRequestData: String =
     """
       |{
       |    "assessments": [
@@ -1380,7 +1393,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  val invalidOptionalRequestData: String =
+  private lazy val invalidOptionalRequestData: String =
     """
       |{
       |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1404,13 +1417,13 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |        }
       |    ],
       |    "supplementaryUnit": 500,
-      |    "measurementUnit": "",
+      |    "measurementUnit": "aReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongString",
       |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
       |}
       |""".stripMargin
 
-  val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
+  private lazy val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
     .parse("""
              |{
              |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1449,7 +1462,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
              |}
              |""".stripMargin)
 
-  val invalidActorIdAndComcodeRequestData: String =
+  private lazy val invalidActorIdAndComcodeRequestData: String =
     """
       |{
       |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1478,6 +1491,78 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
       |}
       |""".stripMargin
+
+  private lazy val updateRecordRequestDataSupplementaryNoMeasure: String =
+    s"""
+       |{
+       |    "eori": "$eori",
+       |    "actorId": "GB098765432112",
+       |    "traderRef": "BAN001001",
+       |    "comcode": "10410100",
+       |    "goodsDescription": "Organic bananas",
+       |    "countryOfOrigin": "EC",
+       |    "category": 1,
+       |    "assessments": [
+       |        {
+       |            "assessmentId": "abc123",
+       |            "primaryCategory": 1,
+       |            "condition": {
+       |                "type": "abc123",
+       |                "conditionId": "Y923",
+       |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+       |                "conditionTraderText": "Excluded product"
+       |            }
+       |        }
+       |    ],
+       |    "supplementaryUnit": 500,
+       |    "measurementUnit": "Square metre (m2)",
+       |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+       |}
+       |""".stripMargin
+
+  private lazy val updateRecordResponseDataSupplementaryNoMeasure: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "adviceStatus": "Advice request withdrawn",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "supplementaryUnit": 500,
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z",
+               |  "assessments": [
+               |    {
+               |      "assessmentId": "abc123",
+               |      "primaryCategory": 1,
+               |      "condition": {
+               |        "type": "abc123",
+               |        "conditionId": "Y923",
+               |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+               |        "conditionTraderText": "Excluded product"
+               |      }
+               |    }
+               |  ]
+               |}
+               |""".stripMargin)
+
+
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

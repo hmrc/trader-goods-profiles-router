@@ -17,7 +17,7 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice
 
 import org.scalatestplus.play.PlaySpec
-import play.api.libs.json.{JsError, JsSuccess, Json}
+import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice.withdrawAdvice.*
 
 import java.time.Instant

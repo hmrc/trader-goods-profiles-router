@@ -19,7 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.audit.request.AuditGetRecordRequest
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.advicerequests.AccreditationRequest
 
 class AccreditationRequestSpec extends PlaySpec {
 

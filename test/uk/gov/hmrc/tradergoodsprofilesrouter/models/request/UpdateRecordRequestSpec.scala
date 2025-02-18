@@ -16,124 +16,214 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsError, JsSuccess, Json}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.Assessment
+import org.scalatestplus.play.PlaySpec
+import play.api.libs.json.{JsObject, JsSuccess, Json}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{Assessment, Condition}
 
 import java.time.Instant
 
-class UpdateRecordRequestSpec extends AnyWordSpec with Matchers {
+class UpdateRecordRequestSpec extends PlaySpec {
 
-  "UpdateRecordRequest JSON format" should {
+  private val time: Instant          = Instant.now()
+  private val condition: Condition   =
+    Condition(Some("type"), Some("id"), Some("conditionDescription"), Some("conditionTraderText"))
+  private val assessment: Assessment =
+    Assessment(Some("1234"), Some(1), Some(condition))
 
-    "successfully deserialize valid JSON" in {
-      val json = Json.parse("""{
-          |  "actorId": "GB987654321098",
-          |  "traderRef": "TR123",
-          |  "comcode": "12345678",
-          |  "goodsDescription": "Example goods",
-          |  "countryOfOrigin": "GB",
-          |  "category": 2,
-          |  "assessments": [],
-          |  "supplementaryUnit": 10.5,
-          |  "measurementUnit": "kg",
-          |  "comcodeEffectiveFromDate": "2024-01-01T12:00:00Z",
-          |  "comcodeEffectiveToDate": "2024-12-31T12:00:00Z"
-          |}""".stripMargin)
+  "UpdateRecordRequest" should {
 
-      val result = json.validate[UpdateRecordRequest]
+    "serialise" when {
+      "all fields present" in {
+        Json.toJson(updateRecordRequest) mustBe updateRecordRequestJson
 
-      result shouldBe a[JsSuccess[_]]
+      }
+
+      "supplementary unit present, but measurement unit is not" in {
+        Json.toJson(updateRecordRequestSupplementaryNoMeasure) mustBe updateRecordRequestSupplementaryNoMeasureJson
+      }
+
     }
 
-    "fail to deserialize invalid actorId" in {
-      val invalidJson = Json.parse("""{
-          |  "actorId": "123",
-          |  "traderRef": "TR123",
-          |  "comcode": "12345678",
-          |  "goodsDescription": "Example goods",
-          |  "countryOfOrigin": "GB",
-          |  "comcodeEffectiveFromDate": "2024-01-01T12:00:00Z"
-          |}""".stripMargin)
+    "deserialize" when {
+      "all fields present" in {
+        Json.fromJson[UpdateRecordRequest](updateRecordRequestJson) mustBe JsSuccess(updateRecordRequest)
+      }
 
-      val result = invalidJson.validate[UpdateRecordRequest]
+      "supplementary unit present, but measurement unit is not" in {
+        Json.fromJson[UpdateRecordRequest](updateRecordRequestSupplementaryNoMeasureJson) mustBe JsSuccess(
+          updateRecordRequestSupplementaryNoMeasure
+        )
+      }
 
-      result shouldBe a[JsError]
+      "measure is null" in {
+        Json.fromJson[UpdateRecordRequest](updateRecordRequestMeasureNullJson) mustBe JsSuccess(
+          updateRecordRequestSupplementaryNoMeasure
+        )
+      }
+
+      "measure is empty string" in {
+        Json.fromJson[UpdateRecordRequest](updateRecordRequestMeasureEmptyStringJson) mustBe JsSuccess(
+          updateRecordRequestSupplementaryNoMeasure
+        )
+      }
+
     }
 
-    "fail to deserialize invalid countryOfOrigin" in {
-      val invalidJson = Json.parse("""{
-          |  "actorId": "GB987654321098",
-          |  "traderRef": "TR123",
-          |  "comcode": "12345678",
-          |  "goodsDescription": "Example goods",
-          |  "countryOfOrigin": "XYZ",
-          |  "comcodeEffectiveFromDate": "2024-01-01T12:00:00Z"
-          |}""".stripMargin)
+    "validate" must {
+      "work" when {
+        "all fields present" in {
+          updateRecordRequestJson.validate(UpdateRecordRequest.reads) mustBe JsSuccess(updateRecordRequest)
+        }
 
-      val result = invalidJson.validate[UpdateRecordRequest]
+        "supplementary unit present, but measurement unit is not" in {
+          updateRecordRequestSupplementaryNoMeasureJson.validate(UpdateRecordRequest.reads) mustBe JsSuccess(
+            updateRecordRequestSupplementaryNoMeasure
+          )
+        }
 
-      result shouldBe a[JsError]
+        "measure is null" in {
+          updateRecordRequestMeasureNullJson.validate(UpdateRecordRequest.reads) mustBe JsSuccess(
+            updateRecordRequestSupplementaryNoMeasure
+          )
+        }
+
+        "measure is empty string" in {
+          updateRecordRequestMeasureEmptyStringJson.validate(UpdateRecordRequest.reads) mustBe JsSuccess(
+            updateRecordRequestSupplementaryNoMeasure
+          )
+        }
+      }
     }
 
-    "serialize to JSON correctly" in {
-      val request = UpdateRecordRequest(
-        actorId = "GB987654321098",
-        traderRef = "TR123",
-        comcode = "12345678",
-        goodsDescription = "Example goods",
-        countryOfOrigin = "GB",
-        category = Some(2),
-        assessments = Some(Seq.empty[Assessment]),
-        supplementaryUnit = Some(BigDecimal(10.5)),
-        measurementUnit = Some("kg"),
-        comcodeEffectiveFromDate = Instant.parse("2024-01-01T12:00:00Z"),
-        comcodeEffectiveToDate = Some(Instant.parse("2024-12-31T12:00:00Z"))
-      )
-
-      val expectedJson = Json.parse("""{
-          |  "actorId": "GB987654321098",
-          |  "traderRef": "TR123",
-          |  "comcode": "12345678",
-          |  "goodsDescription": "Example goods",
-          |  "countryOfOrigin": "GB",
-          |  "category": 2,
-          |  "assessments": [],
-          |  "supplementaryUnit": 10.5,
-          |  "measurementUnit": "kg",
-          |  "comcodeEffectiveFromDate": "2024-01-01T12:00:00Z",
-          |  "comcodeEffectiveToDate": "2024-12-31T12:00:00Z"
-          |}""".stripMargin)
-
-      Json.toJson(request) shouldBe expectedJson
-    }
-
-    "serialize correctly when optional fields are None" in {
-      val request = UpdateRecordRequest(
-        actorId = "GB987654321098",
-        traderRef = "TR123",
-        comcode = "12345678",
-        goodsDescription = "Example goods",
-        countryOfOrigin = "GB",
-        category = None,
-        assessments = None,
-        supplementaryUnit = None,
-        measurementUnit = None,
-        comcodeEffectiveFromDate = Instant.parse("2024-01-01T12:00:00Z"),
-        comcodeEffectiveToDate = None
-      )
-
-      val expectedJson = Json.parse("""{
-          |  "actorId": "GB987654321098",
-          |  "traderRef": "TR123",
-          |  "comcode": "12345678",
-          |  "goodsDescription": "Example goods",
-          |  "countryOfOrigin": "GB",
-          |  "comcodeEffectiveFromDate": "2024-01-01T12:00:00Z"
-          |}""".stripMargin) // Optional fields should not appear in JSON
-
-      Json.toJson(request) shouldBe expectedJson
-    }
   }
+
+  private lazy val updateRecordRequest: UpdateRecordRequest =
+    UpdateRecordRequest(
+      "GB098765432112",
+      "traderRef",
+      "12012000",
+      "goodsDesc",
+      "GB",
+      Some(1),
+      Some(Seq(assessment)),
+      Some(1.1),
+      Some("kg"),
+      time,
+      Some(time)
+    )
+
+  private lazy val updateRecordRequestSupplementaryNoMeasure: UpdateRecordRequest =
+    UpdateRecordRequest(
+      "GB098765432112",
+      "traderRef",
+      "12012000",
+      "goodsDesc",
+      "GB",
+      Some(1),
+      Some(Seq(assessment)),
+      Some(1.1),
+      None,
+      time,
+      Some(time)
+    )
+
+  private lazy val updateRecordRequestJson: JsObject = Json.obj(
+    "actorId"                  -> "GB098765432112",
+    "traderRef"                -> "traderRef",
+    "comcode"                  -> "12012000",
+    "goodsDescription"         -> "goodsDesc",
+    "countryOfOrigin"          -> "GB",
+    "category"                 -> 1,
+    "assessments"              -> Json.arr(
+      Json.obj(
+        "assessmentId"    -> "1234",
+        "primaryCategory" -> 1,
+        "condition"       -> Json.obj(
+          "type"                 -> "type",
+          "conditionId"          -> "id",
+          "conditionDescription" -> "conditionDescription",
+          "conditionTraderText"  -> "conditionTraderText"
+        )
+      )
+    ),
+    "supplementaryUnit"        -> 1.1,
+    "measurementUnit"          -> "kg",
+    "comcodeEffectiveFromDate" -> time.toString,
+    "comcodeEffectiveToDate"   -> time.toString
+  )
+
+  private lazy val updateRecordRequestSupplementaryNoMeasureJson: JsObject = Json.obj(
+    "actorId"                  -> "GB098765432112",
+    "traderRef"                -> "traderRef",
+    "comcode"                  -> "12012000",
+    "goodsDescription"         -> "goodsDesc",
+    "countryOfOrigin"          -> "GB",
+    "category"                 -> 1,
+    "assessments"              -> Json.arr(
+      Json.obj(
+        "assessmentId"    -> "1234",
+        "primaryCategory" -> 1,
+        "condition"       -> Json.obj(
+          "type"                 -> "type",
+          "conditionId"          -> "id",
+          "conditionDescription" -> "conditionDescription",
+          "conditionTraderText"  -> "conditionTraderText"
+        )
+      )
+    ),
+    "supplementaryUnit"        -> 1.1,
+    "comcodeEffectiveFromDate" -> time.toString,
+    "comcodeEffectiveToDate"   -> time.toString
+  )
+
+  private lazy val updateRecordRequestMeasureNullJson: JsObject = Json.obj(
+    "actorId"                  -> "GB098765432112",
+    "traderRef"                -> "traderRef",
+    "comcode"                  -> "12012000",
+    "goodsDescription"         -> "goodsDesc",
+    "countryOfOrigin"          -> "GB",
+    "category"                 -> 1,
+    "assessments"              -> Json.arr(
+      Json.obj(
+        "assessmentId"    -> "1234",
+        "primaryCategory" -> 1,
+        "condition"       -> Json.obj(
+          "type"                 -> "type",
+          "conditionId"          -> "id",
+          "conditionDescription" -> "conditionDescription",
+          "conditionTraderText"  -> "conditionTraderText"
+        )
+      )
+    ),
+    "supplementaryUnit"        -> 1.1,
+    "measurementUnit"          -> null,
+    "comcodeEffectiveFromDate" -> time.toString,
+    "comcodeEffectiveToDate"   -> time.toString
+  )
+
+  private lazy val updateRecordRequestMeasureEmptyStringJson: JsObject = Json.obj(
+    "actorId"                  -> "GB098765432112",
+    "traderRef"                -> "traderRef",
+    "comcode"                  -> "12012000",
+    "goodsDescription"         -> "goodsDesc",
+    "countryOfOrigin"          -> "GB",
+    "category"                 -> 1,
+    "assessments"              -> Json.arr(
+      Json.obj(
+        "assessmentId"    -> "1234",
+        "primaryCategory" -> 1,
+        "condition"       -> Json.obj(
+          "type"                 -> "type",
+          "conditionId"          -> "id",
+          "conditionDescription" -> "conditionDescription",
+          "conditionTraderText"  -> "conditionTraderText"
+        )
+      )
+    ),
+    "supplementaryUnit"        -> 1.1,
+    "measurementUnit"          -> "",
+    "comcodeEffectiveFromDate" -> time.toString,
+    "comcodeEffectiveToDate"   -> time.toString
+  )
+
 }

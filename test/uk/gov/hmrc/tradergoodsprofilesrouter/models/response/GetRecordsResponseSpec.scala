@@ -20,7 +20,7 @@ import org.scalatest.matchers.must.Matchers.mustBe
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsError, JsSuccess, Json}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, EisGoodsItemRecords, GetEisRecordsResponse, Pagination}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.{AccreditationStatus, EisGoodsItemRecords, Pagination}
 
 import java.time.Instant
 

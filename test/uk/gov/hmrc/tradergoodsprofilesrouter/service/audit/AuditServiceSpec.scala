@@ -260,23 +260,6 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       detail = auditDetails
     )
 
-  private def emitAuditRemoveRecordDetailsJson(status: String, statusCode: Int) =
-    Json.obj(
-      "journey"          -> "RemoveRecord",
-      "clientId"         -> hc.headers(Seq("X-Client-ID")).head._2,
-      "requestDateTime"  -> dateTime,
-      "responseDateTime" -> dateTime,
-      "request"          -> Json.obj(
-        "eori"     -> eori,
-        "recordId" -> recordId,
-        "actorId"  -> actorId
-      ),
-      "outcome"          -> Json.obj(
-        "status"     -> status,
-        "statusCode" -> statusCode
-      )
-    )
-
   private def emitAuditCreateRecordDetailJson(
     status: String,
     statusCode: Int,

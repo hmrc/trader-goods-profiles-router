@@ -19,7 +19,6 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.config
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.Configuration
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.EISInstanceConfig
 
 class EISInstanceConfigSpec extends AnyWordSpec with Matchers {
 

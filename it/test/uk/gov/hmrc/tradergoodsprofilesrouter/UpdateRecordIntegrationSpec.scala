@@ -264,7 +264,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  def eisErrorResponse(errorCode: String, errorMessage: String): String =
+  private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json
       .parse(
         s"""

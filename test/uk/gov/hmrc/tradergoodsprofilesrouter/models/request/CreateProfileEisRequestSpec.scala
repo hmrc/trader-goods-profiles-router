@@ -18,8 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis
 
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import play.api.libs.json.{JsError, JsSuccess, Json}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.CreateProfileEisRequest
+import play.api.libs.json.{JsSuccess, Json}
 
 class CreateProfileEisRequestSpec extends AnyWordSpec with Matchers {
 
