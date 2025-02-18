@@ -67,6 +67,25 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
 
           verifyThatDownstreamApiWasCalled(hawkConnectorPath)
         }
+
+        "with a supplementary unit and no measurement unit" in {
+          stubForEis(OK, Some(updateRecordSupplementaryNoMeasureEisResponseData.toString()))
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              ("Content-Type", "application/json"),
+              ("Accept", "application/vnd.hmrc.1.0+json"),
+              ("X-Client-ID", "tss")
+            )
+            .put(updateRecordRequestDataSupplementaryNoMeasure)
+            .futureValue
+
+          response.status shouldBe OK
+          response.json   shouldBe toJson(updateRecordResponseDataSupplementaryNoMeasure.as[CreateOrUpdateRecordResponse])
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
         "with optional null request fields" in {
           stubForEis(
             OK,
@@ -901,6 +920,48 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |}
         |""".stripMargin)
 
+  private lazy val updateRecordSupplementaryNoMeasureEisResponseData: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "accreditationStatus": "Withdrawn",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "supplementaryUnit": 500,
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z",
+               |  "assessments": [
+               |    {
+               |      "assessmentId": "abc123",
+               |      "primaryCategory": 1,
+               |      "condition": {
+               |        "type": "abc123",
+               |        "conditionId": "Y923",
+               |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+               |        "conditionTraderText": "Excluded product"
+               |      }
+               |    }
+               |  ]
+               |}
+               |""".stripMargin)
+
+
   private lazy val updateRecordResponseData: JsValue =
     Json
       .parse("""
@@ -1353,7 +1414,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |        }
       |    ],
       |    "supplementaryUnit": 500,
-      |    "measurementUnit": "",
+      |    "measurementUnit": "aReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongString",
       |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
       |}
@@ -1427,6 +1488,78 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
       |}
       |""".stripMargin
+
+  private lazy val updateRecordRequestDataSupplementaryNoMeasure: String =
+    s"""
+       |{
+       |    "eori": "$eori",
+       |    "actorId": "GB098765432112",
+       |    "traderRef": "BAN001001",
+       |    "comcode": "10410100",
+       |    "goodsDescription": "Organic bananas",
+       |    "countryOfOrigin": "EC",
+       |    "category": 1,
+       |    "assessments": [
+       |        {
+       |            "assessmentId": "abc123",
+       |            "primaryCategory": 1,
+       |            "condition": {
+       |                "type": "abc123",
+       |                "conditionId": "Y923",
+       |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+       |                "conditionTraderText": "Excluded product"
+       |            }
+       |        }
+       |    ],
+       |    "supplementaryUnit": 500,
+       |    "measurementUnit": "Square metre (m2)",
+       |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+       |}
+       |""".stripMargin
+
+  private lazy val updateRecordResponseDataSupplementaryNoMeasure: JsValue =
+    Json
+      .parse("""
+               |{
+               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+               |  "eori": "GB123456789012",
+               |  "actorId": "GB098765432112",
+               |  "traderRef": "BAN001001",
+               |  "comcode": "10410100",
+               |  "adviceStatus": "Advice request withdrawn",
+               |  "goodsDescription": "Organic bananas",
+               |  "countryOfOrigin": "EC",
+               |  "category": 1,
+               |  "supplementaryUnit": 500,
+               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+               |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+               |  "version": 1,
+               |  "active": true,
+               |  "toReview": false,
+               |  "reviewReason": "Commodity code change",
+               |  "declarable": "SPIMM",
+               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+               |  "nirmsNumber": "RMS-GB-123456",
+               |  "niphlNumber": "12345",
+               |  "createdDateTime": "2024-11-18T23:20:19Z",
+               |  "updatedDateTime": "2024-11-18T23:20:19Z",
+               |  "assessments": [
+               |    {
+               |      "assessmentId": "abc123",
+               |      "primaryCategory": 1,
+               |      "condition": {
+               |        "type": "abc123",
+               |        "conditionId": "Y923",
+               |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+               |        "conditionTraderText": "Excluded product"
+               |      }
+               |    }
+               |  ]
+               |}
+               |""".stripMargin)
+
+
 
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json

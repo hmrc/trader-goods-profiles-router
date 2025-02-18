@@ -1358,7 +1358,7 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |        }
       |    ],
       |    "supplementaryUnit": 500,
-      |    "measurementUnit": "",
+      |    "measurementUnit": "aReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongString",
       |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
       |}

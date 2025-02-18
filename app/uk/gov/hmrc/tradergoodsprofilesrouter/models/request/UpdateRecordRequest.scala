@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps}
 import play.api.libs.json.Reads.verifying
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
-import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validActorId, validComcode}
+import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads._
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.isValidCountryCode
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.RemoveNoneFromAssessmentSupport.removeEmptyAssessment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.ResponseModelSupport.removeNulls
@@ -43,6 +43,15 @@ case class UpdateRecordRequest(
 
 object UpdateRecordRequest {
 
+  private def readNullableMeasurementUnit: Reads[Option[String]] =
+    (JsPath \ "measurementUnit")
+      .readNullable[String]
+      .flatMap {
+        case Some("") => Reads.pure(None)
+        case Some(_)  => (JsPath \ "measurementUnit").read(lengthBetween(1, 255)).map(Some(_))
+        case None     => Reads.pure(None)
+      }
+
   implicit val reads: Reads[UpdateRecordRequest] =
     ((JsPath \ "actorId").read(validActorId) and
       (JsPath \ "traderRef").read(lengthBetween(1, 512)) and
@@ -52,7 +61,7 @@ object UpdateRecordRequest {
       (JsPath \ "category").readNullable(verifying[Int](category => category >= 1 && category <= 3)) and
       (JsPath \ "assessments").readNullable[Seq[Assessment]] and
       (JsPath \ "supplementaryUnit").readNullable[BigDecimal] and
-      (JsPath \ "measurementUnit").readNullable(lengthBetween(1, 255)) and
+      readNullableMeasurementUnit and
       (JsPath \ "comcodeEffectiveFromDate").read[Instant] and
       (JsPath \ "comcodeEffectiveToDate").readNullable[Instant])(UpdateRecordRequest.apply _)
 
