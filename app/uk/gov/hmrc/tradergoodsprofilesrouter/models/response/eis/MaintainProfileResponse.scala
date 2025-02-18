@@ -37,7 +37,7 @@ object MaintainProfileResponse extends NiphlNumberFilter {
       "actorId"     -> response.actorId,
       "ukimsNumber" -> response.ukimsNumber,
       "nirmsNumber" -> response.nirmsNumber,
-      "niphlNumber" -> removeLeadingDashes(response.niphlNumber) // ✅ FIXED: Apply directly
+      "niphlNumber" -> removeLeadingDashes(response.niphlNumber)
     )
   }
 }
