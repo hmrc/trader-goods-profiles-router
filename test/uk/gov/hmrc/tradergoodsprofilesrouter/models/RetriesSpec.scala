@@ -19,7 +19,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.models
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.pekko.actor.ActorSystem
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.SpanSugar.convertIntToGrainOfTime
 import play.api.http.Status.BAD_GATEWAY
@@ -29,9 +29,9 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, GetReco
 
 import java.time.{Duration, Instant}
 import scala.concurrent.Future
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 
-class RetriesSpec extends BaseConnectorSpec with ScalaFutures with MockitoSugar with GetRecordsDataSupport {
+class RetriesSpec extends BaseConnectorSpec with ScalaFutures with GetRecordsDataSupport {
 
   private implicit val patience: PatienceConfig = PatienceConfig(timeout = 10.seconds, interval = 500.millis)
 

@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, verify, when}
-import org.mockito.captor.ArgCaptor
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, verify, when}
 import play.api.http.MimeTypes
 import play.api.http.Status.OK
 import play.api.libs.json.Json
+import play.api.libs.ws.writeableOf_JsValue
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
@@ -57,7 +58,7 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
     setUpAppConfig()
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
 
   }
@@ -122,10 +123,10 @@ class AccreditationConnectorSpec extends BaseConnectorSpec {
         |""".stripMargin)
 
   private def verifyExecuteHttpRequest(expectedCorrelationId: String) = {
-    val captor = ArgCaptor[StatusHttpReader]
+    val captor = ArgumentCaptor.forClass(classOf[StatusHttpReader])
     verify(requestBuilder).execute(captor.capture, any)
 
-    val httpReader = captor.value
+    val httpReader = captor.getValue
     httpReader.correlationId mustBe expectedCorrelationId
   }
 }

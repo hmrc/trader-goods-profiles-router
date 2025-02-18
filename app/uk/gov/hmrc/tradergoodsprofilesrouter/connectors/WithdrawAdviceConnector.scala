@@ -21,17 +21,18 @@ import com.typesafe.config.Config
 import org.apache.pekko.actor.ActorSystem
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.libs.json.Json
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.StatusHttpReader
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice.withdrawAdvice._
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.withdrawAdvice.withdrawAdvice.*
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error._
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.Error.*
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{DateTimeService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.UnexpectedErrorCode
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant._
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant.*
 
 import scala.concurrent.{ExecutionContext, Future}
 

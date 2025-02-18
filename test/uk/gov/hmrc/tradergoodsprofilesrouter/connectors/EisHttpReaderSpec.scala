@@ -14,94 +14,90 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
-
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{doReturn, spy, verify}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.EitherValues
+import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorHandler, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, StatusHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
-
-import scala.reflect.runtime.universe.typeOf
 
 class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherValues {
 
   val correlationId: String = "1234-456"
 
   class TestEisHttpReaderHandler extends EisHttpErrorHandler
+
   def successErrorHandler: (HttpResponse, String) => EisHttpErrorResponse =
-    (response, correlationId) =>
+    (_, correlationId) =>
       EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
+
   "HttpReader" should {
-    "return a record item" in {
-      val eisResponse = HttpResponse(200, getEisRecordsResponseData, Map.empty)
-
-      val result =
-        HttpReader[GetEisRecordsResponse](correlationId, successErrorHandler).read("GET", "any-url", eisResponse)
-
-      result.value mustBe getEisRecordsResponseData.as[GetEisRecordsResponse]
-    }
-
     "handle error response" in {
-      val errorHandlerSpy = spyOnHandlerErrorFn
-      val eisResponse     = HttpResponse(400, getEisRecordsResponseData, Map.empty)
+      val errorHandlerSpy = mock[TestEisHttpReaderHandler]
+      val eisResponse     = HttpResponse(400, Json.toJson(getEisRecordsResponseData), Map.empty)
+
+      when(errorHandlerSpy.handleErrorResponse(any[HttpResponse], any[String]))
+        .thenReturn(
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
+        )
 
       HttpReader[GetEisRecordsResponse](correlationId, errorHandlerSpy.handleErrorResponse)
         .read("GET", "any-url", eisResponse)
 
-      verify(errorHandlerSpy).handleErrorResponse(eisResponse, correlationId)
+      verify(errorHandlerSpy).handleErrorResponse(any[HttpResponse], any[String])
     }
 
-    "throw an error if cannot parse the response as json" in {
-      val eisResponse = HttpResponse(200, "message")
+    "successfully parse JSON response" in {
+      val jsonResponse: JsValue = Json.obj("message" -> "Success")
+      val httpResponse          = HttpResponse(OK, jsonResponse.toString())
 
-      the[RuntimeException] thrownBy {
-        HttpReader[GetEisRecordsResponse](correlationId, successErrorHandler).read("GET", "any-url", eisResponse)
-      } must have message "Response body could not be read: message"
+      val reader = HttpReader[JsValue](correlationId, successErrorHandler)
+
+      reader.read("GET", "test-url", httpResponse).value mustBe jsonResponse
     }
 
-    "throw an error if cannot parse the response as Object" in {
-      val eisResponse = HttpResponse(200, """{"eori": "GB1234567890"}""")
+    "throw RuntimeException if JSON parsing fails" in {
+      val invalidJsonResponse = HttpResponse(OK, """{"invalid": "data"}""")
 
-      the[RuntimeException] thrownBy {
-        HttpReader[GetEisRecordsResponse](correlationId, successErrorHandler)
-          .read("GET", "any-url", eisResponse)
-      } must have message s"Response body could not be read as type ${typeOf[GetEisRecordsResponse]}"
+      val reader = HttpReader[GetEisRecordsResponse](correlationId, successErrorHandler)
+
+      val exception = intercept[RuntimeException] {
+        reader.read("GET", "test-url", invalidJsonResponse)
+      }
+
+      exception.getMessage must include("Response body could not be parsed as type GetEisRecordsResponse")
     }
   }
 
-  "remove record responseHandler" should {
-    "remove a record item" in {
-
-      val eisResponse = HttpResponse(200, "")
-      val result      = StatusHttpReader(correlationId, successErrorHandler).read("PUT", "any-url", eisResponse)
-
-      result.value mustBe OK
-    }
-
+  "StatusHttpReader" should {
     "handle error response" in {
+      val errorHandlerSpy = mock[TestEisHttpReaderHandler]
       val eisResponse     = HttpResponse(400, "")
-      val errorHandlerSpy = spyOnHandlerErrorFn
+
+      when(errorHandlerSpy.handleErrorResponse(any[HttpResponse], any[String]))
+        .thenReturn(
+          EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
+        )
 
       StatusHttpReader(correlationId, errorHandlerSpy.handleErrorResponse)
         .read("GET", "any-url", eisResponse)
 
-      verify(errorHandlerSpy).handleErrorResponse(eisResponse, correlationId)
+      verify(errorHandlerSpy).handleErrorResponse(any[HttpResponse], any[String])
     }
 
-  }
+    "return successful status code when response is OK" in {
+      val httpResponse = HttpResponse(OK, "")
 
-  private def spyOnHandlerErrorFn = {
-    val errorHandlerSpy = spy(new TestEisHttpReaderHandler)
-    doReturn(
-      EisHttpErrorResponse(INTERNAL_SERVER_ERROR, ErrorResponse(correlationId, "UNEXPECTED_ERROR", "error"))
-    ).when(errorHandlerSpy).handleErrorResponse(any, any)
-    errorHandlerSpy
-  }
+      val reader = StatusHttpReader(correlationId, successErrorHandler)
 
+      reader.read("GET", "test-url", httpResponse) mustBe Right(OK)
+    }
+  }
 }

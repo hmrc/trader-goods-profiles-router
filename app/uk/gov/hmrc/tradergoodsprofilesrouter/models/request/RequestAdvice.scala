@@ -17,10 +17,8 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.request
 
 import play.api.libs.functional.syntax.{toApplicativeOps, toFunctionalBuilderOps}
-import play.api.libs.json.{JsPath, OWrites, Reads}
+import play.api.libs.json.{JsPath, Json, OWrites, Reads}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.Reads.{lengthBetween, validEmailAddress}
-
-import scala.Function.unlift
 
 case class RequestAdvice(
   actorId: String,
@@ -31,11 +29,16 @@ case class RequestAdvice(
 object RequestAdvice {
 
   implicit val reads: Reads[RequestAdvice] =
-    ((JsPath \ "actorId").read(lengthBetween(14, 17)) and (JsPath \ "requestorName").read(lengthBetween(1, 70)) and
-      (JsPath \ "requestorEmail")
-        .read(lengthBetween(3, 254).keepAnd(validEmailAddress)))(RequestAdvice.apply _)
+    ((JsPath \ "actorId").read(lengthBetween(14, 17)) and
+      (JsPath \ "requestorName").read(lengthBetween(1, 70)) and
+      (JsPath \ "requestorEmail").read(lengthBetween(3, 254).keepAnd(validEmailAddress)))(RequestAdvice.apply)
 
-  implicit lazy val writes: OWrites[RequestAdvice] =
-    ((JsPath \ "actorId").write[String] and (JsPath \ "requestorName").write[String] and
-      (JsPath \ "requestorEmail").write[String])(unlift(RequestAdvice.unapply))
+  implicit val writes: OWrites[RequestAdvice] =
+    OWrites[RequestAdvice] { requestAdvice =>
+      Json.obj(
+        "actorId"        -> requestAdvice.actorId,
+        "requestorName"  -> requestAdvice.requestorName,
+        "requestorEmail" -> requestAdvice.requestorEmail
+      )
+    }
 }

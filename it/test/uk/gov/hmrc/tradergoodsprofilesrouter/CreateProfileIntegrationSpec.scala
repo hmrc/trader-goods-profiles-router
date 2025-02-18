@@ -25,6 +25,7 @@ import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
+import play.api.libs.ws.WSBodyWritables.writeableOf_String
 
 import java.time.Instant
 

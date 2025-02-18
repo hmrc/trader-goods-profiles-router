@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.MockitoSugar.{reset, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{reset, verify, when}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
@@ -44,7 +44,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     when(appConfig.sendClientId).thenReturn(true)
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
 
   }
 
@@ -75,7 +75,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
 
     "send a request with the right parameters" when {
       "sendClientId feature flag is false" in {
-        when(requestBuilder.setHeader(any, any, any, any, any)).thenReturn(requestBuilder)
+        when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
         val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
         when(appConfig.sendClientId).thenReturn(false)
 
@@ -94,7 +94,7 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
 
       // TODO: After Release 2 remove x-client-id from headers
       "sendClientId feature flag is true" in {
-        when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+        when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Any](any, any))
           .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
 

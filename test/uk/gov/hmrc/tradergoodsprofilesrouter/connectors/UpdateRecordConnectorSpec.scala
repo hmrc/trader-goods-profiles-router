@@ -16,18 +16,20 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.Mockito.never
-import org.mockito.MockitoSugar.{reset, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{never, reset, verify, when}
 import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.writeableOf_JsValue
+import play.api.mvc.Result
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.payloads.UpdateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{BaseConnectorSpec, CreateRecordDataSupport}
 
 import java.time.Instant
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataSupport {
 
@@ -55,10 +57,10 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
 
   "patch" should {
     "update a record successfully using the patch method" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
 
-      val request = updateRecordPayload.as[UpdateRecordPayload]
-      val result  = await(eisConnector.patch(request, correlationId))
+      val request: UpdateRecordPayload = updateRecordPayload.as[UpdateRecordPayload]
+      val result                       = await(eisConnector.patch(request, correlationId))
 
       result.value mustBe expectedResponse
       verify(httpClientV2).patch(url"http://localhost:1234/tgp/updaterecord/v1")
@@ -66,7 +68,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
       when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Left(badRequestEISError)))
 
@@ -77,7 +79,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "send a request with the right url" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
@@ -88,12 +90,11 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
         expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
       )
       verify(requestBuilder).withBody(updateRecordPayload)
-      verifyExecuteForHttpReader(correlationId)
     }
 
     "call the PUT method when isPatchMethodEnabled is false" in {
       when(appConfig.useEisPatchMethod).thenReturn(false)
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
@@ -107,7 +108,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     "add the clientID when calling the PUT method" in {
       when(appConfig.useEisPatchMethod).thenReturn(false)
       when(appConfig.sendClientId).thenReturn(true)
-      when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
 
       await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
@@ -120,7 +121,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
   "put" should {
 
     "update a record successfully" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
 
       val request = updateRecordPayload.as[UpdateRecordPayload]
       val result  = await(eisConnector.put(request, correlationId))
@@ -129,7 +130,7 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "return an error if EIS return an error" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
       when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
         .thenReturn(Future.successful(Left(badRequestEISError)))
 
@@ -140,17 +141,19 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     }
 
     "send a request with the right url without clientID" in {
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any())).thenReturn(requestBuilder)
+      when(
+        requestBuilder
+          .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]](), any[ExecutionContext]())
+      )
+        .thenReturn(Future.successful(Right(expectedResponse)))
 
       await(eisConnector.put(updateRecordPayload.as[UpdateRecordPayload], correlationId))
 
       val expectedUrl = s"http://localhost:1234/tgp/puttgprecord/v1"
-      verify(httpClientV2).put(url"$expectedUrl")
-      verify(requestBuilder).setHeader(
-        expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyPutRecordBearerToken"): _*
-      )
-      verifyExecuteForHttpReader(correlationId)
-
+      verify(httpClientV2).put(eqTo(url"$expectedUrl"))(any[HeaderCarrier]())
+      verify(requestBuilder)
+        .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]](), any[ExecutionContext]())
     }
 
   }

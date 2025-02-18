@@ -16,8 +16,20 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar.{reset, when}
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.scalatest.concurrent.ScalaFutures.*
+
+import java.time.Instant
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import org.mockito.Mockito.{reset, when}
+import org.scalatest.concurrent.ScalaFutures.*
+import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
+import play.api.libs.ws.WSBodyWritables.writeableOf_String
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status._
 import play.api.libs.json.Json.toJson
@@ -638,33 +650,33 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
-                "errorNumber" ->13
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
+                "errorNumber" -> 13
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
                 "errorNumber" -> 23
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field actorId was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "errorNumber" -> 8
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
                 "errorNumber" -> 12
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field comcode was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field comcode was missing from body or is in the wrong format",
                 "errorNumber" -> 11
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field traderRef was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field traderRef was missing from body or is in the wrong format",
                 "errorNumber" -> 9
               )
             )
@@ -859,7 +871,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         )
     )
 
-  private lazy val updateRecordEisResponseData: JsValue =
+  val updateRecordEisResponseData: JsValue =
     Json
       .parse("""
         |{
@@ -901,7 +913,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |}
         |""".stripMargin)
 
-  private lazy val updateRecordResponseData: JsValue =
+  val updateRecordResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -943,7 +955,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  private lazy val updateEisRecordResponseDataWithOptionalFields: JsValue =
+  val updateEisRecordResponseDataWithOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -985,7 +997,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  private lazy val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
+  val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1022,7 +1034,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  private lazy val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
+  val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1058,7 +1070,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  private lazy val updateRecordResponseDataWithOptionalFields: JsValue =
+  val updateRecordResponseDataWithOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1088,7 +1100,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  private lazy val updateRecordResponseDataWithSomeOptionalFields: JsValue =
+  val updateRecordResponseDataWithSomeOptionalFields: JsValue =
     Json
       .parse("""
                |{
@@ -1122,7 +1134,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  private lazy val updateRecordRequestData: String =
+  val updateRecordRequestData: String =
     s"""
         |{
         |    "eori": "$eori",
@@ -1151,8 +1163,47 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |}
         |""".stripMargin
 
+  val updateEisRecordRequestData: String =
+    """
+      |{
+      |    "eori": "GB123456789001",
+      |    "actorId": "GB098765432112",
+      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "10410100",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 1,
+      |    "assessments": [],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "Square metre (m2)",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
+      |}
+      |""".stripMargin
 
-  private lazy val updateRecordRequestDataWithOptionalNullFields: String =
+  val updateEisRecordRequestDataWithSomeOptionalFields: String =
+    """
+      |{
+      |    "eori": "GB123456789001",
+      |    "actorId": "GB098765432112",
+      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+      |    "traderRef": "BAN001001",
+      |    "comcode": "10410100",
+      |    "goodsDescription": "Organic bananas",
+      |    "countryOfOrigin": "EC",
+      |    "category": 1,
+      |    "assessments": [
+      |        {
+      |            "primaryCategory": 1
+      |        }
+      |    ],
+      |    "supplementaryUnit": 500,
+      |    "measurementUnit": "Square metre (m2)",
+      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
+      |}
+      |""".stripMargin
+
+  val updateRecordRequestDataWithOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1182,7 +1233,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  private lazy val updateRecordRequestDataWithConditionOptionalNullFields: String =
+  val updateRecordRequestDataWithConditionOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1207,7 +1258,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  private lazy val updateRecordRequestDataWithSomeOptionalNullFields: String =
+  val updateRecordRequestDataWithSomeOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1231,7 +1282,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  private lazy val updateRecordRequiredRequestData: String =
+  val updateRecordRequiredRequestData: String =
     """
       |{
       |    "eori": "GB123456789012",
@@ -1246,7 +1297,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  private lazy val updateRecordRequiredEisResponseData: JsValue =
+  val updateRecordRequiredEisResponseData: JsValue =
     Json
       .parse("""
           |{
@@ -1277,7 +1328,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
           |}
           |""".stripMargin)
 
-  private lazy val updateRecordRequiredResponseData: JsValue =
+  val updateRecordRequiredResponseData: JsValue =
     Json
       .parse("""
                |{
@@ -1308,7 +1359,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
                |}
                |""".stripMargin)
 
-  private lazy val invalidRequestData: String =
+  val invalidRequestData: String =
     """
       |{
       |    "assessments": [
@@ -1329,7 +1380,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  private lazy val invalidOptionalRequestData: String =
+  val invalidOptionalRequestData: String =
     """
       |{
       |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1359,7 +1410,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
       |}
       |""".stripMargin
 
-  private lazy val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
+  val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
     .parse("""
              |{
              |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
@@ -1398,7 +1449,7 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
              |}
              |""".stripMargin)
 
-  private lazy val invalidActorIdAndComcodeRequestData: String =
+  val invalidActorIdAndComcodeRequestData: String =
     """
       |{
       |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
