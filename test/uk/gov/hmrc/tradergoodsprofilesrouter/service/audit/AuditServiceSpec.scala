@@ -260,8 +260,6 @@ class AuditServiceSpec extends PlaySpec with BeforeAndAfterEach {
       detail = auditDetails
     )
 
-
-
   private def emitAuditCreateRecordDetailJson(
     status: String,
     statusCode: Int,
