@@ -73,7 +73,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
 
     val expectedUrl = new URL("http://localhost:1234/tgp/removerecord/v1")
 
-
     verify(httpClientV2).put(url"$expectedUrl")
     verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
 
@@ -125,9 +124,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
       "actorId"  -> actorId
     )
 
-
     verifyExecuteForStatusHttpReader(correlationId)
-
 
     result.value mustBe 200
   }
@@ -135,10 +132,8 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
   "send a request with the right url for remove record when sendAcceptHeader feature flag is true" in {
     when(appConfig.sendAcceptHeader).thenReturn(true)
 
-
     when(requestBuilder.setHeader(any[Seq[(String, String)]]: _*))
       .thenReturn(requestBuilder)
-
 
     when(requestBuilder.withBody(any[JsValue])(any, any, any))
       .thenReturn(requestBuilder)
@@ -150,11 +145,9 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
     verify(httpClientV2).put(url"$expectedUrl")
 
-
     val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
       ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
     verify(requestBuilder).setHeader(headersCaptor.capture(): _*)
-
 
     val capturedHeaders: Seq[(String, String)] = headersCaptor.getValue
 

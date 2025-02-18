@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
-
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.EitherValues
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
-import play.api.http.Status.INTERNAL_SERVER_ERROR
-import play.api.libs.json.Json
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.http.HttpResponse
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorHandler, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, StatusHttpReader}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.GetEisRecordsResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.ErrorResponse
@@ -42,8 +41,7 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
   "HttpReader" should {
     "handle error response" in {
       val errorHandlerSpy = mock[TestEisHttpReaderHandler]
-      val eisResponse     =
-        HttpResponse(400, Json.toJson(getEisRecordsResponseData), Map.empty)
+      val eisResponse     = HttpResponse(400, Json.toJson(getEisRecordsResponseData), Map.empty)
 
       when(errorHandlerSpy.handleErrorResponse(any[HttpResponse], any[String]))
         .thenReturn(
@@ -55,9 +53,30 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
 
       verify(errorHandlerSpy).handleErrorResponse(any[HttpResponse], any[String])
     }
+
+    "successfully parse JSON response" in {
+      val jsonResponse: JsValue = Json.obj("message" -> "Success")
+      val httpResponse = HttpResponse(OK, jsonResponse.toString())
+
+      val reader = HttpReader[JsValue](correlationId, successErrorHandler)
+
+      reader.read("GET", "test-url", httpResponse).value mustBe jsonResponse
+    }
+
+    "throw RuntimeException if JSON parsing fails" in {
+      val invalidJsonResponse = HttpResponse(OK, """{"invalid": "data"}""")
+
+      val reader = HttpReader[GetEisRecordsResponse](correlationId, successErrorHandler)
+
+      val exception = intercept[RuntimeException] {
+        reader.read("GET", "test-url", invalidJsonResponse)
+      }
+
+      exception.getMessage must include("Response body could not be parsed as type GetEisRecordsResponse")
+    }
   }
 
-  "remove record responseHandler" should {
+  "StatusHttpReader" should {
     "handle error response" in {
       val errorHandlerSpy = mock[TestEisHttpReaderHandler]
       val eisResponse     = HttpResponse(400, "")
@@ -71,6 +90,14 @@ class EisHttpReaderSpec extends PlaySpec with GetRecordsDataSupport with EitherV
         .read("GET", "any-url", eisResponse)
 
       verify(errorHandlerSpy).handleErrorResponse(any[HttpResponse], any[String])
+    }
+
+    "return successful status code when response is OK" in {
+      val httpResponse = HttpResponse(OK, "")
+
+      val reader = StatusHttpReader(correlationId, successErrorHandler)
+
+      reader.read("GET", "test-url", httpResponse) mustBe Right(OK)
     }
   }
 }
