@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import play.api.http.Status.{FORBIDDEN, INTERNAL_SERVER_ERROR, OK}
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.WSBodyWritables.writeableOf_String
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}

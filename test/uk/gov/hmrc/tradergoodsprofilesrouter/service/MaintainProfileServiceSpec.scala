@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.service
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{reset, when}
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

@@ -99,9 +99,9 @@ class AuditGetRecordResponseMappingSpec extends PlaySpec with OptionValues {
 
     val records = for {
       i           <- 0 until 5
-      reviewReason = if (i < reviewReasons.size) Some(reviewReasons(i)) else None
+      reviewReason = reviewReasons.lift(i)
       adviceStatus = if (i < adviceStatuses.size) adviceStatuses(i) else NotRequested
-      category     = if (i < categories.size) Some(categories(i)) else None
+      category     = categories.lift(i)
       record       = createEISGetRecordResponseWithVariable(reviewReason, adviceStatus, category)
     } yield record
 

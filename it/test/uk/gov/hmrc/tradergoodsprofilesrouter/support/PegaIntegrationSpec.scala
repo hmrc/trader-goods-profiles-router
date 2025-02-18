@@ -16,16 +16,15 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
-abstract class PegaIntegrationSpec extends BaseIntegrationSpec{
+abstract class PegaIntegrationSpec extends BaseIntegrationSpec {
 
   def pegaConnectorPath: String
 
-  override def extraApplicationConfig: Map[String, Any] = {
+  override def extraApplicationConfig: Map[String, Any] =
     Map(
       s"microservice.services.pega.host" -> wireMockHost,
       s"microservice.services.pega.port" -> wireMockPort,
-      s"microservice.services.pega.uri" -> pegaConnectorPath,
-      "auditing.enabled" -> false
+      s"microservice.services.pega.uri"  -> pegaConnectorPath,
+      "auditing.enabled"                 -> false
     )
-  }
 }

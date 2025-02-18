@@ -21,6 +21,7 @@ import com.typesafe.config.Config
 import org.apache.pekko.actor.ActorSystem
 import play.api.http.MimeTypes
 import play.api.libs.json.Json
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
@@ -50,7 +51,7 @@ class CreateProfileConnector @Inject() (
       httpClientV2
         .post(url"$url")
         .setHeader(headers(correlationId): _*)
-        .withBody(Json.toJson(request))
+        .withBody(Json.toJson(request))(writeableOf_JsValue)
         .execute(StatusHttpReader(correlationId, handleErrorResponse), ec)
     }
   }

@@ -18,6 +18,7 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 import com.typesafe.config.Config
 import org.apache.pekko.actor.ActorSystem
 import play.api.libs.json.Json
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig

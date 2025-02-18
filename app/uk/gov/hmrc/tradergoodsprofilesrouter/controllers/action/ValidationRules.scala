@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action
 
-import cats.implicits.catsSyntaxTuple2Parallel
 import cats.syntax.all._
 import org.apache.commons.validator.routines.EmailValidator
 import play.api.libs.functional.syntax.toApplicativeOps
@@ -176,13 +175,13 @@ object ValidationRules {
     val validNiphl: Reads[String] = verifying(isValidNiphl)
   }
 
-  def isValidEmailAddress(emailAddress: String): Boolean = emailValidator.isValid(emailAddress)
+  private def isValidEmailAddress(emailAddress: String): Boolean = emailValidator.isValid(emailAddress)
 
   def isValidActorId(actorId: String): Boolean = actorIdPattern.matches(actorId)
 
   def isValidComcode(comcode: String): Boolean = comcodePattern.matches(comcode)
 
-  def isValidNiphl(niphl: String): Boolean = niphlPattern.matches(niphl)
+  private def isValidNiphl(niphl: String): Boolean = niphlPattern.matches(niphl)
 
   private def extractSimplePaths(
     errors: scala.collection.Seq[(JsPath, collection.Seq[JsonValidationError])]

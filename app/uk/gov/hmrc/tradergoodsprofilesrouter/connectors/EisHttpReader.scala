@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,26 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import play.api.http.Status._
-import play.api.libs.Files.logger
-import play.api.libs.json._
+import play.api.Logging
+import play.api.http.Status.*
+import play.api.libs.json.*
 import uk.gov.hmrc.http.{HttpReads, HttpResponse}
 
-import scala.reflect.runtime.universe.{TypeTag, typeOf}
-import scala.util.{Failure, Success, Try}
+import scala.reflect.ClassTag
 
-object EisHttpReader {
+object EisHttpReader extends Logging {
 
   case class HttpReader[T](correlationId: String, errorHandler: (HttpResponse, String) => EisHttpErrorResponse)(implicit
     reads: Reads[T],
-    tt: TypeTag[T]
+    ct: ClassTag[T]
   ) extends HttpReads[Either[EisHttpErrorResponse, T]] {
     override def read(method: String, url: String, response: HttpResponse): Either[EisHttpErrorResponse, T] =
       response match {
         case response if isSuccessful(response.status) =>
-          Right(jsonAs[T](response))
+          Right(parseJson[T](response))
         case response                                  =>
           logger.warn(
-            s"[HttpReader] - downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body} "
+            s"[HttpReader] - Downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body}"
           )
           Left(errorHandler(response, correlationId))
       }
@@ -49,30 +48,27 @@ object EisHttpReader {
         case response if isSuccessful(response.status) => Right(response.status)
         case response                                  =>
           logger.warn(
-            s"[StatusHttpReader] - downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body} "
+            s"[StatusHttpReader] - Downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body}"
           )
           Left(errorHandler(response, correlationId))
       }
   }
 
-  def jsonAs[T](response: HttpResponse)(implicit reads: Reads[T], tt: TypeTag[T]): T =
-    Try(Json.parse(response.body)) match {
-      case Success(value)     =>
-        value
-          .validate[T]
-          .map(result => result)
-          .recoverTotal { error: JsError =>
-            logger.warn(
-              s"[EisHttpReader] - Failed to validate or parse JSON body of type: ${typeOf[T]}",
-              error
-            )
-            throw new RuntimeException(s"Response body could not be read as type ${typeOf[T]}")
+  def parseJson[T](response: HttpResponse)(implicit reads: Reads[T], ct: ClassTag[T]): T =
+    response.json.validate[T] match {
+      case JsSuccess(result, _) => result
+      case JsError(errors)      =>
+        val errorMsg = errors
+          .map { case (path, validationErrors) =>
+            s"$path -> ${validationErrors.map(_.message).mkString(", ")}"
           }
-      case Failure(exception) =>
+          .mkString("; ")
+
         logger.warn(
-          s"[EisHttpReader] - Response body could not be parsed as JSON, body: ${response.body}",
-          exception
+          s"[EisHttpReader] - JSON validation failed for type: ${ct.runtimeClass.getSimpleName}, errors: $errorMsg"
         )
-        throw new RuntimeException(s"Response body could not be read: ${response.body}")
+        throw new RuntimeException(s"Response body could not be parsed as type ${ct.runtimeClass.getSimpleName}")
     }
+
+  def isSuccessful(status: Int): Boolean = status >= 200 && status < 300
 }

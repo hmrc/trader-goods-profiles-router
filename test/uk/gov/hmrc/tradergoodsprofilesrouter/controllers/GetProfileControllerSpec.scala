@@ -16,15 +16,15 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.MockitoSugar.{reset, verify, verifyZeroInteractions, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, NOT_FOUND, OK}
 import play.api.libs.json.Json
-import play.api.test.{FakeHeaders, FakeRequest}
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
+import play.api.test.{FakeHeaders, FakeRequest}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.ProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
@@ -128,7 +128,7 @@ class GetProfileControllerSpec extends PlaySpec with BeforeAndAfterEach {
       )
 
       withClue("should not send the request to Eis") {
-        verifyZeroInteractions(getProfileService)
+        verifyNoInteractions(getProfileService)
       }
     }
   }

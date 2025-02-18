@@ -1,7 +1,8 @@
+import scoverage.ScoverageKeys
 import uk.gov.hmrc.DefaultBuildSettings
 
 ThisBuild / majorVersion := 0
-ThisBuild / scalaVersion := "2.13.12"
+ThisBuild / scalaVersion := "3.3.4"
 
 lazy val microservice = Project("trader-goods-profiles-router", file("."))
   .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
@@ -11,10 +12,15 @@ lazy val microservice = Project("trader-goods-profiles-router", file("."))
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,
     // https://www.scala-lang.org/2021/01/12/configuring-and-suppressing-warnings.html
     // suppress warnings in generated routes files
-    scalacOptions += "-Wconf:src=routes/.*:s"
+    scalacOptions += "-Wconf:src=routes/.*:s",
+    ScoverageKeys.coverageExcludedFiles := "<empty>;Reverse.*;.*Routes.*",
+    ScoverageKeys.coverageMinimumStmtTotal := 90,
+    ScoverageKeys.coverageFailOnMinimum := true,
+    ScoverageKeys.coverageHighlighting := true
   )
   .settings(resolvers += Resolver.jcenterRepo)
-  .settings(CodeCoverageSettings.settings: _*)
+  .settings(CodeCoverageSettings.settings *)
+
 
 lazy val it = project
   .enablePlugins(PlayScala)
@@ -22,3 +28,7 @@ lazy val it = project
   .dependsOn(microservice % "test->test")
   .settings(DefaultBuildSettings.itSettings())
   .settings(libraryDependencies ++= AppDependencies.it)
+
+addCommandAlias("testAndCoverage", ";clean;coverage;test;it/test;coverageReport")
+addCommandAlias("prePR", ";scalafmt;test:scalafmt;testAndCoverage")
+addCommandAlias("preMerge", ";scalafmtCheckAll;testAndCoverage")

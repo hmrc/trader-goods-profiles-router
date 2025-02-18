@@ -16,12 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis
 
-import play.api.libs.functional.syntax.toFunctionalBuilderOps
-import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.{JsPath, OWrites, Reads}
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
-
-import scala.Function.unlift
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
 
 case class CreateProfileResponse(
   eori: String,
@@ -31,22 +27,29 @@ case class CreateProfileResponse(
   niphlNumber: Option[String]
 )
 
+trait NiphlNumberFilter {
+  def removeLeadingDashes(niphl: Option[String]): Option[String] =
+    niphl.map(_.stripPrefix("-"))
+}
+
 object CreateProfileResponse extends NiphlNumberFilter {
 
   implicit val reads: Reads[CreateProfileResponse] =
-    ((JsPath \ "eori").read[String] and
-      (JsPath \ "actorId").read[String] and
-      (JsPath \ "ukimsNumber").readNullable[String] and
-      (JsPath \ "nirmsNumber").readNullable[String] and
-      (JsPath \ "niphlNumber").readNullable[String])(CreateProfileResponse.apply _)
+    (
+      (JsPath \ "eori").read[String] and
+        (JsPath \ "actorId").read[String] and
+        (JsPath \ "ukimsNumber").readNullable[String] and
+        (JsPath \ "nirmsNumber").readNullable[String] and
+        (JsPath \ "niphlNumber").readNullable[String]
+    )(CreateProfileResponse.apply _)
 
-  // TODO: removeLeadingDashes will need to be removed once EIS/B&T make the same validation on their side
-  implicit lazy val writes: OWrites[CreateProfileResponse] =
-    ((JsPath \ "eori").write[String] and
-      (JsPath \ "actorId").write[String] and
-      (JsPath \ "ukimsNumber").writeNullable[String] and
-      (JsPath \ "nirmsNumber").writeNullable[String] and
-      (JsPath \ "niphlNumber").writeNullable[String].contramap[Option[String]](removeLeadingDashes))(
-      unlift(CreateProfileResponse.unapply)
+  implicit lazy val writes: OWrites[CreateProfileResponse] = new OWrites[CreateProfileResponse] {
+    def writes(response: CreateProfileResponse): JsObject = Json.obj(
+      "eori"        -> response.eori,
+      "actorId"     -> response.actorId,
+      "ukimsNumber" -> response.ukimsNumber,
+      "nirmsNumber" -> response.nirmsNumber,
+      "niphlNumber" -> removeLeadingDashes(response.niphlNumber)
     )
+  }
 }

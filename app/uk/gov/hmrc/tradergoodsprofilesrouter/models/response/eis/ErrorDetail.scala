@@ -28,6 +28,7 @@ case class ErrorDetail(
   source: Option[String],
   sourceFaultDetail: Option[SourceFaultDetail] = None
 )
+
 object ErrorDetail {
   implicit val errorDetail: Reads[ErrorDetail] = (json: JsValue) =>
     try JsSuccess(

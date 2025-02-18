@@ -17,19 +17,20 @@
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
 import cats.data.EitherT
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.when
+import cats.implicits.*
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, CREATED}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RequestAdviceService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.GetRecordsDataSupport
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.*
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.ExecutionContext
@@ -57,29 +58,30 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
     HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
   )
 
-  private val requestAccreditationData = Json
-    .parse("""
-        |{
-        |    "actorId": "GB9876543210983",
-        |    "requestorName": "Mr. Phil Edwards",
-        |    "requestorEmail": "Phil.Edwards@gmail.com"
-        |}
-        |""".stripMargin)
+  private val requestAccreditationData: JsValue = Json.parse(
+    """
+      |{
+      |    "actorId": "GB9876543210983",
+      |    "requestorName": "Mr. Phil Edwards",
+      |    "requestorEmail": "Phil.Edwards@gmail.com"
+      |}
+      |""".stripMargin
+  )
 
-  private val invalidRequestAccreditationData = Json
-    .parse("""
-        |{
-        |    "actorId": "",
-        |    "requestorName": "Mr. Phil Edwards",
-        |    "requestorEmail": ""
-        |}
-        |""".stripMargin)
+  private val invalidRequestAccreditationData: JsValue = Json.parse(
+    """
+      |{
+      |    "actorId": "",
+      |    "requestorName": "Mr. Phil Edwards",
+      |    "requestorEmail": ""
+      |}
+      |""".stripMargin
+  )
 
   "POST /createaccreditation" should {
-
-    "return a 201 Ok response on creating accreditation" in {
+    "return a 201 Created response on creating accreditation" in {
       when(mockRequestAdviceService.requestAdvice(any, any, any)(any))
-        .thenReturn(EitherT.rightT(CREATED))
+        .thenReturn(EitherT.rightT[scala.concurrent.Future, ErrorResponse](CREATED))
 
       val result = sut.requestAdvice(eori, recordId)(
         FakeRequest().withBody(requestAccreditationData).withHeaders(validHeaders: _*)
@@ -88,31 +90,33 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
       status(result) mustBe CREATED
     }
 
-    "return a 400 Bad request when clientId is missing" in {
+    "return a 400 Bad Request when clientId is missing" in {
+      val headersWithoutClientId = validHeaders.filterNot { case (name, _) =>
+        name.equalsIgnoreCase(HeaderNames.ClientId)
+      }
 
       val result = sut.requestAdvice(eori, recordId)(
-        FakeRequest()
-          .withBody(requestAccreditationData)
-          .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
+        FakeRequest().withBody(requestAccreditationData).withHeaders(headersWithoutClientId: _*)
       )
 
       status(result) mustBe BAD_REQUEST
     }
 
-    "return a 400 Bad request when Accept header is missing" in {
+    "return a 400 Bad Request when Accept header is missing" in {
+      val headersWithoutAccept = validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase(HeaderNames.Accept) }
 
       val result = sut.requestAdvice(eori, recordId)(
-        FakeRequest()
-          .withBody(requestAccreditationData)
-          .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("Accept") }: _*)
+        FakeRequest().withBody(requestAccreditationData).withHeaders(headersWithoutAccept: _*)
       )
 
       status(result) mustBe BAD_REQUEST
     }
 
-    "return 400 Bad request when recordId path variable is not valid" in {
+    "return 400 Bad Request when recordId path variable is not valid" in {
+      val invalidRecordId = "2138748712364"
+
       val errorResponse = ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        recordId,
         BadRequestCode,
         BadRequestMessage,
         Some(
@@ -122,9 +126,10 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
         )
       )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      when(mockUuidService.uuid).thenReturn(recordId)
+
       val result =
-        sut.requestAdvice(eori, "2138748712364")(
+        sut.requestAdvice(eori, invalidRecordId)(
           FakeRequest().withBody(requestAccreditationData).withHeaders(validHeaders: _*)
         )
 
@@ -135,9 +140,9 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
       }
     }
 
-    "return 400 Bad request when invalid body is provided" in {
+    "return 400 Bad Request when invalid body is provided" in {
       val errorResponse = ErrorResponse(
-        "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
+        recordId,
         BadRequestCode,
         BadRequestMessage,
         Some(
@@ -156,7 +161,8 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
         )
       )
 
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
+      when(mockUuidService.uuid).thenReturn(recordId)
+
       val result =
         sut.requestAdvice(eori, recordId)(
           FakeRequest().withBody(invalidRequestAccreditationData).withHeaders(validHeaders: _*)
@@ -168,7 +174,5 @@ class RequestAdviceControllerSpec extends PlaySpec with MockitoSugar with GetRec
         contentAsJson(result) mustBe Json.toJson(errorResponse)
       }
     }
-
   }
-
 }

@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar.{reset, when}
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status._
+import org.scalatest.concurrent.ScalaFutures.*
+import play.api.http.Status.*
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.WSBodyWritables.{writeableOf_JsValue, writeableOf_String}
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
@@ -657,33 +660,33 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
             "message"       -> "Bad Request",
             "errors"        -> Json.arr(
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
-                "errorNumber" ->13
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field countryOfOrigin was missing from body or is in the wrong format",
+                "errorNumber" -> 13
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field comcodeEffectiveFromDate was missing from body or is in the wrong format",
                 "errorNumber" -> 23
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field actorId was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
                 "errorNumber" -> 8
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field goodsDescription was missing from body or is in the wrong format",
                 "errorNumber" -> 12
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field comcode was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field comcode was missing from body or is in the wrong format",
                 "errorNumber" -> 11
               ),
               Json.obj(
-                "code" -> "INVALID_REQUEST_PARAMETER",
-                "message" -> "Mandatory field traderRef was missing from body or is in the wrong format",
+                "code"        -> "INVALID_REQUEST_PARAMETER",
+                "message"     -> "Mandatory field traderRef was missing from body or is in the wrong format",
                 "errorNumber" -> 9
               )
             )
@@ -922,44 +925,45 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
 
   private lazy val updateRecordSupplementaryNoMeasureEisResponseData: JsValue =
     Json
-      .parse("""
-               |{
-               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
-               |  "actorId": "GB098765432112",
-               |  "traderRef": "BAN001001",
-               |  "comcode": "10410100",
-               |  "accreditationStatus": "Withdrawn",
-               |  "goodsDescription": "Organic bananas",
-               |  "countryOfOrigin": "EC",
-               |  "category": 1,
-               |  "supplementaryUnit": 500,
-               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
-               |  "version": 1,
-               |  "active": true,
-               |  "toReview": false,
-               |  "reviewReason": "Commodity code change",
-               |  "declarable": "SPIMM",
-               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "12345",
-               |  "createdDateTime": "2024-11-18T23:20:19Z",
-               |  "updatedDateTime": "2024-11-18T23:20:19Z",
-               |  "assessments": [
-               |    {
-               |      "assessmentId": "abc123",
-               |      "primaryCategory": 1,
-               |      "condition": {
-               |        "type": "abc123",
-               |        "conditionId": "Y923",
-               |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-               |        "conditionTraderText": "Excluded product"
-               |      }
-               |    }
-               |  ]
-               |}
-               |""".stripMargin)
+      .parse(
+        """
+          |{
+          |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+          |  "eori": "GB123456789012",
+          |  "actorId": "GB098765432112",
+          |  "traderRef": "BAN001001",
+          |  "comcode": "10410100",
+          |  "accreditationStatus": "Withdrawn",
+          |  "goodsDescription": "Organic bananas",
+          |  "countryOfOrigin": "EC",
+          |  "category": 1,
+          |  "supplementaryUnit": 500,
+          |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+          |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+          |  "version": 1,
+          |  "active": true,
+          |  "toReview": false,
+          |  "reviewReason": "Commodity code change",
+          |  "declarable": "SPIMM",
+          |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+          |  "nirmsNumber": "RMS-GB-123456",
+          |  "niphlNumber": "12345",
+          |  "createdDateTime": "2024-11-18T23:20:19Z",
+          |  "updatedDateTime": "2024-11-18T23:20:19Z",
+          |  "assessments": [
+          |    {
+          |      "assessmentId": "abc123",
+          |      "primaryCategory": 1,
+          |      "condition": {
+          |        "type": "abc123",
+          |        "conditionId": "Y923",
+          |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+          |        "conditionTraderText": "Excluded product"
+          |      }
+          |    }
+          |  ]
+          |}
+          |""".stripMargin)
 
 
   private lazy val updateRecordResponseData: JsValue =
@@ -1211,7 +1215,6 @@ class PUTRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport 
         |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
         |}
         |""".stripMargin
-
 
   private lazy val updateRecordRequestDataWithOptionalNullFields: String =
     """

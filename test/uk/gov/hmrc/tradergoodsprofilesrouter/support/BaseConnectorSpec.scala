@@ -18,9 +18,9 @@ package uk.gov.hmrc.tradergoodsprofilesrouter.support
 
 import com.typesafe.config.Config
 import org.apache.pekko.actor.ActorSystem
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.MockitoSugar.{verify, when}
-import org.mockito.captor.ArgCaptor
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.{Assertion, BeforeAndAfterEach, EitherValues}
 import org.scalatestplus.mockito.MockitoSugar.mock
 import org.scalatestplus.play.PlaySpec
@@ -30,6 +30,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.client.{HttpClientV2, RequestBuilder}
 import uk.gov.hmrc.tradergoodsprofilesrouter.config.{AppConfig, HawkInstanceConfig, PegaInstanceConfig}
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.{HttpReader, StatusHttpReader}
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.DateTimeService
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames.ClientId
 
@@ -151,19 +152,27 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   }
 
   protected def verifyExecuteForHttpReader(expectedCorrelationId: String): Assertion = {
-    val captor = ArgCaptor[HttpReader[Either[Result, Any]]]
-    verify(requestBuilder).execute(captor.capture, any)
+    val captor = ArgumentCaptor.forClass(classOf[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]])
 
-    val httpReader = captor.value
-    httpReader.correlationId mustBe expectedCorrelationId
+    verify(requestBuilder).execute(captor.capture(), any[scala.concurrent.ExecutionContext])
+
+    val httpReader = captor.getValue
+    assert(
+      httpReader.correlationId == expectedCorrelationId,
+      s"Expected correlationId $expectedCorrelationId, but got ${httpReader.correlationId}"
+    )
   }
 
   protected def verifyExecuteForStatusHttpReader(expectedCorrelationId: String): Assertion = {
-    val captor = ArgCaptor[StatusHttpReader]
-    verify(requestBuilder).execute(captor.capture, any)
+    val captor = ArgumentCaptor.forClass(classOf[StatusHttpReader])
 
-    val httpReader = captor.value
-    httpReader.correlationId mustBe expectedCorrelationId
+    verify(requestBuilder).execute(captor.capture(), any())
+
+    val httpReader = captor.getValue.asInstanceOf[StatusHttpReader]
+    assert(
+      httpReader.correlationId == expectedCorrelationId,
+      s"Expected: $expectedCorrelationId, but got: ${httpReader.correlationId}"
+    )
   }
 
 }

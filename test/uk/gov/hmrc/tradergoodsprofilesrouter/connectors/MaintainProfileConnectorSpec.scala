@@ -16,19 +16,21 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.connectors
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.Mockito.never
-import org.mockito.MockitoSugar.{reset, verify, when}
+import org.mockito.ArgumentMatchers.{any, eq => eqTo}
+import org.mockito.Mockito.*
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.Result
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.StringContextOps
+import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpReader.HttpReader
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
+import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordEisResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
 import java.time.Instant
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class MaintainProfileConnectorSpec extends BaseConnectorSpec {
 
@@ -46,7 +48,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
-    when(requestBuilder.setHeader(any, any, any, any, any, any, any)).thenReturn(requestBuilder)
+    when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
     when(appConfig.sendClientId).thenReturn(true)
   }
 
@@ -63,9 +65,10 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       val expectedUrl = s"http://localhost:1234/tgp/maintainprofile/v1"
       verify(httpClientV2).put(url"$expectedUrl")
       verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyMaintainProfileBearerToken"): _*)
-      verify(requestBuilder).withBody(maintainProfileEisRequest)
+      verify(requestBuilder).withBody(eqTo(Json.toJson(maintainProfileEisRequest)))(any, any, any)
       verify(requestBuilder).execute(any, any)
-      verifyExecuteForHttpReader(correlationId)
+      verify(requestBuilder)
+        .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
 
       result.value mustBe maintainProfileResponse
     }
@@ -73,7 +76,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
     // TODO: Remove this and Create a single test without the client-id after release 2
     "return a 200 ok if EIS successfully without x-client-id when sendClientid is false" in {
       when(appConfig.sendClientId).thenReturn(false)
-      when(requestBuilder.setHeader(any, any, any, any, any, any)).thenReturn(requestBuilder)
+      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
 
       when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
@@ -94,9 +97,10 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       )
 
       verify(requestBuilder, never()).setHeader("X-Client-ID" -> "TSS")
-      verify(requestBuilder).withBody(maintainProfileEisRequest)
+      verify(requestBuilder).withBody(eqTo(Json.toJson(maintainProfileEisRequest)))(any, any, any)
       verify(requestBuilder).execute(any, any)
-      verifyExecuteForHttpReader(correlationId)
+      verify(requestBuilder)
+        .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
 
       result.value mustBe maintainProfileResponse
     }

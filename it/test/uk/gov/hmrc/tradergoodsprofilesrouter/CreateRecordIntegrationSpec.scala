@@ -16,12 +16,15 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status._
+import org.scalatest.concurrent.ScalaFutures.*
+import play.api.http.Status.*
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
+import play.api.libs.ws.WSBodyWritables.writeableOf_String
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
@@ -367,10 +370,10 @@ class CreateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
             .futureValue
 
           response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json shouldBe Json.obj(
+          response.json   shouldBe Json.obj(
             "correlationId" -> correlationId,
-            "code" -> "BAD_GATEWAY",
-            "message" -> "Bad Gateway"
+            "code"          -> "BAD_GATEWAY",
+            "message"       -> "Bad Gateway"
           )
 
           verifyThatDownstreamApiWasRetried(hawkConnectorPath)

@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment

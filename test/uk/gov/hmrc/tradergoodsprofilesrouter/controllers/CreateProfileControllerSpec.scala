@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import org.mockito.ArgumentMatchersSugar.any
-
-import org.mockito.MockitoSugar.when
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.MimeTypes
@@ -30,7 +29,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.CreateProfileRe
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateProfileService, UuidService}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.FakeAuth.FakeSuccessAuthAction
-import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
+import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants.*
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}

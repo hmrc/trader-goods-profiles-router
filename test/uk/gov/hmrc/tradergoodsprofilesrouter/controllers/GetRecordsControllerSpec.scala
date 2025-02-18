@@ -16,9 +16,8 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter.controllers
 
-import org.mockito.ArgumentMatchersSugar.any
-import org.mockito.Mockito.{RETURNS_DEEP_STUBS, verify}
-import org.mockito.MockitoSugar.when
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.*
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec

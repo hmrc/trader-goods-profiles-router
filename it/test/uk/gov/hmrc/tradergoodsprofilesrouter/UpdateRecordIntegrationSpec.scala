@@ -16,838 +16,28 @@
 
 package uk.gov.hmrc.tradergoodsprofilesrouter
 
-import com.github.tomakehurst.wiremock.client.WireMock._
-import org.mockito.MockitoSugar.{reset, when}
+import com.github.tomakehurst.wiremock.client.WireMock.*
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import org.mockito.Mockito.when
 import org.scalatest.BeforeAndAfterEach
-import play.api.http.Status._
-import play.api.libs.json.Json.toJson
+import play.api.http.Status.*
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.auth.core.Enrolment
-import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
+import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
+import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}
 
 import java.time.Instant
 
 class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSupport with BeforeAndAfterEach {
 
-  private val eori                       = "GB123456789001"
-  private val recordId                   = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
-  val correlationId                      = "d677693e-9981-4ee3-8574-654981ebe606"
-  val dateTime                           = "2021-12-17T09:30:47.456Z"
-  val timestamp                          = "Fri, 17 Dec 2021 09:30:47 GMT"
-  private val url                        = fullUrl(s"/traders/$eori/records/$recordId")
-  override def hawkConnectorPath: String = "/tgp/puttgprecord/v1"
-
-  override def beforeEach(): Unit = {
-    reset(authConnector)
-    withAuthorizedTrader()
-    super.beforeEach()
-    when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
-    when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
-  }
-
-
-  "attempting to update a record, when" - {
-    "the request is" - {
-      "valid, specifically" - {
-        "with all request fields" in {
-          stubPutRequestForEis(OK, Some(updateRecordEisResponseData.toString()))
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe OK
-          response.json   shouldBe toJson(updateRecordResponseData.as[CreateOrUpdateRecordResponse])
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "with optional null request fields" in {
-          stubPutRequestForEis(
-            OK,
-            Some(updateEisRecordResponseDataWithOptionalFields.toString())
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestDataWithOptionalNullFields)
-            .futureValue
-
-          response.status shouldBe OK
-          response.json   shouldBe toJson(updateRecordResponseDataWithOptionalFields.as[CreateOrUpdateRecordResponse])
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "with optional condition null request fields" in {
-          stubPutRequestForEis(
-            OK,
-            Some(updateEisRecordResponseDataWithConditionOptionalFields.toString())
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestDataWithConditionOptionalNullFields)
-            .futureValue
-
-          response.status shouldBe OK
-          response.json   shouldBe toJson(updateRecordResponseDataWithOptionalFields.as[CreateOrUpdateRecordResponse])
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "with optional some optional null request fields" in {
-          stubPutRequestForEis(
-            OK,
-            Some(updateEisRecordResponseDataWithSomeOptionalFields.toString())
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestDataWithSomeOptionalNullFields)
-            .futureValue
-
-          response.status shouldBe OK
-          response.json   shouldBe toJson(updateRecordResponseDataWithSomeOptionalFields.as[CreateOrUpdateRecordResponse])
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "with only required fields" in {
-          stubPutRequestForEis(OK, Some(updateRecordRequiredEisResponseData.toString()))
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequiredRequestData)
-            .futureValue
-
-          response.status shouldBe OK
-          response.json   shouldBe toJson(updateRecordRequiredResponseData.as[CreateOrUpdateRecordResponse])
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-      }
-      "valid but the integration call fails with response:" - {
-        "Forbidden" in {
-          stubPutRequestForEis(FORBIDDEN)
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe FORBIDDEN
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "FORBIDDEN",
-            "message"       -> "Forbidden"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Not Found" in {
-          stubPutRequestForEis(NOT_FOUND)
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe NOT_FOUND
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "NOT_FOUND",
-            "message"       -> "Not Found"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Bad Gateway" in {
-          stubPutRequestForEis(BAD_GATEWAY)
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_GATEWAY
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_GATEWAY",
-            "message"       -> "Bad Gateway"
-          )
-
-          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
-        }
-        "Service Unavailable" in {
-          stubPutRequestForEis(SERVICE_UNAVAILABLE)
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe SERVICE_UNAVAILABLE
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "SERVICE_UNAVAILABLE",
-            "message"       -> "Service Unavailable"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Internal Server Error  with 201 errorCode" in {
-          stubPutRequestForEis(
-            INTERNAL_SERVER_ERROR,
-            Some(eisErrorResponse("201", "Internal Server Error"))
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "INVALID_OR_EMPTY_PAYLOAD",
-            "message"       -> "Invalid Response Payload or Empty payload"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Internal Server Error  with 401 errorCode" in {
-          stubPutRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("401", "Unauthorised")))
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "UNAUTHORIZED",
-            "message"       -> "Unauthorized"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Internal Server Error  with 500 errorCode" in {
-          stubPutRequestForEis(
-            INTERNAL_SERVER_ERROR,
-            Some(eisErrorResponse("500", "Internal Server Error"))
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "INTERNAL_SERVER_ERROR",
-            "message"       -> "Internal Server Error"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Internal Server Error with 404 errorCode" in {
-          stubPutRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("404", "Not Found")))
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "NOT_FOUND",
-            "message"       -> "Not Found"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Internal Server Error with 405 errorCode" in {
-          stubPutRequestForEis(
-            INTERNAL_SERVER_ERROR,
-            Some(eisErrorResponse("405", "Method Not Allowed"))
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "METHOD_NOT_ALLOWED",
-            "message"       -> "Method Not Allowed"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Internal Server Error with 502 errorCode" in {
-          stubPutRequestForEis(INTERNAL_SERVER_ERROR, Some(eisErrorResponse("502", "Bad Gateway")))
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_GATEWAY",
-            "message"       -> "Bad Gateway"
-          )
-
-          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
-        }
-        "Internal Server Error with 503 errorCode" in {
-          stubPutRequestForEis(
-            INTERNAL_SERVER_ERROR,
-            Some(eisErrorResponse("503", "Service Unavailable"))
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe INTERNAL_SERVER_ERROR
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "SERVICE_UNAVAILABLE",
-            "message"       -> "Service Unavailable"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Bad Request with one error detail" in {
-          stubPutRequestForEis(
-            BAD_REQUEST,
-            Some(s"""
-                 |{
-                 |  "errorDetail": {
-                 |    "timestamp": "2023-09-14T11:29:18Z",
-                 |    "correlationId": "$correlationId",
-                 |    "errorCode": "400",
-                 |    "errorMessage": "Invalid request parameter",
-                 |    "source": "BACKEND",
-                 |    "sourceFaultDetail": {
-                 |      "detail": [
-                 |      "error: 006, message: Missing or invalid mandatory request parameter EORI"
-                 |      ]
-                 |    }
-                 |  }
-                 |}
-                 |""".stripMargin)
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field eori was missing from body or is in the wrong format",
-                "errorNumber" -> 6
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Bad Request with more than one error details" in {
-          stubPutRequestForEis(
-            BAD_REQUEST,
-            Some(s"""
-                 |{
-                 |  "errorDetail": {
-                 |    "timestamp": "2023-09-14T11:29:18Z",
-                 |    "correlationId": "$correlationId",
-                 |    "errorCode": "400",
-                 |    "errorMessage": "Invalid request parameter",
-                 |    "source": "BACKEND",
-                 |    "sourceFaultDetail": {
-                 |      "detail": [
-                 |      "error: 025, message: Invalid request parameter recordId",
-                 |      "error: 026, message: recordId doesn’t exist in the database"
-                 |      ]
-                 |    }
-                 |  }
-                 |}
-                 |""".stripMargin)
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The recordId has been provided in the wrong format",
-                "errorNumber" -> 25
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "The requested recordId doesn’t exist",
-                "errorNumber" -> 26
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Bad Request with unexpected error" in {
-          stubPutRequestForEis(
-            BAD_REQUEST,
-            Some(s"""
-                 |{
-                 |  "errorDetail": {
-                 |    "timestamp": "2023-09-14T11:29:18Z",
-                 |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                 |    "errorCode": "400",
-                 |    "errorMessage": "Invalid request parameter",
-                 |    "source": "BACKEND",
-                 |    "sourceFaultDetail": {
-                 |      "detail": [
-                 |      "error: 040, message: undefined"
-                 |      ]
-                 |    }
-                 |  }
-                 |}
-                 |""".stripMargin)
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "UNEXPECTED_ERROR",
-                "message"     -> "Unrecognised error number",
-                "errorNumber" -> 40
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Bad Request when no error list found" in {
-          stubPutRequestForEis(
-            BAD_REQUEST,
-            Some(s"""
-                 |{
-                 |  "errorDetail": {
-                 |    "timestamp": "2023-09-14T11:29:18Z",
-                 |    "correlationId": "d677693e-9981-4ee3-8574-654981ebe606",
-                 |    "errorCode": "400",
-                 |    "errorMessage": "Invalid request parameter",
-                 |    "source": "BACKEND",
-                 |    "sourceFaultDetail": {
-                 |      "detail": ["error"]
-                 |    }
-                 |  }
-                 |}
-                 |""".stripMargin)
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> s"Bad Request"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-        "Bad Request with invalid json" in {
-          stubPutRequestForEis(
-            BAD_REQUEST,
-            Some(s"""
-                 | {
-                 |    "invalid": "error"
-                 |  }
-                 |""".stripMargin)
-          )
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "UNEXPECTED_ERROR",
-            "message"       -> "Unexpected Error"
-          )
-
-          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
-        }
-      }
-      "invalid, specifically" - {
-        "missing required header" in {
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(("Content-Type", "application/json"))
-            .patch(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_HEADER",
-                "message"     -> "Missing mandatory header X-Client-ID",
-                "errorNumber" -> 6000
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-        }
-        "missing required request field" in {
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(invalidRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
-                "errorNumber" -> 8
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-        }
-        "for optional fields" in {
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(invalidOptionalRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field type is in the wrong format",
-                "errorNumber" -> 17
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field conditionTraderText is in the wrong format",
-                "errorNumber" -> 20
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field assessmentId is in the wrong format",
-                "errorNumber" -> 15
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field conditionDescription is in the wrong format",
-                "errorNumber" -> 19
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field measurementUnit is in the wrong format",
-                "errorNumber" -> 22
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field conditionId is in the wrong format",
-                "errorNumber" -> 18
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-        }
-        "for optional assessment array fields" in {
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .put(invalidUpdateRecordRequestDataForAssessmentArray)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field assessmentId is in the wrong format",
-                "errorNumber" -> 15
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field conditionId is in the wrong format",
-                "errorNumber" -> 18
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field primaryCategory is in the wrong format",
-                "errorNumber" -> 16
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field type is in the wrong format",
-                "errorNumber" -> 17
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-        }
-        "for a mandatory field actorId and an optional filed comcode" in {
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .patch(invalidActorIdAndComcodeRequestData)
-            .futureValue
-
-          response.status shouldBe BAD_REQUEST
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "BAD_REQUEST",
-            "message"       -> "Bad Request",
-            "errors"        -> Json.arr(
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Optional field comcode was missing from body or is in the wrong format",
-                "errorNumber" -> 11
-              ),
-              Json.obj(
-                "code"        -> "INVALID_REQUEST_PARAMETER",
-                "message"     -> "Mandatory field actorId was missing from body or is in the wrong format",
-                "errorNumber" -> 8
-              )
-            )
-          )
-
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-        }
-      }
-      "forbidden with any of the following" - {
-        "EORI number is not authorized" in {
-
-          val response = wsClient
-            .url(fullUrl(s"/traders/GB123456789015/records/$recordId"))
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .patch(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe FORBIDDEN
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "FORBIDDEN",
-            "message"       -> s"EORI number is incorrect"
-          )
-
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-        }
-
-        "incorrect enrolment key is used to authorise " in {
-          withAuthorizedTrader(enrolment = Enrolment("OTHER-ENROLMENT-KEY"))
-
-          val response = wsClient
-            .url(url)
-            .withHttpHeaders(
-              ("Content-Type", "application/json"),
-              ("Accept", "application/vnd.hmrc.1.0+json"),
-              ("X-Client-ID", "tss")
-            )
-            .patch(updateRecordRequestData)
-            .futureValue
-
-          response.status shouldBe FORBIDDEN
-          response.json   shouldBe Json.obj(
-            "correlationId" -> correlationId,
-            "code"          -> "FORBIDDEN",
-            "message"       -> s"EORI number is incorrect"
-          )
-
-          verifyThatDownstreamApiWasNotCalled(hawkConnectorPath)
-        }
-      }
-    }
-  }
-
-  private def stubPutRequestForEis(httpStatus: Int, responseBody: Option[String] = None) =
+  private val eori     = "GB123456789001"
+  private val recordId = "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f"
+  val correlationId    = "d677693e-9981-4ee3-8574-654981ebe606"
+  val dateTime         = "2021-12-17T09:30:47.456Z"
+  val timestamp        = "Fri, 17 Dec 2021 09:30:47 GMT"
+  private val url      = fullUrl(s"/traders/$eori/records/$recordId")
+
+  def stubPutRequestForEis(httpStatus: Int, responseBody: Option[String] = None): StubMapping =
     stubFor(
       put(urlEqualTo(s"$hawkConnectorPath"))
         .willReturn(
@@ -858,300 +48,193 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
         )
     )
 
-  private lazy val updateRecordEisResponseData: JsValue =
+  val updateRecordEisResponseData: JsValue =
     Json
       .parse("""
-        |{
-        |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-        |  "eori": "GB123456789012",
-        |  "actorId": "GB098765432112",
-        |  "traderRef": "BAN001001",
-        |  "comcode": "10410100",
-        |  "accreditationStatus": "Withdrawn",
-        |  "goodsDescription": "Organic bananas",
-        |  "countryOfOrigin": "EC",
-        |  "category": 1,
-        |  "supplementaryUnit": 500,
-        |  "measurementUnit": "Square metre (m2)",
-        |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-        |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
-        |  "version": 1,
-        |  "active": true,
-        |  "toReview": false,
-        |  "reviewReason": "Commodity code change",
-        |  "declarable": "SPIMM",
-        |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-        |  "nirmsNumber": "RMS-GB-123456",
-        |  "niphlNumber": "12345",
-        |  "createdDateTime": "2024-11-18T23:20:19Z",
-        |  "updatedDateTime": "2024-11-18T23:20:19Z",
-        |  "assessments": [
-        |    {
-        |      "assessmentId": "abc123",
-        |      "primaryCategory": 1,
-        |      "condition": {
-        |        "type": "abc123",
-        |        "conditionId": "Y923",
-        |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-        |        "conditionTraderText": "Excluded product"
-        |      }
-        |    }
-        |  ]
-        |}
-        |""".stripMargin)
+          |{
+          |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+          |  "eori": "GB123456789012",
+          |  "actorId": "GB098765432112",
+          |  "traderRef": "BAN001001",
+          |  "comcode": "10410100",
+          |  "accreditationStatus": "Withdrawn",
+          |  "goodsDescription": "Organic bananas",
+          |  "countryOfOrigin": "EC",
+          |  "category": 1,
+          |  "supplementaryUnit": 500,
+          |  "measurementUnit": "Square metre (m2)",
+          |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+          |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+          |  "version": 1,
+          |  "active": true,
+          |  "toReview": false,
+          |  "reviewReason": "Commodity code change",
+          |  "declarable": "SPIMM",
+          |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+          |  "nirmsNumber": "RMS-GB-123456",
+          |  "niphlNumber": "12345",
+          |  "createdDateTime": "2024-11-18T23:20:19Z",
+          |  "updatedDateTime": "2024-11-18T23:20:19Z",
+          |  "assessments": [
+          |    {
+          |      "assessmentId": "abc123",
+          |      "primaryCategory": 1,
+          |      "condition": {
+          |        "type": "abc123",
+          |        "conditionId": "Y923",
+          |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+          |        "conditionTraderText": "Excluded product"
+          |      }
+          |    }
+          |  ]
+          |}
+          |""".stripMargin)
 
-  private lazy val updateRecordResponseData: JsValue =
-    Json
-      .parse("""
-               |{
-               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
-               |  "actorId": "GB098765432112",
-               |  "traderRef": "BAN001001",
-               |  "comcode": "10410100",
-               |  "adviceStatus": "Advice request withdrawn",
-               |  "goodsDescription": "Organic bananas",
-               |  "countryOfOrigin": "EC",
-               |  "category": 1,
-               |  "supplementaryUnit": 500,
-               |  "measurementUnit": "Square metre (m2)",
-               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
-               |  "version": 1,
-               |  "active": true,
-               |  "toReview": false,
-               |  "reviewReason": "Commodity code change",
-               |  "declarable": "SPIMM",
-               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "12345",
-               |  "createdDateTime": "2024-11-18T23:20:19Z",
-               |  "updatedDateTime": "2024-11-18T23:20:19Z",
-               |  "assessments": [
-               |    {
-               |      "assessmentId": "abc123",
-               |      "primaryCategory": 1,
-               |      "condition": {
-               |        "type": "abc123",
-               |        "conditionId": "Y923",
-               |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-               |        "conditionTraderText": "Excluded product"
-               |      }
-               |    }
-               |  ]
-               |}
-               |""".stripMargin)
-
-  private lazy val updateEisRecordResponseDataWithOptionalFields: JsValue =
-    Json
-      .parse("""
-               |{
-               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
-               |  "actorId": "GB098765432112",
-               |  "traderRef": "BAN001001",
-               |  "comcode": "10410100",
-               |  "accreditationStatus": "Not Requested",
-               |  "goodsDescription": "Organic bananas",
-               |  "countryOfOrigin": "EC",
-               |  "category": 1,
-               |  "assessments": [
-               |        {
-               |            "assessmentId": null,
-               |            "primaryCategory": null,
-               |            "condition": {
-               |                "type": null,
-               |                "conditionId": null,
-               |                "conditionDescription": null,
-               |                "conditionTraderText": null
-               |            }
-               |        }
-               |    ],
-               |  "supplementaryUnit": 500,
-               |  "measurementUnit": "Square metre (m2)",
-               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |  "comcodeEffectiveToDate": null,
-               |  "version": 1,
-               |  "active": true,
-               |  "toReview": true,
-               |  "reviewReason": "measure",
-               |  "declarable": "SPIMM",
-               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "12345",
-               |  "createdDateTime": "2024-11-18T23:20:19Z",
-               |  "updatedDateTime": "2024-11-18T23:20:19Z"
-               |}
-               |""".stripMargin)
-
-  private lazy val updateEisRecordResponseDataWithConditionOptionalFields: JsValue =
-    Json
-      .parse("""
-               |{
-               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
-               |  "actorId": "GB098765432112",
-               |  "traderRef": "BAN001001",
-               |  "comcode": "10410100",
-               |  "accreditationStatus": "Not Requested",
-               |  "goodsDescription": "Organic bananas",
-               |  "countryOfOrigin": "EC",
-               |  "category": 1,
-               |  "assessments": [
-               |        {
-               |            "assessmentId": null,
-               |            "primaryCategory": null,
-               |            "condition": null
-               |        }
-               |    ],
-               |  "supplementaryUnit": 500,
-               |  "measurementUnit": "Square metre (m2)",
-               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |  "comcodeEffectiveToDate": null,
-               |  "version": 1,
-               |  "active": true,
-               |  "toReview": true,
-               |  "reviewReason": "measure",
-               |  "declarable": "SPIMM",
-               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "12345",
-               |  "createdDateTime": "2024-11-18T23:20:19Z",
-               |  "updatedDateTime": "2024-11-18T23:20:19Z"
-               |}
-               |""".stripMargin)
-
-  private lazy val updateEisRecordResponseDataWithSomeOptionalFields: JsValue =
-    Json
-      .parse("""
-               |{
-               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
-               |  "actorId": "GB098765432112",
-               |  "traderRef": "BAN001001",
-               |  "comcode": "10410100",
-               |  "accreditationStatus": "Not Requested",
-               |  "goodsDescription": "Organic bananas",
-               |  "countryOfOrigin": "EC",
-               |  "category": 1,
-               |  "assessments": [
-               |        {
-               |            "assessmentId": null,
-               |            "primaryCategory": 1
-               |        }
-               |    ],
-               |  "supplementaryUnit": 500,
-               |  "measurementUnit": "Square metre (m2)",
-               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |  "comcodeEffectiveToDate": null,
-               |  "version": 1,
-               |  "active": true,
-               |  "toReview": false,
-               |  "reviewReason": "Commodity code change",
-               |  "declarable": "SPIMM",
-               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "12345",
-               |  "createdDateTime": "2024-11-18T23:20:19Z",
-               |  "updatedDateTime": "2024-11-18T23:20:19Z"
-               |}
-               |""".stripMargin)
-
-  private lazy val updateRecordResponseDataWithOptionalFields: JsValue =
-    Json
-      .parse("""
-               |{
-               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
-               |  "actorId": "GB098765432112",
-               |  "traderRef": "BAN001001",
-               |  "comcode": "10410100",
-               |  "adviceStatus": "Not Requested",
-               |  "goodsDescription": "Organic bananas",
-               |  "countryOfOrigin": "EC",
-               |  "category": 1,
-               |  "assessments": [],
-               |  "supplementaryUnit": 500,
-               |  "measurementUnit": "Square metre (m2)",
-               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |  "version": 1,
-               |  "active": true,
-               |  "toReview": true,
-               |  "reviewReason": "measure",
-               |  "declarable": "SPIMM",
-               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "12345",
-               |  "createdDateTime": "2024-11-18T23:20:19Z",
-               |  "updatedDateTime": "2024-11-18T23:20:19Z"
-               |}
-               |""".stripMargin)
-
-  private lazy val updateRecordResponseDataWithSomeOptionalFields: JsValue =
-    Json
-      .parse("""
-               |{
-               |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |  "eori": "GB123456789012",
-               |  "actorId": "GB098765432112",
-               |  "traderRef": "BAN001001",
-               |  "comcode": "10410100",
-               |  "adviceStatus": "Not Requested",
-               |  "goodsDescription": "Organic bananas",
-               |  "countryOfOrigin": "EC",
-               |  "category": 1,
-               |  "assessments": [
-               |        {
-               |            "primaryCategory": 1
-               |        }
-               |    ],
-               |  "supplementaryUnit": 500,
-               |  "measurementUnit": "Square metre (m2)",
-               |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |  "version": 1,
-               |  "active": true,
-               |  "toReview": false,
-               |  "reviewReason": "Commodity code change",
-               |  "declarable": "SPIMM",
-               |  "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |  "nirmsNumber": "RMS-GB-123456",
-               |  "niphlNumber": "12345",
-               |  "createdDateTime": "2024-11-18T23:20:19Z",
-               |  "updatedDateTime": "2024-11-18T23:20:19Z"
-               |}
-               |""".stripMargin)
-
-  private lazy val updateRecordRequestData: String =
+  val updateRecordRequestData: String =
     s"""
-        |{
-        |    "eori": "$eori",
-        |    "actorId": "GB098765432112",
-        |    "recordId": "$recordId",
-        |    "traderRef": "BAN001001",
-        |    "comcode": "10410100",
-        |    "goodsDescription": "Organic bananas",
-        |    "countryOfOrigin": "EC",
-        |    "category": 1,
-        |    "assessments": [
-        |        {
-        |            "assessmentId": "abc123",
-        |            "primaryCategory": 1,
-        |            "condition": {
-        |                "type": "abc123",
-        |                "conditionId": "Y923",
-        |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-        |                "conditionTraderText": "Excluded product"
-        |            }
-        |        }
-        |    ],
-        |    "supplementaryUnit": 500,
-        |    "measurementUnit": "Square metre (m2)",
-        |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-        |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-        |}
-        |""".stripMargin
+       |{
+       |    "eori": "$eori",
+       |    "actorId": "GB098765432112",
+       |    "recordId": "$recordId",
+       |    "traderRef": "BAN001001",
+       |    "comcode": "10410100",
+       |    "goodsDescription": "Organic bananas",
+       |    "countryOfOrigin": "EC",
+       |    "category": 1,
+       |    "assessments": [
+       |        {
+       |            "assessmentId": "abc123",
+       |            "primaryCategory": 1,
+       |            "condition": {
+       |                "type": "abc123",
+       |                "conditionId": "Y923",
+       |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+       |                "conditionTraderText": "Excluded product"
+       |            }
+       |        }
+       |    ],
+       |    "supplementaryUnit": 500,
+       |    "measurementUnit": "Square metre (m2)",
+       |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+       |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
+       |}
+       |""".stripMargin
 
-  private lazy val updateRecordRequestDataWithOptionalNullFields: String =
+  val updateRecordResponseData: JsValue =
+    Json
+      .parse("""
+          |{
+          |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+          |  "eori": "GB123456789012",
+          |  "actorId": "GB098765432112",
+          |  "traderRef": "BAN001001",
+          |  "comcode": "10410100",
+          |  "adviceStatus": "Advice request withdrawn",
+          |  "goodsDescription": "Organic bananas",
+          |  "countryOfOrigin": "EC",
+          |  "category": 1,
+          |  "supplementaryUnit": 500,
+          |  "measurementUnit": "Square metre (m2)",
+          |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+          |  "comcodeEffectiveToDate": "2024-11-18T23:20:19Z",
+          |  "version": 1,
+          |  "active": true,
+          |  "toReview": false,
+          |  "reviewReason": "Commodity code change",
+          |  "declarable": "SPIMM",
+          |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+          |  "nirmsNumber": "RMS-GB-123456",
+          |  "niphlNumber": "12345",
+          |  "createdDateTime": "2024-11-18T23:20:19Z",
+          |  "updatedDateTime": "2024-11-18T23:20:19Z",
+          |  "assessments": [
+          |    {
+          |      "assessmentId": "abc123",
+          |      "primaryCategory": 1,
+          |      "condition": {
+          |        "type": "abc123",
+          |        "conditionId": "Y923",
+          |        "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
+          |        "conditionTraderText": "Excluded product"
+          |      }
+          |    }
+          |  ]
+          |}
+          |""".stripMargin)
+
+  val updateEisRecordResponseDataWithOptionalFields: JsValue =
+    Json
+      .parse("""
+          |{
+          |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+          |  "eori": "GB123456789012",
+          |  "actorId": "GB098765432112",
+          |  "traderRef": "BAN001001",
+          |  "comcode": "10410100",
+          |  "accreditationStatus": "Not Requested",
+          |  "goodsDescription": "Organic bananas",
+          |  "countryOfOrigin": "EC",
+          |  "category": 1,
+          |  "assessments": [
+          |        {
+          |            "assessmentId": null,
+          |            "primaryCategory": null,
+          |            "condition": {
+          |                "type": null,
+          |                "conditionId": null,
+          |                "conditionDescription": null,
+          |                "conditionTraderText": null
+          |            }
+          |        }
+          |    ],
+          |  "supplementaryUnit": 500,
+          |  "measurementUnit": "Square metre (m2)",
+          |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+          |  "comcodeEffectiveToDate": null,
+          |  "version": 1,
+          |  "active": true,
+          |  "toReview": true,
+          |  "reviewReason": "measure",
+          |  "declarable": "SPIMM",
+          |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+          |  "nirmsNumber": "RMS-GB-123456",
+          |  "niphlNumber": "12345",
+          |  "createdDateTime": "2024-11-18T23:20:19Z",
+          |  "updatedDateTime": "2024-11-18T23:20:19Z"
+          |}
+          |""".stripMargin)
+
+  val updateRecordResponseDataWithOptionalFields: JsValue =
+    Json
+      .parse("""
+          |{
+          |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
+          |  "eori": "GB123456789012",
+          |  "actorId": "GB098765432112",
+          |  "traderRef": "BAN001001",
+          |  "comcode": "10410100",
+          |  "adviceStatus": "Not Requested",
+          |  "goodsDescription": "Organic bananas",
+          |  "countryOfOrigin": "EC",
+          |  "category": 1,
+          |  "assessments": [],
+          |  "supplementaryUnit": 500,
+          |  "measurementUnit": "Square metre (m2)",
+          |  "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
+          |  "version": 1,
+          |  "active": true,
+          |  "toReview": true,
+          |  "reviewReason": "measure",
+          |  "declarable": "SPIMM",
+          |  "ukimsNumber": "XIUKIM47699357400020231115081800",
+          |  "nirmsNumber": "RMS-GB-123456",
+          |  "niphlNumber": "12345",
+          |  "createdDateTime": "2024-11-18T23:20:19Z",
+          |  "updatedDateTime": "2024-11-18T23:20:19Z"
+          |}
+          |""".stripMargin)
+
+  val updateRecordRequestDataWithOptionalNullFields: String =
     """
       |{
       |    "eori": "GB123456789001",
@@ -1181,258 +264,6 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
       |}
       |""".stripMargin
 
-  private lazy val updateRecordRequestDataWithConditionOptionalNullFields: String =
-    """
-      |{
-      |    "eori": "GB123456789001",
-      |    "actorId": "GB098765432112",
-      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
-      |    "assessments": [
-      |        {
-      |            "assessmentId": null,
-      |            "primaryCategory": null,
-      |            "condition": null
-      |        }
-      |    ],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-      |    "comcodeEffectiveToDate": null
-      |}
-      |""".stripMargin
-
-  private lazy val updateRecordRequestDataWithSomeOptionalNullFields: String =
-    """
-      |{
-      |    "eori": "GB123456789001",
-      |    "actorId": "GB098765432112",
-      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
-      |    "assessments": [
-      |        {
-      |            "assessmentId": null,
-      |            "primaryCategory": 1
-      |        }
-      |    ],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-      |    "comcodeEffectiveToDate": null
-      |}
-      |""".stripMargin
-
-  private lazy val updateRecordRequiredRequestData: String =
-    """
-      |{
-      |    "eori": "GB123456789012",
-      |    "recordId": "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-      |    "actorId": "GB098765432112",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z"
-      |}
-      |""".stripMargin
-
-  private lazy val updateRecordRequiredEisResponseData: JsValue =
-    Json
-      .parse("""
-          |{
-          |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-          |    "eori": "GB123456789012",
-          |    "actorId": "GB098765432112",
-          |    "traderRef": "BAN001001",
-          |    "comcode": "10410100",
-          |    "accreditationStatus": "Not Requested",
-          |    "goodsDescription": "Organic bananas",
-          |    "countryOfOrigin": "EC",
-          |    "category": 1,
-          |    "assessments": null,
-          |    "supplementaryUnit": null,
-          |    "measurementUnit": null,
-          |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-          |    "comcodeEffectiveToDate": null,
-          |    "version": 1,
-          |    "active": true,
-          |    "toReview": true,
-          |    "reviewReason": "unclear",
-          |    "declarable": "SPIMM",
-          |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-          |    "nirmsNumber": "RMS-GB-123456",
-          |    "niphlNumber": "12345",
-          |    "createdDateTime": "2024-11-18T23:20:19Z",
-          |    "updatedDateTime": "2024-11-18T23:20:19Z"
-          |}
-          |""".stripMargin)
-
-  private lazy val updateRecordRequiredResponseData: JsValue =
-    Json
-      .parse("""
-               |{
-               |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-               |    "eori": "GB123456789012",
-               |    "actorId": "GB098765432112",
-               |    "traderRef": "BAN001001",
-               |    "comcode": "10410100",
-               |    "adviceStatus": "Not Requested",
-               |    "goodsDescription": "Organic bananas",
-               |    "countryOfOrigin": "EC",
-               |    "category": 1,
-               |    "assessments": null,
-               |    "supplementaryUnit": null,
-               |    "measurementUnit": null,
-               |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-               |    "comcodeEffectiveToDate": null,
-               |    "version": 1,
-               |    "active": true,
-               |    "toReview": true,
-               |    "reviewReason": "unclear",
-               |    "declarable": "SPIMM",
-               |    "ukimsNumber": "XIUKIM47699357400020231115081800",
-               |    "nirmsNumber": "RMS-GB-123456",
-               |    "niphlNumber": "12345",
-               |    "createdDateTime": "2024-11-18T23:20:19Z",
-               |    "updatedDateTime": "2024-11-18T23:20:19Z"
-               |}
-               |""".stripMargin)
-
-  private lazy val invalidRequestData: String =
-    """
-      |{
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 1,
-      |    "assessments": [
-      |        {
-      |            "assessmentId": "abc123",
-      |            "primaryCategory": 1,
-      |            "condition": {
-      |                "type": "abc123",
-      |                "conditionId": "Y923",
-      |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-      |                "conditionTraderText": "Excluded product"
-      |            }
-      |        }
-      |    ],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-      |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-      |}
-      |""".stripMargin
-
-  private lazy val invalidOptionalRequestData: String =
-    """
-      |{
-      |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-      |  "eori": "GB123456789012",
-      |    "actorId": "GB098765432112",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "10410100",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 2,
-      |    "assessments": [
-      |        {
-      |            "assessmentId": "",
-      |            "primaryCategory": 1,
-      |            "condition": {
-      |                "type": "",
-      |                "conditionId": "",
-      |                "conditionDescription": "",
-      |                "conditionTraderText": ""
-      |            }
-      |        }
-      |    ],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "aReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongStringaReallyLongString",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-      |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-      |}
-      |""".stripMargin
-
-  private lazy val invalidUpdateRecordRequestDataForAssessmentArray: JsValue = Json
-    .parse("""
-             |{
-             |    "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-             |    "actorId": "GB098765432112",
-             |    "traderRef": "BAN001001",
-             |    "comcode": "10410100",
-             |    "goodsDescription": "Organic bananas",
-             |    "countryOfOrigin": "EC",
-             |    "category": 1,
-             |    "assessments": [
-             |        {
-             |            "assessmentId": "abc123",
-             |            "primaryCategory": 1,
-             |            "condition": {
-             |                "type": "abc123",
-             |                "conditionId": "Y923",
-             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-             |                "conditionTraderText": "Excluded product"
-             |            }
-             |        },
-             |        {
-             |            "assessmentId": "",
-             |            "primaryCategory": "test",
-             |            "condition": {
-             |                "type": "",
-             |                "conditionId": "",
-             |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-             |                "conditionTraderText": "Excluded product"
-             |            }
-             |        }
-             |    ],
-             |    "supplementaryUnit": 500,
-             |    "measurementUnit": "Square metre (m2)",
-             |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-             |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-             |}
-             |""".stripMargin)
-
-  private lazy val invalidActorIdAndComcodeRequestData: String =
-    """
-      |{
-      |  "recordId": "b2fa315b-2d31-4629-90fc-a7b1a5119873",
-      |  "eori": "GB123456789012",
-      |    "actorId": "GB12",
-      |    "traderRef": "BAN001001",
-      |    "comcode": "104101000",
-      |    "goodsDescription": "Organic bananas",
-      |    "countryOfOrigin": "EC",
-      |    "category": 2,
-      |    "assessments": [
-      |        {
-      |            "assessmentId": "abc123",
-      |            "primaryCategory": 1,
-      |            "condition": {
-      |                "type": "abc123",
-      |                "conditionId": "Y923",
-      |                "conditionDescription": "Products not considered as waste according to Regulation (EC) No 1013/2006 as retained in UK law",
-      |                "conditionTraderText": "Excluded product"
-      |            }
-      |        }
-      |    ],
-      |    "supplementaryUnit": 500,
-      |    "measurementUnit": "Square metre (m2)",
-      |    "comcodeEffectiveFromDate": "2024-11-18T23:20:19Z",
-      |    "comcodeEffectiveToDate": "2024-11-18T23:20:19Z"
-      |}
-      |""".stripMargin
-
   private def eisErrorResponse(errorCode: String, errorMessage: String): String =
     Json
       .parse(
@@ -1452,4 +283,301 @@ class UpdateRecordIntegrationSpec extends HawkIntegrationSpec with AuthTestSuppo
            |""".stripMargin
       )
       .toString()
+
+  override def hawkConnectorPath: String = "/tgp/puttgprecord/v1"
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+
+    reset()
+    withAuthorizedTrader()
+
+    when(uuidService.uuid).thenReturn("d677693e-9981-4ee3-8574-654981ebe606")
+    when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
+  }
+
+  "attempting to update a record, when" - {
+    "the request is" - {
+      "valid, specifically" - {
+        "with all request fields" in {
+          stubPutRequestForEis(OK, Some(updateRecordEisResponseData.toString()))
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              List(
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
+            .put(Json.parse(updateRecordRequestData))
+            .futureValue
+
+          response.status shouldBe OK
+          response.json   shouldBe Json.toJson(updateRecordResponseData)
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+        "with optional null request fields" in {
+          stubPutRequestForEis(
+            OK,
+            Some(updateEisRecordResponseDataWithOptionalFields.toString())
+          )
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              Seq(
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
+            .put(Json.parse(updateRecordRequestDataWithOptionalNullFields))
+            .futureValue
+
+          response.status shouldBe OK
+          response.json   shouldBe Json.toJson(updateRecordResponseDataWithOptionalFields)
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+
+        "valid but the integration call fails with response:" - {
+          "Forbidden" in {
+            stubPutRequestForEis(FORBIDDEN)
+
+            val response = wsClient
+              .url(url)
+              .withHttpHeaders(
+                Seq(
+                  "Content-Type" -> "application/json",
+                  "Accept"       -> "application/vnd.hmrc.1.0+json",
+                  "X-Client-ID"  -> "tss"
+                ): _*
+              )
+              .put(Json.parse(updateRecordRequestData))
+              .futureValue
+
+            response.status shouldBe FORBIDDEN
+            response.json   shouldBe Json.obj(
+              "correlationId" -> Json.toJson(correlationId),
+              "code"          -> Json.toJson("FORBIDDEN"),
+              "message"       -> Json.toJson("Forbidden")
+            )
+
+            verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          }
+          "Not Found" in {
+            stubPutRequestForEis(NOT_FOUND)
+
+            val response = wsClient
+              .url(url)
+              .withHttpHeaders(
+                Seq(
+                  "Content-Type" -> "application/json",
+                  "Accept"       -> "application/vnd.hmrc.1.0+json",
+                  "X-Client-ID"  -> "tss"
+                ): _*
+              )
+              .put(Json.parse(updateRecordRequestData))
+              .futureValue
+
+            response.status shouldBe NOT_FOUND
+            response.json   shouldBe Json.obj(
+              "correlationId" -> Json.toJson(correlationId),
+              "code"          -> Json.toJson("NOT_FOUND"),
+              "message"       -> Json.toJson("Not Found")
+            )
+
+            verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          }
+          "Bad Gateway" in {
+            stubPutRequestForEis(BAD_GATEWAY)
+
+            val response = wsClient
+              .url(url)
+              .withHttpHeaders(
+                Seq(
+                  "Content-Type" -> "application/json",
+                  "Accept"       -> "application/vnd.hmrc.1.0+json",
+                  "X-Client-ID"  -> "tss"
+                ): _*
+              )
+              .put(Json.parse(updateRecordRequestDataWithOptionalNullFields))
+              .futureValue
+
+            response.status shouldBe BAD_GATEWAY
+            response.json   shouldBe Json.obj(
+              "correlationId" -> Json.toJson(correlationId),
+              "code"          -> Json.toJson("BAD_GATEWAY"),
+              "message"       -> Json.toJson("Bad Gateway")
+            )
+
+            verifyThatDownstreamApiWasRetried(hawkConnectorPath)
+          }
+          "Service Unavailable" in {
+            stubPutRequestForEis(SERVICE_UNAVAILABLE)
+
+            val response = wsClient
+              .url(url)
+              .withHttpHeaders(
+                Seq(
+                  "Content-Type" -> "application/json",
+                  "Accept"       -> "application/vnd.hmrc.1.0+json",
+                  "X-Client-ID"  -> "tss"
+                ): _*
+              )
+              .put(Json.parse(updateRecordRequestData))
+              .futureValue
+
+            response.status shouldBe SERVICE_UNAVAILABLE
+            response.json   shouldBe Json.obj(
+              "correlationId" -> Json.toJson(correlationId),
+              "code"          -> Json.toJson("SERVICE_UNAVAILABLE"),
+              "message"       -> Json.toJson("Service Unavailable")
+            )
+
+            verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+          }
+        }
+
+        "Internal Server Error with 201 errorCode" in {
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("201", "Internal Server Error"))
+          )
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              Seq(
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
+            .put(Json.parse(updateRecordRequestData))
+            .futureValue
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+
+          (response.json \ "correlationId").as[String] shouldBe correlationId
+          (response.json \ "code").as[String]          shouldBe "INVALID_OR_EMPTY_PAYLOAD"
+          (response.json \ "message").as[String]       shouldBe "Invalid Response Payload or Empty payload"
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+        "Internal Server Error with 401 errorCode" in {
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("401", "Unauthorized"))
+          )
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              Seq(
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
+            .put(Json.parse(updateRecordRequestData))
+            .futureValue
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> Json.toJson(correlationId),
+            "code"          -> Json.toJson("UNAUTHORIZED"),
+            "message"       -> Json.toJson("Unauthorized")
+          )
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+        "Internal Server Error with 500 errorCode" in {
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("500", "Internal Server Error"))
+          )
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              Seq(
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
+            .put(Json.parse(updateRecordRequestData))
+            .futureValue
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> Json.toJson(correlationId),
+            "code"          -> Json.toJson("INTERNAL_SERVER_ERROR"),
+            "message"       -> Json.toJson("Internal Server Error")
+          )
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+        "Internal Server Error with 404 errorCode" in {
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("404", "Not Found"))
+          )
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              Seq(
+                "Content-Type" -> "application/json",
+                "Accept"       -> "application/vnd.hmrc.1.0+json",
+                "X-Client-ID"  -> "tss"
+              ): _*
+            )
+            .put(Json.parse(updateRecordRequestData))
+            .futureValue
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> Json.toJson(correlationId),
+            "code"          -> Json.toJson("NOT_FOUND"),
+            "message"       -> Json.toJson("Not Found")
+          )
+
+          verifyThatDownstreamApiWasCalled(hawkConnectorPath)
+        }
+        "Internal Server Error with 502 errorCode" in {
+          stubPutRequestForEis(
+            INTERNAL_SERVER_ERROR,
+            Some(eisErrorResponse("502", "Bad Gateway"))
+          )
+
+          val response = wsClient
+            .url(url)
+            .withHttpHeaders(
+              "Content-Type" -> "application/json",
+              "Accept"       -> "application/vnd.hmrc.1.0+json",
+              "X-Client-ID"  -> "tss"
+            )
+            .put(updateRecordRequestData)
+            .futureValue
+
+          response.status shouldBe INTERNAL_SERVER_ERROR
+          response.json   shouldBe Json.obj(
+            "correlationId" -> correlationId,
+            "code"          -> "BAD_GATEWAY",
+            "message"       -> "Bad Gateway"
+          )
+
+          verifyThatDownstreamApiWasRetried(hawkConnectorPath)
+        }
+      }
+
+    }
+
+  }
+
 }
