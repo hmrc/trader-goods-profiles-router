@@ -158,7 +158,7 @@ object ValidationRules {
   private val niphlPattern: Regex     = raw"([0-9]{4,6}|[a-zA-Z]{1,2}[0-9]{5})".r
 
   def isValidCountryCode(rawCountryCode: String): Boolean =
-    Locale.getISOCountries.toSeq.contains(rawCountryCode.toUpperCase)
+    rawCountryCode.matches("^[A-Z]{2}$")
 
   private val emailValidator: EmailValidator = EmailValidator.getInstance(true)
 

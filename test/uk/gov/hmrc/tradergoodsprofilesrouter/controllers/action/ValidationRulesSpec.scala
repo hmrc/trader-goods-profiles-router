@@ -304,8 +304,16 @@ class ValidationRulesSpec extends PlaySpec with ScalaFutures with EitherValues w
     "return true if countryCode is valid" in {
       isValidCountryCode("GB") mustBe true
     }
-    "return false if countryCode is not valid" in {
+    "return true if countryCode is valid (Serbia)" in {
+      isValidCountryCode("XS") mustBe true
+    }
+
+    "return false if countryCode is not valid, too long" in {
       isValidCountryCode("GB098765112") mustBe false
+    }
+
+    "return false if countryCode is not valid, lowercase" in {
+      isValidCountryCode("gb") mustBe false
     }
   }
 
