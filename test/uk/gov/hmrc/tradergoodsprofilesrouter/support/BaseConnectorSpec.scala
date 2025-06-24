@@ -40,11 +40,6 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 
-  /*
-   * TODO: After the Client ID is no longer needed, this should be changed and use the request without the X-Client-ID header
-   * This can be changes to implicit val hc: HeaderCarrier    = HeaderCarrier()
-   * as client Id has been removed form EIS header (TGP-1889,...)
-   */
   implicit val hc: HeaderCarrier = HeaderCarrier(otherHeaders = Seq((ClientId, "TSS")))
 
   val appConfig: AppConfig             = mock[AppConfig]
@@ -96,7 +91,6 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
       "Accept"      -> MimeTypes.JSON,
       "X-Client-ID" -> "TSS"
     )
-  // TODO: After Release 2 this should be removed or become the default header builder
   def expectedHeaderForGetMethodWithoutClientId(
     correlationId: String,
     accessToken: String,

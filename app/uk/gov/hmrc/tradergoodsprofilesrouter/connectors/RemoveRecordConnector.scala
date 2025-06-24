@@ -65,10 +65,6 @@ class RemoveRecordConnector @Inject() (
     }
   }
 
-  /*
-  ToDo: remove isClientIdHeaderDisabled flag after release 2
-   The header passed to EIS should have no Accept and ClientId header
-   */
   override def buildHeaders(correlationId: String, accessToken: String, forwardedHost: String)(implicit
     hc: HeaderCarrier
   ): Seq[(String, String)] =
