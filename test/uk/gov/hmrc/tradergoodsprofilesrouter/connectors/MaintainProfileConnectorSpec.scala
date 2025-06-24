@@ -53,7 +53,6 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
   }
 
   "maintain Profile" should {
-    // TODO: Remove this and Create a single test without the client-id after release 2
     "return a 200 ok if EIS successfully maintain a profile and correct URL is used" in {
 
       when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))
@@ -73,7 +72,6 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       result.value mustBe maintainProfileResponse
     }
 
-    // TODO: Remove this and Create a single test without the client-id after release 2
     "return a 200 ok if EIS successfully without x-client-id when sendClientid is false" in {
       when(appConfig.sendClientId).thenReturn(false)
       when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)

@@ -32,7 +32,7 @@ import uk.gov.hmrc.tradergoodsprofilesrouter.utils.ApplicationConstants._
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.HeaderNames
 import uk.gov.hmrc.tradergoodsprofilesrouter.utils.WithdrawAdviceConstant.{InvalidWithdrawReasonMessage, InvalidWithdrawReasonNullMessage}
 
-import java.util.{Locale, UUID}
+import java.util.UUID
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 import scala.util.matching.Regex

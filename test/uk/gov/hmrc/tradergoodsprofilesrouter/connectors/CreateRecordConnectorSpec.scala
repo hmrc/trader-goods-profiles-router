@@ -93,7 +93,6 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
           .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
       }
 
-      // TODO: After Release 2 remove x-client-id from headers
       "sendClientId feature flag is true" in {
         when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))

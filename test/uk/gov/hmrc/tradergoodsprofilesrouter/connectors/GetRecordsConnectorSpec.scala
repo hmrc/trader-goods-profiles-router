@@ -92,7 +92,6 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
         verifyExecuteForHttpReader(correlationId)
       }
 
-      // TODO: After Release 2 remove x-client-id from headers
       "sendClientId feature flag is true" in {
         when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
         when(requestBuilder.execute[Any](any, any))

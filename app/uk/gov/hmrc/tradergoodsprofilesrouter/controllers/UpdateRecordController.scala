@@ -72,7 +72,6 @@ class UpdateRecordController @Inject() (
       result.merge
   }
 
-  // TODO: After Release 2 this should be removed
   private def validateClientIdIfSupported(implicit request: Request[_]) =
     if (appConfig.sendClientId) validateClientId
     else Right("")

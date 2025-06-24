@@ -115,7 +115,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       verifyNoInteractions(createRecordService)
     }
 
-    // TODO: After Release 2 this should be removed
     "return CREATED validating the the X-Client-Id when sendClientId flag is false" in {
       when(appConfig.sendClientId).thenReturn(false)
       when(createRecordService.createRecord(any, any)(any))

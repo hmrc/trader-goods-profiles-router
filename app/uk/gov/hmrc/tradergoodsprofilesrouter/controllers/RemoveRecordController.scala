@@ -56,12 +56,10 @@ class RemoveRecordController @Inject() (
       result.merge
   }
 
-  // TODO: After Release 2 this should be removed
   private def validateClientIdIfSupported(implicit request: Request[_]): Either[Result, String] =
     if (appConfig.sendClientId) validateClientId
     else Right("")
 
-  // TODO: After Release 2 this should be removed
   private def validateAcceptHeaderIfSupported(implicit request: Request[_]): Either[Result, String] =
     if (appConfig.sendAcceptHeader) validateAcceptHeader
     else Right("")
