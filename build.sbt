@@ -18,6 +18,7 @@ lazy val microservice = Project("trader-goods-profiles-router", file("."))
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true
   )
+  .settings(resolvers += Resolver.jcenterRepo)
   .settings(CodeCoverageSettings.settings *)
 
 
