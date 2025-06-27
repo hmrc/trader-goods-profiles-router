@@ -50,7 +50,7 @@ class MaintainProfileConnector @Inject() (
       httpClientV2
         .put(url"$url")
         .setHeader(
-          buildHeadersWithDrop1Toggle(
+          buildHeadersWithDrop1Toggle( // TODO: change to only send required headers after release 2
             correlationId,
             appConfig.hawkConfig.maintainProfileBearerToken,
             appConfig.hawkConfig.forwardedHost
