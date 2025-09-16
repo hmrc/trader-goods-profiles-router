@@ -43,5 +43,4 @@ class AppConfig @Inject() (config: Configuration) {
       .getOptional[Boolean]("features.useEisPatchMethod")
       .getOrElse(false)
 
-  lazy val optionalCategory: Boolean = config.getOptional[Boolean]("features.categoryOptional").getOrElse(false)
 }
