@@ -69,7 +69,6 @@ class MaintainProfileService @Inject() (
       }
   }
 
-  // TODO: This will need to be removed once EIS / B&T make the same validation on their side
   private def padNiphlNumber(niphlNumber: Option[String]): Option[String] =
     if (appConfig.isNiphlPaddingEnabled) {
       niphlNumber.map { niphl =>

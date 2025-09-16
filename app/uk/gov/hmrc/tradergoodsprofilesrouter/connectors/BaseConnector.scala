@@ -65,7 +65,6 @@ trait BaseConnector extends Retries {
     accessToken: String,
     forwardedHost: String
   )(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    // TODO: remove with withToggleClientID after sendClientId feature flag is safely disabled
     commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
       HeaderNames.Accept      -> MimeTypes.JSON,
       HeaderNames.ContentType -> MimeTypes.JSON
@@ -76,7 +75,6 @@ trait BaseConnector extends Retries {
     accessToken: String,
     forwardedHost: String
   )(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    // TODO: remove with withToggleClientID after sendClientId feature flag is safely disabled
     commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
       HeaderNames.Accept -> MimeTypes.JSON
     ).withToggleClientID

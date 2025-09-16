@@ -49,7 +49,6 @@ class UpdateRecordConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
 
-    //Todo: remove this flag when EIS has implemented the PATCH method - TGP-2417.
     if (appConfig.useEisPatchMethod) {
       logger.info(
         s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PATCH method for update record"
