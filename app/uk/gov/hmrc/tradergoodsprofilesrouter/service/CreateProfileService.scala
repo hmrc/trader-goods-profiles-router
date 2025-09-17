@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateProfileConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.filters.NiphlNumberFilter
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateProfileRequest
@@ -33,8 +32,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CreateProfileService @Inject() (
   connector: CreateProfileConnector,
-  uuidService: UuidService,
-  appConfig: AppConfig
+  uuidService: UuidService
 )(implicit
   ec: ExecutionContext
 ) extends NiphlNumberFilter
@@ -49,7 +47,7 @@ class CreateProfileService @Inject() (
         request.actorId,
         Some(request.ukimsNumber),
         request.nirmsNumber,
-        padNiphlNumber(request.niphlNumber)
+        request.niphlNumber
       )
     val correlationId = uuidService.uuid
 
@@ -84,13 +82,4 @@ class CreateProfileService @Inject() (
       request.nirmsNumber,
       removeLeadingDashes(request.niphlNumber)
     )
-
-  private def padNiphlNumber(niphlNumber: Option[String]): Option[String] =
-    if (appConfig.isNiphlPaddingEnabled) {
-      niphlNumber.map { niphl =>
-        if (niphl.length >= 8) niphl else "-" * (8 - niphl.length) + niphl
-      }
-    } else {
-      niphlNumber
-    }
 }

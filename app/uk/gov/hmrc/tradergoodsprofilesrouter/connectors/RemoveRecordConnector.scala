@@ -72,8 +72,8 @@ class RemoveRecordConnector @Inject() (
       correlationId,
       accessToken,
       forwardedHost
-    ).withToggleAcceptHeader ++ Seq(
+    ) ++ Seq(
       HeaderNames.ContentType -> MimeTypes.JSON
-    ).withToggleClientID
+    )
 
 }

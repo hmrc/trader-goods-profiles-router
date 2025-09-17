@@ -48,7 +48,6 @@ class GetRecordsController @Inject() (
     recordId: String
   ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
-      _          <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _          <- EitherT.fromEither[Future](validateAcceptHeader)
       _          <- EitherT
                       .fromEither[Future](validateRecordId(recordId))
@@ -67,7 +66,6 @@ class GetRecordsController @Inject() (
     size: Option[Int] = None
   ): Action[AnyContent] = authAction(eori).async { implicit request: Request[AnyContent] =>
     val result = for {
-      _         <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _         <- EitherT.fromEither[Future](validateAcceptHeader)
       validDate <- validateDate(lastUpdatedDate)
       validSize <- validateMaxSize(size)
@@ -111,7 +109,4 @@ class GetRecordsController @Inject() (
       )
     )
 
-  private def validateClientIdIfSupported(implicit request: Request[_]) =
-    if (appConfig.sendClientId) validateClientId
-    else Right("")
 }

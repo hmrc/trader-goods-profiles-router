@@ -47,13 +47,11 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       createRecordService,
-      appConfig,
       uuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId",
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.Accept -> "application/vnd.hmrc.1.0+json"
   )
 
   override def beforeEach(): Unit = {
@@ -89,20 +87,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       verifyNoInteractions(createRecordService)
     }
 
-    "return 400 Bad request when mandatory request header X-Client-ID is missing" in {
-      when(appConfig.sendClientId).thenReturn(true)
-
-      val request = FakeRequest()
-        .withBody(createRecordRequestData)
-        .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
-
-      val result  = sut.create("eori")(request)
-
-      status(result) mustBe BAD_REQUEST
-
-      verifyNoInteractions(createRecordService)
-    }
-
     "return 400 Bad request when mandatory request header Accept is missing" in {
       val request = FakeRequest()
         .withBody(createRecordRequestData)
@@ -115,8 +99,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       verifyNoInteractions(createRecordService)
     }
 
-    "return CREATED validating the the X-Client-Id when sendClientId flag is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
+    "return CREATED validating the X-Client-Id" in {
       when(createRecordService.createRecord(any, any)(any))
         .thenReturn(Future.successful(Right(createRecordResponseData)))
 
@@ -126,17 +109,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       status(result) mustBe CREATED
     }
 
-    "return CREATED without validating the X-Client-Id when sendClientId flag is true" in {
-      when(appConfig.sendClientId).thenReturn(true)
-
-      when(createRecordService.createRecord(any, any)(any))
-        .thenReturn(Future.successful(Right(createRecordResponseData)))
-
-      val request = FakeRequest().withBody(createRecordRequestData).withHeaders(validHeaders: _*)
-      val result  = sut.create("eori")(request)
-
-      status(result) mustBe CREATED
-    }
   }
 
   lazy val createRecordResponseData: CreateOrUpdateRecordResponse = Json

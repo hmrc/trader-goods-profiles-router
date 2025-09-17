@@ -24,7 +24,6 @@ import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateProfileConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.CreateProfileEisRequest
@@ -42,19 +41,18 @@ class CreateProfileServiceSpec extends PlaySpec with EitherValues with BeforeAnd
 
   private val connector     = mock[CreateProfileConnector]
   private val uuidService   = mock[UuidService]
-  private val appConfig     = mock[AppConfig]
   private val correlationId = UUID.randomUUID().toString
   private val eori          = "eori"
   private val actorId       = "actorId"
   private val ukimNumber    = "ukims-123"
   private val muirmNumber   = "nuirmNumber-123"
 
-  private val sut = new CreateProfileService(connector, uuidService, appConfig)
+  private val sut = new CreateProfileService(connector, uuidService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    reset(connector, uuidService, appConfig)
+    reset(connector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
   }
   "createProfile" should {
@@ -68,30 +66,6 @@ class CreateProfileServiceSpec extends PlaySpec with EitherValues with BeforeAnd
       result.value mustBe createProfileResponse("niphlNumber-123")
 
       verify(connector).createProfile(createProfileEisRequest("niphlNumber-123"), correlationId)
-    }
-
-    "return a response with padded NiphlNumber when isNiphlPaddingEnabled is true" in {
-      when(appConfig.isNiphlPaddingEnabled).thenReturn(true)
-      when(connector.createProfile(any, any)(any))
-        .thenReturn(Future.successful(Right(200)))
-
-      val result = await(sut.createProfile("eori", profileRequest("123")))
-
-      result.value mustBe createProfileResponse("123")
-
-      verify(connector).createProfile(createProfileEisRequest("-----123"), correlationId)
-    }
-
-    "not pad NiphlNumber when this has 8 digit when isNiphlPaddingEnabled is true" in {
-      when(appConfig.isNiphlPaddingEnabled).thenReturn(true)
-      when(connector.createProfile(any, any)(any))
-        .thenReturn(Future.successful(Right(200)))
-
-      val result = await(sut.createProfile("eori", profileRequest("12345678")))
-
-      result.value mustBe createProfileResponse("12345678")
-
-      verify(connector).createProfile(createProfileEisRequest("12345678"), correlationId)
     }
 
     "return an error" when {

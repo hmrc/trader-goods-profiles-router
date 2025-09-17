@@ -48,19 +48,16 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       mockMaintainProfileService,
-      appConfig,
       mockUuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
     HeaderNames.Accept      -> "application/vnd.hmrc.1.0+json",
-    HeaderNames.ContentType -> MimeTypes.JSON,
-    HeaderNames.ClientId    -> "clientId"
+    HeaderNames.ContentType -> MimeTypes.JSON
   )
 
   "PUT /profile/maintain " should {
     "return a 200 ok when the call to EIS is successful to maintain a record" in {
-      when(appConfig.sendClientId).thenReturn(true)
 
       when(mockMaintainProfileService.maintainProfile(any, any)(any))
         .thenReturn(Future.successful(Right(maintainProfileResponse)))
@@ -69,25 +66,6 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
 
       status(result) mustBe OK
       contentAsJson(result) mustBe Json.toJson(maintainProfileResponse)
-    }
-
-    "return a 200 Ok without validating the x-client-id when the sendClientId is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
-      when(mockMaintainProfileService.maintainProfile(any, any)(any))
-        .thenReturn(Future.successful(Right(maintainProfileResponse)))
-      val headersWithoutClientId = validHeaders.filterNot { case (name, _) => name == "X-Client-ID" }
-
-      val result =
-        sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders(headersWithoutClientId: _*))
-
-      status(result) mustBe OK
-      contentAsJson(result) mustBe Json.toJson(maintainProfileResponse)
-    }
-
-    "return a 400 when the client id header is missing" in {
-      val result = sut.maintain("123456")(FakeRequest().withBody(maintainProfileRequest).withHeaders())
-
-      status(result) mustBe BAD_REQUEST
     }
 
     "return a 400 when the Accept header is missing" in {

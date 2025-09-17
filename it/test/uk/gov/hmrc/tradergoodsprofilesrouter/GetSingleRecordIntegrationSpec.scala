@@ -48,11 +48,7 @@ class GetSingleRecordIntegrationSpec
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(Instant.parse(dateTime))
   }
-
-  override def extraApplicationConfig: Map[String, Any] =
-    super.extraApplicationConfig ++ Map(
-      "features.sendClientId" -> true
-    )
+  
 
   "attempting to get records, when" - {
     "the request is" - {
@@ -440,7 +436,6 @@ class GetSingleRecordIntegrationSpec
       wsClient
         .url(url)
         .withHttpHeaders(
-          ("X-Client-ID", "tss"),
           ("Accept", "application/vnd.hmrc.1.0+json")
         )
         .get()

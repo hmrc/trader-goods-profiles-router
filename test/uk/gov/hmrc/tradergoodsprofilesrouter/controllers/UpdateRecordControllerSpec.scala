@@ -54,13 +54,11 @@ class UpdateRecordControllerSpec
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       updateRecordService,
-      appConfig,
       mockUuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId",
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.Accept -> "application/vnd.hmrc.1.0+json"
   )
 
   override def beforeEach(): Unit = {
@@ -68,7 +66,6 @@ class UpdateRecordControllerSpec
     reset(mockUuidService, updateRecordService)
 
     when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-    when(appConfig.sendClientId).thenReturn(true)
   }
   "PATCH /records" should {
 
@@ -83,22 +80,7 @@ class UpdateRecordControllerSpec
       status(result) mustBe OK
     }
 
-    "return OK validating the X-Client-Id when sendClientId flag is true" in {
-
-      when(updateRecordService.patchRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
-
-      val result =
-        sut.patch(eoriNumber, recordId)(
-          FakeRequest()
-            .withBody(updateRecordRequestData)
-            .withHeaders(validHeaders: _*)
-        )
-      status(result) mustBe OK
-    }
-
-    "return OK validating the the X-Client-Id when sendClientId flag is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
+    "return OK validating the the X-Client-Id" in {
       when(updateRecordService.patchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =
@@ -175,24 +157,6 @@ class UpdateRecordControllerSpec
       withClue("should return json response") {
         contentAsJson(result) mustBe Json.toJson(errorResponse)
       }
-    }
-
-    "return 400 Bad request when X-Client-ID is not sent when sendClientId featureFlag is enabled" in {
-      val errorResponse =
-        ErrorResponse(
-          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          ApplicationConstants.BadRequestCode,
-          ApplicationConstants.BadRequestMessage,
-          Some(Seq(Error("INVALID_HEADER", "Missing mandatory header X-Client-ID", 6000)))
-        )
-
-      val result = sut.patch(eoriNumber, recordId)(
-        FakeRequest()
-          .withBody(updateRecordRequestData)
-          .withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(errorResponse)
     }
 
     "return 400 Bad request when mandatory request header Accept is missing" in {

@@ -39,12 +39,12 @@ import play.api.libs.json.*
 class PatchRecordRequestSpec extends AnyWordSpec with Matchers {
 
   "PatchRecordRequest JSON Reads" should {
+    val validJson = Json.parse("""{
+        |  "actorId": "GB987654321098",
+        |  "traderRef": "TR123"
+        |}""".stripMargin)
 
     "successfully deserialize a valid JSON" in {
-      val validJson = Json.parse("""{
-          |  "actorId": "GB987654321098",
-          |  "traderRef": "TR123"
-          |}""".stripMargin)
 
       val result = validJson.validate[PatchRecordRequest]
 
@@ -60,6 +60,24 @@ class PatchRecordRequestSpec extends AnyWordSpec with Matchers {
       val result = invalidJson.validate[PatchRecordRequest]
 
       result shouldBe a[JsError]
+    }
+
+    "serialize correctly" in {
+      val validRequest = PatchRecordRequest(
+        actorId = "GB987654321098",
+        traderRef = Some("TR123"),
+        comcode = None,
+        goodsDescription = None,
+        countryOfOrigin = None,
+        category = None,
+        assessments = None,
+        supplementaryUnit = None,
+        measurementUnit = None,
+        comcodeEffectiveFromDate = None,
+        comcodeEffectiveToDate = None
+      )
+      val result       = Json.toJson(validRequest)
+      result shouldBe validJson
     }
   }
 }

@@ -59,7 +59,6 @@ class MaintainProfileServiceSpec
 
     reset(connector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
-    when(appConfig.isNiphlPaddingEnabled).thenReturn(true)
   }
 
   "maintain profile" should {
