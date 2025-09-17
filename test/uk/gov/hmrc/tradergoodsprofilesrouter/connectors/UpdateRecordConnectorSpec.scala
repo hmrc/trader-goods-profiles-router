@@ -50,7 +50,6 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(httpClientV2.patch(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
-    when(appConfig.useEisPatchMethod).thenReturn(true)
     when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
       .thenReturn(Future.successful(Right(expectedResponse)))
   }
@@ -92,30 +91,6 @@ class UpdateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       verify(requestBuilder).withBody(updateRecordPayload)
     }
 
-    "call the PUT method when isPatchMethodEnabled is false" in {
-      when(appConfig.useEisPatchMethod).thenReturn(false)
-      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-
-      await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
-
-      verify(httpClientV2).put(url"http://localhost:1234/tgp/updaterecord/v1")
-      verify(httpClientV2, never()).patch(any)(any)
-      verify(requestBuilder).setHeader(
-        expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
-      )
-    }
-
-    "add the clientID when calling the PUT method" in {
-      when(appConfig.useEisPatchMethod).thenReturn(false)
-      when(appConfig.sendClientId).thenReturn(true)
-      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-
-      await(eisConnector.patch(updateRecordPayload.as[UpdateRecordPayload], correlationId))
-
-      verify(requestBuilder).setHeader(
-        expectedHeader(correlationId, "dummyRecordUpdateBearerToken"): _*
-      )
-    }
   }
 
   "put" should {

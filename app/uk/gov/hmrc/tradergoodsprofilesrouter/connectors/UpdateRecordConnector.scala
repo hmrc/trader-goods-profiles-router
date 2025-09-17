@@ -49,50 +49,17 @@ class UpdateRecordConnector @Inject() (
   )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
     val url = appConfig.hawkConfig.updateRecordUrl
 
-    //Todo: remove this flag when EIS has implemented the PATCH method - TGP-2417.
-    if (appConfig.useEisPatchMethod) {
-      logger.info(
-        s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PATCH method for update record"
-      )
-
-      retryFor[CreateOrUpdateRecordEisResponse]("patch record")(retryCondition) {
-        httpClientV2
-          .patch(url"$url")
-          .setHeader(
-            buildHeaderWithoutClientId(correlationId, isPutBearerToken = false): _*
-          )
-          .withBody(toJson(payload))
-          .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
-      }
-    } else {
-      logger.info(
-        s"[UpdateRecordConnector] -  The feature flag is set to ${appConfig.useEisPatchMethod}, calling PUT method for update record"
-      )
-      updateRecord(payload, correlationId)
-    }
-  }
-
-  private def updateRecord(
-    payload: UpdateRecordPayload,
-    correlationId: String
-  )(implicit hc: HeaderCarrier): Future[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]] = {
-    val url = appConfig.hawkConfig.updateRecordUrl
-
-    retryFor[CreateOrUpdateRecordEisResponse]("put record")(retryCondition) {
+    retryFor[CreateOrUpdateRecordEisResponse]("patch record")(retryCondition) {
       httpClientV2
-        .put(url"$url")
+        .patch(url"$url")
         .setHeader(
-          buildHeadersWithDrop1Toggle(
-            correlationId,
-            appConfig.hawkConfig.updateRecordBearerToken,
-            appConfig.hawkConfig.forwardedHost
-          ): _*
+          buildHeaderWithoutClientId(correlationId, isPutBearerToken = false): _*
         )
         .withBody(toJson(payload))
         .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
     }
   }
-
+  
   def put(
     payload: UpdateRecordPayload,
     correlationId: String
