@@ -39,8 +39,7 @@ import play.api.libs.json.*
 class PatchRecordRequestSpec extends AnyWordSpec with Matchers {
 
   "PatchRecordRequest JSON Reads" should {
-    val validJson = Json.parse(
-      """{
+    val validJson = Json.parse("""{
         |  "actorId": "GB987654321098",
         |  "traderRef": "TR123"
         |}""".stripMargin)
@@ -77,7 +76,7 @@ class PatchRecordRequestSpec extends AnyWordSpec with Matchers {
         comcodeEffectiveFromDate = None,
         comcodeEffectiveToDate = None
       )
-      val result = Json.toJson(validRequest)
+      val result       = Json.toJson(validRequest)
       result shouldBe validJson
     }
   }
