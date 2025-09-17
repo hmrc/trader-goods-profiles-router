@@ -91,5 +91,5 @@ trait BaseConnector extends Retries {
       .headOption
       .getOrElse(throw new RuntimeException("Client ID is null"))
       ._2
-  
+
 }

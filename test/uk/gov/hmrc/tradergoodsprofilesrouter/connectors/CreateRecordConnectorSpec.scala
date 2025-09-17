@@ -89,8 +89,7 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       verify(requestBuilder)
         .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
     }
-      
-    
+
   }
 
 }

@@ -57,7 +57,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.Accept -> "application/vnd.hmrc.1.0+json"
   )
 
   override def beforeEach(): Unit = {
@@ -125,7 +125,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }: _*))
       status(result) mustBe OK
     }
-    
+
   }
 
   "getTGPRecords" should {

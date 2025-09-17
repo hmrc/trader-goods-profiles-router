@@ -59,7 +59,7 @@ class UpdateRecordConnector @Inject() (
         .execute(HttpReader[CreateOrUpdateRecordEisResponse](correlationId, handleErrorResponse), ec)
     }
   }
-  
+
   def put(
     payload: UpdateRecordPayload,
     correlationId: String

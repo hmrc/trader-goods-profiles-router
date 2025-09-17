@@ -26,9 +26,4 @@ class AppConfig @Inject() (config: Configuration) {
   lazy val hawkConfig: HawkInstanceConfig = config.get[HawkInstanceConfig]("microservice.services.hawk")
   lazy val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
 
-  lazy val isNiphlPaddingEnabled: Boolean =
-    config
-      .getOptional[Boolean]("features.niphlPaddingEnabled")
-      .getOrElse(true)
-
 }

@@ -51,7 +51,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.Accept -> "application/vnd.hmrc.1.0+json"
   )
 
   override def beforeEach(): Unit = {
@@ -86,7 +86,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
       verifyNoInteractions(createRecordService)
     }
-    
 
     "return 400 Bad request when mandatory request header Accept is missing" in {
       val request = FakeRequest()
@@ -109,7 +108,7 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
       status(result) mustBe CREATED
     }
-    
+
   }
 
   lazy val createRecordResponseData: CreateOrUpdateRecordResponse = Json

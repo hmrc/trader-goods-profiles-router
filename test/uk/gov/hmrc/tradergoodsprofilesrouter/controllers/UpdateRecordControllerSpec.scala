@@ -58,7 +58,7 @@ class UpdateRecordControllerSpec
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.Accept -> "application/vnd.hmrc.1.0+json"
   )
 
   override def beforeEach(): Unit = {
@@ -79,7 +79,6 @@ class UpdateRecordControllerSpec
 
       status(result) mustBe OK
     }
-    
 
     "return OK validating the the X-Client-Id" in {
       when(updateRecordService.patchRecord(any, any, any)(any))
@@ -159,7 +158,6 @@ class UpdateRecordControllerSpec
         contentAsJson(result) mustBe Json.toJson(errorResponse)
       }
     }
-    
 
     "return 400 Bad request when mandatory request header Accept is missing" in {
       val errorResponse =

@@ -87,7 +87,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     forwardedHost: String = "MDTP"
   ): Seq[(String, String)] =
     expectedCommonHeader(correlationId, accessToken, forwardedHost) ++ Seq(
-      "Accept"      -> MimeTypes.JSON
+      "Accept" -> MimeTypes.JSON
     )
   def expectedHeaderForGetMethodWithoutClientId(
     correlationId: String,

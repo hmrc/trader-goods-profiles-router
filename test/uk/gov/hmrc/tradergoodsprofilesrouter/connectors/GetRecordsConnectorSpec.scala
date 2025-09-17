@@ -73,20 +73,20 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     }
 
     "send a request with the right parameters" in {
-        when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-        val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
+      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
+      val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
 
-        when(requestBuilder.execute[Any](any, any))
-          .thenReturn(Future.successful(Right(response)))
+      when(requestBuilder.execute[Any](any, any))
+        .thenReturn(Future.successful(Right(response)))
 
-        await(connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1"))
+      await(connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1"))
 
-        val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
-        verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-        verify(requestBuilder).setHeader(
-          expectedHeaderForGetMethodWithoutClientId(correlationId, "dummyRecordGetBearerToken"): _*
-        )
-        verifyExecuteForHttpReader(correlationId)
+      val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
+      verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
+      verify(requestBuilder).setHeader(
+        expectedHeaderForGetMethodWithoutClientId(correlationId, "dummyRecordGetBearerToken"): _*
+      )
+      verifyExecuteForHttpReader(correlationId)
     }
 
   }

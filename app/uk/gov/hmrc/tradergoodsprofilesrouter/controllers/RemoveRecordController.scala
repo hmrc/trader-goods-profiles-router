@@ -33,7 +33,7 @@ class RemoveRecordController @Inject() (
   authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   service: RemoveRecordService,
-  override val uuidService: UuidService,
+  override val uuidService: UuidService
 )(implicit override val ec: ExecutionContext)
     extends BackendBaseController
     with ValidationRules

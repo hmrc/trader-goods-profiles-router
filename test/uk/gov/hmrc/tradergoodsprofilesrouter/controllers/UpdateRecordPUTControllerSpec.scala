@@ -58,7 +58,7 @@ class UpdateRecordPUTControllerSpec
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.Accept -> "application/vnd.hmrc.1.0+json"
   )
 
   override def beforeEach(): Unit = {
@@ -81,7 +81,6 @@ class UpdateRecordPUTControllerSpec
 
       status(result) mustBe OK
     }
-
 
     "return OK validating the the X-Client-Id" in {
       when(updateRecordService.putRecord(any, any, any)(any))

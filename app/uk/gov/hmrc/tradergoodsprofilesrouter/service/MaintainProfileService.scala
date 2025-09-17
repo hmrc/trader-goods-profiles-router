@@ -47,7 +47,7 @@ class MaintainProfileService @Inject() (
         request.actorId,
         request.ukimsNumber,
         request.nirmsNumber,
-        padNiphlNumber(request.niphlNumber)
+        request.niphlNumber
       )
     val correlationId = uuidService.uuid
 
@@ -69,13 +69,4 @@ class MaintainProfileService @Inject() (
       }
   }
 
-  // TODO: This will need to be removed once EIS / B&T make the same validation on their side
-  private def padNiphlNumber(niphlNumber: Option[String]): Option[String] =
-    if (appConfig.isNiphlPaddingEnabled) {
-      niphlNumber.map { niphl =>
-        if (niphl.length >= 8) niphl else "-" * (8 - niphl.length) + niphl
-      }
-    } else {
-      niphlNumber
-    }
 }

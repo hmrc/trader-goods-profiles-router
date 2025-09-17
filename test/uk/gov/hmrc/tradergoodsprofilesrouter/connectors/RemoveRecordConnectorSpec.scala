@@ -61,7 +61,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe 200
   }
 
-
   "send a request with the right url" in {
     val hc: HeaderCarrier = HeaderCarrier()
 
