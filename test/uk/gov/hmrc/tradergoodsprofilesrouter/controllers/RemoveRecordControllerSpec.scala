@@ -52,8 +52,7 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       mockService,
-      mockUuidService,
-      appConfig
+      mockUuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
@@ -66,7 +65,6 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
     reset(mockService, mockUuidService, appConfig)
 
-    when(appConfig.sendClientId).thenReturn(true)
   }
   "remove" should {
 
@@ -82,24 +80,6 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       status(result) mustBe NO_CONTENT
     }
 
-    "not validate ClientId header when sendClientId flag is not enabled" in {
-
-      when(appConfig.sendClientId).thenReturn(false)
-
-      when(mockService.removeRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Right(NO_CONTENT)))
-
-      val headersWithoutClientId: Seq[(String, String)] = validHeaders.filterNot { case (name, _) =>
-        name.equalsIgnoreCase("X-Client-ID")
-      }
-
-      val result = controller.remove(eori, recordId, actorId)(
-        FakeRequest().withHeaders(headersWithoutClientId: _*)
-      )
-
-      status(result) mustBe NO_CONTENT
-    }
-    
     "validate headers" in {
       when(mockService.removeRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
@@ -113,23 +93,6 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       )
 
       status(result) mustBe NO_CONTENT
-    }
-
-    "return 400 Bad request when mandatory request header X-Client-ID" in {
-      val expectedErrorResponse =
-        ErrorResponse(
-          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          BadRequestCode,
-          BadRequestMessage,
-          Some(Seq(Error("INVALID_HEADER", "Missing mandatory header X-Client-ID", 6000)))
-        )
-
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = controller.remove(eori, recordId, actorId)(
-        FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)
     }
 
     "return an error if cannot remove a record" in {

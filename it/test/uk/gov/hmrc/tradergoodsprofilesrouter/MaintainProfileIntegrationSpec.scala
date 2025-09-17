@@ -49,15 +49,9 @@ class MaintainProfileIntegrationSpec extends HawkIntegrationSpec with AuthTestSu
     when(dateTimeService.timestamp).thenReturn(Instant.parse("2021-12-17T09:30:47.456Z"))
   }
 
-  override def extraApplicationConfig: Map[String, Any] =
-    super.extraApplicationConfig ++ Map(
-      "features.sendClientId" -> true
-    )
-
   val headers: Seq[(String, String)] = Seq(
     ("Content-Type", "application/json"),
-    ("Accept", "application/vnd.hmrc.1.0+json"),
-    ("X-Client-ID", "tss")
+    ("Accept", "application/vnd.hmrc.1.0+json")
   )
 
   "when trying to maintain a profile" - {

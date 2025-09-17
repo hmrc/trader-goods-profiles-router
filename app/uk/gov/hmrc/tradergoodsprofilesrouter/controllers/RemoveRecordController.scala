@@ -23,7 +23,6 @@ import play.api.Logging
 import play.api.libs.json.Json
 import play.api.mvc._
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.BadRequestErrorResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{RemoveRecordService, UuidService}
@@ -35,7 +34,6 @@ class RemoveRecordController @Inject() (
   override val controllerComponents: ControllerComponents,
   service: RemoveRecordService,
   override val uuidService: UuidService,
-  appConfig: AppConfig
 )(implicit override val ec: ExecutionContext)
     extends BackendBaseController
     with ValidationRules
@@ -44,7 +42,6 @@ class RemoveRecordController @Inject() (
   def remove(eori: String, recordId: String, actorId: String): Action[AnyContent] = authAction(eori).async {
     implicit request: Request[AnyContent] =>
       val result = for {
-        _ <- EitherT.fromEither[Future](validateClientIdIfSupported)
         _ <- EitherT
                .fromEither[Future](validateQueryParameters(actorId, recordId))
                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
@@ -54,9 +51,5 @@ class RemoveRecordController @Inject() (
 
       result.merge
   }
-
-  private def validateClientIdIfSupported(implicit request: Request[_]): Either[Result, String] =
-    if (appConfig.sendClientId) validateClientId
-    else Right("")
 
 }

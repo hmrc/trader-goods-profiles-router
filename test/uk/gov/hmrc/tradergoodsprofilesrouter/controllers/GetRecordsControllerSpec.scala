@@ -57,7 +57,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId",
     HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
   )
 
@@ -67,7 +66,6 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
     when(uuidService.uuid).thenReturn(correlationId)
     when(appConfig.hawkConfig.getRecordsMaxSize).thenReturn(500)
     when(appConfig.hawkConfig.getRecordsDefaultSize).thenReturn(500)
-    when(appConfig.sendClientId).thenReturn(true)
   }
   "getTGPRecord" should {
 
@@ -117,8 +115,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
-    "return OK without validating the X-Client-Id when sendClientId flag is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
+    "return OK without validating the X-Client-Id" in {
       when(getRecordsService.fetchRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(getResponseDataWithAdviceStatus())))
 
@@ -128,13 +125,7 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }: _*))
       status(result) mustBe OK
     }
-
-    "return OK validating the the X-Client-Id when sendClientId flag is true" in {
-      when(appConfig.sendClientId).thenReturn(true)
-
-      val result = sut.getTGPRecord("GB123456789001", recordId)(FakeRequest().withHeaders(validHeaders: _*))
-      status(result) mustBe OK
-    }
+    
   }
 
   "getTGPRecords" should {
@@ -167,15 +158,13 @@ class GetRecordsControllerSpec extends PlaySpec with MockitoSugar with GetRecord
       }
     }
 
-    "return OK validating the the X-Client-Id when sendClientId flag is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
+    "return OK validating the the X-Client-Id" in {
 
       val result = sut.getTGPRecords(eoriNumber)(FakeRequest().withHeaders(validHeaders: _*))
       status(result) mustBe OK
     }
 
-    "return OK without validating the X-Client-Id when isClientIdHeaderDisabled flag is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
+    "return OK without validating the X-Client-Id" in {
 
       val result = sut.getTGPRecords(eoriNumber)(FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) =>
         name.equalsIgnoreCase("X-Client-ID")

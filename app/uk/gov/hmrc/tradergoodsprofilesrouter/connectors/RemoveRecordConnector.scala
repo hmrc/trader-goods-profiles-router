@@ -74,6 +74,6 @@ class RemoveRecordConnector @Inject() (
       forwardedHost
     ) ++ Seq(
       HeaderNames.ContentType -> MimeTypes.JSON
-    ).withToggleClientID
+    )
 
 }

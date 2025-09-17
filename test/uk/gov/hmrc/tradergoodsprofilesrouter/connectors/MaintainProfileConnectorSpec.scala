@@ -49,7 +49,6 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
     when(httpClientV2.put(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-    when(appConfig.sendClientId).thenReturn(true)
   }
 
   "maintain Profile" should {
@@ -72,8 +71,7 @@ class MaintainProfileConnectorSpec extends BaseConnectorSpec {
       result.value mustBe maintainProfileResponse
     }
 
-    "return a 200 ok if EIS successfully without x-client-id when sendClientid is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
+    "return a 200 ok if EIS successfully without x-client-id" in {
       when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
 
       when(requestBuilder.execute[Either[EisHttpErrorResponse, MaintainProfileResponse]](any, any))

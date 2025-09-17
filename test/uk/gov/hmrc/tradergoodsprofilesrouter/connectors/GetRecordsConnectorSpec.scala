@@ -41,7 +41,6 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
     reset(appConfig, httpClientV2, dateTimeService, requestBuilder)
 
     setUpAppConfig()
-    when(appConfig.sendClientId).thenReturn(true)
     when(dateTimeService.timestamp).thenReturn(timestamp)
     when(httpClientV2.get(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
@@ -73,11 +72,9 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
       }
     }
 
-    "send a request with the right parameters" when {
-      "sendClientId feature flag is false" in {
+    "send a request with the right parameters" in {
         when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
         val response: GetEisRecordsResponse = getEisRecordsResponseData.as[GetEisRecordsResponse]
-        when(appConfig.sendClientId).thenReturn(false)
 
         when(requestBuilder.execute[Any](any, any))
           .thenReturn(Future.successful(Right(response)))
@@ -90,23 +87,6 @@ class GetRecordsConnectorSpec extends BaseConnectorSpec with GetRecordsDataSuppo
           expectedHeaderForGetMethodWithoutClientId(correlationId, "dummyRecordGetBearerToken"): _*
         )
         verifyExecuteForHttpReader(correlationId)
-      }
-
-      "sendClientId feature flag is true" in {
-        when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-        when(requestBuilder.execute[Any](any, any))
-          .thenReturn(Future.successful(Right(getEisRecordsResponseData.as[GetEisRecordsResponse])))
-
-        await(connector.fetchRecord(eori, recordId, correlationId, "http://localhost:1234/tgp/getrecords/v1"))
-
-        val expectedUrl = s"http://localhost:1234/tgp/getrecords/v1/$eori/$recordId"
-        verify(httpClientV2).get(eqTo(url"$expectedUrl"))(any)
-
-        val expectedHeaderWithClientId =
-          expectedHeaderForGetMethod(correlationId, "dummyRecordGetBearerToken")
-        verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
-        verifyExecuteForHttpReader(correlationId)
-      }
     }
 
   }
