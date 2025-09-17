@@ -100,9 +100,5 @@ trait BaseConnector extends Retries {
       if (appConfig.sendClientId) value :+ (HeaderNames.ClientId -> getClientId)
       else value
 
-    def withToggleAcceptHeader: Seq[(String, String)] =
-      if (appConfig.sendAcceptHeader) value :+ HeaderNames.Accept -> MimeTypes.JSON
-      else value
-
   }
 }

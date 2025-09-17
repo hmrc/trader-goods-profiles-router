@@ -51,7 +51,6 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
     when(appConfig.sendClientId).thenReturn(true)
-    when(appConfig.sendAcceptHeader).thenReturn(true)
   }
 
   "remove a record successfully" in {
@@ -74,7 +73,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     val expectedUrl = new URL("http://localhost:1234/tgp/removerecord/v1")
 
     verify(httpClientV2).put(url"$expectedUrl")
-    verify(requestBuilder).setHeader(expectedHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
+    verify(requestBuilder).setHeader(expectedHeaderWithoutAcceptHeader(correlationId, "dummyRecordRemoveBearerToken"): _*)
 
     val expectedJson = Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId)
     val jsonCaptor   = ArgumentCaptor.forClass(classOf[JsValue])
@@ -129,47 +128,7 @@ class RemoveRecordConnectorSpec extends BaseConnectorSpec {
     result.value mustBe 200
   }
 
-  "send a request with the right url for remove record when sendAcceptHeader feature flag is true" in {
-    when(appConfig.sendAcceptHeader).thenReturn(true)
-
-    when(requestBuilder.setHeader(any[Seq[(String, String)]]: _*))
-      .thenReturn(requestBuilder)
-
-    when(requestBuilder.withBody(any[JsValue])(any, any, any))
-      .thenReturn(requestBuilder)
-    when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))
-      .thenReturn(Future.successful(Right(200)))
-
-    val result = await(connector.removeRecord(eori, recordId, actorId, correlationId))
-
-    val expectedUrl = s"http://localhost:1234/tgp/removerecord/v1"
-    verify(httpClientV2).put(url"$expectedUrl")
-
-    val headersCaptor: ArgumentCaptor[Seq[(String, String)]] =
-      ArgumentCaptor.forClass(classOf[Seq[(String, String)]])
-    verify(requestBuilder).setHeader(headersCaptor.capture(): _*)
-
-    val capturedHeaders: Seq[(String, String)] = headersCaptor.getValue
-
-    capturedHeaders    must contain allOf (
-      "X-Correlation-ID" -> correlationId,
-      "Authorization"    -> "Bearer dummyRecordRemoveBearerToken",
-      "X-Forwarded-Host" -> "MDTP",
-      "Accept"           -> "application/json"
-    )
-
-    //
-    verify(requestBuilder).withBody(
-      meq(Json.obj("eori" -> eori, "recordId" -> recordId, "actorId" -> actorId))
-    )(any, any, any)
-
-    verifyExecuteForStatusHttpReader(correlationId)
-
-    result.value mustBe 200
-  }
-
-  "send a request with the right url for remove record when sendAcceptHeader feature flag is false" in {
-    when(appConfig.sendAcceptHeader).thenReturn(false)
+  "send a request with the right url for remove record" in {
     when(appConfig.sendClientId).thenReturn(true)
 
     when(requestBuilder.execute[Either[EisHttpErrorResponse, Int]](any, any))

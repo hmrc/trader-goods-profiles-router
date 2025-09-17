@@ -45,7 +45,6 @@ class RemoveRecordController @Inject() (
     implicit request: Request[AnyContent] =>
       val result = for {
         _ <- EitherT.fromEither[Future](validateClientIdIfSupported)
-        _ <- EitherT.fromEither[Future](validateAcceptHeaderIfSupported)
         _ <- EitherT
                .fromEither[Future](validateQueryParameters(actorId, recordId))
                .leftMap(e => BadRequestErrorResponse(uuidService.uuid, e).asPresentation)
@@ -60,7 +59,4 @@ class RemoveRecordController @Inject() (
     if (appConfig.sendClientId) validateClientId
     else Right("")
 
-  private def validateAcceptHeaderIfSupported(implicit request: Request[_]): Either[Result, String] =
-    if (appConfig.sendAcceptHeader) validateAcceptHeader
-    else Right("")
 }

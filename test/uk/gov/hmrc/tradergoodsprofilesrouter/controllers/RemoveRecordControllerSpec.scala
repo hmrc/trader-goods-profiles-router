@@ -67,7 +67,6 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
     reset(mockService, mockUuidService, appConfig)
 
     when(appConfig.sendClientId).thenReturn(true)
-    when(appConfig.sendAcceptHeader).thenReturn(true)
   }
   "remove" should {
 
@@ -100,9 +99,8 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
       status(result) mustBe NO_CONTENT
     }
-    "not validate accept header when sendAcceptHeader is false" in {
-      when(appConfig.sendAcceptHeader).thenReturn(false)
-
+    
+    "validate headers" in {
       when(mockService.removeRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(NO_CONTENT)))
 
@@ -129,23 +127,6 @@ class RemoveRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
       when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
       val result = controller.remove(eori, recordId, actorId)(
         FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("X-Client-ID") }: _*)
-      )
-      status(result) mustBe BAD_REQUEST
-      contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)
-    }
-
-    "return 400 Bad request when mandatory request header Accept is missing" in {
-      val expectedErrorResponse =
-        ErrorResponse(
-          "8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f",
-          BadRequestCode,
-          BadRequestMessage,
-          Some(Seq(Error("INVALID_HEADER", "Accept was missing from Header or is in the wrong format", 4)))
-        )
-
-      when(mockUuidService.uuid).thenReturn("8ebb6b04-6ab0-4fe2-ad62-e6389a8a204f")
-      val result = controller.remove(eori, recordId, actorId)(
-        FakeRequest().withHeaders(validHeaders.filterNot { case (name, _) => name.equalsIgnoreCase("Accept") }: _*)
       )
       status(result) mustBe BAD_REQUEST
       contentAsJson(result) mustBe Json.toJson(expectedErrorResponse)

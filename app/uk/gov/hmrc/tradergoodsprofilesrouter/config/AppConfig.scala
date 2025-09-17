@@ -36,6 +36,4 @@ class AppConfig @Inject() (config: Configuration) {
       .getOptional[Boolean]("features.niphlPaddingEnabled")
       .getOrElse(true)
 
-  lazy val sendAcceptHeader: Boolean = config.getOptional[Boolean]("features.sendAcceptHeader").getOrElse(true)
-
 }
