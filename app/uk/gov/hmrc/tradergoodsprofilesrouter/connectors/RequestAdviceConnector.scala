@@ -51,7 +51,7 @@ class RequestAdviceConnector @Inject() (
       httpClientV2
         .post(url"$url")
         .setHeader(
-          buildHeadersForAdvice(
+          buildHeaders(
             correlationId,
             appConfig.pegaConfig.requestAdviceBearerToken,
             appConfig.pegaConfig.forwardedHost
