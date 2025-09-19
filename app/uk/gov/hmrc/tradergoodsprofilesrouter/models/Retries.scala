@@ -20,7 +20,7 @@ import com.typesafe.config.Config
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.pattern.after
 import org.slf4j.LoggerFactory
-import uk.gov.hmrc.play.http.logging.Mdc
+import uk.gov.hmrc.mdc.Mdc
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.EisHttpErrorResponse
 
 import java.util.concurrent.TimeUnit

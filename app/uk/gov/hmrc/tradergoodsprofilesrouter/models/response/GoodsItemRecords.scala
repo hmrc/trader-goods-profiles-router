@@ -109,7 +109,7 @@ object GoodsItemRecords extends NiphlNumberFilter {
         "nirmsNumber"              -> goodsItemRecords.nirmsNumber,
         "niphlNumber"              -> removeLeadingDashes(
           goodsItemRecords.niphlNumber
-        ), // TODO: This will need to be removed once EIS/B&T make the same validation on their side
+        ),
         "locked"                   -> goodsItemRecords.locked,
         "createdDateTime"          -> goodsItemRecords.createdDateTime,
         "updatedDateTime"          -> goodsItemRecords.updatedDateTime

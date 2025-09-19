@@ -56,17 +56,6 @@ trait BaseConnector extends Retries {
   )(implicit hc: HeaderCarrier): Seq[(String, String)] =
     commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
       HeaderNames.Accept      -> MimeTypes.JSON,
-      HeaderNames.ContentType -> MimeTypes.JSON,
-      HeaderNames.ClientId    -> getClientId
-    )
-
-  def buildHeadersWithDrop1Toggle(
-    correlationId: String,
-    accessToken: String,
-    forwardedHost: String
-  )(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
-      HeaderNames.Accept      -> MimeTypes.JSON,
       HeaderNames.ContentType -> MimeTypes.JSON
     )
 
@@ -78,13 +67,6 @@ trait BaseConnector extends Retries {
     commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
       HeaderNames.Accept -> MimeTypes.JSON
     )
-
-  def buildHeadersForAdvice(
-    correlationId: String,
-    bearerToken: String,
-    forwardedHost: String
-  )(implicit hc: HeaderCarrier): Seq[(String, String)] =
-    buildHeaders(correlationId, bearerToken, forwardedHost).filterNot(_._1 == HeaderNames.ClientId)
 
   def getClientId(implicit hc: HeaderCarrier): String =
     hc.headers(Seq(HeaderNames.ClientId))

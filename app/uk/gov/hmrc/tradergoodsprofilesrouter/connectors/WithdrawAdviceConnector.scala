@@ -58,7 +58,7 @@ class WithdrawAdviceConnector @Inject() (
       httpClientV2
         .put(url"$url")
         .setHeader(
-          buildHeadersForAdvice(
+          buildHeaders(
             correlationId,
             appConfig.pegaConfig.getWithdrawAdviceBearerToken,
             appConfig.pegaConfig.forwardedHost
