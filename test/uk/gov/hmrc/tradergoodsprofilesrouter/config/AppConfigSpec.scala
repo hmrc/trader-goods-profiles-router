@@ -24,7 +24,41 @@ class AppConfigSpec extends PlaySpec {
   private val validAppConfig =
     """
       |appName=trader-goods-profiles-router
-      |features.sendClientId=true
+      |microservice.services.hawk.protocol = http
+      |        microservice.services.hawk.host = localhost
+      |        microservice.services.hawk.port = 10903
+      |        microservice.services.hawk.forwarded-host = "MDTP"
+      |        microservice.services.hawk.get-records  = "/tgp/getrecords/v1"
+      |        microservice.services.hawk.create-record  = "/tgp/createrecord/v1"
+      |        microservice.services.hawk.remove-record  = "/tgp/removerecord/v1"
+      |        microservice.services.hawk.update-record  = "/tgp/updaterecord/v1"
+      |        microservice.services.hawk.put-update-record  = "/tgp/puttgprecord/v1"
+      |        microservice.services.hawk.maintain-profile  = "/tgp/maintainprofile/v1"
+      |        microservice.services.hawk.get-profile = "/tgp/getprofile/v1"
+      |        microservice.services.hawk.create-profile  = "/tgp/createprofile/v1"
+      |        microservice.services.hawk.record-update-token = "c29tZS10b2tlbgo="
+      |        microservice.services.hawk.put-record-token = "c29tZS10b2tlbgo="
+      |        microservice.services.hawk.record-get-token = "c29tZS10b2tlbgo="
+      |        microservice.services.hawk.record-create-token = "c29tZS10b2tlbgo="
+      |        microservice.services.hawk.record-remove-token = "c29tZS10b2tlbgo="
+      |        microservice.services.hawk.maintain-profile-token = "c29tZS10b2tlbgo="
+      |        microservice.services.hawk.get-profile-token = "c29tZS10b2tlbgo="
+      |        microservice.services.hawk.create-profile-token = "c29tZS10b2tlbgo="
+      |        microservice.services.hawk.default-size = 500
+      |        microservice.services.hawk.max-size = 500
+      |        microservice.services.pega.protocol = http
+      |        microservice.services.pega.host = localhost
+      |        microservice.services.pega.port = 10903
+      |        microservice.services.pega.forwarded-host = "MDTP"
+      |
+      |        microservice.services.pega.get-records  = "/tgp/getrecords/v1"
+      |        microservice.services.pega.request-advice  = "/tgp/createaccreditation/v1"
+      |        microservice.services.pega.withdraw-advice = "/tgp/withdrawaccreditation/v1"
+      |        microservice.services.pega.download-trader-data = "/tgp/record/v1"
+      |        microservice.services.pega.request-advice-token = "dummyRequestAdviceBearerToken"
+      |        microservice.services.pega.record-get-token = "dummyRecordGetBearerToken"
+      |        microservice.services.pega.withdraw-advice-token = "dummyWithdrawAdviceBearerToken"
+      |        microservice.services.pega.download-trader-data-token = "dummyDownloadTraderDataToken"
     """.stripMargin
 
   private def createAppConfig(configSettings: String) = {
@@ -36,64 +70,49 @@ class AppConfigSpec extends PlaySpec {
   val configService: AppConfig = createAppConfig(validAppConfig)
 
   "AppConfig" should {
-
-    "return true for sendClientId" in {
-      configService.sendClientId mustBe true
+    "parse hawk config" in {
+      val hawkConfig = HawkInstanceConfig(
+        "http",
+        "localhost",
+        10903,
+        "/tgp/getrecords/v1",
+        "/tgp/createrecord/v1",
+        "/tgp/removerecord/v1",
+        "/tgp/updaterecord/v1",
+        "/tgp/puttgprecord/v1",
+        "/tgp/maintainprofile/v1",
+        "/tgp/createprofile/v1",
+        "/tgp/getprofile/v1",
+        "MDTP",
+        "c29tZS10b2tlbgo=",
+        "c29tZS10b2tlbgo=",
+        "c29tZS10b2tlbgo=",
+        "c29tZS10b2tlbgo=",
+        "c29tZS10b2tlbgo=",
+        "c29tZS10b2tlbgo=",
+        "c29tZS10b2tlbgo=",
+        "c29tZS10b2tlbgo=",
+        500,
+        500
+      )
+      configService.hawkConfig mustBe hawkConfig
     }
-
-    "return true if sendClientId is missing" in {
-      createAppConfig("").sendClientId mustBe true
-    }
-
-    "return true for sendClientId when it is set to true" in {
-      val config =
-        """
-          |appName=trader-goods-profiles-router
-          |features.sendClientId=true
-          |""".stripMargin
-      createAppConfig(config).sendClientId mustBe true
-    }
-
-    "return false for sendClientId when it is missing" in {
-      createAppConfig("").sendClientId mustBe true
-    }
-
-    "return false for sendClientId when it is set to false" in {
-      val config =
-        """
-          |appName=trader-goods-profiles-router
-          |features.sendClientId=false
-          |""".stripMargin
-      createAppConfig(config).sendClientId mustBe false
-    }
-  }
-
-  "isPatchMethodEnabled" should {
-    "return true if patchMethodEnabled is true" in {
-      val validAppConfig =
-        """
-          |appName=trader-goods-profiles-router
-          |features.useEisPatchMethod=true
-          |""".stripMargin
-      createAppConfig(validAppConfig).useEisPatchMethod mustBe true
-    }
-
-    "return false if patchMethodEnabled is false" in {
-      val validAppConfig =
-        """
-          |appName=trader-goods-profiles-router
-          |features.patchMethodEnabled=false
-          |""".stripMargin
-      createAppConfig(validAppConfig).useEisPatchMethod mustBe false
-    }
-
-    "return false if patchMethodEnabled is nor defined" in {
-      val validAppConfig =
-        """
-          |appName=trader-goods-profiles-router
-          |""".stripMargin
-      createAppConfig(validAppConfig).useEisPatchMethod mustBe false
+    "parse pega config" in {
+      val pegaConfig = PegaInstanceConfig(
+        "http",
+        "localhost",
+        10903,
+        "/tgp/createaccreditation/v1",
+        "MDTP",
+        "dummyRequestAdviceBearerToken",
+        "/tgp/getrecords/v1",
+        "dummyRecordGetBearerToken",
+        "/tgp/withdrawaccreditation/v1",
+        "dummyWithdrawAdviceBearerToken",
+        "/tgp/record/v1",
+        "dummyDownloadTraderDataToken"
+      )
+      configService.pegaConfig mustBe pegaConfig
     }
   }
-
 }

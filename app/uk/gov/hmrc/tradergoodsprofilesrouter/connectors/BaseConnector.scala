@@ -68,7 +68,7 @@ trait BaseConnector extends Retries {
     commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
       HeaderNames.Accept      -> MimeTypes.JSON,
       HeaderNames.ContentType -> MimeTypes.JSON
-    ).withToggleClientID
+    )
 
   def buildHeadersForGetMethod(
     correlationId: String,
@@ -77,7 +77,7 @@ trait BaseConnector extends Retries {
   )(implicit hc: HeaderCarrier): Seq[(String, String)] =
     commonHeaders(correlationId, accessToken, forwardedHost) ++ Seq(
       HeaderNames.Accept -> MimeTypes.JSON
-    ).withToggleClientID
+    )
 
   def buildHeadersForAdvice(
     correlationId: String,
@@ -92,15 +92,4 @@ trait BaseConnector extends Retries {
       .getOrElse(throw new RuntimeException("Client ID is null"))
       ._2
 
-  implicit class FilterHeaders(val value: Seq[(String, String)]) {
-
-    def withToggleClientID(implicit hc: HeaderCarrier): Seq[(String, String)] =
-      if (appConfig.sendClientId) value :+ (HeaderNames.ClientId -> getClientId)
-      else value
-
-    def withToggleAcceptHeader: Seq[(String, String)] =
-      if (appConfig.sendAcceptHeader) value :+ HeaderNames.Accept -> MimeTypes.JSON
-      else value
-
-  }
 }

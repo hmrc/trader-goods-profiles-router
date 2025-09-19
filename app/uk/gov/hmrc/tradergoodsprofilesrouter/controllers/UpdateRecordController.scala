@@ -21,9 +21,8 @@ import cats.implicits._
 import com.google.inject.Inject
 import play.api.Logging
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, ControllerComponents, Request}
+import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.ValidationRules.{BadRequestErrorResponse, fieldsToErrorCode, optionalFieldsToErrorCode}
 import uk.gov.hmrc.tradergoodsprofilesrouter.controllers.action.{AuthAction, ValidationRules}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.{PatchRecordRequest, UpdateRecordRequest}
@@ -35,7 +34,6 @@ class UpdateRecordController @Inject() (
   authAction: AuthAction,
   override val controllerComponents: ControllerComponents,
   updateRecordService: UpdateRecordService,
-  appConfig: AppConfig,
   override val uuidService: UuidService
 )(implicit override val ec: ExecutionContext)
     extends BackendBaseController
@@ -44,7 +42,6 @@ class UpdateRecordController @Inject() (
 
   def patch(eori: String, recordId: String): Action[JsValue] = authAction(eori).async(parse.json) { implicit request =>
     val result = for {
-      _                   <- EitherT.fromEither[Future](validateClientIdIfSupported)
       _                   <- EitherT.fromEither[Future](validateAcceptHeader)
       _                   <- EitherT
                                .fromEither[Future](validateRecordId(recordId))
@@ -72,7 +69,4 @@ class UpdateRecordController @Inject() (
       result.merge
   }
 
-  private def validateClientIdIfSupported(implicit request: Request[_]) =
-    if (appConfig.sendClientId) validateClientId
-    else Right("")
 }

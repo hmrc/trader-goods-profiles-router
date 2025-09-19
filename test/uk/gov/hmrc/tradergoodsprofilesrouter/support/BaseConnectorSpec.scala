@@ -68,8 +68,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
   ): Seq[(String, String)] =
     expectedCommonHeader(correlationId, accessToken, forwardedHost) ++ Seq(
       "Accept"       -> MimeTypes.JSON,
-      "Content-Type" -> MimeTypes.JSON,
-      "X-Client-ID"  -> "TSS"
+      "Content-Type" -> MimeTypes.JSON
     )
 
   def expectedHeaderWithAcceptAndContentTypeHeader(
@@ -88,8 +87,7 @@ trait BaseConnectorSpec extends PlaySpec with BeforeAndAfterEach with EitherValu
     forwardedHost: String = "MDTP"
   ): Seq[(String, String)] =
     expectedCommonHeader(correlationId, accessToken, forwardedHost) ++ Seq(
-      "Accept"      -> MimeTypes.JSON,
-      "X-Client-ID" -> "TSS"
+      "Accept" -> MimeTypes.JSON
     )
   def expectedHeaderForGetMethodWithoutClientId(
     correlationId: String,

@@ -26,22 +26,4 @@ class AppConfig @Inject() (config: Configuration) {
   lazy val hawkConfig: HawkInstanceConfig = config.get[HawkInstanceConfig]("microservice.services.hawk")
   lazy val pegaConfig: PegaInstanceConfig = config.get[PegaInstanceConfig]("microservice.services.pega")
 
-  lazy val sendClientId: Boolean =
-    config
-      .getOptional[Boolean]("features.sendClientId")
-      .getOrElse(true)
-
-  lazy val isNiphlPaddingEnabled: Boolean =
-    config
-      .getOptional[Boolean]("features.niphlPaddingEnabled")
-      .getOrElse(true)
-
-  lazy val sendAcceptHeader: Boolean = config.getOptional[Boolean]("features.sendAcceptHeader").getOrElse(true)
-
-  lazy val useEisPatchMethod: Boolean =
-    config
-      .getOptional[Boolean]("features.useEisPatchMethod")
-      .getOrElse(false)
-
-  lazy val optionalCategory: Boolean = config.getOptional[Boolean]("features.categoryOptional").getOrElse(false)
 }

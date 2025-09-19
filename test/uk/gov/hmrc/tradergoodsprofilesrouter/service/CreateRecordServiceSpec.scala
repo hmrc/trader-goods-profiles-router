@@ -63,7 +63,6 @@ class CreateRecordServiceSpec
     reset(connector, uuidService)
     when(uuidService.uuid).thenReturn(correlationId)
     when(dateTimeService.timestamp).thenReturn(dateTime)
-    when(appConfig.optionalCategory).thenReturn(true)
   }
 
   "test" should {

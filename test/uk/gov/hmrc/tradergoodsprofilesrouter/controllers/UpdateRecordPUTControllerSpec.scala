@@ -54,13 +54,11 @@ class UpdateRecordPUTControllerSpec
       new FakeSuccessAuthAction(),
       stubControllerComponents(),
       updateRecordService,
-      appConfig,
       mockUuidService
     )
 
   def validHeaders: Seq[(String, String)] = Seq(
-    HeaderNames.ClientId -> "clientId",
-    HeaderNames.Accept   -> "application/vnd.hmrc.1.0+json"
+    HeaderNames.Accept -> "application/vnd.hmrc.1.0+json"
   )
 
   override def beforeEach(): Unit = {
@@ -84,24 +82,7 @@ class UpdateRecordPUTControllerSpec
       status(result) mustBe OK
     }
 
-    "return OK without validating the X-Client-Id when sendClientId flag is true" in {
-      when(appConfig.sendClientId).thenReturn(true)
-      when(updateRecordService.putRecord(any, any, any)(any))
-        .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
-
-      val result =
-        sut.updateRecord(eoriNumber, recordId)(
-          FakeRequest()
-            .withBody(updateRecordRequestData)
-            .withHeaders(validHeaders.filterNot { case (name, _) =>
-              name.equalsIgnoreCase("X-Client-ID")
-            }: _*)
-        )
-      status(result) mustBe OK
-    }
-
-    "return OK validating the the X-Client-Id when sendClientId flag is false" in {
-      when(appConfig.sendClientId).thenReturn(false)
+    "return OK validating the the X-Client-Id" in {
       when(updateRecordService.putRecord(any, any, any)(any))
         .thenReturn(Future.successful(Right(createOrUpdateRecordResponse)))
       val result =

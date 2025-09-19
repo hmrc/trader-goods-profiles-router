@@ -47,7 +47,6 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
     when(httpClientV2.post(any)(any)).thenReturn(requestBuilder)
     when(requestBuilder.withBody(any)(any, any, any)).thenReturn(requestBuilder)
     when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-    when(appConfig.sendClientId).thenReturn(true)
   }
 
   "createRecord" should {
@@ -73,49 +72,24 @@ class CreateRecordConnectorSpec extends BaseConnectorSpec with CreateRecordDataS
       result.left.value mustBe badRequestEISError
     }
 
-    "send a request with the right url" when {
-      "sendClientId feature flag is false" in {
-        when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-        val expectedResponse = createOrUpdateRecordEisResponse
-        when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
-          .thenReturn(Future.successful(Right(expectedResponse)))
-        when(appConfig.sendClientId).thenReturn(false)
+    "send a request with the right url" in {
+      when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
+      val expectedResponse = createOrUpdateRecordEisResponse
+      when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
+        .thenReturn(Future.successful(Right(expectedResponse)))
 
-        await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
+      await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
 
-        val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
-        verify(httpClientV2).post(url"$expectedUrl")
-        verify(requestBuilder).setHeader(
-          expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordCreateBearerToken"): _*
-        )
-        verify(requestBuilder).withBody(createRecordEisPayload)
-        verify(requestBuilder)
-          .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
-      }
-
-      "sendClientId feature flag is true" in {
-        when(requestBuilder.setHeader(any)).thenReturn(requestBuilder)
-        when(requestBuilder.execute[Either[EisHttpErrorResponse, CreateOrUpdateRecordEisResponse]](any, any))
-          .thenReturn(Future.successful(Right(createOrUpdateRecordEisResponse)))
-
-        await(connector.createRecord(createRecordEisPayload.as[CreateRecordPayload], correlationId))
-
-        val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
-        verify(httpClientV2).post(url"$expectedUrl")
-
-        val expectedHeaderWithClientId =
-          expectedHeaderWithAcceptAndContentTypeHeader(
-            correlationId,
-            "dummyRecordCreateBearerToken"
-          ) :+ ("X-Client-ID" -> "TSS")
-        verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
-
-        verify(requestBuilder).setHeader(expectedHeaderWithClientId: _*)
-        verify(requestBuilder).withBody(createRecordEisPayload)
-        verify(requestBuilder)
-          .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
-      }
+      val expectedUrl = s"http://localhost:1234/tgp/createrecord/v1"
+      verify(httpClientV2).post(url"$expectedUrl")
+      verify(requestBuilder).setHeader(
+        expectedHeaderWithAcceptAndContentTypeHeader(correlationId, "dummyRecordCreateBearerToken"): _*
+      )
+      verify(requestBuilder).withBody(createRecordEisPayload)
+      verify(requestBuilder)
+        .execute(any[HttpReader[Either[Result, CreateOrUpdateRecordEisResponse]]], any[ExecutionContext])
     }
+
   }
 
 }
