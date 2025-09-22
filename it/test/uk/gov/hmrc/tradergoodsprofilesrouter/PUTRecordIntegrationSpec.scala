@@ -24,7 +24,6 @@ import play.api.http.Status.*
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSBodyWritables.{writeableOf_JsValue, writeableOf_String}
-import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, HawkIntegrationSpec}

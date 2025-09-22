@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.CreateRecordPayload
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
@@ -36,8 +35,7 @@ class CreateRecordService @Inject() (
   connector: CreateRecordConnector,
   uuidService: UuidService,
   auditService: AuditService,
-  dateTimeService: DateTimeService,
-  appConfig: AppConfig
+  dateTimeService: DateTimeService
 )(implicit
   ec: ExecutionContext
 ) extends Logging {

@@ -25,7 +25,6 @@ import play.api.http.Status.{BAD_REQUEST, CREATED}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.CreateRecordRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.CreateOrUpdateRecordResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{CreateRecordService, UuidService}
@@ -40,7 +39,6 @@ class CreateRecordControllerSpec extends PlaySpec with MockitoSugar with BeforeA
 
   val createRecordService: CreateRecordService = mock[CreateRecordService]
   val uuidService: UuidService                 = mock[UuidService]
-  private val appConfig                        = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   private val sut =
     new CreateRecordController(
