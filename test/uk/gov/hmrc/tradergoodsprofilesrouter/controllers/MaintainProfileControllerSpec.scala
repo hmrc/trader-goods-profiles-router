@@ -25,7 +25,6 @@ import play.api.http.Status.{BAD_REQUEST, OK}
 import play.api.libs.json.{JsValue, Json}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, defaultAwaitTimeout, status, stubControllerComponents}
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.{MaintainProfileService, UuidService}
@@ -41,7 +40,6 @@ class MaintainProfileControllerSpec extends PlaySpec with MockitoSugar {
 
   val mockMaintainProfileService: MaintainProfileService = mock[MaintainProfileService]
   val mockUuidService: UuidService                       = mock[UuidService]
-  private val appConfig                                  = mock[AppConfig](RETURNS_DEEP_STUBS)
 
   private val sut =
     new MaintainProfileController(

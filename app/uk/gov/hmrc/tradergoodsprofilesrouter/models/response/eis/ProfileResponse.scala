@@ -51,7 +51,7 @@ object ProfileResponse extends NiphlNumberFilter {
       p.nirmsNumber,
       removeLeadingDashes(
         p.niphlNumber
-      ) // TODO: This will need to be removed once EIS/B&T make the same validation on their side
+      )
     )
   )
 

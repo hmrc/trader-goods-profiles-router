@@ -21,12 +21,10 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{reset, verify, when}
 import play.api.http.MimeTypes
 import play.api.libs.json.{JsValue, Json}
-import play.api.libs.ws.BodyWritable
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.BaseConnectorSpec
 
-import java.net.URL
 import java.time.Instant
 import scala.concurrent.Future
 

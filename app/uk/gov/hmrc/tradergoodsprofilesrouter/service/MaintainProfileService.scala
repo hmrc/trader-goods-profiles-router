@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import play.api.Logging
 import play.api.http.Status.INTERNAL_SERVER_ERROR
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, MaintainProfileConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.eis.MaintainProfileEisRequest
@@ -32,8 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class MaintainProfileService @Inject() (
   connector: MaintainProfileConnector,
-  uuidService: UuidService,
-  appConfig: AppConfig
+  uuidService: UuidService
 )(implicit
   ec: ExecutionContext
 ) extends Logging {

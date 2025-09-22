@@ -109,7 +109,7 @@ object CreateOrUpdateRecordResponse extends NiphlNumberFilter {
           "nirmsNumber"              -> createOrUpdateRecordResponse.nirmsNumber,
           "niphlNumber"              -> removeLeadingDashes(
             createOrUpdateRecordResponse.niphlNumber
-          ), // TODO: This will need to be removed once EIS/B&T make the same validation on their side
+          ),
           "createdDateTime"          -> createOrUpdateRecordResponse.createdDateTime,
           "updatedDateTime"          -> createOrUpdateRecordResponse.updatedDateTime
         )

@@ -27,7 +27,6 @@ import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR}
 import play.api.libs.json.Json
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{EisHttpErrorResponse, MaintainProfileConnector}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.request.MaintainProfileRequest
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.eis.MaintainProfileResponse
@@ -50,9 +49,8 @@ class MaintainProfileServiceSpec
   private val correlationId = "1234-5678-9012"
   private val connector     = mock[MaintainProfileConnector]
   private val uuidService   = mock[UuidService]
-  private val appConfig     = mock[AppConfig]
 
-  val service = new MaintainProfileService(connector, uuidService, appConfig)
+  val service = new MaintainProfileService(connector, uuidService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

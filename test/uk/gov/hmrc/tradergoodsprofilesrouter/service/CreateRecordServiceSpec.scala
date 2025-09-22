@@ -26,7 +26,6 @@ import org.scalatestplus.play.PlaySpec
 import play.api.http.Status.{BAD_REQUEST, INTERNAL_SERVER_ERROR, OK}
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.tradergoodsprofilesrouter.config.AppConfig
 import uk.gov.hmrc.tradergoodsprofilesrouter.connectors.{CreateRecordConnector, EisHttpErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.models.response.errors.{Error, ErrorResponse}
 import uk.gov.hmrc.tradergoodsprofilesrouter.service.audit.AuditService
@@ -53,9 +52,8 @@ class CreateRecordServiceSpec
   private val dateTimeService = mock[DateTimeService]
   private val correlationId   = "1234-5678-9012"
   private val dateTime        = Instant.parse("2021-12-17T09:30:47.456Z")
-  private val appConfig       = mock[AppConfig]
 
-  val sut = new CreateRecordService(connector, uuidService, auditService, dateTimeService, appConfig)
+  val sut = new CreateRecordService(connector, uuidService, auditService, dateTimeService)
 
   override def beforeEach(): Unit = {
     super.beforeEach()

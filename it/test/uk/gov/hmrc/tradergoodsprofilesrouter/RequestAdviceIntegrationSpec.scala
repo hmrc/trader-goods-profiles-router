@@ -23,7 +23,6 @@ import org.scalatest.concurrent.ScalaFutures.*
 import play.api.http.Status.*
 import play.api.libs.json.Json
 import play.api.libs.ws.DefaultBodyWritables.writeableOf_String
-import play.api.libs.ws.WSBodyWritables.writeableOf_String
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
 import uk.gov.hmrc.auth.core.Enrolment
 import uk.gov.hmrc.tradergoodsprofilesrouter.support.{AuthTestSupport, GetRecordsDataSupport, HawkIntegrationSpec}
