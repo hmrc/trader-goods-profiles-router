@@ -89,7 +89,7 @@ class GetProfileConnector @Inject() (
         case EoriDoesNotExistsCode              =>
           invalidRequestParameterError(EoriDoesNotExists, 7)
         case other                              =>
-          logger.warn(s"[GetProfileConnector] - Error code $other is not supported")
+          logger.warn(s"Error getting profile - Error code $other is not supported")
           unexpectedError("Unrecognised error number", other.toInt)
 
       }

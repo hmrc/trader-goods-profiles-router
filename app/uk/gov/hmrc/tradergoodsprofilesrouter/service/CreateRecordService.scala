@@ -80,7 +80,7 @@ class CreateRecordService @Inject() (
       }
       .recover { case ex: Throwable =>
         logger.error(
-          s"""[CreateRecordService] - Error when creating records for Eori Number: $eori,
+          s"""Error when creating records for Eori Number: $eori,
             correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
         )

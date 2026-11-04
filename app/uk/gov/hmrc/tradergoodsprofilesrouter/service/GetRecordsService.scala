@@ -57,7 +57,7 @@ class GetRecordsService @Inject() (
           auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, getRecordResponse)
           Right(getRecordResponse.goodsItemRecords.head)
         case Left(errorResponse) =>
-          logger.warn(s"""[GetRecordsService] - Error when retrieving record for eori: $eori,
+          logger.warn(s"""Error when retrieving record for eori: $eori,
              correlationId: $correlationId, status: ${errorResponse.httpStatus},
              body: ${Json.toJson(errorResponse.errorResponse)}""".stripMargin)
 
@@ -66,7 +66,7 @@ class GetRecordsService @Inject() (
       }
       .recover { case ex: Throwable =>
         logger.error(
-          s"""[GetRecordsService] - Exception thrown when fetching a single record for Eori Number: $eori,
+          s"""Exception thrown when fetching a single record for Eori Number: $eori,
             s"recordId: $recordId, correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
         )
@@ -104,7 +104,7 @@ class GetRecordsService @Inject() (
           auditGetRecordService.emitAuditGetRecordSucceeded(request, requestDateTime, getRecordResponse)
           Right(getRecordResponse)
         case Left(errorResponse) =>
-          logger.warn(s"""[GetRecordsService] - Error when retrieving multiple record for eori: $eori,
+          logger.warn(s"""Error when retrieving multiple record for eori: $eori,
              correlationId: $correlationId, status: ${errorResponse.httpStatus},
              body: ${Json.toJson(errorResponse.errorResponse)}""".stripMargin)
 
@@ -113,7 +113,7 @@ class GetRecordsService @Inject() (
       }
       .recover { case ex: Throwable =>
         logger.error(
-          s"""[GetRecordsService] - Exception thrown when fetching multiple records for eori: $eori,
+          s"""Exception thrown when fetching multiple records for eori: $eori,
             s"correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
         )

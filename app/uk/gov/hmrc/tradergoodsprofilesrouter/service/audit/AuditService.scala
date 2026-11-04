@@ -66,7 +66,7 @@ class AuditService @Inject() (
     auditConnector
       .sendExtendedEvent(createDataEvent(auditDetails))
       .map { (auditResult: AuditResult) =>
-        logger.info(s"[AuditService] - Remove record audit event status: $auditResult.")
+        logger.info(s"Remove record audit event status: $auditResult.")
         Done
       }
   }
@@ -93,7 +93,7 @@ class AuditService @Inject() (
     auditConnector
       .sendExtendedEvent(createDataEvent(auditDetails))
       .map { (auditResult: AuditResult) =>
-        logger.info(s"[AuditService] - Create record audit event status: $auditResult.")
+        logger.info(s"Create record audit event status: $auditResult.")
         Done
       }
   }
@@ -120,7 +120,7 @@ class AuditService @Inject() (
     auditConnector
       .sendExtendedEvent(createDataEvent(auditDetails))
       .map { (auditResult: AuditResult) =>
-        logger.info(s"[AuditService] - Update record audit event status: $auditResult.")
+        logger.info(s"Update record audit event status: $auditResult.")
         Done
       }
   }

@@ -41,13 +41,13 @@ class GetProfileService @Inject() (
       .collect {
         case successResponse @ Right(_)  => successResponse
         case errorResponse @ Left(error) =>
-          logger.warn(s"""[GetProfileService] - Error when retrieving profile for eori: $eori,
+          logger.warn(s"""Error when retrieving profile for eori: $eori,
              correlationId: $correlationId, status: ${error.httpStatus},
              body: ${Json.toJson(error.errorResponse.toString)}""".stripMargin)
           errorResponse
       }
       .recover { case ex: Throwable =>
-        logger.warn(s"""[GetProfileService] - Exception thrown when retrieving profile for eori: $eori,
+        logger.warn(s"""Exception thrown when retrieving profile for eori: $eori,
                correlationId: $correlationId, message: ${ex.getMessage}""".stripMargin)
 
         Left(

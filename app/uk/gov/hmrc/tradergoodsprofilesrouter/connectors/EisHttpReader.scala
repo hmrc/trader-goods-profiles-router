@@ -35,7 +35,7 @@ object EisHttpReader extends Logging {
           Right(parseJson[T](response))
         case response                                  =>
           logger.warn(
-            s"[HttpReader] - Downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body}"
+            s"Downstream error reading, method: $method, url: $url, correlationId: $correlationId, body: ${response.body}"
           )
           Left(errorHandler(response, correlationId))
       }
@@ -48,7 +48,7 @@ object EisHttpReader extends Logging {
         case response if isSuccessful(response.status) => Right(response.status)
         case response                                  =>
           logger.warn(
-            s"[StatusHttpReader] - Downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body}"
+            s"Status Downstream error, method: $method, url: $url, correlationId: $correlationId, body: ${response.body}"
           )
           Left(errorHandler(response, correlationId))
       }
@@ -65,7 +65,7 @@ object EisHttpReader extends Logging {
           .mkString("; ")
 
         logger.warn(
-          s"[EisHttpReader] - JSON validation failed for type: ${ct.runtimeClass.getSimpleName}, errors: $errorMsg"
+          s"JSON validation failed for type: ${ct.runtimeClass.getSimpleName}, errors: $errorMsg"
         )
         throw new RuntimeException(s"Response body could not be parsed as type ${ct.runtimeClass.getSimpleName}")
     }
