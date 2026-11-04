@@ -78,7 +78,7 @@ class UpdateRecordService @Inject() (
       }
       .recover { case ex: Throwable =>
         logger.error(
-          s"""[UpdateRecordService] - Error when updating records for Eori Number: $eori,
+          s"""Error when updating records for Eori Number: $eori,
             s"correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
         )
@@ -138,7 +138,7 @@ class UpdateRecordService @Inject() (
       }
       .recover { case ex: Throwable =>
         logger.error(
-          s"""[UpdateRecordService] - Error when updating records for Eori Number: $eori,
+          s"""Error when updating records for Eori Number: $eori,
             s"correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
         )

@@ -331,7 +331,7 @@ trait EisHttpErrorHandler extends Logging {
         case InvalidOrMissingCommodityCodeCode                        =>
           invalidRequestParameterError(InvalidOrMissingCommodityCode, 1015)
         case other                                                    =>
-          logger.warn(s"[EisHttpErrorHandler] - Error code $other is not supported")
+          logger.warn(s"Parsing Error code $other is not supported")
           unexpectedError("Unrecognised error number", other.toInt)
       }
   }

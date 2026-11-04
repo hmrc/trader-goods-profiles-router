@@ -56,7 +56,7 @@ class AuditGetRecordService @Inject() (
     auditConnector
       .sendExtendedEvent(createDataEvent(details))
       .map { (auditResult: AuditResult) =>
-        logger.info(s"[AuditGetRecordService] - Get Records audit event status: $auditResult.")
+        logger.info(s"Successful Get Records audit event status: $auditResult.")
         Done
       }
   }
@@ -78,7 +78,7 @@ class AuditGetRecordService @Inject() (
     auditConnector
       .sendExtendedEvent(createDataEvent(details))
       .map { (auditResult: AuditResult) =>
-        logger.info(s"[AuditGetRecordService] - Get Records audit event status: $auditResult.")
+        logger.info(s"Failure Get Records audit event status: $auditResult.")
         Done
       }
   }

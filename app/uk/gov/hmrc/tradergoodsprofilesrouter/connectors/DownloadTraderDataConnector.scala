@@ -78,7 +78,7 @@ class DownloadTraderDataConnector @Inject() (
         case EoriIsNotLinkedToAnyRecord        =>
           invalidRequestParameterError(EoriIsNotLinkedToAnyMsg, 37)
         case other                             =>
-          logger.warn(s"[DownloadTraderDataConnector] - Error code $other is not supported")
+          logger.warn(s"Error downloading trader data - Error code $other is not supported")
           unexpectedError("Unrecognised error number", other.toInt)
       }
   }

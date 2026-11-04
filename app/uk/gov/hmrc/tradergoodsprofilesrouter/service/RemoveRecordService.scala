@@ -64,7 +64,7 @@ class RemoveRecordService @Inject() (
       }
       .recover { case ex: Throwable =>
         logger.error(
-          s"""[RemoveRecordService] - Error occurred while removing record for Eori Number: $eori, recordId: $recordId,
+          s"""Error occurred while removing record for Eori Number: $eori, recordId: $recordId,
             actorId: $actorId, correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
         )

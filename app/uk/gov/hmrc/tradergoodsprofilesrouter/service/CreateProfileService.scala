@@ -57,14 +57,14 @@ class CreateProfileService @Inject() (
         case Right(_)            => Right(buildResponse(eisRequest))
         case Left(errorResponse) =>
           logger.info(
-            s"""[CreateProfileService] - Eis returns ${errorResponse.httpStatus}: ${request.actorId},
+            s"""Profile created. Eis returns ${errorResponse.httpStatus}: ${request.actorId},
             s"correlationId: $correlationId, message: ${errorResponse.errorResponse.message}"""
           )
           Left(errorResponse)
       }
       .recover { case ex: Throwable =>
         logger.error(
-          s"""[CreateProfileService] - Error when creating profile for ActorId: ${request.actorId},
+          s"""Error when creating profile for ActorId: ${request.actorId},
           s"correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
         )

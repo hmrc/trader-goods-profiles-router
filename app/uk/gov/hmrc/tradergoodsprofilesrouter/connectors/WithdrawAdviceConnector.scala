@@ -69,7 +69,7 @@ class WithdrawAdviceConnector @Inject() (
     }
       .recover { case ex: Throwable =>
         logger.error(
-          s"[WithdrawAdviceConnector] - Error withdrawing Advice, recordId $recordId, message ${ex.getMessage}",
+          s"Error withdrawing Advice, recordId $recordId, message ${ex.getMessage}",
           ex
         )
 
@@ -116,7 +116,7 @@ class WithdrawAdviceConnector @Inject() (
         case DecisionAlreadyMadeCode           =>
           invalidRequestParameterError(DecisionAlreadyMadeMsg, DecisionAlreadyMadeResponseCode)
         case other                             =>
-          logger.warn(s"[WithdrawAdviceConnector] - Error code $other is not supported")
+          logger.warn(s"Error withdrawing advice - Error code $other is not supported")
           unexpectedError("Unrecognised error number", other.toInt)
       }
   }

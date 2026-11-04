@@ -57,7 +57,7 @@ class MaintainProfileService @Inject() (
       }
       .recover { case ex: Throwable =>
         logger.error(
-          s"""[MaintainProfileService] - Error when maintaining profile for ActorId: ${request.actorId},
+          s"""Error when maintaining profile for ActorId: ${request.actorId},
           s"correlationId: $correlationId, message: ${ex.getMessage}""",
           ex
         )

@@ -69,7 +69,7 @@ class RequestAdviceService @Inject() (
         .map(r => r)
         .recover { case ex: Throwable =>
           logger.error(
-            s"""[RequestAdviceService] - Error when creating accreditation for
+            s"""Error when creating accreditation for
                           correlationId: $correlationId, message: ${ex.getMessage}""",
             ex
           )
